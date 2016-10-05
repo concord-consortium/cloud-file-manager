@@ -126,15 +126,19 @@ class LaraProvider extends ProviderInterface
                       then @docStoreUrl.v2PatchDocument(metadata.providerData.recordid, params) \
                       else @docStoreUrl.v2SaveDocument(metadata.providerData.recordid, params)
 
+    # set to true for client side compression
+    # NOTE: disabled for now due to PT bug: https://www.pivotaltracker.com/n/projects/1055240/stories/131313927
+    enableDeflate = false
+
     $.ajax
       dataType: 'json'
       type: method
       url: url
-      data: pako.deflate patchResults.sendContent
+      data: if enableDeflate then pako.deflate(patchResults.sendContent) else patchResults.sendContent
       contentType: patchResults.mimeType
       processData: false
       beforeSend: (xhr) ->
-        xhr.setRequestHeader('Content-Encoding', 'deflate')
+        xhr.setRequestHeader('Content-Encoding', 'deflate') if enableDeflate
       context: @
       success: (data) ->
         @savedContent.updateContent(if @options.patch then _.cloneDeep(content) else null)

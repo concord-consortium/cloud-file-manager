@@ -287,17 +287,21 @@ class DocumentStoreProvider extends ProviderInterface
     if @urlParams.runKey
       params.runKey = @urlParams.runKey
 
+    # set to true for client side compression
+    # NOTE: disabled for now due to PT bug: https://www.pivotaltracker.com/n/projects/1055240/stories/131313927
+    enableDeflate = false
+
     $.ajax
       dataType: 'json'
       type: 'POST'
       url: if patchResults.shouldPatch \
             then @docStoreUrl.patchDocument(params) \
             else @docStoreUrl.saveDocument(params)
-      data: pako.deflate patchResults.sendContent
+      data: if enableDeflate then pako.deflate(patchResults.sendContent) else patchResults.sendContent
       contentType: patchResults.mimeType
       processData: false
       beforeSend: (xhr) ->
-        xhr.setRequestHeader('Content-Encoding', 'deflate')
+        xhr.setRequestHeader('Content-Encoding', 'deflate') if enableDeflate
       context: @
       xhrFields:
         withCredentials: true

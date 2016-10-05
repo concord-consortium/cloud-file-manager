@@ -40,6 +40,10 @@ class DocumentStoreShareProvider
     if accessKey
       params.accessKey = 'RW::' + accessKey
 
+    # set to true for client side compression
+    # NOTE: disabled for now due to PT bug: https://www.pivotaltracker.com/n/projects/1055240/stories/131313927
+    enableDeflate = false
+
     # if we already have a documentID and some form of accessKey,
     # then we must be updating an existing shared document
     if documentID and accessKey
@@ -49,10 +53,10 @@ class DocumentStoreShareProvider
         type: method
         url: url
         contentType: 'application/json' # Document Store requires JSON currently
-        data: pako.deflate sharedContent.getContentAsJSON()
+        data: if enableDeflate then pako.deflate(sharedContent.getContentAsJSON()) else sharedContent.getContentAsJSON()
         processData: false
         beforeSend: (xhr) ->
-          xhr.setRequestHeader('Content-Encoding', 'deflate')
+          xhr.setRequestHeader('Content-Encoding', 'deflate') if enableDeflate
         context: @
         xhrFields:
           withCredentials: true
@@ -76,10 +80,10 @@ class DocumentStoreShareProvider
         type: method
         url: url
         contentType: 'application/json' # Document Store requires JSON currently
-        data: pako.deflate sharedContent.getContentAsJSON()
+        data: if enableDeflate then pako.deflate(sharedContent.getContentAsJSON()) else sharedContent.getContentAsJSON()
         processData: false
         beforeSend: (xhr) ->
-          xhr.setRequestHeader('Content-Encoding', 'deflate')
+          xhr.setRequestHeader('Content-Encoding', 'deflate') if enableDeflate
         context: @
         xhrFields:
           withCredentials: true
