@@ -102,6 +102,7 @@ module.exports =
   "~ALERT_DIALOG.CLOSE": "Close"
 
   "~ALERT.NO_PROVIDER": "Could not open the specified document because an appropriate provider is not available."
+  "~ALERT.INVALID_FILE": "Could not open the specified file because it is not a valid document."
 
   "~DOCSTORE.LOAD_403_ERROR": "You don't have permission to load %{filename}.<br><br>If you are using some else's shared document it may have been unshared."
   "~DOCSTORE.LOAD_SHARED_404_ERROR": "Unable to load the requested shared document.<br><br>Perhaps the file was not shared?"
