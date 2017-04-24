@@ -191,6 +191,9 @@ class CloudFileManagerClient
     if metadata?.provider?.can 'load', metadata
       metadata.provider.load metadata, (err, content) =>
         return @alert(err, => @ready()) if err
+        if @appOptions.validator and not @appOptions.validator(content?.getClientContent())
+          invalidMessage = @appOptions.validatorError or tr('~ALERT.INVALID_FILE')
+          return @alert(invalidMessage, => @ready())
         # should wait to close current file until client signals open is complete
         @_closeCurrentFile()
         @_fileOpened content, metadata, {openedContent: content.clone()}, @_getHashParams metadata

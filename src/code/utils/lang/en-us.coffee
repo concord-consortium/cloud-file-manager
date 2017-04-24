@@ -102,6 +102,7 @@ module.exports =
   "~ALERT_DIALOG.CLOSE": "Close"
 
   "~ALERT.NO_PROVIDER": "Could not open the specified document because an appropriate provider is not available."
+  "~ALERT.INVALID_FILE": "Could not open the specified file because it is not a valid document."
 
   "~GOOGLE_DRIVE.LOGIN_BUTTON_LABEL": "Login to Google"
   "~GOOGLE_DRIVE.CONNECTING_MESSAGE": "Connecting to Google..."
