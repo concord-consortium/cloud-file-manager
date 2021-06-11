@@ -44,13 +44,11 @@ const DropdownItem = createReactClassFactory({
   },
 
   render() {
-    const enabled = this.props.item.hasOwnProperty('enabled') ?
-      typeof this.props.item.enabled === 'function' ?
-        this.props.item.enabled()
-      :
-        this.props.item.enabled
-    :
-      true
+    const enabled = this.props.item != null
+                      ? typeof this.props.item.enabled === 'function'
+                        ? this.props.item.enabled()
+                        : this.props.item.enabled
+                      : true
 
     const classes = ['menuItem']
     if (this.props.item.separator) {

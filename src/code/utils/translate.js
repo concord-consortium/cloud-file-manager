@@ -84,8 +84,10 @@ const translate = function(key, vars, lang) {
   let translation = translations[lang] != null ? translations[lang][key] : undefined
   if ((translation == null)) { translation = key }
   return translation.replace(varRegExp, function(match, key) {
-    if (vars.hasOwnProperty(key)) { return vars[key] } else { return `'** UKNOWN KEY: ${key} **` }
-  })
+    return Object.prototype.hasOwnProperty.call(vars, key)
+            ? vars[key]
+            : `'** UKNOWN KEY: ${key} **`;
+  });
 }
 
 export default translate

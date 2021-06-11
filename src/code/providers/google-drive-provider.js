@@ -106,7 +106,7 @@ class GoogleDriveProvider extends ProviderInterface {
     this.gapiLoadState = "not-loaded"
     this._waitForGAPILoad()
       .then(() => this.gapiLoadState = "loaded")
-      .catch(() => this.gapiLoadState = "errored")
+      .catch(() => this.gapiLoadState = "errored")  // eslint-disable-line dot-notation
   }
 
   authorized(authCallback) {
@@ -290,7 +290,7 @@ class GoogleDriveProvider extends ProviderInterface {
             scope: this.scopes
           })
           .then(resolve)
-          .catch(reject)
+          .catch(reject)  // eslint-disable-line dot-notation
         })
       }
       document.head.appendChild(script)
