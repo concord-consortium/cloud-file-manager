@@ -93,6 +93,7 @@
     "test:local": "cypress open --env testEnv=local",
     "test": "jest",
     "test:watch": "jest --watch",
-    "lint": "eslint ./src/code"
+    "lint": "eslint ./src/code",
+    "lint:fix": "eslint --fix ./src/code"
   }
 }

@@ -1,4 +1,4 @@
-import React from "react";
+import React from "react"
 import isString  from '../utils/is-string'
 import _ from 'lodash'
 
@@ -442,7 +442,7 @@ class ProviderInterface implements IProviderInterfaceOpts {
   }
 
   authorized(callback: (resp: boolean) => boolean) {
-    return callback ? callback(true) : true;
+    return callback ? callback(true) : true
   }
 
   renderAuthorizationDialog() {

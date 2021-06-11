@@ -39,23 +39,23 @@ export function fullscreenSupport (iframe) {
   }
 
   function setupFullsceenButton () {
-    $('#fullscreen-help').show();
-    var $button = $('.fullscreen-icon');
-    $button.show();
+    $('#fullscreen-help').show()
+    var $button = $('.fullscreen-icon')
+    $button.show()
     $button.on('click', () => screenfull.toggle())
     screenfull.on('change', () => {
       if(screenfull.isFullscreen) {
-        $button.addClass('fullscreen');
+        $button.addClass('fullscreen')
       }
       else {
-        $button.removeClass('fullscreen');
+        $button.removeClass('fullscreen')
       }
     })
   }
 
-  setScaling();
+  setScaling()
   if (screenfull.isEnabled) {
-    setupFullsceenButton();
+    setupFullsceenButton()
   }
   $(window).on('resize', setScaling)
 }
