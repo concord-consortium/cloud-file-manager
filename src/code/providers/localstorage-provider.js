@@ -68,7 +68,7 @@ class LocalStorageProvider extends ProviderInterface {
     const prefix = this._getKey(((metadata != null ? metadata.path() : undefined) || []).join('/'))
     for (let key of Object.keys(window.localStorage || {})) {
       if (key.substr(0, prefix.length) === prefix) {
-        // eslint-disable-next-line no-unused-vars
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const [filename, ...remainder] = key.substr(prefix.length).split('/')
         const name = key.substr(prefix.length)
         if (this.matchesExtension(name)) {

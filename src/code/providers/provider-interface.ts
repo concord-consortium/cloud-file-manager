@@ -1,3 +1,4 @@
+import React from "react";
 import isString  from '../utils/is-string'
 import _ from 'lodash'
 
@@ -144,15 +145,10 @@ class CloudMetadata implements ICloudMetaDataSpec {
   }
 
   static nameIncludesExtension(name:string) {
-    if (name.indexOf(FILE_EXTENSION_DELIMETER) === -1) {
-      return false
-    }
-    return true
+    return name.indexOf(FILE_EXTENSION_DELIMETER) >= 0
   }
 
-  static withExtension(name: string, defaultExtension:string , keepOriginalExtension:boolean) {
-    // TODO:  Eslint doesn't like this bitwise not operator.
-    // I feel the same.
+  static withExtension(name: string, defaultExtension:string, keepOriginalExtension:boolean) {
     if (keepOriginalExtension && this.nameIncludesExtension(name)) {
       return name
     }
@@ -206,7 +202,7 @@ class CloudMetadata implements ICloudMetaDataSpec {
 
 //TODO: What are the actual keys we expect to find?
 interface IEnvelopeMetaData {
-  cfmVersion: '__PACKAGE_VERSION__', // replaced by version number at build time
+  cfmVersion: string
   appName: string
   appVersion: string
   appBuildNum: string
@@ -227,14 +223,15 @@ class CloudContentFactory {
 
   // set initial envelopeMetadata or update individual properties
   setEnvelopeMetadata(envelopeMetadata:IEnvelopeMetaData) {
-    for (let key in envelopeMetadata) {
-      (this.envelopeMetadata as any)[key] = (this.envelopeMetadata as any)[key]
+    let key: keyof typeof envelopeMetadata
+    for (key in envelopeMetadata) {
+      this.envelopeMetadata[key] = envelopeMetadata[key]
     }
   }
 
   // returns new CloudContent containing enveloped data
   createEnvelopedCloudContent(content: CloudContent) {
-    return new CloudContent((this.envelopContent(content)), (this._identifyContentFormat(content)))
+    return new CloudContent(this.envelopContent(content), this._identifyContentFormat(content))
   }
 
   // envelops content with metadata, returns an object.
@@ -244,9 +241,10 @@ class CloudContentFactory {
   // has already had `envelopContent` called on it, and will be a no-op.
   envelopContent(content: CloudContent) {
     const envelopedCloudContent:any = this._wrapIfNeeded(content)
-    for (let key in this.envelopeMetadata) {
+    let key: keyof IEnvelopeMetaData
+    for (key in this.envelopeMetadata) {
       if (envelopedCloudContent[key] == null) {
-        envelopedCloudContent[key] = (this.envelopeMetadata as any)[key]
+        envelopedCloudContent[key] = this.envelopeMetadata[key]
       }
     }
     return envelopedCloudContent
@@ -256,8 +254,8 @@ class CloudContentFactory {
     if ((content == null)) { return }
     const result = { isCfmWrapped: false, isPreCfmFormat: false }
     if (isString(content)) {
-      try { content = JSON.parse(content as string) } catch (error) {
-        // noop, just cecking if it's valid json
+      try { content = JSON.parse(content) } catch (error) {
+        // noop, just checking if it's valid json
       }
     }
     // Currently, we assume 'metadata' is top-level property in
@@ -282,7 +280,7 @@ class CloudContentFactory {
   // envelops content in {content: content} if needed, returns an object
   _wrapIfNeeded(content: string | CloudContent) {
     if (isString(content)) {
-      try { content = JSON.parse(content as string) } catch (error) {
+      try { content = JSON.parse(content) } catch (error) {
         // noop, just cecking if it's json or plain text
       }
     }
@@ -304,9 +302,10 @@ class CloudContent {
 
   // TODO: These should probably be private, but there is some refactoring
   // that has to happen to make this possible
+  cfmVersion?: string
+  metadata?: any
   content : any
   contentFormat: ICloudContentFormat
-  [key: string]: any
   constructor(content:any, contentFormat:any) {
     this.content = content == null
       ? {}
@@ -443,11 +442,7 @@ class ProviderInterface implements IProviderInterfaceOpts {
   }
 
   authorized(callback: (resp: boolean) => boolean) {
-    if (callback) {
-      return callback(true)
-    } else {
-      return true
-    }
+    return callback ? callback(true) : true;
   }
 
   renderAuthorizationDialog() {
@@ -468,8 +463,7 @@ class ProviderInterface implements IProviderInterfaceOpts {
       for (let extension of CloudMetadata.ReadableExtensions) {
         if (name.substr(-extension.length) === extension) { return true }
         if (extension === "") {
-          // TODO:  Eslint doesn't like this bitwise not operator.
-          if (!~name.indexOf(".")) { return true }
+          if (name.indexOf(".") === -1) { return true }
         }
       }
       return false
