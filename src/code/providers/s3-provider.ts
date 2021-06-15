@@ -1,7 +1,7 @@
 import {
   ICloudMetaDataSpec,
-  callbackSigLoad,
-  callbackSigSave,
+  ProviderLoadCallback,
+  ProviderSaveCallback,
   ProviderInterface,
   IProviderInterfaceOpts,
   CloudMetadata,
@@ -34,7 +34,7 @@ class S3Provider extends ProviderInterface {
         save: true,
         load: true,
         // NP For now none of this stuff:
-        export: false,
+        "export": false,
         resave: false,
         list: false,
         remove: false,
@@ -47,29 +47,29 @@ class S3Provider extends ProviderInterface {
     this.client = client
   }
 
-  save(content: any, metadata: ICloudMetaDataSpec, callback: callbackSigSave) {
-    let payloadContent = content;
+  save(content: any, metadata: ICloudMetaDataSpec, callback: ProviderSaveCallback) {
+    let payloadContent = content
     if(typeof(payloadContent) !== "string") {
       payloadContent = JSON.stringify(payloadContent)
     }
 
     const result = createFile({
       fileContent: payloadContent
-    });
+    })
 
     result.then( ({publicUrl, resourceId, readWriteToken}) => {
       metadata.sharedContentSecretKey=readWriteToken
       metadata.url=publicUrl
       metadata.sharedDocumentUrl=publicUrl
-      callback(publicUrl);
-    });
+      callback(publicUrl)
+    })
   }
 
-  loadFromUrl(documentUrl: string, metadata: CloudMetadata, callback: callbackSigLoad) {
+  loadFromUrl(documentUrl: string, metadata: CloudMetadata, callback: ProviderLoadCallback) {
     fetch(documentUrl)
       .then(response => {
         if (response.status === 404) {
-          callback(tr("~DOCSTORE.LOAD_SHARED_404_ERROR"), {});
+          callback(tr("~DOCSTORE.LOAD_SHARED_404_ERROR"), {})
         } else {
           return response.json()
             .then(data => {
@@ -91,9 +91,9 @@ class S3Provider extends ProviderInterface {
               }
               return callback(null, content)
             })
-            .catch(e => {
+            .catch(e => { // eslint-disable-line @typescript-eslint/dot-notation
               callback(`Unable to load '${metadata.name}': ${e.message}`, {})
-            });
+            })
         }
       })
   }
@@ -111,7 +111,7 @@ class S3Provider extends ProviderInterface {
     return null
   }
 
-  load(metadata: CloudMetadata, callback: callbackSigLoad) {
+  load(metadata: CloudMetadata, callback: ProviderLoadCallback) {
     const id = metadata.sharedContentId
     const loadUrl = this.getLoadUrlFromSharedContentId(id)
     if(loadUrl !== null) {

@@ -1,7 +1,9 @@
 import tr  from '../utils/translate'
-
-import { ProviderInterface }  from './provider-interface'
-import { cloudContentFactory }  from './provider-interface'
+import { createReactFactory } from '../globals'
+import {
+  cloudContentFactory, CloudMetadata, IProviderInterfaceOpts, ProviderInterface,
+  ProviderListCallback, ProviderLoadCallback, ProviderSaveCallback
+}  from './provider-interface'
 import localFileTabListView from '../views/local-file-tab-list-view'
 import localFileTabSaveView from '../views/local-file-tab-save-view'
 
@@ -9,11 +11,14 @@ const LocalFileListTab = createReactFactory(localFileTabListView)
 const LocalFileSaveTab = createReactFactory(localFileTabSaveView)
 
 class LocalFileProvider extends ProviderInterface {
-  constructor(options, client) {
-    const opts = options || {}
+  public static Name = 'localFile'
+  private options: IProviderInterfaceOpts;
+  private client: any;
+  constructor(options: IProviderInterfaceOpts, client: any) {
     super({
       name: LocalFileProvider.Name,
-      displayName: opts.displayName || (tr('~PROVIDER.LOCAL_FILE')),
+      displayName: options.displayName || (tr('~PROVIDER.LOCAL_FILE')),
+      urlDisplayName: options.urlDisplayName || LocalFileProvider.Name,
       capabilities: {
         save: true,
         resave: false,
@@ -25,11 +30,11 @@ class LocalFileProvider extends ProviderInterface {
         close: false
       }
     })
-    this.options = opts
+    this.options = options
     this.client = client
   }
 
-  filterTabComponent(capability, defaultComponent) {
+  filterTabComponent(capability: string, defaultComponent: any) {
     if (capability === 'list') {
       return LocalFileListTab
     } else if ((capability === 'save') || (capability === 'export')) {
@@ -39,17 +44,20 @@ class LocalFileProvider extends ProviderInterface {
     }
   }
 
-  list(metadata, callback) {}
+  list(metadata: CloudMetadata, callback: ProviderListCallback) {}
     // not really implemented - we flag it as implemented so we show in the list dialog
 
-  save(content, metadata, callback) {
+  save(content: any, metadata: CloudMetadata, callback: ProviderSaveCallback) {
     // not really implemented - we flag it as implemented so we can add the download button to the save dialog
     return (typeof callback === 'function' ? callback(null) : undefined)
   }
 
-  load(metadata, callback) {
+  load(metadata: CloudMetadata, callback: ProviderLoadCallback) {
     const reader = new FileReader()
-    reader.onload = loaded => callback(null, cloudContentFactory.createEnvelopedCloudContent(loaded.target.result))
+    reader.onload = loaded => {
+      const content = cloudContentFactory.createEnvelopedCloudContent(loaded.target.result as string)
+      return callback(null, content)
+    }
     return reader.readAsText(metadata.providerData.file)
   }
 
@@ -58,6 +66,5 @@ class LocalFileProvider extends ProviderInterface {
     return false
   }
 }
-LocalFileProvider.Name = 'localFile'
 
 export default LocalFileProvider

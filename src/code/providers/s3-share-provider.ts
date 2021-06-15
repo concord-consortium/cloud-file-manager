@@ -1,7 +1,7 @@
 import {
   ICloudMetaDataSpec,
-  callbackSigShare,
-  callbackSigLoad,
+  ProviderShareCallback,
+  ProviderLoadCallback,
   ProviderInterface,
   ICloudFileTypes,
   CloudContent,
@@ -11,7 +11,7 @@ import {
 import { IShareProvider} from './share-provider-interface'
 import { createFile, updateFile, deleteFile } from '../utils/s3-share-provider-token-service-helper'
 import { reportError } from '../utils/report-error'
-import { sha256 } from 'js-sha256';
+import { sha256 } from 'js-sha256'
 
 interface IClientInterface {}
 
@@ -30,7 +30,7 @@ class S3ShareProvider implements IShareProvider  {
   }
 
 
-  loadSharedContent(id: string, callback:callbackSigLoad) {
+  loadSharedContent(id: string, callback: ProviderLoadCallback) {
     const sharedMetadata = new CloudMetadata({
       sharedContentId: id,
       type: ICloudFileTypes.File,
@@ -47,7 +47,7 @@ class S3ShareProvider implements IShareProvider  {
     contentJSON: string,
     documentID: string,
     readWriteToken: string,
-    callback: callbackSigShare) {
+    callback: ProviderShareCallback) {
       // Call update:
       updateFile({
         newFileContent: contentJSON,
@@ -57,20 +57,20 @@ class S3ShareProvider implements IShareProvider  {
 
       }).then(() => {
         callback(null, documentID)
-      }).catch(e => {
+      }).catch(e => { // eslint-disable-line @typescript-eslint/dot-notation
         reportError(e)
         return callback(`Unable to update shared file ${e}`, {})
       })
   }
 
-  private deleteShare(documentID: string, readWriteToken: string, callback: callbackSigShare) {
+  private deleteShare(documentID: string, readWriteToken: string, callback: ProviderShareCallback) {
     deleteFile({
       // DocumentID is the resourceID for TokenService
       resourceId: documentID,
       readWriteToken: readWriteToken
     }).then(() => {
       callback(null, documentID)
-    }).catch((e: Error) => {
+    }).catch((e: Error) => {  // eslint-disable-line @typescript-eslint/dot-notation
       reportError(e)
       return callback(`Unable to delete shared file ${e}`, {})
     })
@@ -80,11 +80,11 @@ class S3ShareProvider implements IShareProvider  {
     masterContent: CloudContent,
     contentJSON: string,
     metadata:ICloudMetaDataSpec,
-    callback: callbackSigShare,
+    callback: ProviderShareCallback,
     ) {
     const result = createFile({
       fileContent: contentJSON
-    });
+    })
     result.then( ({publicUrl, resourceId, readWriteToken}) => {
       metadata.sharedContentSecretKey=readWriteToken
       metadata.url=publicUrl
@@ -96,7 +96,7 @@ class S3ShareProvider implements IShareProvider  {
         accessKeys: { readOnly: publicUrl, readWrite: readWriteToken }
       })
       return callback(null, readWriteToken)
-    }).catch( e => {
+    }).catch( e => {  // eslint-disable-line @typescript-eslint/dot-notation
       return callback(`Unable to share file ${e}`, {})
     })
   }
@@ -107,7 +107,7 @@ class S3ShareProvider implements IShareProvider  {
     masterContent: CloudContent,
     sharedContent:CloudContent,
     metadata:ICloudMetaDataSpec,
-    callback: callbackSigShare) {
+    callback: ProviderShareCallback) {
 
     // document ID is stored in masterContent
     let documentID = masterContent.get('sharedDocumentId')

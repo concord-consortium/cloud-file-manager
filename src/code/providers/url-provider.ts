@@ -7,17 +7,24 @@
  * DS207: Consider shorter variations of null checks
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
  */
-import { ProviderInterface }  from './provider-interface'
-import { cloudContentFactory }  from './provider-interface'
-import { CloudMetadata }  from './provider-interface'
+import {
+  cloudContentFactory, CloudMetadata, ICloudFileTypes, IProviderInterfaceOpts, ProviderOpenCallback, ProviderInterface
+}  from './provider-interface'
 
 // This provider gets created by the client when needed to open a url directly.
 // It cannot be added as one of the app's list of providers
 
 class URLProvider extends ProviderInterface {
+  public static Name = 'url-provider'
+  client?: any
+  options?: IProviderInterfaceOpts
 
-  constructor(options, client) {
+  constructor(options?: IProviderInterfaceOpts, client?: any) {
     super({
+      name: URLProvider.name,
+      displayName: "URL Provider",
+      urlDisplayName: options?.urlDisplayName || URLProvider.name,
+
       capabilities: {
         save: false,
         resave: false,
@@ -29,15 +36,15 @@ class URLProvider extends ProviderInterface {
         close: false
       }
     })
-    this.options = options || {}
+    this.options = options
     this.client = client
   }
 
   canOpenSaved() { return false }
 
-  openFileFromUrl(url, callback) {
+  openFileFromUrl(url: string, callback: ProviderOpenCallback) {
     const metadata = new CloudMetadata({
-      type: CloudMetadata.File,
+      type: ICloudFileTypes.File,
       url,
       parent: null,
       provider: this
@@ -48,7 +55,7 @@ class URLProvider extends ProviderInterface {
       success(data) {
         return callback(null, cloudContentFactory.createEnvelopedCloudContent(data), metadata)
       },
-      error() { return callback(`Unable to load document from '${metadata.url}'`) }
+      error() { callback(`Unable to load document from '${metadata.url}'`) }
     })
   }
 }
