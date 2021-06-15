@@ -188,8 +188,8 @@ export default createReactClass({
   },
 
   render() {
-    const { provider } = this.props;
-    const isAuthorized = provider && provider.isAuthorizationRequired() && provider.authorized();
+    const { provider } = this.props
+    const isAuthorized = provider && provider.isAuthorizationRequired() && provider.authorized()
     return (div({className: 'menu-bar'},
       (div({className: 'menu-bar-left'},
         (Dropdown({items: this.props.items})),

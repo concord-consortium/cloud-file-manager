@@ -175,7 +175,7 @@ class ReadOnlyProvider extends ProviderInterface {
         type = CloudMetadata.mapTypeToCloudMetadataType(item.type)
         let url = item.url || item.location
         if (baseUrl && !(url.startsWith('http://') || url.startsWith('https://') || url.startsWith('//'))) {
-          url = baseUrl + url;
+          url = baseUrl + url
         }
         metadata = new CloudMetadata({
           name: item.name,

@@ -20,7 +20,6 @@ import {ShareLoadingView} from './share-loading-view'
 // of the react function, "tr".
 import translate  from '../utils/translate'
 import socialIcons  from 'svg-social-icons/lib/icons.json'
-import { getLegacyUrl } from '../utils/s3-share-provider-token-service-helper'
 const SocialIcon = createReactClassFactory({
 
   displayName: 'SocialIcon',

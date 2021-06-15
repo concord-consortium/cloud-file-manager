@@ -70,7 +70,7 @@ class AppView extends React.Component {
   }
 
   getFilename(metadata) {
-    if ((metadata != null ? metadata.hasOwnProperty('name') : undefined) && ((metadata.name != null ? metadata.name.length : undefined) > 0)) { return metadata.name } else { return null }
+    return metadata?.name || null
   }
 
   componentDidMount() {

@@ -15,7 +15,6 @@ import { CloudMetadata }  from './provider-interface'
 import DocumentStoreUrl  from './document-store-url'
 import PatchableContent  from './patchable-content'
 import getQueryParam  from '../utils/get-query-param'
-import queryString from "query-string"
 import { Base64 }  from 'js-base64'
 import pako  from 'pako'
 
@@ -28,7 +27,7 @@ import pako  from 'pako'
 
 class LaraProvider extends ProviderInterface {
   static initClass() {
-  
+
     this.Name = 'lara'
   }
 
@@ -186,8 +185,8 @@ class LaraProvider extends ProviderInterface {
       params.accessKey = `RW::${metadata.providerData.accessKeys.readWrite}`
     }
 
-    const {method, url} = patchResults.shouldPatch 
-                      ? this.docStoreUrl.v2PatchDocument(metadata.providerData.recordid, params) 
+    const {method, url} = patchResults.shouldPatch
+                      ? this.docStoreUrl.v2PatchDocument(metadata.providerData.recordid, params)
                       : this.docStoreUrl.v2SaveDocument(metadata.providerData.recordid, params)
 
     const logData = {
@@ -302,7 +301,7 @@ class LaraProvider extends ProviderInterface {
             } else {
               return done(null)
             }}).fail((jqXHR, status, error) => done("Could not open the specified document because an error occurred [updateState]"))
-        
+
 
         const urlQueue = urls.slice()
         var processQueue = function() {
@@ -331,8 +330,8 @@ class LaraProvider extends ProviderInterface {
           }
         }
 
-        const codapUrl = window.location.origin 
-                    ? `${window.location.origin}${window.location.pathname}` 
+        const codapUrl = window.location.origin
+                    ? `${window.location.origin}${window.location.pathname}`
                     : `${window.location.protocol}//${window.location.host}${window.location.pathname}`
         const reportUrlLaraParams = {
           recordid: createResponse.id,

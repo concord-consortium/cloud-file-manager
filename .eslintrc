@@ -7,14 +7,15 @@
     "jest/globals": true
   },
   "ignorePatterns": ["*original*"],
-  "parser": "babel-eslint",
+  "parser": "@typescript-eslint/parser",
   "parserOptions": {
-    "ecmaVersion": 7,
-    "sourceType": "module"
+    "ecmaVersion": 2018,
+    "sourceType": "module",
+    "project": ["./tsconfig.json"]
   },
   "globals": {
     "$": false,
-  "createReactClassFactory": false,
+    "createReactClassFactory": false,
     "createReactFactory":false,
     "ReactDOMFactories": false,
     "ReactDOM":false,
@@ -47,7 +48,8 @@
     "array-callback-return": "error",
     "block-scoped-var": "warn",
     "consistent-return": "off", // liberal use of inconsistent returns, e.g. SproutCore properties
-    "dot-notation": ["warn", { "allowKeywords": false }],
+    "dot-notation": ["off", { "allowKeywords": false }],
+    "@typescript-eslint/dot-notation": ["warn", { "allowKeywords": false }],
     "eqeqeq": ["error", "allow-null"],
     "no-alert": "error",
     "no-caller": "error",
@@ -75,7 +77,8 @@
 
     // variables
     "no-shadow-restricted-names": "error",
-    "no-unused-vars": ["warn", { "vars": "all", "args": "none" }],
+    "no-unused-vars": ["off", { "vars": "all", "args": "none" }],
+    "@typescript-eslint/no-unused-vars": ["warn", { "vars": "all", "args": "none", "ignoreRestSiblings": true }],
     "no-use-before-define": "off",  // 169 used before defined
 
     // node.js/CommonJS
@@ -93,7 +96,7 @@
     "no-whitespace-before-property": "warn",
     "quote-props": ["error", "as-needed", { "keywords": true, "unnecessary": false }],
     "quotes": "off",
-    "semi": ["off", "never"],
+    "semi": ["warn", "never"],
     "react/display-name": "off",
     "react/prop-types": "off", // TODO: FIX THIS
     "react/no-find-dom-node": "off" // TODO: Fix this!!!

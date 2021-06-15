@@ -106,7 +106,7 @@ class GoogleDriveProvider extends ProviderInterface {
     this.gapiLoadState = "not-loaded"
     this._waitForGAPILoad()
       .then(() => this.gapiLoadState = "loaded")
-      .catch(() => this.gapiLoadState = "errored")
+      .catch(() => this.gapiLoadState = "errored")  // eslint-disable-line @typescript-eslint/dot-notation
   }
 
   authorized(authCallback) {
@@ -194,10 +194,10 @@ class GoogleDriveProvider extends ProviderInterface {
       return request.execute(result => {
         if (!result || result.error) { return callback(this._apiError(result, 'Unable to list files')) }
         const list = []
-        const files = result.files;
+        const files = result.files
         if (files?.length > 0) {
           for (let i = 0; i < files.length; i++) {
-            const item = files[i];
+            const item = files[i]
             const type = item.mimeType === 'application/vnd.google-apps.folder' ? CloudMetadata.Folder : CloudMetadata.File
             if ((type === CloudMetadata.Folder) || this.matchesExtension(item.name)) {
               list.push(new CloudMetadata({
@@ -290,7 +290,7 @@ class GoogleDriveProvider extends ProviderInterface {
             scope: this.scopes
           })
           .then(resolve)
-          .catch(reject)
+          .catch(reject)  // eslint-disable-line @typescript-eslint/dot-notation
         })
       }
       document.head.appendChild(script)

@@ -73,7 +73,7 @@ const baseLang = getBaseLanguage(lang || '')
 // CODAP/Sproutcore lower cases language in documentElement
 const defaultLang = lang && translations[lang.toLowerCase()] ? lang : baseLang && translations[baseLang] ? baseLang : "en"
 
-console.log(`CFM: using ${defaultLang} for translation (lang is "${urlParams.lang}" || "${getFirstBrowserLanguage()}")`);
+console.log(`CFM: using ${defaultLang} for translation (lang is "${urlParams.lang}" || "${getFirstBrowserLanguage()}")`)
 
 const varRegExp = /%\{\s*([^}\s]*)\s*\}/g
 
@@ -84,7 +84,9 @@ const translate = function(key, vars, lang) {
   let translation = translations[lang] != null ? translations[lang][key] : undefined
   if ((translation == null)) { translation = key }
   return translation.replace(varRegExp, function(match, key) {
-    if (vars.hasOwnProperty(key)) { return vars[key] } else { return `'** UKNOWN KEY: ${key} **` }
+    return Object.prototype.hasOwnProperty.call(vars, key)
+            ? vars[key]
+            : `'** UKNOWN KEY: ${key} **`
   })
 }
 

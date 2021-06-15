@@ -18,7 +18,6 @@ import ReadOnlyProvider  from './providers/readonly-provider'
 import GoogleDriveProvider  from './providers/google-drive-provider'
 import LaraProvider  from './providers/lara-provider'
 import DocumentStoreProvider  from './providers/document-store-provider'
-import DocumentStoreShareProvider  from './providers/document-store-share-provider'
 import S3ShareProvider  from './providers/s3-share-provider'
 import S3Provider  from './providers/s3-provider'
 import LocalFileProvider  from './providers/local-file-provider'
@@ -177,10 +176,10 @@ class CloudFileManagerClient {
       appBuildNum: this.appOptions.appBuildNum || ""
     })
 
-    this.newFileOpensInNewTab = (this.appOptions.ui != null ? this.appOptions.ui.hasOwnProperty('newFileOpensInNewTab') : undefined) ? this.appOptions.ui.newFileOpensInNewTab : true
-    this.newFileAddsNewToQuery = this.appOptions.ui != null ? this.appOptions.ui.newFileAddsNewToQuery : undefined
+    this.newFileOpensInNewTab = this.appOptions.ui?.newFileOpensInNewTab ?? true
+    this.newFileAddsNewToQuery = this.appOptions.ui?.newFileAddsNewToQuery
 
-    if (this.appOptions.ui != null ? this.appOptions.ui.confirmCloseIfDirty : undefined) {
+    if (this.appOptions.ui?.confirmCloseIfDirty) {
       this._setupConfirmOnClose()
     }
 

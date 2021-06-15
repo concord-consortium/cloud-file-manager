@@ -1,3 +1,4 @@
+import React from "react"
 import isString  from '../utils/is-string'
 import _ from 'lodash'
 
@@ -13,29 +14,27 @@ type AnyForNow = any
 export type GenericFileCallback = (arg: AnyForNow) => AnyForNow
 
 // TODO: What does a save callback signature really looklike?
-export type callbackSigSave = GenericFileCallback
+export type ProviderSaveCallback = GenericFileCallback
 
 // TODO: What does a load callback signature really looklike?
-export type callbackSigLoad = (err:AnyForNow, content:AnyForNow, metadata?: CloudMetadata) => AnyForNow
+export type ProviderLoadCallback = (err: string | null, content?: any, metadata?: CloudMetadata) => AnyForNow
 
 // TODO: What does a list callback signature really looklike?
-export type callbackSigList = (err:AnyForNow, content:AnyForNow, metadata?: CloudMetadata) => AnyForNow
-
+export type ProviderListCallback = (err: string | null, content?: any, metadata?: CloudMetadata) => AnyForNow
 
 // TODO: What does a rename callback signature really looklike?
-export type callbackSigRename = GenericFileCallback
+export type ProviderRenameCallback = GenericFileCallback
 
 // TODO: What does a list callback signature really looklike?
-export type callbackSigRemove = GenericFileCallback
+export type ProviderRemoveCallback = GenericFileCallback
 
 // TODO: What does a close callback signature really looklike?
-export type callbackSigClose = GenericFileCallback
+export type ProviderCloseCallback = GenericFileCallback
 
-// TODO: What does a open-save callback signature really looklike?
-export type callbackSigOpenSave = GenericFileCallback
+export type ProviderOpenCallback = (err: string | null, content?: any, metadata?: CloudMetadata) => AnyForNow
 
 // TODO: When the document is shared, this is the callback signature
-export type callbackSigShare = (err: string, content: AnyForNow) => void
+export type ProviderShareCallback = (err: string, content: AnyForNow) => void
 
 export enum ICloudFileTypes {
   File = "file",
@@ -60,12 +59,12 @@ export interface ICloudMetaDataSpec {
   mimeType: mimeType
   filename: string
   ReadableExtensions?: string[]
-  _permissions?: any,
-  shareEditKey?: string,
-  sharedDocumentId?: string,
-  sharedDocumentUrl?: string,
+  _permissions?: any
+  shareEditKey?: string
+  sharedDocumentId?: string
+  sharedDocumentUrl?: string
   accessKeys?: {
-    readOnly?: string,
+    readOnly?: string
     readWrite?: string
   }
 }
@@ -108,10 +107,6 @@ class CloudMetadata implements ICloudMetaDataSpec {
     readWrite?: string
   }
 
-  static Folder = 'folder'
-  static File = 'file'
-  static Label = 'label'
-
   // TODO IMPORTANT: These are defined as class variables,
   // which seems like a mistake. Seems like it should match
   // the mimeType, which is an instance variable.
@@ -144,15 +139,10 @@ class CloudMetadata implements ICloudMetaDataSpec {
   }
 
   static nameIncludesExtension(name:string) {
-    if (name.indexOf(FILE_EXTENSION_DELIMETER) === -1) {
-      return false
-    }
-    return true
+    return name.indexOf(FILE_EXTENSION_DELIMETER) >= 0
   }
 
-  static withExtension(name: string, defaultExtension:string , keepOriginalExtension:boolean) {
-    // TODO:  Eslint doesn't like this bitwise not operator.
-    // I feel the same.
+  static withExtension(name: string, defaultExtension:string, keepOriginalExtension:boolean) {
     if (keepOriginalExtension && this.nameIncludesExtension(name)) {
       return name
     }
@@ -187,7 +177,7 @@ class CloudMetadata implements ICloudMetaDataSpec {
 
   _updateFilename() {
     this.filename = this.name
-    if (((this.name != null ? this.name.substr : undefined) != null) && (CloudMetadata.Extension != null) && (this.type === CloudMetadata.File)) {
+    if (((this.name != null ? this.name.substr : undefined) != null) && (CloudMetadata.Extension != null) && (this.type === ICloudFileTypes.File)) {
       const extLen = CloudMetadata.Extension.length
       if (extLen > 0) {
         // at this point the filename and name are the same so we now check for a file extension
@@ -206,7 +196,7 @@ class CloudMetadata implements ICloudMetaDataSpec {
 
 //TODO: What are the actual keys we expect to find?
 interface IEnvelopeMetaData {
-  cfmVersion: '__PACKAGE_VERSION__', // replaced by version number at build time
+  cfmVersion: string
   appName: string
   appVersion: string
   appBuildNum: string
@@ -226,15 +216,16 @@ class CloudContentFactory {
   }
 
   // set initial envelopeMetadata or update individual properties
-  setEnvelopeMetadata(envelopeMetadata:IEnvelopeMetaData) {
-    for (let key in envelopeMetadata) {
-      (this.envelopeMetadata as any)[key] = (this.envelopeMetadata as any)[key]
+  setEnvelopeMetadata(envelopeMetadata: IEnvelopeMetaData) {
+    let key: keyof typeof envelopeMetadata
+    for (key in envelopeMetadata) {
+      this.envelopeMetadata[key] = envelopeMetadata[key]
     }
   }
 
   // returns new CloudContent containing enveloped data
-  createEnvelopedCloudContent(content: CloudContent) {
-    return new CloudContent((this.envelopContent(content)), (this._identifyContentFormat(content)))
+  createEnvelopedCloudContent(content: CloudContent | string) {
+    return new CloudContent(this.envelopContent(content), this._identifyContentFormat(content))
   }
 
   // envelops content with metadata, returns an object.
@@ -242,22 +233,23 @@ class CloudContentFactory {
   // any existing metadata will be retained.
   // Note: calling `envelopContent` may be safely called on something that
   // has already had `envelopContent` called on it, and will be a no-op.
-  envelopContent(content: CloudContent) {
+  envelopContent(content: CloudContent | string) {
     const envelopedCloudContent:any = this._wrapIfNeeded(content)
-    for (let key in this.envelopeMetadata) {
+    let key: keyof IEnvelopeMetaData
+    for (key in this.envelopeMetadata) {
       if (envelopedCloudContent[key] == null) {
-        envelopedCloudContent[key] = (this.envelopeMetadata as any)[key]
+        envelopedCloudContent[key] = this.envelopeMetadata[key]
       }
     }
     return envelopedCloudContent
   }
 
   _identifyContentFormat(content: CloudContent | string) {
-    if ((content == null)) { return }
+    if (content == null) return
     const result = { isCfmWrapped: false, isPreCfmFormat: false }
     if (isString(content)) {
-      try { content = JSON.parse(content as string) } catch (error) {
-        // noop, just cecking if it's valid json
+      try { content = JSON.parse(content) } catch (error) {
+        // noop, just checking if it's valid json
       }
     }
     // Currently, we assume 'metadata' is top-level property in
@@ -282,7 +274,7 @@ class CloudContentFactory {
   // envelops content in {content: content} if needed, returns an object
   _wrapIfNeeded(content: string | CloudContent) {
     if (isString(content)) {
-      try { content = JSON.parse(content as string) } catch (error) {
+      try { content = JSON.parse(content) } catch (error) {
         // noop, just cecking if it's json or plain text
       }
     }
@@ -304,9 +296,10 @@ class CloudContent {
 
   // TODO: These should probably be private, but there is some refactoring
   // that has to happen to make this possible
+  cfmVersion?: string
+  metadata?: any
   content : any
   contentFormat: ICloudContentFormat
-  [key: string]: any
   constructor(content:any, contentFormat:any) {
     this.content = content == null
       ? {}
@@ -410,10 +403,10 @@ type IProviderCapabilities = {
 }
 
 export interface IProviderInterfaceOpts {
-  name: string,
-  displayName: string,
-  urlDisplayName: string,
-  capabilities: IProviderCapabilities
+  name: string;           // name by which it is referenced internally
+  displayName: string;    // name which is displayed to users
+  urlDisplayName: string; // name that is used for url parameter matching
+  capabilities: IProviderCapabilities;
 }
 
 class ProviderInterface implements IProviderInterfaceOpts {
@@ -443,11 +436,7 @@ class ProviderInterface implements IProviderInterfaceOpts {
   }
 
   authorized(callback: (resp: boolean) => boolean) {
-    if (callback) {
-      return callback(true)
-    } else {
-      return true
-    }
+    return callback ? callback(true) : true
   }
 
   renderAuthorizationDialog() {
@@ -468,8 +457,7 @@ class ProviderInterface implements IProviderInterfaceOpts {
       for (let extension of CloudMetadata.ReadableExtensions) {
         if (name.substr(-extension.length) === extension) { return true }
         if (extension === "") {
-          // TODO:  Eslint doesn't like this bitwise not operator.
-          if (!~name.indexOf(".")) { return true }
+          if (name.indexOf(".") === -1) { return true }
         }
       }
       return false
@@ -488,11 +476,11 @@ class ProviderInterface implements IProviderInterfaceOpts {
   }
 
 
-  save(content: any, metadata: ICloudMetaDataSpec, callback: callbackSigSave) {
+  save(content: any, metadata: ICloudMetaDataSpec, callback: ProviderSaveCallback) {
     return this._notImplemented('save')
   }
 
-  saveAsExport(content: any, metadata: ICloudMetaDataSpec, callback: callbackSigSave) {
+  saveAsExport(content: any, metadata: ICloudMetaDataSpec, callback: ProviderSaveCallback) {
     // default implementation invokes save
     if (this.can(ECapabilities.save, metadata)) {
       return this.save(content, metadata, callback)
@@ -501,23 +489,23 @@ class ProviderInterface implements IProviderInterfaceOpts {
     }
   }
 
-  load(metadata: ICloudMetaDataSpec, callback: callbackSigLoad) {
+  load(metadata: ICloudMetaDataSpec, callback: ProviderLoadCallback) {
     return this._notImplemented('load')
   }
 
-  list(metadata: ICloudMetaDataSpec, callback: callbackSigList) {
+  list(metadata: ICloudMetaDataSpec, callback: ProviderListCallback) {
     return this._notImplemented('list')
   }
 
-  remove(metadata: ICloudMetaDataSpec, callback: callbackSigRemove) {
+  remove(metadata: ICloudMetaDataSpec, callback: ProviderRemoveCallback) {
     return this._notImplemented('remove')
   }
 
-  rename(metadata: ICloudMetaDataSpec, newName: string, callback: callbackSigRename) {
+  rename(metadata: ICloudMetaDataSpec, newName: string, callback: ProviderRenameCallback) {
     return this._notImplemented('rename')
   }
 
-  close(metadata: ICloudMetaDataSpec, callback: callbackSigClose) {
+  close(metadata: ICloudMetaDataSpec, callback: ProviderCloseCallback) {
     return this._notImplemented('close')
   }
 
@@ -527,7 +515,7 @@ class ProviderInterface implements IProviderInterfaceOpts {
 
   canOpenSaved() { return false }
 
-  openSaved(openSavedParams: any, callback: callbackSigOpenSave) {
+  openSaved(openSavedParams: any, callback: ProviderOpenCallback) {
     return this._notImplemented('openSaved')
   }
 
@@ -541,7 +529,7 @@ class ProviderInterface implements IProviderInterfaceOpts {
   _notImplemented(methodName: string) {
     // this uses a browser alert instead of client.alert because this is just here for debugging
     // eslint-disable-next-line no-alert
-    return alert(`${methodName} not implemented for ${this.name} provider`)
+    alert(`${methodName} not implemented for ${this.name} provider`)
   }
 }
 
