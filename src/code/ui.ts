@@ -71,35 +71,20 @@ class CloudFileManagerUIMenu {
     }
 
     const names = {
-      // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
       newFileDialog: tr("~MENU.NEW"),
-      // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
       openFileDialog: tr("~MENU.OPEN"),
-      // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
       closeFileDialog: tr("~MENU.CLOSE"),
-      // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
       revertToLastOpenedDialog: tr("~MENU.REVERT_TO_LAST_OPENED"),
-      // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
       revertToSharedDialog: tr("~MENU.REVERT_TO_SHARED_VIEW"),
-      // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
       save: tr("~MENU.SAVE"),
-      // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
       saveFileAsDialog: tr("~MENU.SAVE_AS"),
-      // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
       saveSecondaryFileAsDialog: tr("~MENU.EXPORT_AS"),
-      // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
       createCopy: tr("~MENU.CREATE_COPY"),
-      // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
       shareGetLink: tr("~MENU.SHARE_GET_LINK"),
-      // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
       shareUpdate: tr("~MENU.SHARE_UPDATE"),
-      // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
       downloadDialog: tr("~MENU.DOWNLOAD"),
-      // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
       renameDialog: tr("~MENU.RENAME"),
-      // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
       revertSubMenu: tr("~MENU.REVERT_TO"),
-      // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
       shareSubMenu: tr("~MENU.SHARE")
     }
 
@@ -213,7 +198,6 @@ class CloudFileManagerUI {
   }
 
   saveSecondaryFileAsDialog(data: any, callback: any) {
-    // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
     return this._showProviderDialog('saveSecondaryFileAs', (tr('~DIALOG.EXPORT_AS')), callback, data)
   }
 

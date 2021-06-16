@@ -78,23 +78,18 @@ class AppView extends React.Component {
       const fileStatus = (() => {
         let message
         if (event.state.saving) {
-          // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
           return {message: tr('~FILE_STATUS.SAVING'), type: 'info'}
         } else if (event.state.saved) {
           const providerName = event.state.metadata.provider != null
             ? event.state.metadata.provider.displayName
             : undefined
           message = providerName
-            // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 2.
             ? tr('~FILE_STATUS.SAVED_TO_PROVIDER', { providerName })
-            // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
             : tr('~FILE_STATUS.SAVED')
           return {message, type: 'info'}
         } else if (event.state.failures) {
-          // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
           return {message: tr('~FILE_STATUS.FAILURE'), type: 'alert'}
         } else if (event.state.dirty) {
-          // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
           return {message: tr('~FILE_STATUS.UNSAVED'), type: 'alert'}
         } else {
           return null

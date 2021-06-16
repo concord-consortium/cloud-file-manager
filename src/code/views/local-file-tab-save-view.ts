@@ -25,7 +25,6 @@ export default createReactClass({
     // to leave the content alone.
 
     const hasPropsContent = ((this.props.dialog.data != null ? this.props.dialog.data.content : undefined) != null)
-    // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
     const filename = (this.props.client.state.metadata != null ? this.props.client.state.metadata.name : undefined) || (tr("~MENUBAR.UNTITLED_DOCUMENT"))
     const extension = hasPropsContent && this.props.dialog.data.extension
                   ? this.props.dialog.data.extension : 'json'
@@ -151,30 +150,25 @@ export default createReactClass({
       className: (confirmDisabled ? 'disabled' : ''),
       download: this.state.downloadFilename,
       onContextMenu: this.contextMenu
-      // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
     }, tr('~FILE_DIALOG.DOWNLOAD')))
 
     // for Safari (or other non-modern browsers)
     const downloadButton = (button({
       ref: (elt: any) => { return this.downloadRef = elt },
       className: (confirmDisabled ? 'disabled' : '')
-      // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
     }, tr('~FILE_DIALOG.DOWNLOAD')))
 
     return (div({className: 'dialogTab localFileSave'},
-      // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
       (input({type: 'text', ref: ((elt: any) => { return this.filenameRef = elt }), value: this.state.filename, placeholder: (tr("~FILE_DIALOG.FILENAME")), onChange: this.filenameChanged, onKeyDown: this.watchForEnter})),
       (div({className: 'saveArea'},
         this.state.shared && !this.state.hasPropsContent ?
           (div({className: 'shareCheckbox'},
             (input({type: 'checkbox', ref: ((elt: any) => { return this.includeShareInfoRef = elt }), value: this.state.includeShareInfo, onChange: this.includeShareInfoChanged})),
-            // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
             (tr('~DOWNLOAD_DIALOG.INCLUDE_SHARE_INFO'))
           )) : undefined
       )),
       (div({className: 'buttons'},
         this.state.supportsDownloadAttribute ? downloadAnchor : downloadButton,
-        // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
         (button({onClick: this.cancel}, (tr("~FILE_DIALOG.CANCEL"))))
       ))
     ))

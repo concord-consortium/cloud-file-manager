@@ -98,11 +98,9 @@ const FileList = createReactClassFactory({
     }
 
     return (div({className: 'filelist'},
-      this.state.loading ?
-        // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
-        tr("~FILE_DIALOG.LOADING")
-      :
-        list
+      this.state.loading
+        ? tr("~FILE_DIALOG.LOADING")
+        : list
     ))
   }
 })
@@ -292,11 +290,9 @@ const FileDialogTab = createReactClass({
 
   remove() {
     if (this.state.metadata && (this.state.metadata.type !== (CloudMetadata as any).Folder)) {
-      // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 2.
       return this.props.client.confirm(tr("~FILE_DIALOG.REMOVE_CONFIRM", {filename: this.state.metadata.name}), () => {
         return this.props.provider.remove(this.state.metadata, (err: any) => {
           if (!err) {
-            // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 2.
             this.props.client.alert(tr("~FILE_DIALOG.REMOVED_MESSAGE", {filename: this.state.metadata.name}), tr("~FILE_DIALOG.REMOVED_TITLE"))
             const list = this.state.list.slice(0)
             const index = list.indexOf(this.state.metadata)
@@ -340,16 +336,12 @@ const FileDialogTab = createReactClass({
     const removeDisabled = (this.state.metadata === null) || (this.state.metadata.type === (CloudMetadata as any).Folder)
 
     return (div({className: 'dialogTab'},
-      // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
       (input({type: 'text', value: this.state.filename, placeholder: (tr("~FILE_DIALOG.FILENAME")), onChange: this.filenameChanged, onKeyDown: this.watchForEnter})),
       (FileList({provider: this.props.provider, folder: this.state.folder, selectedFile: this.state.metadata, fileSelected: this.fileSelected, fileConfirmed: this.confirm, list: this.state.list, listLoaded: this.listLoaded, client: this.props.client})),
       (div({className: 'buttons'},
-        // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
         (button({onClick: this.confirm, disabled: confirmDisabled, className: confirmDisabled ? 'disabled' : ''}, this.isOpen() ? (tr("~FILE_DIALOG.OPEN")) : (tr("~FILE_DIALOG.SAVE")))),
         this.props.provider.can('remove') ?
-          // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
           (button({onClick: this.remove, disabled: removeDisabled, className: removeDisabled ? 'disabled' : ''}, (tr("~FILE_DIALOG.REMOVE")))) : undefined,
-        // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
         (button({onClick: this.cancel}, (tr("~FILE_DIALOG.CANCEL"))))
       ))
     ))

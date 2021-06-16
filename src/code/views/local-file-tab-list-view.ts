@@ -30,7 +30,6 @@ export default createReactClass({
   changed(e: any) {
     const { files } = e.target
     if (files.length > 1) {
-      // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
       return this.props.client.alert(tr("~LOCAL_FILE_DIALOG.MULTIPLE_FILES_SELECTED"))
     } else if (files.length === 1) {
       return this.openFile(files[0], 'select')
@@ -72,7 +71,6 @@ export default createReactClass({
     e.stopPropagation()
     const droppedFiles = e.dataTransfer ? e.dataTransfer.files : e.target.files
     if (droppedFiles.length > 1) {
-      // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
       this.props.client.alert(tr("~LOCAL_FILE_DIALOG.MULTIPLE_FILES_DROPPED"))
     } else if (droppedFiles.length === 1) {
       this.openFile(droppedFiles[0], 'drop')
@@ -84,12 +82,10 @@ export default createReactClass({
     return (div({className: 'dialogTab localFileLoad'},
       // 'drop' event handler installed as DOM event handler in componentDidMount()
       (div({ref: ((elt: any) => { return this.dropZoneRef = elt }), className: dropClass, onDragEnter: this.dragEnter, onDragLeave: this.dragLeave},
-        // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
         (tr("~LOCAL_FILE_DIALOG.DROP_FILE_HERE")),
         (input({type: 'file', onChange: this.changed}))
       )),
       (div({className: 'buttons'},
-        // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
         (button({onClick: this.cancel}, (tr("~FILE_DIALOG.CANCEL"))))
       ))
     ))

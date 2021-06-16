@@ -21,7 +21,13 @@ import tr from './lang/tr.json'
 import zhHans from './lang/zh-Hans.json'
 import zhTW from './lang/zh-TW.json'
 
-const languageFiles = [
+type LanguageFileContent = Record<string, string>
+interface LanguageFileEntry {
+  key: string;
+  contents: LanguageFileContent;
+}
+
+const languageFiles: LanguageFileEntry[] = [
   {key: 'de',    contents: de},     // German
   {key: 'el',    contents: el},     // Greek
   {key: 'en-US', contents: enUS},   // US English
@@ -37,7 +43,7 @@ const languageFiles = [
 ]
 
 // returns baseLANG from baseLANG-REGION if REGION exists
-const getBaseLanguage = function(langKey: any) {
+const getBaseLanguage = function(langKey: string) {
   return langKey.split("-")[0]
 }
 
@@ -58,15 +64,12 @@ const getFirstBrowserLanguage = function() {
   return undefined
 }
 
-const translations =  {}
+const translations: Record<string, LanguageFileContent> =  {}
 languageFiles.forEach(function(lang) {
-  // @ts-expect-error ts-migrate(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
   translations[lang.key.toLowerCase()] = lang.contents
   // accept full key with region code or just the language code
   const baseLang = getBaseLanguage(lang.key)
-  // @ts-expect-error ts-migrate(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
   if (baseLang && !translations[baseLang]) {
-    // @ts-expect-error ts-migrate(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     translations[baseLang] = lang.contents
   }
 })
@@ -74,21 +77,19 @@ languageFiles.forEach(function(lang) {
 const lang = (urlParams as any).lang || getPageLanguage() || getFirstBrowserLanguage()
 const baseLang = getBaseLanguage(lang || '')
 // CODAP/Sproutcore lower cases language in documentElement
-// @ts-expect-error ts-migrate(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
 const defaultLang = lang && translations[lang.toLowerCase()] ? lang : baseLang && translations[baseLang] ? baseLang : "en"
 
 console.log(`CFM: using ${defaultLang} for translation (lang is "${(urlParams as any).lang}" || "${getFirstBrowserLanguage()}")`)
 
 const varRegExp = /%\{\s*([^}\s]*)\s*\}/g
 
-const translate = function(key: any, vars: any, lang: any) {
+const translate = function(key: string, vars?: Record<string ,string>, lang?: string) {
   if (vars == null) { vars = {} }
   if (lang == null) { lang = defaultLang }
   lang = lang.toLowerCase()
-  // @ts-expect-error ts-migrate(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
   let translation = translations[lang] != null ? translations[lang][key] : undefined
   if ((translation == null)) { translation = key }
-  return translation.replace(varRegExp, function(match: any, key: any) {
+  return translation.replace(varRegExp, function(match: string, key: string) {
     return Object.prototype.hasOwnProperty.call(vars, key)
             ? vars[key]
             : `'** UKNOWN KEY: ${key} **`

@@ -24,12 +24,10 @@ export default createReactClass({
   },
 
   render() {
-    // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
     return (ModalDialog({title: this.props.title || (tr('~ALERT_DIALOG.TITLE')), close: this.close, zIndex: 500},
       (div({className: 'alert-dialog'},
         (div({className: 'alert-dialog-message', dangerouslySetInnerHTML: {__html: this.props.message}})),
         (div({className: 'buttons'},
-          // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
           (button({onClick: this.close}, tr('~ALERT_DIALOG.CLOSE')))
         ))
       ))

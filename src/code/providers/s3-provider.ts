@@ -69,7 +69,6 @@ class S3Provider extends ProviderInterface {
     fetch(documentUrl)
       .then(response => {
         if (response.status === 404) {
-          // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
           callback(tr("~DOCSTORE.LOAD_SHARED_404_ERROR"), {})
         } else {
           return response.json()

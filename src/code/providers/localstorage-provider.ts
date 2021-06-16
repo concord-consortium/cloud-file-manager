@@ -21,7 +21,6 @@ class LocalStorageProvider extends ProviderInterface {
     const opts = options || {}
     super({
       name: LocalStorageProvider.Name,
-      // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
       displayName: opts.displayName || (tr('~PROVIDER.LOCAL_STORAGE')),
       urlDisplayName: opts.urlDisplayName,
       capabilities: {

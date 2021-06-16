@@ -53,14 +53,11 @@ export default createReactClass({
   },
 
   render() {
-    // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
     return ModalDialog({title: (tr('~DIALOG.RENAME')), close: this.props.close},
       (div({className: 'rename-dialog'},
         (input({ref: ((elt: any) => { return this.filenameRef = elt }), placeholder: 'Filename', value: this.state.filename, onChange: this.updateFilename})),
         (div({className: 'buttons'},
-          // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
           (button({className: (this.state.trimmedFilename.length === 0 ? 'disabled' : ''), onClick: this.rename}, tr('~RENAME_DIALOG.RENAME'))),
-          // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
           (button({onClick: this.props.close}, tr('~RENAME_DIALOG.CANCEL')))
         ))
       ))

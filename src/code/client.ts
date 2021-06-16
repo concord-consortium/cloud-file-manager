@@ -357,7 +357,6 @@ class CloudFileManagerClient {
         this.save()
         return this.newFile()
       } else {
-        // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
         return this.confirm(tr('~CONFIRM.NEW_FILE'), () => this.newFile())
       }
     } else {
@@ -397,7 +396,6 @@ class CloudFileManagerClient {
     if (!this.state.dirty) {
       return showDialog()
     } else {
-      // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
       return this.confirm(tr('~CONFIRM.OPEN_FILE'), showDialog)
     }
   }
@@ -416,7 +414,6 @@ class CloudFileManagerClient {
     if (!this.state.dirty) {
       return this.closeFile(callback)
     } else {
-      // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
       return this.confirm(tr('~CONFIRM.CLOSE_FILE'), () => this.closeFile(callback))
     }
   }
@@ -494,7 +491,6 @@ class CloudFileManagerClient {
 
   confirmAuthorizeAndOpen(provider: any, providerParams: any) {
     // trigger authorize() from confirmation dialog to avoid popup blockers
-    // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
     return this.confirm(tr("~CONFIRM.AUTHORIZE_OPEN"), () => {
       return provider.authorize(() => {
         this._event('willOpenFile', {op: "confirmAuthorizeAndOpen"})
@@ -579,7 +575,6 @@ class CloudFileManagerClient {
 
   confirmAuthorizeAndSave(stringContent: any, callback: any) {
     // trigger authorize() from confirmation dialog to avoid popup blockers
-    // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
     return this.confirm(tr("~CONFIRM.AUTHORIZE_SAVE"), () => {
       return this.state.metadata.provider.authorize(() => {
         return this.saveFile(stringContent, this.state.metadata, callback)
@@ -846,7 +841,6 @@ class CloudFileManagerClient {
       // update metadata object). Apparently, there's an assumption that metadata already exists. It can initialized
       // in a few random places, but a new document that has never been renamed won't have this object available.
       this.state.metadata = new CloudMetadata({
-        // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
         name: tr("~MENUBAR.UNTITLED_DOCUMENT"),
         type: (CloudMetadata as any).File
       })
@@ -893,7 +887,6 @@ class CloudFileManagerClient {
   // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'callback' implicitly has an 'any' type.
   revertToSharedDialog(callback = null) {
     if ((this.state.currentContent != null ? this.state.currentContent.get("sharedDocumentId") : undefined) && (this.state.shareProvider != null)) {
-      // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
       return this.confirm(tr("~CONFIRM.REVERT_TO_SHARED_VIEW"), () => this.revertToShared(callback))
     }
   }
@@ -998,7 +991,6 @@ class CloudFileManagerClient {
   // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'callback' implicitly has an 'any' type.
   revertToLastOpenedDialog(callback = null) {
     if ((this.state.openedContent != null) && this.state.metadata) {
-      // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
       return this.confirm(tr('~CONFIRM.REVERT_TO_LAST_OPENED'), () => this.revertToLastOpened(callback))
     } else {
       return (typeof callback === 'function' ? callback('No initial opened version was found for the currently active file') : undefined)
@@ -1090,7 +1082,6 @@ class CloudFileManagerClient {
           if (err) {
             // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
             this.alert(err)
-            // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
             return this.confirm(tr('~CONFIRM.CHANGE_LANGUAGE'), () => callback(newLangCode))
           } else {
             return callback(newLangCode)
@@ -1157,7 +1148,6 @@ class CloudFileManagerClient {
       callback = titleOrCallback
       titleOrCallback = null
     }
-    // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
     return this._ui.alertDialog(message, (titleOrCallback || tr("~CLIENT_ERROR.TITLE")), callback)
   }
 
@@ -1308,7 +1298,6 @@ class CloudFileManagerClient {
       if (windowTitleSuffix) {
           const displayName = (name || "").length > 0
             ? name
-            // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
             : tr("~MENUBAR.UNTITLED_DOCUMENT")
           document.title = `${displayName}${windowTitleSeparator}${windowTitleSuffix}`
       }

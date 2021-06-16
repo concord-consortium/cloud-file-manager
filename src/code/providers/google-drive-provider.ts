@@ -40,11 +40,8 @@ const GoogleDriveAuthorizationDialog = createReactClassFactory({
   render() {
     // @ts-expect-error ts-migrate(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     const contents = {
-      // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
       "not-loaded": tr("~GOOGLE_DRIVE.CONNECTING_MESSAGE"),
-      // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
       "loaded": button({onClick: this.authenticate}, (tr("~GOOGLE_DRIVE.LOGIN_BUTTON_LABEL"))),
-      // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
       "errored": tr("~GOOGLE_DRIVE.ERROR_CONNECTING_MESSAGE")
     }[this.state.gapiLoadState] || "An unknown error occurred!"
     return (div({className: 'google-drive-auth'},
@@ -90,7 +87,6 @@ class GoogleDriveProvider extends ProviderInterface {
     const opts = options || {}
     super({
       name: (GoogleDriveProvider as any).Name,
-      // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
       displayName: opts.displayName || (tr('~PROVIDER.GOOGLE_DRIVE')),
       urlDisplayName: opts.urlDisplayName,
       capabilities: {
@@ -113,11 +109,9 @@ class GoogleDriveProvider extends ProviderInterface {
     this.apiKey = this.options.apiKey
     this.clientId = this.options.clientId
     if (!this.apiKey) {
-      // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
       throw new Error((tr("~GOOGLE_DRIVE.ERROR_MISSING_APIKEY")))
     }
     if (!this.clientId) {
-      // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
       throw new Error((tr("~GOOGLE_DRIVE.ERROR_MISSING_CLIENTID")))
     }
     this.scopes = (this.options.scopes || [

@@ -26,7 +26,6 @@ export default createReactClass({
   import() {
     const url = $.trim((ReactDOM.findDOMNode(this.urlRef) as any).value)
     if (url.length === 0) {
-      // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
       return this.props.client.alert(tr("~IMPORT_URL.PLEASE_ENTER_URL"))
     } else {
       return this.importUrl(url, 'select')
@@ -52,7 +51,6 @@ export default createReactClass({
     if (e.dataTransfer) {
       const droppedUrls = (e.dataTransfer.getData('url') || e.dataTransfer.getData('text/uri-list') || '').split('\n')
       if (droppedUrls.length > 1) {
-        // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
         return this.props.client.alert(tr("~IMPORT_URL.MULTIPLE_URLS_DROPPED"))
       } else if (droppedUrls.length === 1) {
         return this.importUrl(droppedUrls[0], 'drop')
@@ -64,14 +62,11 @@ export default createReactClass({
     const dropClass = `urlDropArea${this.state.hover ? ' dropHover' : ''}`
     return (div({className: 'dialogTab urlImport'},
       (div({className: dropClass, onDragEnter: this.dragEnter, onDragLeave: this.dragLeave, onDrop: this.drop},
-        // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
         (tr("~URL_TAB.DROP_URL_HERE"))
       )),
       (input({ref: ((elt: any) => { return this.urlRef = elt }), placeholder: 'URL'})),
       (div({className: 'buttons'},
-        // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
         (button({onClick: this["import"]}, (tr("~URL_TAB.IMPORT")))),
-        // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
         (button({onClick: this.cancel}, (tr("~FILE_DIALOG.CANCEL"))))
       ))
     ))

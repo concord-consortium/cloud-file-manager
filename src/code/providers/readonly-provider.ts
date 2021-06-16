@@ -36,7 +36,6 @@ class ReadOnlyProvider extends ProviderInterface {
     const opts = options || {}
     super({
       name: (ReadOnlyProvider as any).Name,
-      // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
       displayName: opts.displayName || (tr('~PROVIDER.READ_ONLY')),
       urlDisplayName: opts.urlDisplayName,
       capabilities: {
@@ -286,7 +285,6 @@ class ReadOnlyProvider extends ProviderInterface {
   // so that the open can proceed without the missing folder contents.
   _createErrorMetadata(iParent: any) {
     return new CloudMetadata({
-      // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
       name: tr("~FILE_DIALOG.LOAD_FOLDER_ERROR"),
       type: (CloudMetadata as any).Label,
       content: "",

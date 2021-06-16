@@ -91,7 +91,6 @@ class DocumentStoreProvider extends ProviderInterface {
 
     super({
       name: (DocumentStoreProvider as any).Name,
-      // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
       displayName: opts.displayName || (tr('~PROVIDER.DOCUMENT_STORE')),
       urlDisplayName: opts.urlDisplayName,
       capabilities: {
@@ -269,13 +268,11 @@ class DocumentStoreProvider extends ProviderInterface {
 <div style="text-align: left">
   <p style="margin: 10px 0;">
     <strong>
-      ${// @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
-        tr('~CONCORD_CLOUD_DEPRECATION.SHUT_DOWN_MESSAGE')}
+      tr('~CONCORD_CLOUD_DEPRECATION.SHUT_DOWN_MESSAGE')}
     </strong>
   </p>
   <p style="margin: 10px 0;">
-    ${// @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
-      tr('~CONCORD_CLOUD_DEPRECATION.PLEASE_SAVE_ELSEWHERE')}
+    tr('~CONCORD_CLOUD_DEPRECATION.PLEASE_SAVE_ELSEWHERE')}
   </p>
 </div>\
 `
@@ -283,7 +280,6 @@ class DocumentStoreProvider extends ProviderInterface {
 
   onProviderTabSelected(capability: any) {
     if ((capability === 'save') && this.deprecationMessage()) {
-      // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
       return this.client.alert(this.deprecationMessage(), (tr('~CONCORD_CLOUD_DEPRECATION.ALERT_SAVE_TITLE')))
     }
   }
@@ -372,19 +368,15 @@ class DocumentStoreProvider extends ProviderInterface {
       statusCode: {
         403: () => {
           this.user = null
-          // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 2.
           return callback(tr("~DOCSTORE.LOAD_403_ERROR", {filename: metadata.name || 'the file'}), 403)
         }
       },
 
       error(jqXHR) {
         if (jqXHR.status === 403) { return } // let statusCode handler deal with it
-        const message = metadata.sharedContentId ?
-          // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
-          tr("~DOCSTORE.LOAD_SHARED_404_ERROR")
-        :
-          // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 2.
-          tr("~DOCSTORE.LOAD_404_ERROR", {filename: metadata.name || (metadata.providerData != null ? metadata.providerData.id : undefined) || 'the file'})
+        const message = metadata.sharedContentId
+          ? tr("~DOCSTORE.LOAD_SHARED_404_ERROR")
+          : tr("~DOCSTORE.LOAD_404_ERROR", {filename: metadata.name || metadata.providerData?.id || 'the file'})
         return callback(message)
       }
     })
@@ -459,7 +451,6 @@ class DocumentStoreProvider extends ProviderInterface {
       statusCode: {
         403: () => {
           this.user = null
-          // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 2.
           return callback(tr("~DOCSTORE.SAVE_403_ERROR", {filename: metadata.name}), 403)
         }
       },
@@ -468,14 +459,11 @@ class DocumentStoreProvider extends ProviderInterface {
           if (jqXHR.status === 403) { return } // let statusCode handler deal with it
           const responseJson = JSON.parse(jqXHR.responseText)
           if (responseJson.message === 'error.duplicate') {
-            // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 2.
             return callback(tr("~DOCSTORE.SAVE_DUPLICATE_ERROR", {filename: metadata.name}))
           } else {
-            // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 2.
             return callback(tr("~DOCSTORE.SAVE_ERROR_WITH_MESSAGE", {filename: metadata.name, message: responseJson.message}))
           }
         } catch (error) {
-          // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 2.
           return callback(tr("~DOCSTORE.SAVE_ERROR", {filename: metadata.name}))
         }
       }})
@@ -497,13 +485,11 @@ class DocumentStoreProvider extends ProviderInterface {
       statusCode: {
         403: () => {
           this.user = null
-          // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 2.
           return callback(tr("~DOCSTORE.REMOVE_403_ERROR", {filename: metadata.name}), 403)
         }
       },
       error(jqXHR) {
         if (jqXHR.status === 403) { return } // let statusCode handler deal with it
-        // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 2.
         return callback(tr("~DOCSTORE.REMOVE_ERROR", {filename: metadata.name}))
       }})
   }
@@ -527,13 +513,11 @@ class DocumentStoreProvider extends ProviderInterface {
       statusCode: {
         403: () => {
           this.user = null
-          // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 2.
           return callback(tr("~DOCSTORE.RENAME_403_ERROR", {filename: metadata.name}), 403)
         }
       },
       error(jqXHR) {
         if (jqXHR.status === 403) { return } // let statusCode handler deal with it
-        // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 2.
         return callback(tr("~DOCSTORE.RENAME_ERROR", {filename: metadata.name}))
       }})
   }
@@ -567,12 +551,9 @@ class DocumentStoreProvider extends ProviderInterface {
     const fromLara = !!getQueryParam("launchFromLara") || !!getHashParam("lara")
     if (!deprecationPhase || fromLara) { return }
     return this.client.confirmDialog({
-      // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
       title: tr('~CONCORD_CLOUD_DEPRECATION.CONFIRM_SAVE_TITLE'),
       message: this.deprecationMessage(),
-      // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
       yesTitle: tr('~CONCORD_CLOUD_DEPRECATION.CONFIRM_SAVE_ELSEWHERE'),
-      // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
       noTitle: tr('~CONCORD_CLOUD_DEPRECATION.CONFIRM_DO_IT_LATER'),
       hideNoButton: deprecationPhase >= 3,
       callback: () => {

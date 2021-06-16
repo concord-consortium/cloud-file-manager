@@ -47,7 +47,6 @@ export default createReactClass({
       // "static" functions defined in the "statics" property don't get typed appropriately
       (TabbedPanel as any).Tab({
         key: 0,
-        // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
         label: (tr("~IMPORT.LOCAL_FILE")),
         component: LocalFileTab({
           client: this.props.client,
@@ -61,7 +60,6 @@ export default createReactClass({
       // "static" functions defined in the "statics" property don't get typed appropriately
       (TabbedPanel as any).Tab({
         key: 1,
-        // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
         label: (tr("~IMPORT.URL")),
         component: UrlTab({
           client: this.props.client,
@@ -72,7 +70,6 @@ export default createReactClass({
         })
       })
     ]
-    // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
     return (ModalTabbedDialog({title: (tr("~DIALOG.IMPORT_DATA")), close: this.props.close, tabs, selectedTabIndex: 0}))
   }
 })

@@ -44,12 +44,10 @@ export default createReactClass({
   },
 
   getFilename(props: any) {
-    // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
     if ((props.filename != null ? props.filename.length : undefined) > 0) { return props.filename } else { return (tr("~MENUBAR.UNTITLED_DOCUMENT")) }
   },
 
   getEditableFilename(props: any) {
-    // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
     if ((props.filename != null ? props.filename.length : undefined) > 0) { return props.filename } else { return (tr("~MENUBAR.UNTITLED_DOCUMENT")) }
   },
 

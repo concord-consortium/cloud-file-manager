@@ -74,20 +74,16 @@ export default createReactClass({
   },
 
   render() {
-    // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
     return ModalDialog({title: (tr('~DIALOG.DOWNLOAD')), close: this.props.close},
       (div({className: 'download-dialog'},
         (input({type: 'text', ref: ((elt: any) => { return this.filenameRef = elt }), placeholder: 'Filename', value: this.state.filename, onChange: this.updateFilename, onKeyDown: this.watchForEnter})),
         this.state.shared ?
           (div({className: 'download-share'},
             (input({type: 'checkbox', ref: ((elt: any) => { return this.includeShareInfoRef = elt }), value: this.state.includeShareInfo, onChange: this.updateIncludeShareInfo})),
-            // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
             (tr('~DOWNLOAD_DIALOG.INCLUDE_SHARE_INFO'))
           )) : undefined,
         (div({className: 'buttons'},
-          // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
           (a({href: '#', ref: ((elt: any) => { return this.downloadRef = elt }), className: (this.downloadDisabled() ? 'disabled' : ''), download: this.state.trimmedFilename, onClick: this.download}, tr('~DOWNLOAD_DIALOG.DOWNLOAD'))),
-          // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
           (button({onClick: this.props.close}, tr('~DOWNLOAD_DIALOG.CANCEL')))
         ))
       ))
