@@ -6,14 +6,15 @@
 const defaultDocStoreUrl = "//document-store.concord.org"
 
 class DocumentStoreUrl {
+  docStoreUrl: any;
 
-  constructor(docStoreUrl) {
+  constructor(docStoreUrl: any) {
     this.docStoreUrl = docStoreUrl || defaultDocStoreUrl
     // eliminate trailing slashes
     this.docStoreUrl = this.docStoreUrl.replace(/\/+$/, '')
   }
 
-  addParams(url, params) {
+  addParams(url: any, params: any) {
     if (!params) { return url }
     const kvp = []
     for (let key in params) {
@@ -26,58 +27,58 @@ class DocumentStoreUrl {
   //
   // Version 1 API
   //
-  authorize(params) {
+  authorize(params: any) {
     return this.addParams(`${this.docStoreUrl}/user/authenticate`, params)
   }
 
-  checkLogin(params) {
+  checkLogin(params: any) {
     return this.addParams(`${this.docStoreUrl}/user/info`, params)
   }
 
-  listDocuments(params) {
+  listDocuments(params: any) {
     return this.addParams(`${this.docStoreUrl}/document/all`, params)
   }
 
-  loadDocument(params) {
+  loadDocument(params: any) {
     return this.addParams(`${this.docStoreUrl}/document/open`, params)
   }
 
-  saveDocument(params) {
+  saveDocument(params: any) {
     return this.addParams(`${this.docStoreUrl}/document/save`, params)
   }
 
-  patchDocument(params) {
+  patchDocument(params: any) {
     return this.addParams(`${this.docStoreUrl}/document/patch`, params)
   }
 
-  deleteDocument(params) {
+  deleteDocument(params: any) {
     return this.addParams(`${this.docStoreUrl}/document/delete`, params)
   }
 
-  renameDocument(params) {
+  renameDocument(params: any) {
     return this.addParams(`${this.docStoreUrl}/document/rename`, params)
   }
 
   //
   // Version 2 API
   //
-  v2Document(id, params) {
+  v2Document(id: any, params: any) {
     return this.addParams(`${this.docStoreUrl}/v2/documents/${id}`, params)
   }
 
-  v2CreateDocument(params) {
+  v2CreateDocument(params: any) {
     return { method: 'POST', url: this.v2Document('', params) }
   }
-    
-  v2LoadDocument(id, params) {
+
+  v2LoadDocument(id: any, params: any) {
     return { method: 'GET', url: this.v2Document(id, params) }
   }
-    
-  v2SaveDocument(id, params) {
+
+  v2SaveDocument(id: any, params: any) {
     return { method: 'PUT', url: this.v2Document(id, params) }
   }
-    
-  v2PatchDocument(id, params) {
+
+  v2PatchDocument(id: any, params: any) {
     return { method: 'PATCH', url: this.v2Document(id, params) }
   }
 }

@@ -7,12 +7,14 @@
  * DS207: Consider shorter variations of null checks
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
  */
+// @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'ReactDOMFactories'.
 const {div, input, button, a} = ReactDOMFactories
 import tr  from '../utils/translate'
 import { CloudMetadata }  from '../providers/provider-interface'
 import { cloudContentFactory }  from '../providers/provider-interface'
 import FileSaver  from '../lib/file-saver'
 
+// @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'createReactClass'.
 export default createReactClass({
 
   displayName: 'LocalFileSaveTab',
@@ -25,15 +27,16 @@ export default createReactClass({
     // to leave the content alone.
 
     const hasPropsContent = ((this.props.dialog.data != null ? this.props.dialog.data.content : undefined) != null)
+    // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
     const filename = (this.props.client.state.metadata != null ? this.props.client.state.metadata.name : undefined) || (tr("~MENUBAR.UNTITLED_DOCUMENT"))
-    const extension = hasPropsContent && this.props.dialog.data.extension 
+    const extension = hasPropsContent && this.props.dialog.data.extension
                   ? this.props.dialog.data.extension : 'json'
     return {
       filename,
       supportsDownloadAttribute: document.createElement('a').download !== undefined,
       downloadFilename: this.getDownloadFilename(hasPropsContent, filename, extension),
       extension,
-      mimeType: hasPropsContent && (this.props.dialog.data.mimeType != null) 
+      mimeType: hasPropsContent && (this.props.dialog.data.mimeType != null)
                   ? this.props.dialog.data.mimeType : 'text/plain',
       shared: this.props.client.isShared(),
       hasPropsContent,
@@ -45,9 +48,9 @@ export default createReactClass({
 
   componentDidMount() {
     if (!this.state.hasPropsContent) {
-      this.props.client._event('getContent', { shared: this.props.client._sharedMetadata() }, content => {
+      this.props.client._event('getContent', { shared: this.props.client._sharedMetadata() }, (content: any) => {
         const envelopedContent = cloudContentFactory.createEnvelopedCloudContent(content)
-        __guard__(this.props.client.state != null ? this.props.client.state.currentContent : undefined, x => x.copyMetadataTo(envelopedContent))
+        __guard__(this.props.client.state != null ? this.props.client.state.currentContent : undefined, (x: any) => x.copyMetadataTo(envelopedContent))
         return this.setState({
           gotContent: true,
           content: envelopedContent
@@ -78,14 +81,18 @@ export default createReactClass({
     return this.setState({includeShareInfo: this.includeShareInfoRef.checked})
   },
 
-  getDownloadFilename(hasPropsContent, filename, extension) {
+  getDownloadFilename(hasPropsContent: any, filename: any, extension: any) {
     const newName = filename.replace(/^\s+|\s+$/, '')
-    if (hasPropsContent) { 
-      return CloudMetadata.newExtension(newName, extension) 
-      } else { return CloudMetadata.withExtension(newName, extension) }
+    if (hasPropsContent) {
+      return CloudMetadata.newExtension(newName, extension)
+    }
+    else {
+      // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 2.
+      return CloudMetadata.withExtension(newName, extension)
+    }
   },
 
-  confirm(e, simulateClick) {
+  confirm(e: any, simulateClick: any) {
     if (!this.confirmDisabled()) {
       if (this.state.supportsDownloadAttribute) {
         this.downloadRef.href = this.props.client.getDownloadUrl(this.state.content, this.state.includeShareInfo, this.state.mimeType)
@@ -100,7 +107,7 @@ export default createReactClass({
 
       const metadata = new CloudMetadata({
         name: this.state.downloadFilename.split('.')[0],
-        type: CloudMetadata.File,
+        type: (CloudMetadata as any).File,
         parent: null,
         provider: this.props.provider
       })
@@ -116,7 +123,7 @@ export default createReactClass({
     }
   },
 
-  contextMenu(e) {
+  contextMenu(e: any) {
     this.downloadRef.href = this.props.client.getDownloadUrl(this.state.content, this.state.includeShareInfo, this.state.mimeType)
   },
 
@@ -124,7 +131,7 @@ export default createReactClass({
     this.props.close()
   },
 
-  watchForEnter(e) {
+  watchForEnter(e: any) {
     if ((e.keyCode === 13) && !this.confirmDisabled()) {
       e.preventDefault()
       e.stopPropagation()
@@ -142,34 +149,39 @@ export default createReactClass({
     // for modern browsers
     const downloadAnchor = (a({
       href: '#',
-      ref: elt => { return this.downloadRef = elt },
+      ref: (elt: any) => { return this.downloadRef = elt },
       className: (confirmDisabled ? 'disabled' : ''),
       download: this.state.downloadFilename,
       onContextMenu: this.contextMenu
+      // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
     }, tr('~FILE_DIALOG.DOWNLOAD')))
 
     // for Safari (or other non-modern browsers)
     const downloadButton = (button({
-      ref: elt => { return this.downloadRef = elt },
+      ref: (elt: any) => { return this.downloadRef = elt },
       className: (confirmDisabled ? 'disabled' : '')
+      // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
     }, tr('~FILE_DIALOG.DOWNLOAD')))
 
     return (div({className: 'dialogTab localFileSave'},
-      (input({type: 'text', ref: (elt => { return this.filenameRef = elt }), value: this.state.filename, placeholder: (tr("~FILE_DIALOG.FILENAME")), onChange: this.filenameChanged, onKeyDown: this.watchForEnter})),
+      // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
+      (input({type: 'text', ref: ((elt: any) => { return this.filenameRef = elt }), value: this.state.filename, placeholder: (tr("~FILE_DIALOG.FILENAME")), onChange: this.filenameChanged, onKeyDown: this.watchForEnter})),
       (div({className: 'saveArea'},
         this.state.shared && !this.state.hasPropsContent ?
           (div({className: 'shareCheckbox'},
-            (input({type: 'checkbox', ref: (elt => { return this.includeShareInfoRef = elt }), value: this.state.includeShareInfo, onChange: this.includeShareInfoChanged})),
+            (input({type: 'checkbox', ref: ((elt: any) => { return this.includeShareInfoRef = elt }), value: this.state.includeShareInfo, onChange: this.includeShareInfoChanged})),
+            // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
             (tr('~DOWNLOAD_DIALOG.INCLUDE_SHARE_INFO'))
           )) : undefined
       )),
       (div({className: 'buttons'},
         this.state.supportsDownloadAttribute ? downloadAnchor : downloadButton,
+        // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
         (button({onClick: this.cancel}, (tr("~FILE_DIALOG.CANCEL"))))
       ))
     ))
   }
 })
-function __guard__(value, transform) {
+function __guard__(value: any, transform: any) {
   return (typeof value !== 'undefined' && value !== null) ? transform(value) : undefined
 }

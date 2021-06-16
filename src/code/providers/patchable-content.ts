@@ -10,16 +10,19 @@
 // This utility class simplifies working with document store URLs
 //
 
-import jiff  from 'jiff'
+// @ts-expect-error ts-migrate(7016) FIXME: Could not find a declaration file for module 'jiff... Remove this comment to see the full error message
+import jiff from 'jiff'
 
 class PatchableContent {
+  patchObjectHash: any;
+  savedContent: any;
 
-  constructor(patchObjectHash, savedContent) {
+  constructor(patchObjectHash: any, savedContent: any) {
     this.patchObjectHash = patchObjectHash
     this.savedContent = savedContent
   }
 
-  createPatch(content, canPatch) {
+  createPatch(content: any, canPatch: any) {
     const diff = canPatch && this.savedContent ? this._createDiff(this.savedContent, content) : undefined
     const result = {
       shouldPatch: false,
@@ -32,21 +35,21 @@ class PatchableContent {
     // only patch if the diff is smaller than saving the entire file
     // e.g. when large numbers of cases are deleted the diff can be larger
     if (canPatch && (result.diffJson != null) && (result.diffJson.length < result.contentJson.length)) {
-      result.shouldPatch = true
-      result.sendContent = result.diffJson
+      result.shouldPatch = true;
+      (result as any).sendContent = result.diffJson
       result.mimeType = 'application/json-patch+json'
     } else {
-      result.sendContent = result.contentJson
+      (result as any).sendContent = result.contentJson
     }
 
     return result
   }
 
-  updateContent(content) {
+  updateContent(content: any) {
     return this.savedContent = content
   }
 
-  _createDiff(obj1, obj2) {
+  _createDiff(obj1: any, obj2: any) {
     try {
       const opts = {
         hash: typeof this.patchObjectHash === "function" ? this.patchObjectHash : undefined,
@@ -62,5 +65,5 @@ class PatchableContent {
     }
   }
 }
-    
+
 export default PatchableContent

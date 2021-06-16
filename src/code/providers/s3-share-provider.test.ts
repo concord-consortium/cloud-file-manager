@@ -26,8 +26,8 @@ describe("S3ShareProvider", () => {
   })
 
   const updateResult = createResult
-  const create = ImportMock.mockFunction(helperModule, "createFile", createResult)
-  const upate = ImportMock.mockFunction(helperModule, 'updateFile', updateResult)
+  ImportMock.mockFunction(helperModule, "createFile", createResult)
+  ImportMock.mockFunction(helperModule, 'updateFile', updateResult)
   describe("share", () => {
     describe("When not previously shared", () => {
       it("Should return a new ReadWrite token", done => {
@@ -58,5 +58,3 @@ describe("S3ShareProvider", () => {
 
   })
 })
-
-

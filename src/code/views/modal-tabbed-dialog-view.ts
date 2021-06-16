@@ -8,9 +8,12 @@
 import modalDialogView from './modal-dialog-view'
 import tabbedPanelView from './tabbed-panel-view'
 
+// @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'createReactFactory'.
 const ModalDialog = createReactFactory(modalDialogView)
+// @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'createReactFactory'.
 const TabbedPanel = createReactFactory(tabbedPanelView)
 
+// @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'createReactClass'.
 export default createReactClass({
 
   displayName: 'ModalTabbedDialogView',

@@ -21,15 +21,22 @@ import { CloudMetadata }  from './provider-interface'
 import {reportError} from "../utils/report-error"
 
 class ReadOnlyProvider extends ProviderInterface {
+  Name: any;
+  client: any;
+  options: any;
+  promises: any;
+  tree: any;
+
   static initClass() {
-  
-    this.Name = 'readOnly'
+    (this as any).Name = 'readOnly'
   }
 
-  constructor(options, client) {
+  // @ts-expect-error ts-migrate(2376) FIXME: A 'super' call must be the first statement in the ... Remove this comment to see the full error message
+  constructor(options: any, client: any) {
     const opts = options || {}
     super({
-      name: ReadOnlyProvider.Name,
+      name: (ReadOnlyProvider as any).Name,
+      // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
       displayName: opts.displayName || (tr('~PROVIDER.READ_ONLY')),
       urlDisplayName: opts.urlDisplayName,
       capabilities: {
@@ -49,11 +56,11 @@ class ReadOnlyProvider extends ProviderInterface {
     this.promises = []
   }
 
-  load(metadata, callback) {
-    if (metadata && !isArray(metadata && (metadata.type === CloudMetadata.File))) {
+  load(metadata: any, callback: any) {
+    if (metadata && !isArray(metadata && (metadata.type === (CloudMetadata as any).File))) {
       if (metadata.content != null) {
         callback(null, metadata.content)
-        
+
       } else if (metadata.url != null) {
         $.ajax({
           dataType: 'json',
@@ -63,9 +70,9 @@ class ReadOnlyProvider extends ProviderInterface {
           },
           error() { return callback(`Unable to load '${metadata.name}'`) }
         })
-        
+
       } else if ((metadata != null ? metadata.name : undefined) != null) {
-        return this._loadTree((err, tree) => {
+        return this._loadTree((err: any, tree: any) => {
           if (err) { return callback(err) }
           const file = this._findFile(tree, metadata.name)
           if (file != null) {
@@ -80,34 +87,35 @@ class ReadOnlyProvider extends ProviderInterface {
     }
   }
 
-  list(metadata, callback) {
-    return this._loadTree((err, tree) => {
+  list(metadata: any, callback: any) {
+    return this._loadTree((err: any, tree: any) => {
       if (err) { return callback(err) }
-      const items = (metadata != null ? metadata.type : undefined) === CloudMetadata.Folder ? metadata.providerData.children : this.tree
+      const items = (metadata != null ? metadata.type : undefined) === (CloudMetadata as any).Folder ? metadata.providerData.children : this.tree
       // clone the metadata items so that any changes made to the filename or content in the edit is not cached
+      // @ts-expect-error ts-migrate(2686) FIXME: '_' refers to a UMD global, but the current file i... Remove this comment to see the full error message
       return callback(null, _.map(items, metadataItem => new CloudMetadata(metadataItem)))
     })
   }
 
   canOpenSaved() { return true }
 
-  openSaved(openSavedParams, callback) {
+  openSaved(openSavedParams: any, callback: any) {
     const metadata = new CloudMetadata({
       name: unescape(openSavedParams),
-      type: CloudMetadata.File,
+      type: (CloudMetadata as any).File,
       parent: null,
       provider: this
     })
-    return this.load(metadata, (err, content) => callback(err, content, metadata))
+    return this.load(metadata, (err: any, content: any) => callback(err, content, metadata))
   }
 
-  getOpenSavedParams(metadata) {
+  getOpenSavedParams(metadata: any) {
     return metadata.name
   }
 
-  _loadTree = (callback) => {
+  _loadTree = (callback: any) => {
     // wait for all promises to be resolved before proceeding
-    const complete = iTree => {
+    const complete = (iTree: any) => {
       return Promise.all(this.promises)
         .then((function() {
           if (iTree != null) {
@@ -125,13 +133,15 @@ class ReadOnlyProvider extends ProviderInterface {
     if (this.tree !== null) {
       return complete(this.tree)
     } else if (this.options.json) {
+      // @ts-expect-error ts-migrate(2554) FIXME: Expected 2-3 arguments, but got 1.
       this.tree = this._convertJSONToMetadataTree(this.options.json)
       return complete(this.tree)
     } else if (this.options.jsonCallback) {
-      return this.options.jsonCallback((err, json) => {
+      return this.options.jsonCallback((err: any, json: any) => {
         if (err) {
           return callback(err)
         } else {
+          // @ts-expect-error ts-migrate(2554) FIXME: Expected 2-3 arguments, but got 1.
           this.tree = this._convertJSONToMetadataTree(this.options.json)
           return complete(this.tree)
         }
@@ -145,7 +155,7 @@ class ReadOnlyProvider extends ProviderInterface {
           this.tree = this._convertJSONToMetadataTree(iResponse, baseUrl)
           // alphabetize remotely loaded folder contents if requested
           if (this.options.alphabetize) {
-            this.tree.sort(function(iMeta1, iMeta2) {
+            this.tree.sort(function(iMeta1: any, iMeta2: any) {
               if (iMeta1.name < iMeta2.name) { return -1 }
               if (iMeta1.name > iMeta2.name) { return  1 }
               return  0
@@ -164,7 +174,8 @@ class ReadOnlyProvider extends ProviderInterface {
     }
   }
 
-  _convertJSONToMetadataTree(json, baseUrl, parent = null) {
+  // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'parent' implicitly has an 'any' type.
+  _convertJSONToMetadataTree(json: any, baseUrl: any, parent = null) {
     let metadata, type
     const tree = []
 
@@ -172,17 +183,17 @@ class ReadOnlyProvider extends ProviderInterface {
       // parse array format:
       // [{ name: "...", content: "..."}, { name: "...", type: 'folder', children: [...] }]
       for (let item of Array.from(json)) {
-        type = CloudMetadata.mapTypeToCloudMetadataType(item.type)
-        let url = item.url || item.location
+        type = CloudMetadata.mapTypeToCloudMetadataType((item as any).type)
+        let url = (item as any).url || (item as any).location
         if (baseUrl && !(url.startsWith('http://') || url.startsWith('https://') || url.startsWith('//'))) {
           url = baseUrl + url
         }
         metadata = new CloudMetadata({
-          name: item.name,
+          name: (item as any).name,
           type,
-          description: item.description,
-          mimeType: item.mimeType,
-          content: (item.content != null) ? cloudContentFactory.createEnvelopedCloudContent(item.content) : undefined,
+          description: (item as any).description,
+          mimeType: (item as any).mimeType,
+          content: ((item as any).content != null) ? cloudContentFactory.createEnvelopedCloudContent((item as any).content) : undefined,
           url,
           parent,
           provider: this,
@@ -190,8 +201,8 @@ class ReadOnlyProvider extends ProviderInterface {
             children: null
           }
         })
-        if (type === CloudMetadata.Folder) {
-          const newFolderPromise = (iItem, iMetadata) => {
+        if (type === (CloudMetadata as any).Folder) {
+          const newFolderPromise = (iItem: any, iMetadata: any) => {
             return new Promise((resolve, reject) => {
               if (iItem.children != null) {
                 iMetadata.providerData.children = this._convertJSONToMetadataTree(iItem.children, baseUrl, iMetadata)
@@ -204,7 +215,7 @@ class ReadOnlyProvider extends ProviderInterface {
                     iMetadata.providerData.children = this._convertJSONToMetadataTree(iResponse, baseUrl, iMetadata)
                     // alphabetize remotely loaded folder contents if requested
                     if (this.options.alphabetize || iItem.alphabetize) {
-                      iMetadata.providerData.children.sort(function(iMeta1, iMeta2) {
+                      iMetadata.providerData.children.sort(function(iMeta1: any, iMeta2: any) {
                         if (iMeta1.name < iMeta2.name) { return -1 }
                         if (iMeta1.name > iMeta2.name) { return  1 }
                         return  0
@@ -231,7 +242,7 @@ class ReadOnlyProvider extends ProviderInterface {
       // { filename: "file contents", folderName: {... contents ...} }
       for (let filename of Object.keys(json || {})) {
         const itemContent = json[filename]
-        type = isString(itemContent) ? CloudMetadata.File : CloudMetadata.Folder
+        type = isString(itemContent) ? (CloudMetadata as any).File : (CloudMetadata as any).Folder
         metadata = new CloudMetadata({
           name: filename,
           type,
@@ -242,7 +253,7 @@ class ReadOnlyProvider extends ProviderInterface {
             children: null
           }
         })
-        if (type === CloudMetadata.Folder) {
+        if (type === (CloudMetadata as any).Folder) {
           metadata.providerData.children = this._convertJSONToMetadataTree(itemContent, baseUrl, metadata)
         }
         tree.push(metadata)
@@ -252,14 +263,16 @@ class ReadOnlyProvider extends ProviderInterface {
     return tree
   }
 
-  _findFile(arr, filename) {
+  // @ts-expect-error ts-migrate(7023) FIXME: '_findFile' implicitly has return type 'any' becau... Remove this comment to see the full error message
+  _findFile(arr: any, filename: any) {
     for (let item of Array.from(arr)) {
-      if (item.type === CloudMetadata.File) {
-        if ((item != null ? item.name : undefined) === filename) {
+      if ((item as any).type === (CloudMetadata as any).File) {
+        if ((item != null ? (item as any).name : undefined) === filename) {
           return item
         }
-      } else if (__guard__(item.providerData != null ? item.providerData.children : undefined, x => x.length)) {
-        const foundChild = this._findFile(item.providerData.children, filename)
+      } else if (__guard__((item as any).providerData != null ? (item as any).providerData.children : undefined, (x: any) => x.length)) {
+        // @ts-expect-error ts-migrate(7022) FIXME: 'foundChild' implicitly has type 'any' because it ... Remove this comment to see the full error message
+        const foundChild = this._findFile((item as any).providerData.children, filename)
         if (foundChild != null) { return foundChild }
       }
     }
@@ -272,10 +285,11 @@ class ReadOnlyProvider extends ProviderInterface {
   // Therefore, we put an item in the returned results which indicates
   // the error and which is non-selectable, but resolve the promise
   // so that the open can proceed without the missing folder contents.
-  _createErrorMetadata(iParent) {
+  _createErrorMetadata(iParent: any) {
     return new CloudMetadata({
+      // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
       name: tr("~FILE_DIALOG.LOAD_FOLDER_ERROR"),
-      type: CloudMetadata.Label,
+      type: (CloudMetadata as any).Label,
       content: "",
       parent: iParent,
       provider: this,
@@ -289,6 +303,6 @@ ReadOnlyProvider.initClass()
 
 export default ReadOnlyProvider
 
-function __guard__(value, transform) {
+function __guard__(value: any, transform: any) {
   return (typeof value !== 'undefined' && value !== null) ? transform(value) : undefined
 }

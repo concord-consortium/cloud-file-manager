@@ -7,20 +7,27 @@
  * DS207: Consider shorter variations of null checks
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
  */
+// @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'ReactDOMFactories'.
 const {div, ul, li} = ReactDOMFactories
 
 class TabInfo {
-  constructor(settings) {
+  capability: any;
+  component: any;
+  label: any;
+  onSelected: any;
+
+  constructor(settings: any) {
     if (settings == null) { settings = {} }
     ({label: this.label, component: this.component, capability: this.capability, onSelected: this.onSelected} = settings)
   }
 }
 
+// @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'createReactClassFactory'.
 const Tab = createReactClassFactory({
 
   displayName: 'TabbedPanelTab',
 
-  clicked(e) {
+  clicked(e: any) {
     e.preventDefault()
     return this.props.onSelected(this.props.index)
   },
@@ -31,6 +38,7 @@ const Tab = createReactClassFactory({
   }
 })
 
+// @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'createReactClass'.
 export default createReactClass({
 
   displayName: 'TabbedPanelView',
@@ -44,17 +52,17 @@ export default createReactClass({
   },
 
   statics: {
-    Tab(settings) { return new TabInfo(settings) }
+    Tab(settings: any) { return new TabInfo(settings) }
   },
 
-  selectedTab(index) {
+  selectedTab(index: any) {
     if (typeof this.props.tabs[index].onSelected === 'function') {
       this.props.tabs[index].onSelected(this.props.tabs[index].capability)
     }
     return this.setState({selectedTabIndex: index})
   },
 
-  renderTab(tab, index) {
+  renderTab(tab: any, index: any) {
     return (Tab({
       label: tab.label,
       key: index,
@@ -79,7 +87,7 @@ export default createReactClass({
             display: index === this.state.selectedTabIndex ? 'block' : 'none'
           }
           },
-          tab.component
+          (tab as any).component
         )))
     ))
   },

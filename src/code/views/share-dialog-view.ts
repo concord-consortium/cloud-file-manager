@@ -7,19 +7,24 @@
  * DS207: Consider shorter variations of null checks
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
  */
+// @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'ReactDOMFactories'.
 const {div, input, a, button, strong, textarea, svg, g, path, circle, ul, li} = ReactDOMFactories
 
 const SHOW_LONGEVITY_WARNING = false
 
 import modalDialogView from './modal-dialog-view'
+// @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'createReactFactory'.
 const ModalDialog = createReactFactory(modalDialogView)
 import {ShareLoadingView} from './share-loading-view'
 
 // This function is named "tr" elsewhere in this codeline.
 // Using the fullname, "translate" here, to avoid the potential overloading
 // of the react function, "tr".
-import translate  from '../utils/translate'
-import socialIcons  from 'svg-social-icons/lib/icons.json'
+import translate from '../utils/translate'
+// @ts-expect-error ts-migrate(2732) FIXME: Cannot find module 'svg-social-icons/lib/icons.jso... Remove this comment to see the full error message
+import socialIcons from 'svg-social-icons/lib/icons.json'
+
+// @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'createReactClassFactory'.
 const SocialIcon = createReactClassFactory({
 
   displayName: 'SocialIcon',
@@ -53,6 +58,7 @@ const SocialIcon = createReactClassFactory({
 
 const CFM_PRODUCTION = "https://cloud-file-manager.concord.org"
 
+// @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'createReactClass'.
 export default createReactClass({
 
   displayName: 'ShareDialogView',
@@ -62,6 +68,7 @@ export default createReactClass({
       link: this.getShareLink(),
       embed: this.getEmbed(),
       serverUrl: this.props.settings.serverUrl || "https://codap.concord.org/releases/latest/",
+      // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
       serverUrlLabel: this.props.settings.serverUrlLabel || translate("~SHARE_DIALOG.LARA_CODAP_URL"),
       fullscreenScaling: true,
       graphVisToggles: false,
@@ -140,7 +147,7 @@ export default createReactClass({
   // TODO: Consider using queryparams to make URL construction less janky⬆
 
   // adapted from https://github.com/sudodoki/copy-to-clipboard/blob/master/index.js
-  copy(e) {
+  copy(e: any) {
     let mark, range, selection
     e.preventDefault()
     let copied = false
@@ -156,13 +163,15 @@ export default createReactClass({
       mark.style.all = 'unset'
       // prevents scrolling to the end of the page
       mark.style.position = 'fixed'
+      // @ts-expect-error ts-migrate(2322) FIXME: Type 'number' is not assignable to type 'string'.
       mark.style.top = 0
       mark.style.clip = 'rect(0, 0, 0, 0)'
       // used to preserve spaces and line breaks
       mark.style.whiteSpace = 'pre'
       // do not inherit user-select (it may be `none`)
-      mark.style.webkitUserSelect = 'text'
-      mark.style.MozUserSelect = 'text'
+      mark.style.webkitUserSelect = 'text';
+      (mark.style as any).MozUserSelect = 'text'
+      // @ts-expect-error ts-migrate(2551) FIXME: Property 'msUserSelect' does not exist on type 'CS... Remove this comment to see the full error message
       mark.style.msUserSelect = 'text'
       mark.style.userSelect = 'text'
       document.body.appendChild(mark)
@@ -177,7 +186,7 @@ export default createReactClass({
       return copied = document.execCommand('copy')
     } catch (error) {
       try {
-        window.clipboardData.setData('text', toCopy)
+        (window as any).clipboardData.setData('text', toCopy)
         return copied = true
       } catch (error1) {
         return copied = false
@@ -194,6 +203,7 @@ export default createReactClass({
       if (mark) {
         document.body.removeChild(mark)
       }
+      // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
       this.props.client.alert(translate(copied ? "~SHARE_DIALOG.COPY_SUCCESS" : "~SHARE_DIALOG.COPY_ERROR"), (translate("~SHARE_DIALOG.COPY_TITLE")))
     }
   },
@@ -202,7 +212,7 @@ export default createReactClass({
     return this.props.client.shareUpdate()
   },
 
-  toggleShare(e) {
+  toggleShare(e: any) {
     e.preventDefault()
     this.setState({
       isLoadingShared: true
@@ -228,18 +238,16 @@ export default createReactClass({
     return this.setState({tabSelected: 'lara'})
   },
 
-  changedServerUrl(event) {
+  changedServerUrl(event: any) {
     return this.setState({serverUrl: event.target.value})
   },
 
-  changedFullscreenScaling(event) {
-    return this.setState({
-      fullscreenScaling: event.target.checked})
+  changedFullscreenScaling(event: any) {
+    return this.setState({fullscreenScaling: event.target.checked})
   },
 
-  changedGraphVisToggles(event) {
-    return this.setState({
-      graphVisToggles: event.target.checked})
+  changedGraphVisToggles(event: any) {
+    return this.setState({graphVisToggles: event.target.checked})
   },
 
   render() {
@@ -247,6 +255,7 @@ export default createReactClass({
     const { isLoadingShared, link } = this.state
     const sharing = link !== null
 
+    // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
     return (ModalDialog({title: (translate('~DIALOG.SHARED')), close: this.props.close},
       (div({className: 'share-dialog'},
         (div({className: 'share-top-dialog'},
@@ -255,12 +264,16 @@ export default createReactClass({
           : sharing ?
             (div({},
               (div({className: 'share-status'},
+                // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
                 (translate("~SHARE_DIALOG.SHARE_STATE")), (strong({}, translate("~SHARE_DIALOG.SHARE_STATE_ENABLED"))),
+                // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
                 (a({href: '#', onClick: this.toggleShare}, translate("~SHARE_DIALOG.STOP_SHARING")))
               )),
               (div({className: 'share-button'},
+                // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
                 (button({onClick: this.updateShare}, translate("~SHARE_DIALOG.UPDATE_SHARING"))),
                 (div({className: 'share-button-help-sharing'},
+                  // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
                   (a({href: this.state.link, target: '_blank'}, translate("~SHARE_DIALOG.PREVIEW_SHARING")))
                 ))
               ))
@@ -268,10 +281,13 @@ export default createReactClass({
           :
             (div({},
               (div({className: 'share-status'},
+                // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
                 (translate("~SHARE_DIALOG.SHARE_STATE")), (strong({}, translate("~SHARE_DIALOG.SHARE_STATE_DISABLED")))
               )),
               (div({className: 'share-button'},
+                // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
                 (button({onClick: this.toggleShare}, translate("~SHARE_DIALOG.ENABLE_SHARING"))),
+                // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
                 (div({className: 'share-button-help-not-sharing'}, translate("~SHARE_DIALOG.ENABLE_SHARING_MESSAGE")))
               ))
             ))
@@ -279,7 +295,9 @@ export default createReactClass({
         sharing ?
           (div({},
             (ul({className: 'sharing-tabs'},
+              // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
               (li({className: `sharing-tab${this.state.tabSelected === 'link' ? ' sharing-tab-selected' : ''}`, style: {marginLeft: 10}, onClick: this.selectLinkTab}, translate("~SHARE_DIALOG.LINK_TAB"))),
+              // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
               (li({className: `sharing-tab sharing-tab-embed${this.state.tabSelected === 'embed' ? ' sharing-tab-selected' : ''}`, onClick: this.selectEmbedTab}, translate("~SHARE_DIALOG.EMBED_TAB"))),
               this.props.enableLaraSharing ?
                 (li({className: `sharing-tab sharing-tab-lara${this.state.tabSelected === 'lara' ? ' sharing-tab-selected' : ''}`, onClick: this.selectLaraTab}, "LARA")) : undefined
@@ -288,8 +306,10 @@ export default createReactClass({
               (() => { switch (this.state.tabSelected) {
                 case 'embed':
                   return (div({},
+                    // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
                     translate("~SHARE_DIALOG.EMBED_MESSAGE"),
-                    document.execCommand || window.clipboardData ?
+                    document.execCommand || (window as any).clipboardData ?
+                      // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
                       (a({className: 'copy-link', href: '#', onClick: this.copy}, translate('~SHARE_DIALOG.COPY'))) : undefined,
                     (div({},
                       (textarea({value: this.state.embed, readOnly: true}))
@@ -297,8 +317,10 @@ export default createReactClass({
                   ))
                 case 'lara':
                   return (div({},
+                    // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
                     translate("~SHARE_DIALOG.LARA_MESSAGE"),
-                    document.execCommand || window.clipboardData ?
+                    document.execCommand || (window as any).clipboardData ?
+                      // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
                       (a({className: 'copy-link', href: '#', onClick: this.copy}, translate('~SHARE_DIALOG.COPY'))) : undefined,
                     (div({},
                       (input({value: this.getLara(), readOnly: true}))
@@ -312,18 +334,22 @@ export default createReactClass({
                       )),
                       (div({className: 'fullsceen-scaling'},
                         (input({type: 'checkbox', checked: this.state.fullscreenScaling, onChange: this.changedFullscreenScaling})),
+                        // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
                         translate("~SHARE_DIALOG.LARA_FULLSCREEN_BUTTON_AND_SCALING")
                       )),
                       (div({},
                         (input({type: 'checkbox', checked: this.state.graphVisToggles, onChange: this.changedGraphVisToggles})),
+                        // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
                         translate("~SHARE_DIALOG.LARA_DISPLAY_VISIBILITY_TOGGLES")
                       ))
                     ))
                   ))
                 default:
                   return (div({},
+                    // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
                     translate("~SHARE_DIALOG.LINK_MESSAGE"),
-                    document.execCommand || window.clipboardData ?
+                    document.execCommand || (window as any).clipboardData ?
+                      // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
                       (a({className: 'copy-link', href: '#', onClick: this.copy}, translate('~SHARE_DIALOG.COPY'))) : undefined,
                     (div({},
                       (input({value: this.state.link, readOnly: true}))
@@ -339,8 +365,10 @@ export default createReactClass({
           )) : undefined,
 
         (div({className: 'buttons'},
+          // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
           (button({onClick: this.props.close}, translate('~SHARE_DIALOG.CLOSE')))
         )),
+        // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
         SHOW_LONGEVITY_WARNING ? (div({className: 'longevity-warning'}, translate('~SHARE_DIALOG.LONGEVITY_WARNING'))) : undefined
       ))
     ))

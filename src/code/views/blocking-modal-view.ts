@@ -5,11 +5,14 @@
  * DS102: Remove unnecessary code created because of implicit returns
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
  */
+// @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'ReactDOMFactories'.
 const {div} = ReactDOMFactories
 
 import modalView from './modal-view'
+// @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'createReactFactory'.
 const Modal = createReactFactory(modalView)
 
+// @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'createReactClass'.
 export default createReactClass({
 
   displayName: 'BlockingModal',
@@ -19,7 +22,7 @@ export default createReactClass({
   },
 
   // used by CODAP to dismiss the startup dialog if a file is dropped on it
-  drop(e) {
+  drop(e: any) {
     return (typeof this.props.onDrop === 'function' ? this.props.onDrop(e) : undefined)
   },
 

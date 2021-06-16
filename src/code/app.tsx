@@ -1,19 +1,22 @@
-
 import AppView from './views/app-view'
 import React from 'react'
 import { CloudFileManagerUIMenu } from './ui'
 import { CloudFileManagerClient } from './client'
 
-import getHashParam  from './utils/get-hash-param'
+import getHashParam from './utils/get-hash-param'
 
 import '../style/app.styl'
 
 class CloudFileManager {
+  DefaultMenu: any;
+  appOptions: any;
+  client: any;
 
-  constructor(options) {
+  constructor(options: any) {
     // since the module exports an instance of the class we need to fake a class variable as an instance variable
-    this.DefaultMenu = CloudFileManagerUIMenu.DefaultMenu
+    this.DefaultMenu = (CloudFileManagerUIMenu as any).DefaultMenu
 
+    // @ts-expect-error ts-migrate(2554) FIXME: Expected 1 arguments, but got 0.
     this.client = new CloudFileManagerClient()
     this.appOptions = {}
   }
@@ -23,7 +26,7 @@ class CloudFileManager {
   //   presents its UI and the wrapped client app within the specified element. If
   //   appOrMenuElemId is set and usingIframe is false, then the CFM presents its menubar
   //   UI within the specified element, but there is no iframe or wrapped client app.
-  init(appOptions) {
+  init(appOptions: any) {
     this.appOptions = appOptions
     this.appOptions.hashParams = {
       sharedContentId: getHashParam("shared"),
@@ -36,7 +39,8 @@ class CloudFileManager {
   }
 
   // Convenience function for setting up CFM with an iframe-wrapped client app
-  createFrame(appOptions, appElemId, eventCallback = null) {
+  // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'eventCallback' implicitly has an 'any' ... Remove this comment to see the full error message
+  createFrame(appOptions: any, appElemId: any, eventCallback = null) {
     this.appOptions = appOptions
     this.appOptions.usingIframe = true
     this.appOptions.appOrMenuElemId = appElemId
@@ -45,7 +49,7 @@ class CloudFileManager {
     this._renderApp(document.getElementById(appElemId))
   }
 
-  clientConnect(eventCallback) {
+  clientConnect(eventCallback: any) {
     try {
       if (this.appOptions.appOrMenuElemId != null) {
         this._renderApp(document.getElementById(this.appOptions.appOrMenuElemId))
@@ -73,14 +77,16 @@ class CloudFileManager {
     this._renderApp(anchor)
   }
 
-  _renderApp(anchor) {
+  _renderApp(anchor: any) {
     this.appOptions.client = this.client
-  ReactDOM.render(<AppView {... this.appOptions} />, anchor)
+    // @ts-expect-error ts-migrate(2686) FIXME: 'ReactDOM' refers to a UMD global, but the current... Remove this comment to see the full error message
+    ReactDOM.render(<AppView {... this.appOptions} />, anchor)
     this.client.iframe = anchor.getElementsByTagName('iframe')[0]
     this.client.rendered()
   }
 }
 
+// @ts-expect-error ts-migrate(2554) FIXME: Expected 1 arguments, but got 0.
 const instance = new  CloudFileManager()
-export default instance
-global.CloudFileManager = instance
+export default instance;
+(global as any).CloudFileManager = instance

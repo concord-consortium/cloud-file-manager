@@ -6,9 +6,12 @@
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
  */
 import modalView from './modal-view'
+// @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'ReactDOMFactories'.
 const {div, i} = ReactDOMFactories
+// @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'createReactFactory'.
 const Modal = createReactFactory(modalView)
 
+// @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'createReactClass'.
 export default createReactClass({
 
   displayName: 'ModalDialog',

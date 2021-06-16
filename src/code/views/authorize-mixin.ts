@@ -37,7 +37,7 @@ const AuthorizeMixin = {
     // in componentDidMount(). Providers that require asynchronous checks
     // for authorization may return before or after the first render, so
     // code should be prepared for either eventuality.
-    return this.props.provider.authorized(authorized => {
+    return this.props.provider.authorized((authorized: any) => {
       // always set the instance variable
       this._isAuthorized = authorized
       // set the state if we can

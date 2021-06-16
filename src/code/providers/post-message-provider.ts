@@ -8,17 +8,22 @@
  * DS207: Consider shorter variations of null checks
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
  */
-import { ProviderInterface }  from './provider-interface'
-import getQueryParam  from '../utils/get-query-param'
+import { ProviderInterface } from './provider-interface'
+import getQueryParam from '../utils/get-query-param'
 
 class PostMessageProvider extends ProviderInterface {
+  Name: any;
+  client: any;
+  options: any;
+
   static initClass() {
-  
-    this.Name = 'postMessage'
+    (this as any).Name = 'postMessage'
   }
 
-  constructor(options, client) {
+  constructor(options: any, client: any) {
     const opts = options || {}
+
+    // @ts-expect-error ts-migrate(2345) FIXME: Argument of type '{ capabilities: { save: false; r... Remove this comment to see the full error message
     super({
       capabilities: {
         save: false,
@@ -37,7 +42,7 @@ class PostMessageProvider extends ProviderInterface {
 
   canOpenSaved() { return false }
 
-  saveAsExport(content, metadata, callback) {
+  saveAsExport(content: any, metadata: any, callback: any) {
     window.parent.postMessage({
       action: "saveSecondaryFile",
       extension: metadata.extension,

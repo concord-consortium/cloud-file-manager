@@ -8,9 +8,12 @@
 import tr  from '../utils/translate'
 import modalDialogView from './modal-dialog-view'
 
+// @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'ReactDOMFactories'.
 const {div, input, button} = ReactDOMFactories
+// @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'createReactFactory'.
 const ModalDialog = createReactFactory(modalDialogView)
 
+// @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'createReactClass'.
 export default createReactClass({
 
   displayName: 'RenameDialogView',
@@ -24,6 +27,7 @@ export default createReactClass({
   },
 
   componentDidMount() {
+    // @ts-expect-error ts-migrate(2686) FIXME: 'ReactDOM' refers to a UMD global, but the current... Remove this comment to see the full error message
     this.filename = ReactDOM.findDOMNode(this.filenameRef)
     return this.filename.focus()
   },
@@ -36,11 +40,11 @@ export default createReactClass({
     })
   },
 
-  trim(s) {
+  trim(s: any) {
     return s.replace(/^\s+|\s+$/, '')
   },
 
-  rename(e) {
+  rename(e: any) {
     if (this.state.trimmedFilename.length > 0) {
       if (typeof this.props.callback === 'function') {
         this.props.callback(this.state.filename)
@@ -53,14 +57,17 @@ export default createReactClass({
   },
 
   render() {
-    return (ModalDialog({title: (tr('~DIALOG.RENAME')), close: this.props.close},
+    // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
+    return ModalDialog({title: (tr('~DIALOG.RENAME')), close: this.props.close},
       (div({className: 'rename-dialog'},
-        (input({ref: (elt => { return this.filenameRef = elt }), placeholder: 'Filename', value: this.state.filename, onChange: this.updateFilename})),
+        (input({ref: ((elt: any) => { return this.filenameRef = elt }), placeholder: 'Filename', value: this.state.filename, onChange: this.updateFilename})),
         (div({className: 'buttons'},
+          // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
           (button({className: (this.state.trimmedFilename.length === 0 ? 'disabled' : ''), onClick: this.rename}, tr('~RENAME_DIALOG.RENAME'))),
+          // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
           (button({onClick: this.props.close}, tr('~RENAME_DIALOG.CANCEL')))
         ))
       ))
-    ))
+    )
   }
 })

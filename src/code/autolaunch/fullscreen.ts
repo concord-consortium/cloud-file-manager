@@ -2,7 +2,7 @@ import $ from "jquery"
 import screenfull from "screenfull"
 
 /* globals */
-window.GetIframeTransforms = function(_window, _screen) {
+(window as any).GetIframeTransforms = function (_window: any, _screen: any) {
   var MAX_WIDTH = 2000
   // Scale iframe, but make sure that:
   // 1. Iframe is smaller than MAX_WIDTH which should be enough for all the documents. It prevents creating
@@ -18,11 +18,11 @@ window.GetIframeTransforms = function(_window, _screen) {
   }
 }
 
-export function fullscreenSupport (iframe) {
+export function fullscreenSupport (iframe: any) {
   var $target = $(iframe)
   function setScaling () {
-    if (!screenfull.isFullscreen) {
-      var trans = window.GetIframeTransforms(window, screen)
+    if (!(screenfull as any).isFullscreen) {
+      var trans = (window as any).GetIframeTransforms(window, screen)
       $target.css('width', trans.unscaledWidth)
       $target.css('height', trans.unscaledHeight)
       $target.css('transform-origin', 'top left')
@@ -34,7 +34,7 @@ export function fullscreenSupport (iframe) {
       $target.css('transform', 'scale3d(1,1,1)')
     }
     // Help text.
-    const fontSize =Math.round(Math.pow(window.innerWidth / 5, 0.65))
+    const fontSize = Math.round(Math.pow(window.innerWidth / 5, 0.65))
     $('#fullscreen-help').css('fontSize', `${fontSize}px`)
   }
 
@@ -42,9 +42,9 @@ export function fullscreenSupport (iframe) {
     $('#fullscreen-help').show()
     var $button = $('.fullscreen-icon')
     $button.show()
-    $button.on('click', () => screenfull.toggle())
-    screenfull.on('change', () => {
-      if(screenfull.isFullscreen) {
+    $button.on('click', () => (screenfull as any).toggle());
+    (screenfull as any).on('change', () => {
+      if((screenfull as any).isFullscreen) {
         $button.addClass('fullscreen')
       }
       else {

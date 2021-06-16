@@ -10,9 +10,12 @@ import DropDownView from "./dropdown-view"
 import {TriangleOnlyAnchor} from './dropdown-anchors'
 import tr  from '../utils/translate'
 
+// @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'ReactDOMFactories'.
 const {div, i, span, input} = ReactDOMFactories
+// @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'createReactFactory'.
 const Dropdown = createReactFactory(DropDownView)
 
+// @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'createReactClass'.
 export default createReactClass({
 
   displayName: 'MenuBar',
@@ -24,7 +27,7 @@ export default createReactClass({
       window.addEventListener('touchstart', this.checkBlur, true)
     }
 
-    return this.props.client._ui.listen(event => {
+    return this.props.client._ui.listen((event: any) => {
       switch (event.type) {
         case 'editInitialFilename':
           this.setState({
@@ -43,11 +46,13 @@ export default createReactClass({
     }
   },
 
-  getFilename(props) {
+  getFilename(props: any) {
+    // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
     if ((props.filename != null ? props.filename.length : undefined) > 0) { return props.filename } else { return (tr("~MENUBAR.UNTITLED_DOCUMENT")) }
   },
 
-  getEditableFilename(props) {
+  getEditableFilename(props: any) {
+    // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
     if ((props.filename != null ? props.filename.length : undefined) > 0) { return props.filename } else { return (tr("~MENUBAR.UNTITLED_DOCUMENT")) }
   },
 
@@ -61,7 +66,7 @@ export default createReactClass({
     }
   },
 
-  UNSAFE_componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps: any) {
     return this.setState({
       filename: this.getFilename(nextProps),
       editableFilename: this.getEditableFilename(nextProps),
@@ -69,7 +74,7 @@ export default createReactClass({
     })
   },
 
-  filenameClicked(e) {
+  filenameClicked(e: any) {
     e.preventDefault()
     e.stopPropagation()
     this.setState({
@@ -89,6 +94,7 @@ export default createReactClass({
   },
 
   filename() {
+    // @ts-expect-error ts-migrate(2686) FIXME: 'ReactDOM' refers to a UMD global, but the current... Remove this comment to see the full error message
     return ReactDOM.findDOMNode(this.filenameRef)
   },
 
@@ -123,7 +129,7 @@ export default createReactClass({
     }
   },
 
-  watchForEnter(e) {
+  watchForEnter(e: any) {
     if (e.keyCode === 13) {
       return this.rename()
     } else if (e.keyCode === 27) {
@@ -140,11 +146,11 @@ export default createReactClass({
   },
 
   // CODAP eats the click events in the main workspace which causes the blur event not to fire so we need to check for a non-bubbling global click event when editing
-  checkBlur(e) {
+  checkBlur(e: any) {
     if (this.state.editingFilename && (e.target !== this.filename())) { return this.filenameBlurred() }
   },
 
-  langChanged(langCode) {
+  langChanged(langCode: any) {
     const {client, options} = this.props
     const {onLangChanged} = options.languageMenu
     if (onLangChanged != null) {
@@ -156,8 +162,8 @@ export default createReactClass({
     const langMenu = this.props.options.languageMenu
     const items = langMenu.options
       // Do not show current language in the menu.
-      .filter(option => option.langCode !== langMenu.currentLang)
-      .map(option => {
+      .filter((option: any) => option.langCode !== langMenu.currentLang)
+      .map((option: any) => {
         let className
         const label = option.label || option.langCode.toUpperCase()
         if (option.flag) { className = `flag flag-${option.flag}` }
@@ -167,8 +173,8 @@ export default createReactClass({
         }
       })
 
-    const hasFlags = langMenu.options.filter(option => option.flag != null).length > 0
-    const currentOption = langMenu.options.filter(option => option.langCode === langMenu.currentLang)[0]
+    const hasFlags = langMenu.options.filter((option: any) => option.flag != null).length > 0
+    const currentOption = langMenu.options.filter((option: any) => option.langCode === langMenu.currentLang)[0]
     const defaultOption = hasFlags ? {flag: "us"} : {label: "English"}
     const {flag, label} = currentOption || defaultOption
     const menuAnchor = flag ?
@@ -195,7 +201,7 @@ export default createReactClass({
         (Dropdown({items: this.props.items})),
         this.state.editingFilename ?
           (div({className: 'menu-bar-content-filename'},
-            (input({ref: (elt => { return this.filenameRef = elt }), value: this.state.editableFilename, onChange: this.filenameChanged, onKeyDown: this.watchForEnter}))
+            (input({ref: ((elt: any) => { return this.filenameRef = elt }), value: this.state.editableFilename, onChange: this.filenameChanged, onKeyDown: this.watchForEnter}))
           ))
         :
           (div({className: 'menu-bar-content-filename', onClick: this.filenameClicked}, this.state.filename)),

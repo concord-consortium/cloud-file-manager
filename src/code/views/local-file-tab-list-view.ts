@@ -5,10 +5,12 @@
  * DS102: Remove unnecessary code created because of implicit returns
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
  */
+// @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'ReactDOMFactories'.
 const {div, input, button} = ReactDOMFactories
 import tr  from '../utils/translate'
 import { CloudMetadata }  from '../providers/provider-interface'
 
+// @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'createReactClass'.
 export default createReactClass({
 
   displayName: 'LocalFileListTab',
@@ -27,19 +29,20 @@ export default createReactClass({
     return {hover: false}
   },
 
-  changed(e) {
+  changed(e: any) {
     const { files } = e.target
     if (files.length > 1) {
+      // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
       return this.props.client.alert(tr("~LOCAL_FILE_DIALOG.MULTIPLE_FILES_SELECTED"))
     } else if (files.length === 1) {
       return this.openFile(files[0], 'select')
     }
   },
 
-  openFile(file, via) {
+  openFile(file: any, via: any) {
     const metadata = new CloudMetadata({
       name: file.name.split('.')[0],
-      type: CloudMetadata.File,
+      type: (CloudMetadata as any).File,
       parent: null,
       provider: this.props.provider,
       providerData: {
@@ -56,21 +59,22 @@ export default createReactClass({
     return this.props.close()
   },
 
-  dragEnter(e) {
+  dragEnter(e: any) {
     e.preventDefault()
     return this.setState({hover: true})
   },
 
-  dragLeave(e) {
+  dragLeave(e: any) {
     e.preventDefault()
     return this.setState({hover: false})
   },
 
-  drop(e) {
+  drop(e: any) {
     e.preventDefault()
     e.stopPropagation()
     const droppedFiles = e.dataTransfer ? e.dataTransfer.files : e.target.files
     if (droppedFiles.length > 1) {
+      // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
       this.props.client.alert(tr("~LOCAL_FILE_DIALOG.MULTIPLE_FILES_DROPPED"))
     } else if (droppedFiles.length === 1) {
       this.openFile(droppedFiles[0], 'drop')
@@ -81,11 +85,13 @@ export default createReactClass({
     const dropClass = `dropArea${this.state.hover ? ' dropHover' : ''}`
     return (div({className: 'dialogTab localFileLoad'},
       // 'drop' event handler installed as DOM event handler in componentDidMount()
-      (div({ref: (elt => { return this.dropZoneRef = elt }), className: dropClass, onDragEnter: this.dragEnter, onDragLeave: this.dragLeave},
+      (div({ref: ((elt: any) => { return this.dropZoneRef = elt }), className: dropClass, onDragEnter: this.dragEnter, onDragLeave: this.dragLeave},
+        // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
         (tr("~LOCAL_FILE_DIALOG.DROP_FILE_HERE")),
         (input({type: 'file', onChange: this.changed}))
       )),
       (div({className: 'buttons'},
+        // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
         (button({onClick: this.cancel}, (tr("~FILE_DIALOG.CANCEL"))))
       ))
     ))

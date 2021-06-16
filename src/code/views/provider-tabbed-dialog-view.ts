@@ -15,11 +15,15 @@ import modalTabbedDialogView from './modal-tabbed-dialog-view'
 import fileDialogTabView from './file-dialog-tab-view'
 import selectProviderDialogTabView from './select-provider-dialog-tab-view'
 
+// @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'createReactFactory'.
 const ModalTabbedDialog = createReactFactory(modalTabbedDialogView)
+// @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'createReactFactory'.
 const FileDialogTab = createReactFactory(fileDialogTabView)
+// @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'createReactFactory'.
 const SelectProviderDialogTab = createReactFactory(selectProviderDialogTabView)
 
 
+// @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'createReactClass'.
 export default createReactClass({
   displayName: 'ProviderTabbedDialog',
 
@@ -46,18 +50,20 @@ export default createReactClass({
             provider
           })
           const onSelected = provider.onProviderTabSelected ? provider.onProviderTabSelected.bind(provider) : null
+          // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
           tabs.push(TabbedPanel.Tab({key: i, label: (tr(provider.displayName)), component, capability, onSelected}))
-          if (provider.name === __guard__(this.props.client.state.metadata != null ? this.props.client.state.metadata.provider : undefined, x => x.name)) {
+          if (provider.name === __guard__(this.props.client.state.metadata != null ? this.props.client.state.metadata.provider : undefined, (x: any) => x.name)) {
             selectedTabIndex = tabs.length - 1
           }
         }
       }
     }
 
+    // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
     return (ModalTabbedDialog({title: (tr(this.props.dialog.title)), close: this.props.close, tabs, selectedTabIndex}))
   }
 })
 
-function __guard__(value, transform) {
+function __guard__(value: any, transform: any) {
   return (typeof value !== 'undefined' && value !== null) ? transform(value) : undefined
 }

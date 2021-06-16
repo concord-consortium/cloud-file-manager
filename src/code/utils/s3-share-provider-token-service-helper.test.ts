@@ -10,7 +10,7 @@ describe("s3-share-provider-token-service-helper", () => {
       ImportMock.mockFunction(Config, 'getTokenServiceEnv', 'production')
     })
     afterEach( () => {
-      ImportMock.restore();
+      ImportMock.restore()
     })
     describe("getLegacyUrl", () => {
       it("should return a production legacy url … ", () => {
@@ -24,7 +24,7 @@ describe("s3-share-provider-token-service-helper", () => {
       ImportMock.mockFunction(Config, 'getTokenServiceEnv', 'staging')
     })
     afterEach( () => {
-      ImportMock.restore();
+      ImportMock.restore()
     })
     describe("getLegacyUrl", () => {
       it("should return a legacy url … ", () => {

@@ -17,6 +17,7 @@ class LocalFileProvider extends ProviderInterface {
   constructor(options: IProviderInterfaceOpts, client: any) {
     super({
       name: LocalFileProvider.Name,
+      // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
       displayName: options.displayName || (tr('~PROVIDER.LOCAL_FILE')),
       urlDisplayName: options.urlDisplayName || LocalFileProvider.Name,
       capabilities: {

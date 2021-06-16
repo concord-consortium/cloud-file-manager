@@ -1,11 +1,12 @@
 import iframePhone from "iframe-phone"
 import $ from "jquery"
 import { fullscreenSupport } from "./fullscreen"
+// @ts-expect-error ts-migrate(7016) FIXME: Could not find a declaration file for module 'js-b... Remove this comment to see the full error message
 import { Base64 } from "js-base64"
 import queryString from "query-string"
 
 // TODO: Maybe we can remove this now that we are using queryString
-function getURLParam (name) {
+function getURLParam(name: any) {
   const url = window.location.href
   try {
     name = name.replace(/[[]]/g, '\\$&')
@@ -24,13 +25,14 @@ function getURLParam (name) {
 // Adds query params to CODAP urls
 // this was taken from the document server `documents_v2_helper.rb`
 // We could also add documentServer parameter, or check query params
-function codap_v2_link(codapServer) {
+function codap_v2_link(codapServer: any) {
   const defaultCodapUrl = "https://codap.concord.org/releases/latest/"
   const documentServer = "https://document-store.concord.org/"
   const extraData = {
     documentServer
   }
   const baseUrl = codapServer || defaultCodapUrl
+    // @ts-expect-error ts-migrate(2345) FIXME: Argument of type '{ fragmentIdentifier: boolean; }... Remove this comment to see the full error message
   const {url, query, fragmentIdentifier} = queryString.parseUrl(baseUrl, {fragmentIdentifier: true})
   const newCodapUrl = queryString.stringifyUrl({
     url: url,
@@ -63,17 +65,17 @@ export default function autolaunchInteractive() {
 
   var phone = iframePhone.getIFrameEndpoint()
   // Variables below are set in `initInteractive` handler.
-  var interactiveData = null
-  var directlyLinkedState = null
-  var mostRecentLinkedState = null
+  var interactiveData: any = null
+  var directlyLinkedState: any = null
+  var mostRecentLinkedState: any = null
   var interactiveStateAvailable = false
 
-  function stateValid (state) {
+  function stateValid (state: any) {
     return !!(state && state.docStore && state.docStore.recordid && state.docStore.accessKeys && state.docStore.accessKeys.readOnly)
   }
 
-  function showDataSelectDialog (twoLinkedStates) {
-    function showPreview (element) {
+  function showDataSelectDialog (twoLinkedStates: any) {
+    function showPreview (element: any) {
       $(element).addClass('preview-active')
       $('.overlay').show()
     }
@@ -161,7 +163,7 @@ export default function autolaunchInteractive() {
       }
     }
     if (fullscreenScaling) {
-      info.features.aspectRatio = screen.width / screen.height
+      (info.features as any).aspectRatio = screen.width / screen.height
     }
     phone.post('supportedFeatures', info)
   }
@@ -171,8 +173,8 @@ export default function autolaunchInteractive() {
     var launchParams = {url: interactiveData.interactiveStateUrl, source: documentId, collaboratorUrls: interactiveData.collaboratorUrls}
     // If there is a linked state and no interactive state then change the source document to point to the linked recordid and add the access key.
     if (stateValid(linkedState) && !interactiveStateAvailable) {
-      launchParams.source = linkedState.docStore.recordid
-      launchParams.readOnlyKey = linkedState.docStore.accessKeys.readOnly
+      launchParams.source = linkedState.docStore.recordid;
+      (launchParams as any).readOnlyKey = linkedState.docStore.accessKeys.readOnly
     }
     // Interactive state saves are supported by autolaunch currently only when the app iframed by autolaunch uses
     // the Cloud File Manager (CFM).  The CFM in the iframed app handles all the state saving -- Lara only receives
@@ -188,7 +190,7 @@ export default function autolaunchInteractive() {
     var iframeCanAutosave = false
     var iframeLoaded = function () {
       $(window).on('message', function (e) {
-        var data = e.originalEvent.data
+                var data = (e.originalEvent as any).data
         if (data) {
           switch (data.type) {
             case 'cfm::commands':
@@ -226,7 +228,7 @@ export default function autolaunchInteractive() {
         launchFromLara: Base64.encode(JSON.stringify(launchParams))
       }
     })
-    var iframe = $("#autolaunch_iframe").on('load', iframeLoaded).attr("src", src).show()[0].contentWindow
+    var iframe = ($("#autolaunch_iframe").on('load', iframeLoaded).attr("src", src).show()[0] as any).contentWindow
   }
 
   phone.addListener('initInteractive', function (_interactiveData) {
@@ -234,14 +236,15 @@ export default function autolaunchInteractive() {
 
     interactiveData = _interactiveData
     interactiveStateAvailable = stateValid(interactiveData.interactiveState)
-    var linkedStates = interactiveData.allLinkedStates && interactiveData.allLinkedStates.filter(function (el) {
+    var linkedStates = interactiveData.allLinkedStates && interactiveData.allLinkedStates.filter(function (el: any) {
       return stateValid(el.interactiveState)
     })
     // Find linked state which is directly linked to this one. In fact it's a state which is the closest to given one
     // if there are some "gaps".
     directlyLinkedState = linkedStates && linkedStates[0]
     // Find the most recent linked state.
-    mostRecentLinkedState = linkedStates && linkedStates.slice().sort(function (a, b) {
+    mostRecentLinkedState = linkedStates && linkedStates.slice().sort(function (a: any, b: any) {
+      // @ts-expect-error ts-migrate(2362) FIXME: The left-hand side of an arithmetic operation must... Remove this comment to see the full error message
       return new Date(b.updatedAt) - new Date(a.updatedAt)
     })[0]
 
@@ -303,4 +306,4 @@ export default function autolaunchInteractive() {
   }
 }
 
-window.autolaunchInteractive = autolaunchInteractive
+(window as any).autolaunchInteractive = autolaunchInteractive

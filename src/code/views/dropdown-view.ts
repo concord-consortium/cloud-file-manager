@@ -7,9 +7,11 @@
  * DS207: Consider shorter variations of null checks
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
  */
+// @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'ReactDOMFactories'.
 const {div, i, ul, li} = ReactDOMFactories
 
 import { DefaultAnchor } from './dropdown-anchors'
+// @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'createReactClassFactory'.
 const DropdownItem = createReactClassFactory({
   displayName: 'DropdownItem',
 
@@ -27,6 +29,7 @@ const DropdownItem = createReactClassFactory({
 
   showSubMenu() {
     if (this.props.item.items) {
+      // @ts-expect-error ts-migrate(2686) FIXME: 'ReactDOM' refers to a UMD global, but the current... Remove this comment to see the full error message
       const menuItem = $(ReactDOM.findDOMNode(this.itemRef))
       const menu = menuItem.parent().parent()
 
@@ -57,7 +60,7 @@ const DropdownItem = createReactClassFactory({
     } else {
       if (!enabled || !(this.props.item.action || this.props.item.items)) { classes.push('disabled') }
       const content = this.props.item.name || this.props.item.content || this.props.item
-      return (li({ref: (elt => { return this.itemRef = elt }), className: classes.join(' '), onClick: this.clicked, onMouseEnter: this.mouseEnter },
+      return (li({ref: ((elt: any) => { return this.itemRef = elt }), className: classes.join(' '), onClick: this.clicked, onMouseEnter: this.mouseEnter },
         this.props.item.items ?
           (i({className: 'icon-inspectorArrow-collapse'})) : undefined,
         content
@@ -68,6 +71,7 @@ const DropdownItem = createReactClassFactory({
 
 const cfmMenuClass = 'cfm-menu dg-wants-touch'
 
+// @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'createReactClass'.
 const DropDown = createReactClass({
 
   displayName: 'Dropdown',
@@ -75,6 +79,7 @@ const DropDown = createReactClass({
   getInitialState() {
     return {
       showingMenu: false,
+      // @ts-expect-error ts-migrate(7018) FIXME: Object literal's property 'subMenu' implicitly has... Remove this comment to see the full error message
       subMenu: null
     }
   },
@@ -93,7 +98,7 @@ const DropDown = createReactClass({
     }
   },
 
-  checkClose(evt) {
+  checkClose(evt: any) {
     // no need to walk the DOM if the menu isn't open
     if (!this.state.showingMenu) { return }
     // if the click is on the menu, let the menu handle it
@@ -106,11 +111,11 @@ const DropDown = createReactClass({
     return this.setState({showingMenu: false, subMenu: false})
   },
 
-  setSubMenu(subMenu) {
+  setSubMenu(subMenu: any) {
     return this.setState({subMenu})
   },
 
-  select(item) {
+  select(item: any) {
     if (item != null ? item.items : undefined) { return }
     const nextState = (!this.state.showingMenu)
     this.setState({showingMenu: nextState})

@@ -10,6 +10,7 @@
  * DS207: Consider shorter variations of null checks
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
  */
+// @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'ReactDOMFactories'.
 const {div, button, span} = ReactDOMFactories
 
 import getQueryParam  from '../utils/get-query-param'
@@ -25,6 +26,7 @@ import DocumentStoreUrl  from './document-store-url'
 import PatchableContent  from './patchable-content'
 import { reportError } from '../utils/report-error'
 
+// @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'createReactClassFactory'.
 const DocumentStoreAuthorizationDialog = createReactClassFactory({
   displayName: 'DocumentStoreAuthorizationDialog',
 
@@ -56,10 +58,22 @@ const DocumentStoreAuthorizationDialog = createReactClassFactory({
 })
 
 class DocumentStoreProvider extends ProviderInterface {
+  Name: any;
+  _docStoreLoaded: any;
+  _loginWindow: any;
+  authCallback: any;
+  client: any;
+  disableForNextSave: any;
+  docStoreLoadedCallback: any;
+  docStoreUrl: any;
+  options: any;
+  removableQueryParams: any;
+  savedContent: any;
+  urlParams: any;
+  user: any;
+
   static initClass() {
-  
-    this.Name = 'documentStore'
-  
+    (this as any).Name = 'documentStore'
     this.prototype._loginWindow = null
   }
 
@@ -67,18 +81,19 @@ class DocumentStoreProvider extends ProviderInterface {
     return 3
   }
 
-  static isNotDeprecated(capability) {
+  static isNotDeprecated(capability: any) {
     if (capability === 'save') {
       return DocumentStoreProvider.deprecationPhase < 2
     } else {
       return DocumentStoreProvider.deprecationPhase < 3
     }
   }
-  constructor(options, client) {
+  constructor(options: any, client: any) {
     const opts = options || {}
 
     super({
-      name: DocumentStoreProvider.Name,
+      name: (DocumentStoreProvider as any).Name,
+      // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
       displayName: opts.displayName || (tr('~PROVIDER.DOCUMENT_STORE')),
       urlDisplayName: opts.urlDisplayName,
       capabilities: {
@@ -109,12 +124,13 @@ class DocumentStoreProvider extends ProviderInterface {
 
     this.user = null
 
+    // @ts-expect-error ts-migrate(2554) FIXME: Expected 2 arguments, but got 1.
     this.savedContent = new PatchableContent(this.options.patchObjectHash)
   }
 
-  can(capability, metadata) {
+  can(capability: any, metadata: any) {
     // legacy sharing support - can't save to old-style shared documents
-    if (((capability === 'save') || (capability === 'resave')) && __guard__(metadata != null ? metadata.providerData : undefined, x => x.owner)) { return false }
+    if (((capability === 'save') || (capability === 'resave')) && __guard__(metadata != null ? metadata.providerData : undefined, (x: any) => x.owner)) { return false }
     return super.can(capability, metadata)
   }
 
@@ -123,7 +139,7 @@ class DocumentStoreProvider extends ProviderInterface {
     return !(this.urlParams.runKey || (this.urlParams.docName && this.urlParams.docOwner))
   }
 
-  authorized(authCallback) {
+  authorized(authCallback: any) {
     this.authCallback = authCallback
     if (this.authCallback) {
       if (this.user) {
@@ -136,11 +152,11 @@ class DocumentStoreProvider extends ProviderInterface {
     }
   }
 
-  authorize(completionCallback) {
+  authorize(completionCallback: any) {
     return this._showLoginWindow(completionCallback)
   }
 
-  _onDocStoreLoaded(docStoreLoadedCallback) {
+  _onDocStoreLoaded(docStoreLoadedCallback: any) {
     this.docStoreLoadedCallback = docStoreLoadedCallback
     if (this._docStoreLoaded) {
       return this.docStoreLoadedCallback()
@@ -148,7 +164,7 @@ class DocumentStoreProvider extends ProviderInterface {
   }
 
   _checkLogin() {
-    const loggedIn = user => {
+    const loggedIn = (user: any) => {
       this.user = user
       this._docStoreLoaded = true
       if (typeof this.docStoreLoadedCallback === 'function') {
@@ -173,14 +189,14 @@ class DocumentStoreProvider extends ProviderInterface {
     })
   }
 
-  _showLoginWindow(completionCallback) {
+  _showLoginWindow(completionCallback: any) {
     if (this._loginWindow && !this._loginWindow.closed) {
       this._loginWindow.focus()
     } else {
 
-      const computeScreenLocation = function(w, h) {
-        const screenLeft = window.screenLeft || screen.left
-        const screenTop  = window.screenTop  || screen.top
+      const computeScreenLocation = function(w: any, h: any) {
+        const screenLeft = window.screenLeft || (screen as any).left
+        const screenTop  = window.screenTop  || (screen as any).top
         const width  = window.innerWidth  || document.documentElement.clientWidth  || screen.width
         const height = window.innerHeight || document.documentElement.clientHeight || screen.height
 
@@ -238,7 +254,7 @@ class DocumentStoreProvider extends ProviderInterface {
     }
   }
 
-  filterTabComponent(capability, defaultComponent) {
+  filterTabComponent(capability: any, defaultComponent: any) {
     // allow the save elsewhere button to hide the document provider tab in save
     if ((capability === 'save') && this.disableForNextSave) {
       this.disableForNextSave = false
@@ -254,17 +270,22 @@ class DocumentStoreProvider extends ProviderInterface {
     return `\
 <div style="text-align: left">
   <p style="margin: 10px 0;">
-    <strong>${tr('~CONCORD_CLOUD_DEPRECATION.SHUT_DOWN_MESSAGE')}</strong>
+    <strong>
+      ${// @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
+        tr('~CONCORD_CLOUD_DEPRECATION.SHUT_DOWN_MESSAGE')}
+    </strong>
   </p>
   <p style="margin: 10px 0;">
-    ${tr('~CONCORD_CLOUD_DEPRECATION.PLEASE_SAVE_ELSEWHERE')}
+    ${// @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
+      tr('~CONCORD_CLOUD_DEPRECATION.PLEASE_SAVE_ELSEWHERE')}
   </p>
 </div>\
 `
   }
 
-  onProviderTabSelected(capability) {
+  onProviderTabSelected(capability: any) {
     if ((capability === 'save') && this.deprecationMessage()) {
+      // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
       return this.client.alert(this.deprecationMessage(), (tr('~CONCORD_CLOUD_DEPRECATION.ALERT_SAVE_TITLE')))
     }
   }
@@ -281,7 +302,7 @@ class DocumentStoreProvider extends ProviderInterface {
     }
   }
 
-  list(metadata, callback) {
+  list(metadata: any, callback: any) {
     return $.ajax({
       dataType: 'json',
       url: this.docStoreUrl.listDocuments(),
@@ -297,7 +318,7 @@ class DocumentStoreProvider extends ProviderInterface {
             list.push(new CloudMetadata({
               name: file.name,
               providerData: {id: file.id},
-              type: CloudMetadata.File,
+              type: (CloudMetadata as any).File,
               provider: this
             })
             )
@@ -317,15 +338,15 @@ class DocumentStoreProvider extends ProviderInterface {
     })
   }
 
-  load(metadata, callback) {
+  load(metadata: any, callback: any) {
     const withCredentials = !metadata.sharedContentId
     const recordid = (metadata.providerData != null ? metadata.providerData.id : undefined) || metadata.sharedContentId
     const requestData = {}
-    if (recordid) { requestData.recordid = recordid }
-    if (this.urlParams.runKey) { requestData.runKey = this.urlParams.runKey }
+    if (recordid) { (requestData as any).recordid = recordid }
+    if (this.urlParams.runKey) { (requestData as any).runKey = this.urlParams.runKey }
     if (!recordid) {
-      if (metadata.providerData != null ? metadata.providerData.name : undefined) { requestData.recordname = metadata.providerData != null ? metadata.providerData.name : undefined }
-      if (metadata.providerData != null ? metadata.providerData.owner : undefined) { requestData.owner = metadata.providerData != null ? metadata.providerData.owner : undefined }
+      if (metadata.providerData != null ? metadata.providerData.name : undefined) { (requestData as any).recordname = metadata.providerData != null ? metadata.providerData.name : undefined }
+      if (metadata.providerData != null ? metadata.providerData.owner : undefined) { (requestData as any).owner = metadata.providerData != null ? metadata.providerData.owner : undefined }
     }
     return $.ajax({
       url: this.docStoreUrl.loadDocument(),
@@ -343,8 +364,7 @@ class DocumentStoreProvider extends ProviderInterface {
         // 'name' at the top level for unwrapped documents (e.g. CODAP)
         // 'name' at the top level of 'content' for wrapped CODAP documents
         metadata.rename(metadata.name || metadata.providerData.name ||
-                        data.docName || data.name || (data.content != null ? data.content.name : undefined)
-        )
+                        data.docName || data.name || (data.content != null ? data.content.name : undefined))
         if (metadata.name) {
           content.addMetadata({docName: metadata.filename})
         }
@@ -354,6 +374,7 @@ class DocumentStoreProvider extends ProviderInterface {
       statusCode: {
         403: () => {
           this.user = null
+          // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 2.
           return callback(tr("~DOCSTORE.LOAD_403_ERROR", {filename: metadata.name || 'the file'}), 403)
         }
       },
@@ -361,15 +382,17 @@ class DocumentStoreProvider extends ProviderInterface {
       error(jqXHR) {
         if (jqXHR.status === 403) { return } // let statusCode handler deal with it
         const message = metadata.sharedContentId ?
+          // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
           tr("~DOCSTORE.LOAD_SHARED_404_ERROR")
         :
+          // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 2.
           tr("~DOCSTORE.LOAD_404_ERROR", {filename: metadata.name || (metadata.providerData != null ? metadata.providerData.id : undefined) || 'the file'})
         return callback(message)
       }
     })
   }
 
-  save(cloudContent, metadata, callback) {
+  save(cloudContent: any, metadata: any, callback: any) {
     const content = cloudContent.getContent()
 
     // See if we can patch
@@ -382,10 +405,10 @@ class DocumentStoreProvider extends ProviderInterface {
     }
 
     const params = {}
-    if (metadata.providerData.id) { params.recordid = metadata.providerData.id }
+    if (metadata.providerData.id) { (params as any).recordid = metadata.providerData.id }
 
     if (!patchResults.shouldPatch && metadata.filename) {
-      params.recordname = metadata.filename
+      (params as any).recordname = metadata.filename
     }
 
     // If we are saving for the first time as a student in a LARA activity, then we do not have
@@ -396,12 +419,12 @@ class DocumentStoreProvider extends ProviderInterface {
     // When we successfully save, we will get the id of the new document in the response, and use
     // this id for future saving. We can then save via patches, and don't need the runKey.
     if (this.urlParams.runKey) {
-      params.runKey = this.urlParams.runKey
+      (params as any).runKey = this.urlParams.runKey
     }
 
     const method = 'POST'
-    const url = patchResults.shouldPatch 
-            ? this.docStoreUrl.patchDocument(params) 
+    const url = patchResults.shouldPatch
+            ? this.docStoreUrl.patchDocument(params)
             : this.docStoreUrl.saveDocument(params)
 
     const logData = {
@@ -430,6 +453,7 @@ class DocumentStoreProvider extends ProviderInterface {
         withCredentials: true
       },
       success(data) {
+        // @ts-expect-error ts-migrate(2686) FIXME: '_' refers to a UMD global, but the current file i... Remove this comment to see the full error message
         this.savedContent.updateContent(this.options.patch ? _.cloneDeep(content) : null)
         if (data.id) { metadata.providerData.id = data.id }
 
@@ -438,6 +462,7 @@ class DocumentStoreProvider extends ProviderInterface {
       statusCode: {
         403: () => {
           this.user = null
+          // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 2.
           return callback(tr("~DOCSTORE.SAVE_403_ERROR", {filename: metadata.name}), 403)
         }
       },
@@ -446,17 +471,20 @@ class DocumentStoreProvider extends ProviderInterface {
           if (jqXHR.status === 403) { return } // let statusCode handler deal with it
           const responseJson = JSON.parse(jqXHR.responseText)
           if (responseJson.message === 'error.duplicate') {
+            // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 2.
             return callback(tr("~DOCSTORE.SAVE_DUPLICATE_ERROR", {filename: metadata.name}))
           } else {
+            // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 2.
             return callback(tr("~DOCSTORE.SAVE_ERROR_WITH_MESSAGE", {filename: metadata.name, message: responseJson.message}))
           }
         } catch (error) {
+          // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 2.
           return callback(tr("~DOCSTORE.SAVE_ERROR", {filename: metadata.name}))
         }
       }})
   }
 
-  remove(metadata, callback) {
+  remove(metadata: any, callback: any) {
     return $.ajax({
       url: this.docStoreUrl.deleteDocument(),
       data: {
@@ -472,20 +500,23 @@ class DocumentStoreProvider extends ProviderInterface {
       statusCode: {
         403: () => {
           this.user = null
+          // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 2.
           return callback(tr("~DOCSTORE.REMOVE_403_ERROR", {filename: metadata.name}), 403)
         }
       },
       error(jqXHR) {
         if (jqXHR.status === 403) { return } // let statusCode handler deal with it
+        // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 2.
         return callback(tr("~DOCSTORE.REMOVE_ERROR", {filename: metadata.name}))
       }})
   }
 
-  rename(metadata, newName, callback) {
+  rename(metadata: any, newName: any, callback: any) {
     return $.ajax({
       url: this.docStoreUrl.renameDocument(),
       data: {
         recordid: metadata.providerData.id,
+        // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
         newRecordname: CloudMetadata.withExtension(newName)
       },
       context: this,
@@ -499,51 +530,59 @@ class DocumentStoreProvider extends ProviderInterface {
       statusCode: {
         403: () => {
           this.user = null
+          // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 2.
           return callback(tr("~DOCSTORE.RENAME_403_ERROR", {filename: metadata.name}), 403)
         }
       },
       error(jqXHR) {
         if (jqXHR.status === 403) { return } // let statusCode handler deal with it
+        // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 2.
         return callback(tr("~DOCSTORE.RENAME_ERROR", {filename: metadata.name}))
       }})
   }
 
   canOpenSaved() { return true }
 
-  openSaved(openSavedParams, callback) {
-    const providerData = typeof openSavedParams === "object" 
-                      ? openSavedParams 
+  openSaved(openSavedParams: any, callback: any) {
+    const providerData = typeof openSavedParams === "object"
+                      ? openSavedParams
                       : { id: openSavedParams }
     const metadata = new CloudMetadata({
-      type: CloudMetadata.File,
+      type: (CloudMetadata as any).File,
+      // @ts-expect-error ts-migrate(2322) FIXME: Type 'this' is not assignable to type 'ProviderInt... Remove this comment to see the full error message
       provider: this,
       providerData
     })
 
-    return this.load(metadata, (err, content) => {
+    return this.load(metadata, (err: any, content: any) => {
       this.client.removeQueryParams(this.removableQueryParams)
       return callback(err, content, metadata)
     })
   }
 
-  getOpenSavedParams(metadata) {
+  getOpenSavedParams(metadata: any) {
     return metadata.providerData.id
   }
 
-  fileOpened(content, metadata) {
+  // @ts-expect-error ts-migrate(2416) FIXME: Property 'fileOpened' in type 'DocumentStoreProvid... Remove this comment to see the full error message
+  fileOpened(content: any, metadata: any) {
     const deprecationPhase = this.options.deprecationPhase || 0
     const fromLara = !!getQueryParam("launchFromLara") || !!getHashParam("lara")
     if (!deprecationPhase || fromLara) { return }
     return this.client.confirmDialog({
+      // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
       title: tr('~CONCORD_CLOUD_DEPRECATION.CONFIRM_SAVE_TITLE'),
       message: this.deprecationMessage(),
+      // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
       yesTitle: tr('~CONCORD_CLOUD_DEPRECATION.CONFIRM_SAVE_ELSEWHERE'),
+      // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
       noTitle: tr('~CONCORD_CLOUD_DEPRECATION.CONFIRM_DO_IT_LATER'),
       hideNoButton: deprecationPhase >= 3,
       callback: () => {
         this.disableForNextSave = true
         return this.client.saveFileAsDialog()
       },
+      // @ts-expect-error ts-migrate(7011) FIXME: Function expression, which lacks return-type annot... Remove this comment to see the full error message
       rejectCallback: () => {
         if (deprecationPhase > 1) {
           return this.client.appOptions.autoSaveInterval = null
@@ -556,6 +595,6 @@ DocumentStoreProvider.initClass()
 
 export default DocumentStoreProvider
 
-function __guard__(value, transform) {
+function __guard__(value: any, transform: any) {
   return (typeof value !== 'undefined' && value !== null) ? transform(value) : undefined
 }

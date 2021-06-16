@@ -2,6 +2,7 @@ import tr  from '../utils/translate'
 import { ProviderInterface }  from './provider-interface'
 import { cloudContentFactory }  from './provider-interface'
 import { CloudMetadata }  from './provider-interface'
+// @ts-expect-error ts-migrate(7016) FIXME: Could not find a declaration file for module 'reac... Remove this comment to see the full error message
 import ReactDOMFactories from 'react-dom-factories'
 import { createReactClassFactory } from '../globals'
 
@@ -36,13 +37,17 @@ const GoogleDriveAuthorizationDialog = createReactClassFactory({
   },
 
   authenticate() {
-    return this.props.provider.authorize(GoogleDriveProvider.SHOW_POPUP)
+    return this.props.provider.authorize((GoogleDriveProvider as any).SHOW_POPUP)
   },
 
   render() {
+    // @ts-expect-error ts-migrate(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     const contents = {
+      // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
       "not-loaded": tr("~GOOGLE_DRIVE.CONNECTING_MESSAGE"),
+      // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
       "loaded": button({onClick: this.authenticate}, (tr("~GOOGLE_DRIVE.LOGIN_BUTTON_LABEL"))),
+      // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
       "errored": tr("~GOOGLE_DRIVE.ERROR_CONNECTING_MESSAGE")
     }[this.state.gapiLoadState] || "An unknown error occurred!"
     return (div({className: 'google-drive-auth'},
@@ -55,19 +60,35 @@ const GoogleDriveAuthorizationDialog = createReactClassFactory({
 })
 
 class GoogleDriveProvider extends ProviderInterface {
-  static initClass() {
+  IMMEDIATE: any;
+  Name: any;
+  SHOW_POPUP: any;
+  _autoRenewTimeout: any;
+  apiKey: any;
+  authCallback: any;
+  authToken: any;
+  client: any;
+  clientId: any;
+  gapiLoadState: any;
+  mimeType: any;
+  options: any;
+  readableMimetypes: any;
+  scopes: any;
+  user: any;
 
-    this.Name = 'googleDrive'
+  static initClass() {
+    (this as any).Name = 'googleDrive';
 
     // aliases for boolean parameter to authorize
-    this.IMMEDIATE = true
-    this.SHOW_POPUP = false
+    (this as any).IMMEDIATE = true;
+    (this as any).SHOW_POPUP = false
   }
 
-  constructor(options, client) {
+  constructor(options: any, client: any) {
     const opts = options || {}
     super({
-      name: GoogleDriveProvider.Name,
+      name: (GoogleDriveProvider as any).Name,
+      // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
       displayName: opts.displayName || (tr('~PROVIDER.GOOGLE_DRIVE')),
       urlDisplayName: opts.urlDisplayName,
       capabilities: {
@@ -79,6 +100,7 @@ class GoogleDriveProvider extends ProviderInterface {
         remove: false,
         rename: true,
         close: true,
+        // @ts-expect-error ts-migrate(2322) FIXME: Type '{ save: true; resave: true; export: true; lo... Remove this comment to see the full error message
         setFolder: true
       }
     })
@@ -89,9 +111,11 @@ class GoogleDriveProvider extends ProviderInterface {
     this.apiKey = this.options.apiKey
     this.clientId = this.options.clientId
     if (!this.apiKey) {
+      // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
       throw new Error((tr("~GOOGLE_DRIVE.ERROR_MISSING_APIKEY")))
     }
     if (!this.clientId) {
+      // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
       throw new Error((tr("~GOOGLE_DRIVE.ERROR_MISSING_CLIENTID")))
     }
     this.scopes = (this.options.scopes || [
@@ -109,21 +133,22 @@ class GoogleDriveProvider extends ProviderInterface {
       .catch(() => this.gapiLoadState = "errored")  // eslint-disable-line @typescript-eslint/dot-notation
   }
 
-  authorized(authCallback) {
+  authorized(authCallback: any) {
     if (!(authCallback == null)) { this.authCallback = authCallback }
     if (authCallback) {
       if (this.authToken) {
         return authCallback(true)
       } else {
-        return this.authorize(GoogleDriveProvider.IMMEDIATE)
+        return this.authorize((GoogleDriveProvider as any).IMMEDIATE)
       }
     } else {
       return this.authToken !== null
     }
   }
 
-  authorize(immediate) {
+  authorize(immediate: any) {
     return this._waitForGAPILoad().then(() => {
+      // @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'gapi'.
       const auth = gapi.auth2.getAuthInstance()
       const finishAuthorization = () => {
         const authorized = auth.isSignedIn.get()
@@ -151,12 +176,12 @@ class GoogleDriveProvider extends ProviderInterface {
     })
   }
 
-  autoRenewToken(authToken) {
+  autoRenewToken(authToken: any) {
     if (this._autoRenewTimeout) {
       clearTimeout(this._autoRenewTimeout)
     }
     if (authToken && !authToken.error) {
-      return this._autoRenewTimeout = setTimeout((() => this.authorize(GoogleDriveProvider.IMMEDIATE)), (parseInt(authToken.expires_in, 10) * 0.75) * 1000)
+      return this._autoRenewTimeout = setTimeout((() => this.authorize((GoogleDriveProvider as any).IMMEDIATE)), (parseInt(authToken.expires_in, 10) * 0.75) * 1000)
     }
   }
 
@@ -172,34 +197,35 @@ class GoogleDriveProvider extends ProviderInterface {
     }
   }
 
-  save(content, metadata, callback) {
+  save(content: any, metadata: any, callback: any) {
     return this._waitForGAPILoad().then(() => {
       return this._saveFile(content, metadata, callback)
     })
   }
 
-  load(metadata, callback) {
+  load(metadata: any, callback: any) {
     return this._waitForGAPILoad().then(() => {
       return this._loadFile(metadata, callback)
     })
   }
 
-  list(metadata, callback) {
+  list(metadata: any, callback: any) {
     return this._waitForGAPILoad().then(() => {
-      const mimeTypesQuery = (this.readableMimetypes || []).map((mimeType) => `mimeType = '${mimeType}'`).join(" or ")
+      const mimeTypesQuery = (this.readableMimetypes || []).map((mimeType: any) => `mimeType = '${mimeType}'`).join(" or ")
+      // @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'gapi'.
       const request = gapi.client.drive.files.list({
         fields: "files(id, mimeType, name, capabilities(canEdit))",
         q: `trashed = false and (${mimeTypesQuery} or mimeType = 'application/vnd.google-apps.folder') and '${metadata ? metadata.providerData.id : 'root'}' in parents`
       })
-      return request.execute(result => {
+      return request.execute((result: any) => {
         if (!result || result.error) { return callback(this._apiError(result, 'Unable to list files')) }
         const list = []
         const files = result.files
         if (files?.length > 0) {
           for (let i = 0; i < files.length; i++) {
             const item = files[i]
-            const type = item.mimeType === 'application/vnd.google-apps.folder' ? CloudMetadata.Folder : CloudMetadata.File
-            if ((type === CloudMetadata.Folder) || this.matchesExtension(item.name)) {
+            const type = item.mimeType === 'application/vnd.google-apps.folder' ? (CloudMetadata as any).Folder : (CloudMetadata as any).File
+            if ((type === (CloudMetadata as any).Folder) || this.matchesExtension(item.name)) {
               list.push(new CloudMetadata({
                 name: item.name,
                 type,
@@ -226,23 +252,26 @@ class GoogleDriveProvider extends ProviderInterface {
     })
   }
 
-  remove(metadata, callback) {
+  remove(metadata: any, callback: any) {
     return this._waitForGAPILoad().then(() => {
+      // @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'gapi'.
       const request = gapi.client.drive.files["delete"]({
         fileId: metadata.providerData.id})
-      return request.execute(result => typeof callback === 'function' ? callback((result != null ? result.error : undefined) || null) : undefined)
+      return request.execute((result: any) => typeof callback === 'function' ? callback((result != null ? result.error : undefined) || null) : undefined)
     })
   }
 
-  rename(metadata, newName, callback) {
+  rename(metadata: any, newName: any, callback: any) {
     return this._waitForGAPILoad().then(() => {
+      // @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'gapi'.
       const request = gapi.client.drive.files.patch({
         fileId: metadata.providerData.id,
         resource: {
+          // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
           title: CloudMetadata.withExtension(newName)
         }
       })
-      return request.execute((result) => {
+      return request.execute((result: any) => {
         if (result != null ? result.error : undefined) {
           return (typeof callback === 'function' ? callback(result.error) : undefined)
         } else {
@@ -253,23 +282,23 @@ class GoogleDriveProvider extends ProviderInterface {
     })
   }
 
-  close(metadata, callback) {}
+  close(metadata: any, callback: any) {}
     // nothing to do now that the realtime library was removed
 
   canOpenSaved() { return true }
 
-  openSaved(openSavedParams, callback) {
+  openSaved(openSavedParams: any, callback: any) {
     const metadata = new CloudMetadata({
-      type: CloudMetadata.File,
+      type: (CloudMetadata as any).File,
       provider: this,
       providerData: {
         id: openSavedParams
       }
     })
-    return this.load(metadata, (err, content) => callback(err, content, metadata))
+    return this.load(metadata, (err: any, content: any) => callback(err, content, metadata))
   }
 
-  getOpenSavedParams(metadata) {
+  getOpenSavedParams(metadata: any) {
     return metadata.providerData.id
   }
 
@@ -282,7 +311,9 @@ class GoogleDriveProvider extends ProviderInterface {
       const script = document.createElement('script')
       script.src = "https://apis.google.com/js/api.js"
       script.onload = () => {
+        // @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'gapi'.
         gapi.load("client:auth2", () => {
+          // @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'gapi'.
           gapi.client.init({
             apiKey: this.apiKey,
             clientId: this.clientId,
@@ -297,19 +328,20 @@ class GoogleDriveProvider extends ProviderInterface {
     })
   }
 
-  _loadFile(metadata, callback) {
+  _loadFile(metadata: any, callback: any) {
+    // @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'gapi'.
     const request = gapi.client.drive.files.get({
       fileId: metadata.providerData.id,
       fields: "id, mimeType, name, parents, capabilities(canEdit)",
     })
-    return request.execute(file => {
+    return request.execute((file: any) => {
       metadata.rename(file.name)
       metadata.overwritable = file.capabilities.canEdit
       metadata.providerData = {id: file.id}
       metadata.mimeType = file.mimeType
       if ((metadata.parent == null) && ((file.parents != null ? file.parents.length : undefined) > 0)) {
         metadata.parent = new CloudMetadata({
-          type: CloudMetadata.Folder,
+          type: (CloudMetadata as any).Folder,
           provider: this,
           providerData: {
             id: file.parents[0]
@@ -327,13 +359,13 @@ class GoogleDriveProvider extends ProviderInterface {
     })
   }
 
-  _saveFile(content, metadata, callback) {
+  _saveFile(content: any, metadata: any, callback: any) {
     const boundary = '-------314159265358979323846'
     const mimeType = metadata.mimeType || this.mimeType
     const header = JSON.stringify({
       title: metadata.filename,
       mimeType,
-      parents: [{id: (__guard__(metadata.parent != null ? metadata.parent.providerData : undefined, x => x.id) != null) ? metadata.parent.providerData.id : 'root'}]})
+      parents: [{id: (__guard__(metadata.parent != null ? metadata.parent.providerData : undefined, (x: any) => x.id) != null) ? metadata.parent.providerData.id : 'root'}]})
 
     const [method, path] = Array.from((metadata.providerData != null ? metadata.providerData.id : undefined) ?
       ['PUT', `/upload/drive/v2/files/${metadata.providerData.id}`]
@@ -352,6 +384,7 @@ class GoogleDriveProvider extends ProviderInterface {
       `\r\n--${boundary}--`
     ].join('')
 
+    // @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'gapi'.
     const request = gapi.client.request({
       path,
       method,
@@ -360,7 +393,7 @@ class GoogleDriveProvider extends ProviderInterface {
       body
     })
 
-    return request.execute(file => {
+    return request.execute((file: any) => {
       if (callback) {
         if (file != null ? file.error : undefined) {
           return callback(`Unabled to upload file: ${file.error.message}`)
@@ -374,7 +407,7 @@ class GoogleDriveProvider extends ProviderInterface {
     })
   }
 
-  _apiError(result, prefix) {
+  _apiError(result: any, prefix: any) {
     if ((result != null ? result.message : undefined) != null) {
       return `${prefix}: ${result.message}`
     } else {
@@ -386,6 +419,6 @@ GoogleDriveProvider.initClass()
 
 export default GoogleDriveProvider
 
-function __guard__(value, transform) {
+function __guard__(value: any, transform: any) {
   return (typeof value !== 'undefined' && value !== null) ? transform(value) : undefined
 }

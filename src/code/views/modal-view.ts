@@ -5,13 +5,15 @@
  * DS102: Remove unnecessary code created because of implicit returns
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
  */
+// @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'ReactDOMFactories'.
 const {div} = ReactDOMFactories
 
+// @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'createReactClass'.
 export default createReactClass({
 
   displayName: 'Modal',
 
-  watchForEscape(e) {
+  watchForEscape(e: any) {
     if (e.keyCode === 27) {
       return (typeof this.props.close === 'function' ? this.props.close() : undefined)
     }
@@ -33,7 +35,7 @@ export default createReactClass({
     }
   },
 
-  getBackgroundStyle(dimensions) {
+  getBackgroundStyle(dimensions: any) {
     if (this.props.zIndex) {
       return { zIndex: this.props.zIndex, width: dimensions.width, height: dimensions.height }
     } else {
@@ -41,7 +43,7 @@ export default createReactClass({
     }
   },
 
-  getContentStyle(dimensions) {
+  getContentStyle(dimensions: any) {
     if (this.props.zIndex) {
       return { zIndex: this.props.zIndex + 1, width: dimensions.width, height: dimensions.height }
     } else {

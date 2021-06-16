@@ -7,7 +7,7 @@
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
  */
 import { CloudMetadata }  from './provider-interface'
-import pako  from 'pako'
+import pako from 'pako'
 
 //
 // A utility class for providing sharing functionality via the Concord Document Store.
@@ -16,27 +16,30 @@ import pako  from 'pako'
 // cleaner to break out the sharing functionality into its own class.
 //
 class DocumentStoreShareProvider {
+  client: any;
+  docStoreUrl: any;
+  provider: any;
 
-  constructor(client, provider) {
+  constructor(client: any, provider: any) {
     this.client = client
     this.provider = provider
     this.docStoreUrl = this.provider.docStoreUrl
   }
 
-  loadSharedContent(id, callback) {
+  loadSharedContent(id: any, callback: any) {
     const sharedMetadata = new CloudMetadata({
       sharedContentId: id,
-      type: CloudMetadata.File,
+      type: (CloudMetadata as any).File,
       overwritable: false
     })
-    return this.provider.load(sharedMetadata, (err, content) => callback(err, content, sharedMetadata))
+    return this.provider.load(sharedMetadata, (err: any, content: any) => callback(err, content, sharedMetadata))
   }
 
-  getSharingMetadata(shared) {
+  getSharingMetadata(shared: any) {
     return { _permissions: shared ? 1 : 0 }
   }
 
-  share(shared, masterContent, sharedContent, metadata, callback) {
+  share(shared: any, masterContent: any, sharedContent: any, metadata: any, callback: any) {
 
     // document ID is stored in masterContent
     let method, url
@@ -51,7 +54,7 @@ class DocumentStoreShareProvider {
 
     const params = {shared}
     if (accessKey) {
-      params.accessKey = `RW::${accessKey}`
+      (params as any).accessKey = `RW::${accessKey}`
     }
 
     // if we already have a documentID and some form of accessKey,

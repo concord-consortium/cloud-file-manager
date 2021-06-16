@@ -9,15 +9,19 @@
 import tr  from '../utils/translate'
 import { CloudMetadata }  from '../providers/provider-interface'
 import modalDialogView from './modal-dialog-view'
+// @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'ReactDOMFactories'.
 const {div, input, a, button} = ReactDOMFactories
+// @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'createReactFactory'.
 const ModalDialog = createReactFactory(modalDialogView)
 
 
+// @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'createReactClass'.
 export default createReactClass({
 
   displayName: 'DownloadDialogView',
 
   getInitialState() {
+    // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 2.
     const filename = CloudMetadata.withExtension(this.props.filename || (tr("~MENUBAR.UNTITLED_DOCUMENT")), 'json')
     return {
       filename,
@@ -43,11 +47,11 @@ export default createReactClass({
     return this.setState({includeShareInfo: this.includeShareInfoRef.checked})
   },
 
-  trim(s) {
+  trim(s: any) {
     return s.replace(/^\s+|\s+$/, '')
   },
 
-  download(e, simulateClick) {
+  download(e: any, simulateClick: any) {
     if (!this.downloadDisabled()) {
       this.downloadRef.setAttribute('href', this.props.client.getDownloadUrl(this.props.content, this.state.includeShareInfo))
       if (simulateClick) { this.downloadRef.click() }
@@ -64,7 +68,7 @@ export default createReactClass({
     return this.state.trimmedFilename.length === 0
   },
 
-  watchForEnter(e) {
+  watchForEnter(e: any) {
     if ((e.keyCode === 13) && !this.downloadDisabled()) {
       e.preventDefault()
       e.stopPropagation()
@@ -73,19 +77,23 @@ export default createReactClass({
   },
 
   render() {
-    return (ModalDialog({title: (tr('~DIALOG.DOWNLOAD')), close: this.props.close},
+    // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
+    return ModalDialog({title: (tr('~DIALOG.DOWNLOAD')), close: this.props.close},
       (div({className: 'download-dialog'},
-        (input({type: 'text', ref: (elt => { return this.filenameRef = elt }), placeholder: 'Filename', value: this.state.filename, onChange: this.updateFilename, onKeyDown: this.watchForEnter})),
+        (input({type: 'text', ref: ((elt: any) => { return this.filenameRef = elt }), placeholder: 'Filename', value: this.state.filename, onChange: this.updateFilename, onKeyDown: this.watchForEnter})),
         this.state.shared ?
           (div({className: 'download-share'},
-            (input({type: 'checkbox', ref: (elt => { return this.includeShareInfoRef = elt }), value: this.state.includeShareInfo, onChange: this.updateIncludeShareInfo})),
+            (input({type: 'checkbox', ref: ((elt: any) => { return this.includeShareInfoRef = elt }), value: this.state.includeShareInfo, onChange: this.updateIncludeShareInfo})),
+            // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
             (tr('~DOWNLOAD_DIALOG.INCLUDE_SHARE_INFO'))
           )) : undefined,
         (div({className: 'buttons'},
-          (a({href: '#', ref: (elt => { return this.downloadRef = elt }), className: (this.downloadDisabled() ? 'disabled' : ''), download: this.state.trimmedFilename, onClick: this.download}, tr('~DOWNLOAD_DIALOG.DOWNLOAD'))),
+          // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
+          (a({href: '#', ref: ((elt: any) => { return this.downloadRef = elt }), className: (this.downloadDisabled() ? 'disabled' : ''), download: this.state.trimmedFilename, onClick: this.download}, tr('~DOWNLOAD_DIALOG.DOWNLOAD'))),
+          // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
           (button({onClick: this.props.close}, tr('~DOWNLOAD_DIALOG.CANCEL')))
         ))
       ))
-    ))
+    )
   }
 })

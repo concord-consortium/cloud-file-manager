@@ -6,17 +6,22 @@
  * DS207: Consider shorter variations of null checks
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
  */
-import tr  from '../utils/translate'
+import tr from '../utils/translate'
 
 import { ProviderInterface }  from './provider-interface'
 import { cloudContentFactory }  from './provider-interface'
 import { CloudMetadata }  from './provider-interface'
 
 class LocalStorageProvider extends ProviderInterface {
-  constructor(options, client) {
+  static Name = 'localStorage';
+  client: any;
+  options: any;
+
+  constructor(options: any, client: any) {
     const opts = options || {}
     super({
       name: LocalStorageProvider.Name,
+      // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
       displayName: opts.displayName || (tr('~PROVIDER.LOCAL_STORAGE')),
       urlDisplayName: opts.urlDisplayName,
       capabilities: {
@@ -44,7 +49,7 @@ class LocalStorageProvider extends ProviderInterface {
     }
   }
 
-  save(content, metadata, callback) {
+  save(content: any, metadata: any, callback: any) {
     try {
       const fileKey = this._getKey(metadata.filename)
       window.localStorage.setItem(fileKey, ((typeof content.getContentAsJSON === 'function' ? content.getContentAsJSON() : undefined) || content))
@@ -54,7 +59,7 @@ class LocalStorageProvider extends ProviderInterface {
     }
   }
 
-  load(metadata, callback) {
+  load(metadata: any, callback: any) {
     try {
       const content = window.localStorage.getItem(this._getKey(metadata.filename))
       return callback(null, cloudContentFactory.createEnvelopedCloudContent(content))
@@ -63,7 +68,7 @@ class LocalStorageProvider extends ProviderInterface {
     }
   }
 
-  list(metadata, callback) {
+  list(metadata: any, callback: any) {
     const list = []
     const prefix = this._getKey(((metadata != null ? metadata.path() : undefined) || []).join('/'))
     for (let key of Object.keys(window.localStorage || {})) {
@@ -74,7 +79,7 @@ class LocalStorageProvider extends ProviderInterface {
         if (this.matchesExtension(name)) {
           list.push(new CloudMetadata({
             name,
-            type: remainder.length > 0 ? CloudMetadata.Folder : CloudMetadata.File,
+            type: remainder.length > 0 ? (CloudMetadata as any).Folder : (CloudMetadata as any).File,
             parent: metadata,
             provider: this
           })
@@ -85,7 +90,7 @@ class LocalStorageProvider extends ProviderInterface {
     return callback(null, list)
   }
 
-  remove(metadata, callback) {
+  remove(metadata: any, callback: any) {
     try {
       window.localStorage.removeItem(this._getKey(metadata.filename))
       return (typeof callback === 'function' ? callback(null) : undefined)
@@ -94,9 +99,10 @@ class LocalStorageProvider extends ProviderInterface {
     }
   }
 
-  rename(metadata, newName, callback) {
+  rename(metadata: any, newName: any, callback: any) {
     try {
       const content = window.localStorage.getItem(this._getKey(metadata.filename))
+      // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
       window.localStorage.setItem(this._getKey(CloudMetadata.withExtension(newName)), content)
       window.localStorage.removeItem(this._getKey(metadata.filename))
       metadata.rename(newName)
@@ -108,21 +114,21 @@ class LocalStorageProvider extends ProviderInterface {
 
   canOpenSaved() { return true }
 
-  openSaved(openSavedParams, callback) {
+  openSaved(openSavedParams: any, callback: any) {
     const metadata = new CloudMetadata({
       name: openSavedParams,
-      type: CloudMetadata.File,
+      type: (CloudMetadata as any).File,
       parent: null,
       provider: this
     })
-    return this.load(metadata, (err, content) => callback(err, content, metadata))
+    return this.load(metadata, (err: any, content: any) => callback(err, content, metadata))
   }
 
-  getOpenSavedParams(metadata) {
+  getOpenSavedParams(metadata: any) {
     return metadata.name
   }
 
-  _getKey(name) {
+  _getKey(name: any) {
     if (name == null) { name = '' }
     return `cfm::${name.replace(/\t/g, ' ')}`
   }

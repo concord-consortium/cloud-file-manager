@@ -12,13 +12,17 @@ import modalTabbedDialogView from './modal-tabbed-dialog-view'
 import localfileTabListView from './local-file-tab-list-view'
 import urlTabView from './url-tab-view'
 
+// @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'createReactFactory'.
 const ModalTabbedDialog = createReactFactory(modalTabbedDialogView)
+// @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'createReactFactory'.
 const LocalFileTab = createReactFactory(localfileTabListView)
+// @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'createReactFactory'.
 const UrlTab = createReactFactory(urlTabView)
+// @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'createReactClass'.
 export default createReactClass({
   displayName: 'ImportTabbedDialog',
 
-  importFile(metadata, via) {
+  importFile(metadata: any, via: any) {
     switch (metadata.provider) {
       case 'localFile':
         var reader = new FileReader()
@@ -37,7 +41,7 @@ export default createReactClass({
     }
   },
 
-  importUrl(url, via) {
+  importUrl(url: any, via: any) {
     return (typeof this.props.dialog.callback === 'function' ? this.props.dialog.callback({url, via}) : undefined)
   },
 
@@ -45,6 +49,7 @@ export default createReactClass({
     const tabs = [
       TabbedPanel.Tab({
         key: 0,
+        // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
         label: (tr("~IMPORT.LOCAL_FILE")),
         component: LocalFileTab({
           client: this.props.client,
@@ -57,6 +62,7 @@ export default createReactClass({
       }),
       TabbedPanel.Tab({
         key: 1,
+        // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
         label: (tr("~IMPORT.URL")),
         component: UrlTab({
           client: this.props.client,
@@ -67,6 +73,7 @@ export default createReactClass({
         })
       })
     ]
+    // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
     return (ModalTabbedDialog({title: (tr("~DIALOG.IMPORT_DATA")), close: this.props.close, tabs, selectedTabIndex: 0}))
   }
 })

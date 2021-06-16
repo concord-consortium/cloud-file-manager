@@ -91,7 +91,7 @@ const appConfig = (env) => ({
   // https://www.npmjs.com/package/webpack-merge
   ...baseConfig(env),
   entry: {
-    'js/app.js': './code/app.jsx'
+    'js/app.js': './code/app.tsx'
     // 'app.js': './code/app.jsx' to put at top level rather than in js/css subdirs
   },
   externals : {
@@ -107,7 +107,7 @@ const appConfig = (env) => ({
 const globalsConfig = (env) => ({
   ...baseConfig(env),
   entry: {
-    'js/globals.js': './code/globals.js'
+    'js/globals.js': './code/globals.ts'
     // 'globals.js': './code/globals.js' to put at top level rather than in js/css subdirs
   }
 })
@@ -115,7 +115,7 @@ const globalsConfig = (env) => ({
 const autolaunchConfig = (env) => ({
   ...baseConfig(env),
   entry: {
-    'autolaunch/autolaunch.js': './code/autolaunch/autolaunch.js',
+    'autolaunch/autolaunch.js': './code/autolaunch/autolaunch.ts',
   }
 })
 

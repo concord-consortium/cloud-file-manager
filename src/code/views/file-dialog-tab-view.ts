@@ -13,9 +13,11 @@ import { CloudMetadata }  from '../providers/provider-interface'
 
 import tr  from '../utils/translate'
 
+// @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'ReactDOMFactories'.
 let {div, i, input, button} = ReactDOMFactories
 const italic = i
 
+// @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'createReactClassFactory'.
 const FileListFile = createReactClassFactory({
   displayName: 'FileListFile',
 
@@ -23,7 +25,7 @@ const FileListFile = createReactClassFactory({
     return this.lastClick = 0
   },
 
-  fileSelected(e) {
+  fileSelected(e: any) {
     e.preventDefault()
     e.stopPropagation()
     const now = (new Date()).getTime()
@@ -35,20 +37,21 @@ const FileListFile = createReactClassFactory({
   },
 
   render() {
-    const selectableClass = this.props.metadata.type !== CloudMetadata.Label ? 'selectable' : ''
+    const selectableClass = this.props.metadata.type !== (CloudMetadata as any).Label ? 'selectable' : ''
     const selectedClass = this.props.selected ? 'selected' : ''
     const subFolderClass = this.props.isSubFolder ? 'subfolder' : ''
     return (div({className: `${selectableClass} ${selectedClass} ${subFolderClass}`
           , title: this.props.metadata.description || undefined
-          , onClick: this.props.metadata.type !== CloudMetadata.Label ? this.fileSelected : undefined },
+          , onClick: this.props.metadata.type !== (CloudMetadata as any).Label ? this.fileSelected : undefined },
       (italic({className: (() => {
-        if (this.props.metadata.type === CloudMetadata.Folder) { return 'icon-inspectorArrow-collapse' } else if (this.props.metadata.type === CloudMetadata.File) { return 'icon-noteTool' }
+        if (this.props.metadata.type === (CloudMetadata as any).Folder) { return 'icon-inspectorArrow-collapse' } else if (this.props.metadata.type === (CloudMetadata as any).File) { return 'icon-noteTool' }
       })()})),
       this.props.metadata.name
     ))
   }
 })
 
+// @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'createReactClassFactory'.
 const FileList = createReactClassFactory({
   displayName: 'FileList',
 
@@ -61,7 +64,7 @@ const FileList = createReactClassFactory({
     return this.load(this.props.folder)
   },
 
-  UNSAFE_componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps: any) {
     if (nextProps.folder !== this.props.folder) {
       return this.load(nextProps.folder)
     }
@@ -71,19 +74,18 @@ const FileList = createReactClassFactory({
     return this._isMounted = false
   },
 
-  load(folder) {
-    return this.props.provider.list(folder, (err, list) => {
+  load(folder: any) {
+    return this.props.provider.list(folder, (err: any, list: any) => {
       if (err) { return this.props.client.alert(err) }
       // asynchronous callback may be called after dialog has been dismissed
       if (this._isMounted) {
-        this.setState({
-          loading: false})
+        this.setState({ loading: false })
       }
       return this.props.listLoaded(list)
     })
   },
 
-  parentSelected(e) {
+  parentSelected(e: any) {
     return this.props.fileSelected(this.props.folder != null ? this.props.folder.parent : undefined)
   },
 
@@ -100,6 +102,7 @@ const FileList = createReactClassFactory({
 
     return (div({className: 'filelist'},
       this.state.loading ?
+        // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
         tr("~FILE_DIALOG.LOADING")
       :
         list
@@ -107,6 +110,7 @@ const FileList = createReactClassFactory({
   }
 })
 
+// @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'createReactClass'.
 const FileDialogTab = createReactClass({
   displayName: 'FileDialogTab',
 
@@ -147,7 +151,7 @@ const FileDialogTab = createReactClass({
     // in componentDidMount(). Providers that require asynchronous checks
     // for authorization may return before or after the first render, so
     // code should be prepared for either eventuality.
-    return this.props.provider.authorized(authorized => {
+    return this.props.provider.authorized((authorized: any) => {
       // always set the instance variable
       this._isAuthorized = authorized
       // set the state if we can
@@ -184,7 +188,7 @@ const FileDialogTab = createReactClass({
     return this.props.dialog.action === 'openFile'
   },
 
-  filenameChanged(e) {
+  filenameChanged(e: any) {
     const filename = e.target.value
     return this.setState({
       filename,
@@ -192,7 +196,7 @@ const FileDialogTab = createReactClass({
     })
   },
 
-  listLoaded(list) {
+  listLoaded(list: any) {
     // asynchronous callback may be called after dialog has been dismissed
     if (this._isMounted) {
       return this.setState({list})
@@ -204,9 +208,11 @@ const FileDialogTab = createReactClass({
     // provider must be cloned, but without cloning the provider field.
     // Furthermore, if the provider has changed, the provider and providerData
     // fields should be cleared.
+    // @ts-expect-error ts-migrate(2686) FIXME: '_' refers to a UMD global, but the current file i... Remove this comment to see the full error message
     const saveMetadata = this.props.client.state.metadata ? _.clone(this.props.client.state.metadata) : null
     if (saveMetadata) {
       if (this.props.provider === saveMetadata.provider) {
+        // @ts-expect-error ts-migrate(2686) FIXME: '_' refers to a UMD global, but the current file i... Remove this comment to see the full error message
         saveMetadata.providerData = _.cloneDeep(saveMetadata.providerData)
       } else {
         saveMetadata.provider = null
@@ -217,7 +223,7 @@ const FileDialogTab = createReactClass({
     return saveMetadata
   },
 
-  getStateForFolder(folder, initialFolder) {
+  getStateForFolder(folder: any, initialFolder: any) {
     const metadata = this.isOpen() ? (this.state != null ? this.state.metadata : undefined) || null : this.getSaveMetadata()
 
     if (initialFolder && ((this.props.client.state.metadata != null ? this.props.client.state.metadata.provider : undefined) !== this.props.provider)) {
@@ -231,14 +237,15 @@ const FileDialogTab = createReactClass({
     return {
       folder,
       metadata,
+      // @ts-expect-error ts-migrate(7018) FIXME: Object literal's property 'list' implicitly has an... Remove this comment to see the full error message
       list: []
     }
   },
 
-  fileSelected(metadata) {
-    if ((metadata != null ? metadata.type : undefined) === CloudMetadata.Folder) {
+  fileSelected(metadata: any) {
+    if ((metadata != null ? metadata.type : undefined) === (CloudMetadata as any).Folder) {
       return this.setState(this.getStateForFolder(metadata))
-    } else if ((metadata != null ? metadata.type : undefined) === CloudMetadata.File) {
+    } else if ((metadata != null ? metadata.type : undefined) === (CloudMetadata as any).File) {
       return this.setState({
         filename: metadata.name,
         metadata
@@ -249,7 +256,7 @@ const FileDialogTab = createReactClass({
   },
 
   confirm() {
-    const confirmed = _metadata => {
+    const confirmed = (_metadata: any) => {
       const metadata = _metadata
       // ensure the metadata provider is the currently-showing tab
       if (metadata.provider !== this.props.provider) {
@@ -281,7 +288,7 @@ const FileDialogTab = createReactClass({
     } else {
       return confirmed(new CloudMetadata({
         name: filename,
-        type: CloudMetadata.File,
+        type: (CloudMetadata as any).File,
         parent: this.state.folder || null,
         provider: this.props.provider
       })
@@ -290,10 +297,12 @@ const FileDialogTab = createReactClass({
   },
 
   remove() {
-    if (this.state.metadata && (this.state.metadata.type !== CloudMetadata.Folder)) {
+    if (this.state.metadata && (this.state.metadata.type !== (CloudMetadata as any).Folder)) {
+      // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 2.
       return this.props.client.confirm(tr("~FILE_DIALOG.REMOVE_CONFIRM", {filename: this.state.metadata.name}), () => {
-        return this.props.provider.remove(this.state.metadata, err => {
+        return this.props.provider.remove(this.state.metadata, (err: any) => {
           if (!err) {
+            // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 2.
             this.props.client.alert(tr("~FILE_DIALOG.REMOVED_MESSAGE", {filename: this.state.metadata.name}), tr("~FILE_DIALOG.REMOVED_TITLE"))
             const list = this.state.list.slice(0)
             const index = list.indexOf(this.state.metadata)
@@ -313,16 +322,16 @@ const FileDialogTab = createReactClass({
     return this.props.close()
   },
 
-  findMetadata(filename, list) {
+  findMetadata(filename: any, list: any) {
     for (let metadata of Array.from(list)) {
-      if (metadata.name === filename) {
+      if ((metadata as any).name === filename) {
         return metadata
       }
     }
     return null
   },
 
-  watchForEnter(e) {
+  watchForEnter(e: any) {
     if ((e.keyCode === 13) && !this.confirmDisabled()) {
       return this.confirm()
     }
@@ -334,15 +343,19 @@ const FileDialogTab = createReactClass({
 
   renderWhenAuthorized() {
     const confirmDisabled = this.confirmDisabled()
-    const removeDisabled = (this.state.metadata === null) || (this.state.metadata.type === CloudMetadata.Folder)
+    const removeDisabled = (this.state.metadata === null) || (this.state.metadata.type === (CloudMetadata as any).Folder)
 
     return (div({className: 'dialogTab'},
+      // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
       (input({type: 'text', value: this.state.filename, placeholder: (tr("~FILE_DIALOG.FILENAME")), onChange: this.filenameChanged, onKeyDown: this.watchForEnter})),
       (FileList({provider: this.props.provider, folder: this.state.folder, selectedFile: this.state.metadata, fileSelected: this.fileSelected, fileConfirmed: this.confirm, list: this.state.list, listLoaded: this.listLoaded, client: this.props.client})),
       (div({className: 'buttons'},
+        // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
         (button({onClick: this.confirm, disabled: confirmDisabled, className: confirmDisabled ? 'disabled' : ''}, this.isOpen() ? (tr("~FILE_DIALOG.OPEN")) : (tr("~FILE_DIALOG.SAVE")))),
         this.props.provider.can('remove') ?
+          // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
           (button({onClick: this.remove, disabled: removeDisabled, className: removeDisabled ? 'disabled' : ''}, (tr("~FILE_DIALOG.REMOVE")))) : undefined,
+        // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
         (button({onClick: this.cancel}, (tr("~FILE_DIALOG.CANCEL"))))
       ))
     ))

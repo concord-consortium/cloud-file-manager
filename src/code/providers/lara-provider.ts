@@ -15,6 +15,7 @@ import { CloudMetadata }  from './provider-interface'
 import DocumentStoreUrl  from './document-store-url'
 import PatchableContent  from './patchable-content'
 import getQueryParam  from '../utils/get-query-param'
+// @ts-expect-error ts-migrate(7016) FIXME: Could not find a declaration file for module 'js-b... Remove this comment to see the full error message
 import { Base64 }  from 'js-base64'
 import pako  from 'pako'
 
@@ -26,16 +27,27 @@ import pako  from 'pako'
 // places users can choose to open/save files like Google Drive does.
 
 class LaraProvider extends ProviderInterface {
-  static initClass() {
+  Name: any;
+  client: any;
+  collaboratorUrls: any;
+  docStoreUrl: any;
+  laraParams: any;
+  openSavedParams: any;
+  options: any;
+  removableQueryParams: any;
+  savedContent: any;
+  urlParams: any;
 
-    this.Name = 'lara'
+  static initClass() {
+    (this as any).Name = 'lara'
   }
 
-  constructor(options, client) {
+  constructor(options: any, client: any) {
     const opts = options || {}
 
+    // @ts-expect-error ts-migrate(2345) FIXME: Argument of type '{ name: any; capabilities: { sav... Remove this comment to see the full error message
     super({
-      name: LaraProvider.Name,
+      name: (LaraProvider as any).Name,
       capabilities: {
         save: true,
         resave: true,
@@ -61,14 +73,15 @@ class LaraProvider extends ProviderInterface {
 
     this.docStoreUrl = new DocumentStoreUrl(this.urlParams.documentServer)
 
+    // @ts-expect-error ts-migrate(2554) FIXME: Expected 2 arguments, but got 1.
     this.savedContent = new PatchableContent(this.options.patchObjectHash)
   }
 
-  encodeParams(params) {
+  encodeParams(params: any) {
     return Base64.encodeURI(JSON.stringify(params))
   }
 
-  decodeParams(params) {
+  decodeParams(params: any) {
     let decoded
     try {
       decoded = JSON.parse(Base64.decode(params))
@@ -87,18 +100,19 @@ class LaraProvider extends ProviderInterface {
     }
   }
 
-  logLaraData(laraData) {
+  logLaraData(laraData: any) {
     if (this.collaboratorUrls != null ? this.collaboratorUrls.length : undefined) { laraData.collaboratorUrls = this.collaboratorUrls }
     if (this.options.logLaraData) { this.options.logLaraData(laraData) }
     return this.client.log('logLaraData', laraData)
   }
 
   // don't show in provider open/save dialogs
-  filterTabComponent(capability, defaultComponent) {
+  // @ts-expect-error ts-migrate(7010) FIXME: 'filterTabComponent', which lacks return-type anno... Remove this comment to see the full error message
+  filterTabComponent(capability: any, defaultComponent: any) {
     return null
   }
 
-  extractRawDataFromRunState(runState) {
+  extractRawDataFromRunState(runState: any) {
     let rawData = (runState != null ? runState.raw_data : undefined) || {}
     if (typeof rawData === "string") {
       try {
@@ -110,20 +124,20 @@ class LaraProvider extends ProviderInterface {
     return rawData
   }
 
-  can(capability, metadata) {
-    const hasReadOnlyAccess = (__guard__(__guard__(metadata != null ? metadata.providerData : undefined, x1 => x1.accessKeys), x => x.readOnly) != null) &&
-                        (__guard__(__guard__(metadata != null ? metadata.providerData : undefined, x3 => x3.accessKeys), x2 => x2.readWrite) == null)
+  can(capability: any, metadata: any) {
+    const hasReadOnlyAccess = (__guard__(__guard__(metadata != null ? metadata.providerData : undefined, (x1: any) => x1.accessKeys), (x: any) => x.readOnly) != null) &&
+                        (__guard__(__guard__(metadata != null ? metadata.providerData : undefined, (x3: any) => x3.accessKeys), (x2: any) => x2.readWrite) == null)
     const requiresWriteAccess = ['save', 'resave', 'remove', 'rename'].indexOf(capability) >= 0
     return super.can(capability, metadata) && !(requiresWriteAccess && hasReadOnlyAccess)
   }
 
-  load(metadata, callback) {
+  load(metadata: any, callback: any) {
     let accessKey
     const {method, url} = this.docStoreUrl.v2LoadDocument(metadata.providerData != null ? metadata.providerData.recordid : undefined)
 
-    if (__guard__(metadata.providerData != null ? metadata.providerData.accessKeys : undefined, x => x.readOnly)) {
+    if (__guard__(metadata.providerData != null ? metadata.providerData.accessKeys : undefined, (x: any) => x.readOnly)) {
       accessKey = `RO::${metadata.providerData.accessKeys.readOnly}`
-    } else if (__guard__(metadata.providerData != null ? metadata.providerData.accessKeys : undefined, x1 => x1.readWrite)) {
+    } else if (__guard__(metadata.providerData != null ? metadata.providerData.accessKeys : undefined, (x1: any) => x1.readWrite)) {
       accessKey = `RW::${metadata.providerData.accessKeys.readWrite}`
     }
 
@@ -163,7 +177,8 @@ class LaraProvider extends ProviderInterface {
     })
   }
 
-  save(cloudContent, metadata, callback, disablePatch) {
+  // @ts-expect-error ts-migrate(2416) FIXME: Property 'save' in type 'LaraProvider' is not assi... Remove this comment to see the full error message
+  save(cloudContent: any, metadata: any, callback: any, disablePatch: any) {
     const content = cloudContent.getContent()
 
     // See if we can patch
@@ -178,11 +193,11 @@ class LaraProvider extends ProviderInterface {
 
     const params = {}
     if (!patchResults.shouldPatch && metadata.filename) {
-      params.recordname = metadata.filename
+      (params as any).recordname = metadata.filename
     }
 
-    if (__guard__(__guard__(metadata != null ? metadata.providerData : undefined, x1 => x1.accessKeys), x => x.readWrite) != null) {
-      params.accessKey = `RW::${metadata.providerData.accessKeys.readWrite}`
+    if (__guard__(__guard__(metadata != null ? metadata.providerData : undefined, (x1: any) => x1.accessKeys), (x: any) => x.readWrite) != null) {
+      (params as any).accessKey = `RW::${metadata.providerData.accessKeys.readWrite}`
     }
 
     const {method, url} = patchResults.shouldPatch
@@ -196,7 +211,7 @@ class LaraProvider extends ProviderInterface {
       method,
       // elide all but first two chars of accessKey
       url: url.substr(0, url.indexOf('accessKey') + 16) + '...',
-      params: JSON.stringify({ recordname: params.recordname }),
+      params: JSON.stringify({ recordname: (params as any).recordname }),
       content: patchResults.sendContent.substr(0, 512)
     }
     this.client.log('save', logData)
@@ -213,6 +228,7 @@ class LaraProvider extends ProviderInterface {
       },
       context: this,
       success(data) {
+        // @ts-expect-error ts-migrate(2686) FIXME: '_' refers to a UMD global, but the current file i... Remove this comment to see the full error message
         this.savedContent.updateContent(this.options.patch ? _.cloneDeep(content) : null)
         if (data.recordid) { metadata.providerData.recordid = data.recordid }
 
@@ -242,9 +258,10 @@ class LaraProvider extends ProviderInterface {
 
   canOpenSaved() { return true }
 
-  openSaved(openSavedParams, callback) {
+  openSaved(openSavedParams: any, callback: any) {
     const metadata = new CloudMetadata({
-      type: CloudMetadata.File,
+      type: (CloudMetadata as any).File,
+      // @ts-expect-error ts-migrate(2322) FIXME: Type 'this' is not assignable to type 'ProviderInt... Remove this comment to see the full error message
       provider: this
     })
 
@@ -253,11 +270,11 @@ class LaraProvider extends ProviderInterface {
     }
 
     this.openSavedParams = openSavedParams
-    this.collaboratorUrls = __guard__(openSavedParams != null ? openSavedParams.collaboratorUrls : undefined, x => x.length) > 0 ? openSavedParams.collaboratorUrls : []
+    this.collaboratorUrls = __guard__(openSavedParams != null ? openSavedParams.collaboratorUrls : undefined, (x: any) => x.length) > 0 ? openSavedParams.collaboratorUrls : []
 
-    const loadProviderFile = (providerData, callback) => {
+    const loadProviderFile = (providerData: any, callback: any) => {
       metadata.providerData = providerData
-      return this.load(metadata, (err, content) => {
+      return this.load(metadata, (err: any, content: any) => {
         this.client.removeQueryParams(this.removableQueryParams)
         return callback(err, content, metadata)
       })
@@ -271,14 +288,15 @@ class LaraProvider extends ProviderInterface {
     //
     // Process the initial run state response
     //
-    const processInitialRunState = (runStateUrl, sourceID, readOnlyKey, runState) => {
+    const processInitialRunState = (runStateUrl: any, sourceID: any, readOnlyKey: any, runState: any) => {
       const existingRunState = this.extractRawDataFromRunState(runState)
       let { docStore } = existingRunState
 
       const haveCollaborators = this.collaboratorUrls.length > 0
 
-      const updateInteractiveRunStates = function(urls, newDocStore, callback) {
+      const updateInteractiveRunStates = function(urls: any, newDocStore: any, callback: any) {
 
+        // @ts-expect-error ts-migrate(2686) FIXME: '_' refers to a UMD global, but the current file i... Remove this comment to see the full error message
         const newRunState = _.cloneDeep(existingRunState)
         newRunState.docStore = newDocStore
 
@@ -286,7 +304,7 @@ class LaraProvider extends ProviderInterface {
         const learnerUrl = (newRunState.learner_url != null) && (typeof newRunState.learner_url === "string") ? newRunState.learner_url : null
         const learnerParam = learnerUrl ? `&learner_url=${encodeURIComponent(learnerUrl)}` : ""
 
-        const updateRunState = (url, done) =>
+        const updateRunState = (url: any, done: any) =>
           $.ajax({
             type: 'PUT',
             url: `${url}?raw_data=${encodeURIComponent(rawData)}${learnerParam}`,
@@ -309,7 +327,7 @@ class LaraProvider extends ProviderInterface {
             return callback(null)
           } else {
             const url = urlQueue.shift()
-            return updateRunState(url, function(err) {
+            return updateRunState(url, function(err: any) {
               if (err) {
                 return callback(err)
               } else {
@@ -321,7 +339,7 @@ class LaraProvider extends ProviderInterface {
         return processQueue()
       }
 
-      const processCreateResponse = createResponse => {
+      const processCreateResponse = (createResponse: any) => {
         docStore = {
           recordid: createResponse.id,
           accessKeys: {
@@ -347,7 +365,7 @@ class LaraProvider extends ProviderInterface {
       // Check if we have a document associated with this run state already (2a) or not (2b)
       if (((docStore != null ? docStore.recordid : undefined) != null) && (((docStore.accessKeys != null ? docStore.accessKeys.readOnly : undefined) != null) || ((docStore.accessKeys != null ? docStore.accessKeys.readWrite : undefined) != null))) {
 
-        const cloneDoc = callback => {
+        const cloneDoc = (callback: any) => {
           const createParams = {
             source: docStore.recordid,
             accessKey: `RO::${docStore.accessKeys.readOnly}`
@@ -364,24 +382,25 @@ class LaraProvider extends ProviderInterface {
               documentID: docStore.recordid,
               documentUrl: url
             }
-            if ((existingRunState != null ? existingRunState.run_remote_endpoint : undefined) != null) { laraData.run_remote_endpoint = existingRunState.run_remote_endpoint }
+            if ((existingRunState != null ? existingRunState.run_remote_endpoint : undefined) != null) { (laraData as any).run_remote_endpoint = existingRunState.run_remote_endpoint }
             this.logLaraData(laraData)
             processCreateResponse(createResponse)
             return callback(null)
         }).fail((jqXHR, status, error) => callback("Could not open the specified document because an error occurred [createCopy]"))
         }
 
-        const setFollowers = (err, callback) => {
+        const setFollowers = (err: any, callback: any) => {
           if (err) {
             return callback(err)
           } else {
+            // @ts-expect-error ts-migrate(2686) FIXME: '_' refers to a UMD global, but the current file i... Remove this comment to see the full error message
             const collaboratorParams = _.cloneDeep(docStore)
             collaboratorParams.collaborator = 'follower'
             return updateInteractiveRunStates(this.collaboratorUrls, collaboratorParams, callback)
           }
         }
 
-        const becomeLeader = function(err, callback) {
+        const becomeLeader = function(err: any, callback: any) {
           if (err) {
             return callback(err)
           } else {
@@ -390,7 +409,7 @@ class LaraProvider extends ProviderInterface {
           }
         }
 
-        const removeCollaborator = function(err, callback) {
+        const removeCollaborator = function(err: any, callback: any) {
           if (err) {
             return callback(err)
           } else {
@@ -399,10 +418,11 @@ class LaraProvider extends ProviderInterface {
           }
         }
 
-        const finished = function(err) {
+        const finished = function(err: any) {
           if (err) {
             return callback(err)
           } else {
+            // @ts-expect-error ts-migrate(2686) FIXME: '_' refers to a UMD global, but the current file i... Remove this comment to see the full error message
             return loadProviderFile(_.cloneDeep(docStore), callback)
           }
         }
@@ -415,23 +435,24 @@ class LaraProvider extends ProviderInterface {
               return setFollowers(null, finished)
             } else {
               // the current user has gone from leader to solo mode so clone the document to preserve the collaborated document and update the run state to remove collaborator
-              return cloneDoc(err => removeCollaborator(err, finished))
+              return cloneDoc((err: any) => removeCollaborator(err, finished))
             }
           } else {
             if (haveCollaborators) {
               // the current user has switched from follower to leader so clone the existing leader document, become the new leader and update the followers and load the new document
-              return cloneDoc(err => becomeLeader(err, (err => setFollowers(err, finished))))
+              return cloneDoc((err: any) => becomeLeader(err, ((err: any) => setFollowers(err, finished))))
             } else {
               // the current user has switched from follower to solo mode so clone the existing leader document, update the run state to remove the collaborator and load the new document
-              return cloneDoc(err => removeCollaborator(err, finished))
+              return cloneDoc((err: any) => removeCollaborator(err, finished))
             }
           }
         } else {
           if (haveCollaborators) {
             // the current user has switched from solo mode to leader so update both the user's and the collaborators run states using the existing document
-            return becomeLeader(null, err => setFollowers(err, finished))
+            return becomeLeader(null, (err: any) => setFollowers(err, finished))
           } else {
             // the current user has opened an existing solo mode file so just open it
+            // @ts-expect-error ts-migrate(2554) FIXME: Expected 1 arguments, but got 0.
             return finished()
           }
         }
@@ -444,21 +465,22 @@ class LaraProvider extends ProviderInterface {
       }
 
       // Called after docstore has created a document for us.
-      const afterCreateCopy = (createResponse, status, jqXHR) => {
+      const afterCreateCopy = (createResponse: any, status: any, jqXHR: any) => {
         processCreateResponse(createResponse)
         if (haveCollaborators) {
           docStore.collaborator = 'leader'
         }
+        // @ts-expect-error ts-migrate(2686) FIXME: '_' refers to a UMD global, but the current file i... Remove this comment to see the full error message
         const providerData = _.merge({}, docStore, { url: runStateUrl })
         const updateFinished = () => loadProviderFile(providerData, callback)
 
         // update the owners interactive run state
-        return updateInteractiveRunStates([runStateUrl], docStore, err => {
+        return updateInteractiveRunStates([runStateUrl], docStore, (err: any) => {
           if (err) {
             return callback(err)
           } else if (haveCollaborators) {
             docStore.collaborator = 'follower'
-            return updateInteractiveRunStates(this.collaboratorUrls, docStore, function(err) {
+            return updateInteractiveRunStates(this.collaboratorUrls, docStore, function(err: any) {
               if (err) {
                 return callback(err)
               } else {
@@ -471,7 +493,7 @@ class LaraProvider extends ProviderInterface {
         })
       }
 
-      const onError = (jqXHR, status, error) => {
+      const onError = (jqXHR: any, status: any, error: any) => {
         callback("Could not open the specified document because an error occurred [createCopy]")
       }
 
@@ -516,7 +538,7 @@ class LaraProvider extends ProviderInterface {
         const createParams = { source: sourceID }
         // add a key if given (for copying linked run states)
         if (readOnlyKey) {
-          createParams.accessKey = `RO::${readOnlyKey}`
+          (createParams as any).accessKey = `RO::${readOnlyKey}`
         }
         const {method, url} = this.docStoreUrl.v2CreateDocument(createParams)
         return $.ajax({
@@ -549,7 +571,7 @@ class LaraProvider extends ProviderInterface {
           runStateUrl: openSavedParams.url,
           documentID: openSavedParams.source
         }
-        if ((data != null ? data.run_remote_endpoint : undefined) != null) { laraData.run_remote_endpoint = data.run_remote_endpoint }
+        if ((data != null ? data.run_remote_endpoint : undefined) != null) { (laraData as any).run_remote_endpoint = data.run_remote_endpoint }
         this.logLaraData(laraData)
         return processInitialRunState(openSavedParams.url, openSavedParams.source, openSavedParams.readOnlyKey, data)
     }).fail((jqXHR, status, error) => callback("Could not open the specified document because an error occurred [getState]"))
@@ -560,7 +582,7 @@ class LaraProvider extends ProviderInterface {
     return callback("Cannot open the specified document")
   }
 
-  getOpenSavedParams(metadata) {
+  getOpenSavedParams(metadata: any) {
     const params = this.openSavedParams ?
       this.openSavedParams
     : this.laraParams ?{
@@ -576,6 +598,6 @@ LaraProvider.initClass()
 
 export default LaraProvider
 
-function __guard__(value, transform) {
+function __guard__(value: any, transform: any) {
   return (typeof value !== 'undefined' && value !== null) ? transform(value) : undefined
 }
