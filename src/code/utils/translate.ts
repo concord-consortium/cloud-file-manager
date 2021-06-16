@@ -8,30 +8,18 @@
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
  */
 import urlParams from './url-params'
-// @ts-expect-error ts-migrate(2307) FIXME: Cannot find module './lang/de' or its correspondin... Remove this comment to see the full error message
-import de from './lang/de'
-// @ts-expect-error ts-migrate(2307) FIXME: Cannot find module './lang/el' or its correspondin... Remove this comment to see the full error message
-import el from './lang/el'
-// @ts-expect-error ts-migrate(2307) FIXME: Cannot find module './lang/en-US' or its correspon... Remove this comment to see the full error message
-import enUS from './lang/en-US'
-// @ts-expect-error ts-migrate(2307) FIXME: Cannot find module './lang/es' or its correspondin... Remove this comment to see the full error message
-import es from './lang/es'
-// @ts-expect-error ts-migrate(2307) FIXME: Cannot find module './lang/he' or its correspondin... Remove this comment to see the full error message
-import he from './lang/he'
-// @ts-expect-error ts-migrate(2307) FIXME: Cannot find module './lang/ja' or its correspondin... Remove this comment to see the full error message
-import ja from './lang/ja'
-// @ts-expect-error ts-migrate(2307) FIXME: Cannot find module './lang/nb' or its correspondin... Remove this comment to see the full error message
-import nb from './lang/nb'
-// @ts-expect-error ts-migrate(2307) FIXME: Cannot find module './lang/nn' or its correspondin... Remove this comment to see the full error message
-import nn from './lang/nn'
-// @ts-expect-error ts-migrate(2307) FIXME: Cannot find module './lang/th' or its correspondin... Remove this comment to see the full error message
-import th from './lang/th'
-// @ts-expect-error ts-migrate(2307) FIXME: Cannot find module './lang/tr' or its correspondin... Remove this comment to see the full error message
-import tr from './lang/tr'
-// @ts-expect-error ts-migrate(2307) FIXME: Cannot find module './lang/zh-Hans' or its corresp... Remove this comment to see the full error message
-import zhHans from './lang/zh-Hans'
-// @ts-expect-error ts-migrate(2307) FIXME: Cannot find module './lang/zh-TW' or its correspon... Remove this comment to see the full error message
-import zhTW from './lang/zh-TW'
+import de from './lang/de.json'
+import el from './lang/el.json'
+import enUS from './lang/en-US.json'
+import es from './lang/es.json'
+import he from './lang/he.json'
+import ja from './lang/ja.json'
+import nb from './lang/nb.json'
+import nn from './lang/nn.json'
+import th from './lang/th.json'
+import tr from './lang/tr.json'
+import zhHans from './lang/zh-Hans.json'
+import zhTW from './lang/zh-TW.json'
 
 const languageFiles = [
   {key: 'de',    contents: de},     // German

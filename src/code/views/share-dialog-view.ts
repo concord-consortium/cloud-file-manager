@@ -21,7 +21,6 @@ import {ShareLoadingView} from './share-loading-view'
 // Using the fullname, "translate" here, to avoid the potential overloading
 // of the react function, "tr".
 import translate from '../utils/translate'
-// @ts-expect-error ts-migrate(2732) FIXME: Cannot find module 'svg-social-icons/lib/icons.jso... Remove this comment to see the full error message
 import socialIcons from 'svg-social-icons/lib/icons.json'
 
 // @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'createReactClassFactory'.
@@ -30,6 +29,7 @@ const SocialIcon = createReactClassFactory({
   displayName: 'SocialIcon',
 
   getInitialState() {
+    // @ts-expect-error ts-migrate(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     return {data: socialIcons[this.props.icon]}
   },
 

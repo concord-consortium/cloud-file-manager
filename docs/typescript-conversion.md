@@ -6,7 +6,7 @@
 |Error|Fixed|Description|Count|
 |-----|-----|-----------|----:|
 |2304||Cannot find name __.|78|
-|2307||Cannot find module __ or its corresponding type declarations.|12|
+|2307|:white_check_mark:|Cannot find module __ or its corresponding type declarations.|0|
 |2322||Type __ is not assignable to type __.|4|
 |2339||Property __ does not exist on type 'Readonly<{}>'|2|
 |2345||Argument of type __ is not assignable to parameter of type __.|3|
@@ -17,7 +17,7 @@
 |2416||Property __ in type __ is not assignable to the same property in base type __.|2|
 |2551||Property __ does not exist on type __.|1|
 |2686||__ refers to a UMD global, but the current file is a module.|18|
-|2732||Cannot find module __. Consider using '--resolveJsonModule' to import module with '.json' extension.|1|
+|2732|:white_check_mark:|Cannot find module __. Consider using '--resolveJsonModule' to import module with '.json' extension.|0|
 |7006||Parameter __ implicitly has an 'any' type.|34|
 |7010||__, which lacks return-type annotation, implicitly has an __ return type.|2|
 |7011||Function expression, which lacks return-type annotation, implicitly has an 'any' return type.|2|
@@ -26,5 +26,5 @@
 |7022||__ implicitly has type 'any' because it does not have a type annotation and is referenced directly or indirectly in its own initializer.|1|
 |7023||__ implicitly has return type 'any' because it does not have a return type annotation and is referenced directly or indirectly in one of its return expressions.|2|
 |7024||__ implicitly has return type 'any' because it does not have a return type annotation and is referenced directly or indirectly in one of its return expressions.|1|
-|7053||Element implicitly has an 'any' type because expression of type 'any' can't be used to index type '{}'|15|
-|||**Grand Total**|359|
+|7053||Element implicitly has an 'any' type because expression of type 'any' can't be used to index type '{}'|16|
+|||**Grand Total**|347|
