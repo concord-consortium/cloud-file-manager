@@ -70,7 +70,7 @@ class CloudFileManagerUIMenu {
       }
     }
 
-    const names = {
+    const names: Record<string, string> = {
       newFileDialog: tr("~MENU.NEW"),
       openFileDialog: tr("~MENU.OPEN"),
       closeFileDialog: tr("~MENU.CLOSE"),
@@ -88,7 +88,7 @@ class CloudFileManagerUIMenu {
       shareSubMenu: tr("~MENU.SHARE")
     }
 
-    const subMenus = {
+    const subMenus: Record<string, string[]> = {
       revertSubMenu: ['revertToLastOpenedDialog', 'revertToSharedDialog'],
       shareSubMenu: ['shareGetLink', 'shareUpdate']
     }
@@ -105,10 +105,8 @@ class CloudFileManagerUIMenu {
       } else if (isString(item)) {
         menuItem = {
           key: item,
-          // @ts-expect-error ts-migrate(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
           name: (this.options.menuNames != null ? this.options.menuNames[item] : undefined) || names[item] || `Unknown item: ${item}`,
           enabled: setEnabled(item),
-          // @ts-expect-error ts-migrate(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
           items: getItems(subMenus[item]),
           action: setAction(item)
         }

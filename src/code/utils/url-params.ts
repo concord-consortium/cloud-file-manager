@@ -1,5 +1,5 @@
 // http://stackoverflow.com/a/2880929
-var urlParams = {}
+var urlParams: Record<string, string> = {}
 if (window?.location?.search) {
   (window.onpopstate = popState)()
 }
@@ -12,7 +12,6 @@ function popState() {
       query  = window.location.search.substring(1)
 
   while ((match = search.exec(query)))
-      // @ts-expect-error ts-migrate(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
       urlParams[decode(match[1])] = decode(match[2])
 }
 

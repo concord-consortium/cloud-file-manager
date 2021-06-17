@@ -30,13 +30,13 @@ import { CloudContent }  from './providers/provider-interface'
 import { CloudMetadata }  from './providers/provider-interface'
 import { reportError } from "./utils/report-error"
 
-let CLOUDFILEMANAGER_EVENT_ID =0
-const CLOUDFILEMANAGER_EVENTS ={}
+let CLOUDFILEMANAGER_EVENT_ID = 0
+const CLOUDFILEMANAGER_EVENTS: Record<number, CloudFileManagerClientEvent> = {}
 
 class CloudFileManagerClientEvent {
   callback: any;
   data: any;
-  id: any;
+  id: number;
   state: any;
   type: any;
 
@@ -49,13 +49,11 @@ class CloudFileManagerClientEvent {
     if (state == null) { state = {} }
     this.state = state
     CLOUDFILEMANAGER_EVENT_ID++
-    /** @type {number} */
     this.id = CLOUDFILEMANAGER_EVENT_ID
   }
 
   postMessage(iframe: any) {
     if (this.callback) {
-      // @ts-expect-error ts-migrate(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
       CLOUDFILEMANAGER_EVENTS[this.id] = this
     }
     // remove client from data to avoid structured clone error in postMessage
@@ -98,9 +96,12 @@ class CloudFileManagerClient {
     if (this.appOptions.wrapFileContent == null) { this.appOptions.wrapFileContent = true }
     CloudContent.wrapFileContent = this.appOptions.wrapFileContent
 
+    // We can't use ProviderInterface here because all providers don't currently meet the requirements
+    type AnyProvider = any;
+    const allProviders: Record<string, AnyProvider> = {}  // TODO: type the providers
+
     // Determine the available providers. Note that order in the list can
     // be significant in provider searches (e.g. @autoProvider).
-    const allProviders = {}
     const providerList = [
       LocalStorageProvider,
       ReadOnlyProvider,
@@ -113,7 +114,6 @@ class CloudFileManagerClient {
     ]
     for (Provider of providerList) {
       if (Provider.Available()) {
-        // @ts-expect-error ts-migrate(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         allProviders[(Provider as any).Name] = Provider
       }
     }
@@ -153,12 +153,9 @@ class CloudFileManagerClient {
         this.alert("Invalid provider spec - must either be string or object with name property")
       } else {
         if (providerSpec.createProvider) {
-          // @ts-expect-error ts-migrate(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
           allProviders[providerName] = providerSpec.createProvider(ProviderInterface)
         }
-        // @ts-expect-error ts-migrate(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         if (allProviders[providerName]) {
-          // @ts-expect-error ts-migrate(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
           Provider = allProviders[providerName]
           const provider = new Provider(providerOptions, this)
           this.providers[providerName] = provider
@@ -1323,7 +1320,6 @@ class CloudFileManagerClient {
             return reply('cfm::event:reply', {eventId: data.eventId, callbackArgs})
         })
         case 'cfm::event:reply': {
-          // @ts-expect-error ts-migrate(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
           const event = CLOUDFILEMANAGER_EVENTS[data.eventId]
           const callbackData = JSON.parse(data?.callbackArgs || null)
           return event?.callback?.apply(this, callbackData)

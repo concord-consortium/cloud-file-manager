@@ -131,7 +131,6 @@ class ReadOnlyProvider extends ProviderInterface {
     if (this.tree !== null) {
       return complete(this.tree)
     } else if (this.options.json) {
-      // @ts-expect-error ts-migrate(2554) FIXME: Expected 2-3 arguments, but got 1.
       this.tree = this._convertJSONToMetadataTree(this.options.json)
       return complete(this.tree)
     } else if (this.options.jsonCallback) {
@@ -139,7 +138,6 @@ class ReadOnlyProvider extends ProviderInterface {
         if (err) {
           return callback(err)
         } else {
-          // @ts-expect-error ts-migrate(2554) FIXME: Expected 2-3 arguments, but got 1.
           this.tree = this._convertJSONToMetadataTree(this.options.json)
           return complete(this.tree)
         }
@@ -173,7 +171,7 @@ class ReadOnlyProvider extends ProviderInterface {
   }
 
   // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'parent' implicitly has an 'any' type.
-  _convertJSONToMetadataTree(json: any, baseUrl: any, parent = null) {
+  _convertJSONToMetadataTree(json: any, baseUrl?: string, parent = null) {
     let metadata, type
     const tree = []
 

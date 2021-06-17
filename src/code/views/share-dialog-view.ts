@@ -20,14 +20,19 @@ import {ShareLoadingView} from './share-loading-view'
 // of the react function, "tr".
 import translate from '../utils/translate'
 import socialIcons from 'svg-social-icons/lib/icons.json'
+interface SVGSocialIcon {
+  icon: string;   // SVG icon path string
+  mask: string;   // SVG mask path string
+  color: string;
+}
+type SVGSocialIconMap = Record<string, SVGSocialIcon>
 
 const SocialIcon = createReactClassFactory({
 
   displayName: 'SocialIcon',
 
   getInitialState() {
-    // @ts-expect-error ts-migrate(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-    return {data: socialIcons[this.props.icon]}
+    return {data: (socialIcons as SVGSocialIconMap)[this.props.icon]}
   },
 
   clicked() {
