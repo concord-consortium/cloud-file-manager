@@ -15,7 +15,6 @@ import { CloudMetadata }  from './provider-interface'
 import DocumentStoreUrl  from './document-store-url'
 import PatchableContent  from './patchable-content'
 import getQueryParam  from '../utils/get-query-param'
-// @ts-expect-error ts-migrate(7016) FIXME: Could not find a declaration file for module 'js-b... Remove this comment to see the full error message
 import { Base64 }  from 'js-base64'
 import pako  from 'pako'
 
@@ -228,7 +227,6 @@ class LaraProvider extends ProviderInterface {
       },
       context: this,
       success(data) {
-        // @ts-expect-error ts-migrate(2686) FIXME: '_' refers to a UMD global, but the current file i... Remove this comment to see the full error message
         this.savedContent.updateContent(this.options.patch ? _.cloneDeep(content) : null)
         if (data.recordid) { metadata.providerData.recordid = data.recordid }
 
@@ -296,7 +294,6 @@ class LaraProvider extends ProviderInterface {
 
       const updateInteractiveRunStates = function(urls: any, newDocStore: any, callback: any) {
 
-        // @ts-expect-error ts-migrate(2686) FIXME: '_' refers to a UMD global, but the current file i... Remove this comment to see the full error message
         const newRunState = _.cloneDeep(existingRunState)
         newRunState.docStore = newDocStore
 
@@ -393,7 +390,6 @@ class LaraProvider extends ProviderInterface {
           if (err) {
             return callback(err)
           } else {
-            // @ts-expect-error ts-migrate(2686) FIXME: '_' refers to a UMD global, but the current file i... Remove this comment to see the full error message
             const collaboratorParams = _.cloneDeep(docStore)
             collaboratorParams.collaborator = 'follower'
             return updateInteractiveRunStates(this.collaboratorUrls, collaboratorParams, callback)
@@ -422,7 +418,6 @@ class LaraProvider extends ProviderInterface {
           if (err) {
             return callback(err)
           } else {
-            // @ts-expect-error ts-migrate(2686) FIXME: '_' refers to a UMD global, but the current file i... Remove this comment to see the full error message
             return loadProviderFile(_.cloneDeep(docStore), callback)
           }
         }
@@ -470,7 +465,6 @@ class LaraProvider extends ProviderInterface {
         if (haveCollaborators) {
           docStore.collaborator = 'leader'
         }
-        // @ts-expect-error ts-migrate(2686) FIXME: '_' refers to a UMD global, but the current file i... Remove this comment to see the full error message
         const providerData = _.merge({}, docStore, { url: runStateUrl })
         const updateFinished = () => loadProviderFile(providerData, callback)
 

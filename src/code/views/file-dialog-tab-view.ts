@@ -13,11 +13,9 @@ import { CloudMetadata }  from '../providers/provider-interface'
 
 import tr  from '../utils/translate'
 
-// @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'ReactDOMFactories'.
 let {div, i, input, button} = ReactDOMFactories
 const italic = i
 
-// @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'createReactClassFactory'.
 const FileListFile = createReactClassFactory({
   displayName: 'FileListFile',
 
@@ -51,7 +49,6 @@ const FileListFile = createReactClassFactory({
   }
 })
 
-// @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'createReactClassFactory'.
 const FileList = createReactClassFactory({
   displayName: 'FileList',
 
@@ -95,7 +92,7 @@ const FileList = createReactClassFactory({
     if (isSubFolder) {
       list.push((div({key: 'parent', className: 'selectable', onClick: this.parentSelected}, (italic({className: 'icon-paletteArrow-collapse'})), this.props.folder.name)))
     }
-    for (i = 0; i < this.props.list.length; i++) {
+    for (let i = 0; i < this.props.list.length; i++) {
       const metadata = this.props.list[i]
       list.push((FileListFile({key: i, metadata, selected: this.props.selectedFile === metadata, fileSelected: this.props.fileSelected, fileConfirmed: this.props.fileConfirmed, isSubFolder})))
     }
@@ -110,7 +107,6 @@ const FileList = createReactClassFactory({
   }
 })
 
-// @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'createReactClass'.
 const FileDialogTab = createReactClass({
   displayName: 'FileDialogTab',
 
@@ -208,11 +204,9 @@ const FileDialogTab = createReactClass({
     // provider must be cloned, but without cloning the provider field.
     // Furthermore, if the provider has changed, the provider and providerData
     // fields should be cleared.
-    // @ts-expect-error ts-migrate(2686) FIXME: '_' refers to a UMD global, but the current file i... Remove this comment to see the full error message
     const saveMetadata = this.props.client.state.metadata ? _.clone(this.props.client.state.metadata) : null
     if (saveMetadata) {
       if (this.props.provider === saveMetadata.provider) {
-        // @ts-expect-error ts-migrate(2686) FIXME: '_' refers to a UMD global, but the current file i... Remove this comment to see the full error message
         saveMetadata.providerData = _.cloneDeep(saveMetadata.providerData)
       } else {
         saveMetadata.provider = null

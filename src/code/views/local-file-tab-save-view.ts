@@ -7,14 +7,12 @@
  * DS207: Consider shorter variations of null checks
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
  */
-// @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'ReactDOMFactories'.
 const {div, input, button, a} = ReactDOMFactories
-import tr  from '../utils/translate'
-import { CloudMetadata }  from '../providers/provider-interface'
-import { cloudContentFactory }  from '../providers/provider-interface'
+import tr from '../utils/translate'
+import { CloudMetadata } from '../providers/provider-interface'
+import { cloudContentFactory } from '../providers/provider-interface'
 import FileSaver  from '../lib/file-saver'
 
-// @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'createReactClass'.
 export default createReactClass({
 
   displayName: 'LocalFileSaveTab',

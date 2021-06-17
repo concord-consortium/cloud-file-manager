@@ -2,9 +2,6 @@ import tr  from '../utils/translate'
 import { ProviderInterface }  from './provider-interface'
 import { cloudContentFactory }  from './provider-interface'
 import { CloudMetadata }  from './provider-interface'
-// @ts-expect-error ts-migrate(7016) FIXME: Could not find a declaration file for module 'reac... Remove this comment to see the full error message
-import ReactDOMFactories from 'react-dom-factories'
-import { createReactClassFactory } from '../globals'
 
 const {div, button, span} = ReactDOMFactories
 const GoogleDriveAuthorizationDialog = createReactClassFactory({
@@ -58,6 +55,11 @@ const GoogleDriveAuthorizationDialog = createReactClassFactory({
     ))
   }
 })
+
+declare global {
+  // loaded dynamically in _waitForGAPILoad
+  var gapi: any
+}
 
 class GoogleDriveProvider extends ProviderInterface {
   IMMEDIATE: any;
@@ -148,7 +150,6 @@ class GoogleDriveProvider extends ProviderInterface {
 
   authorize(immediate: any) {
     return this._waitForGAPILoad().then(() => {
-      // @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'gapi'.
       const auth = gapi.auth2.getAuthInstance()
       const finishAuthorization = () => {
         const authorized = auth.isSignedIn.get()
@@ -212,7 +213,6 @@ class GoogleDriveProvider extends ProviderInterface {
   list(metadata: any, callback: any) {
     return this._waitForGAPILoad().then(() => {
       const mimeTypesQuery = (this.readableMimetypes || []).map((mimeType: any) => `mimeType = '${mimeType}'`).join(" or ")
-      // @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'gapi'.
       const request = gapi.client.drive.files.list({
         fields: "files(id, mimeType, name, capabilities(canEdit))",
         q: `trashed = false and (${mimeTypesQuery} or mimeType = 'application/vnd.google-apps.folder') and '${metadata ? metadata.providerData.id : 'root'}' in parents`
@@ -254,7 +254,6 @@ class GoogleDriveProvider extends ProviderInterface {
 
   remove(metadata: any, callback: any) {
     return this._waitForGAPILoad().then(() => {
-      // @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'gapi'.
       const request = gapi.client.drive.files["delete"]({
         fileId: metadata.providerData.id})
       return request.execute((result: any) => typeof callback === 'function' ? callback((result != null ? result.error : undefined) || null) : undefined)
@@ -263,7 +262,6 @@ class GoogleDriveProvider extends ProviderInterface {
 
   rename(metadata: any, newName: any, callback: any) {
     return this._waitForGAPILoad().then(() => {
-      // @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'gapi'.
       const request = gapi.client.drive.files.patch({
         fileId: metadata.providerData.id,
         resource: {
@@ -311,9 +309,7 @@ class GoogleDriveProvider extends ProviderInterface {
       const script = document.createElement('script')
       script.src = "https://apis.google.com/js/api.js"
       script.onload = () => {
-        // @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'gapi'.
         gapi.load("client:auth2", () => {
-          // @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'gapi'.
           gapi.client.init({
             apiKey: this.apiKey,
             clientId: this.clientId,
@@ -329,7 +325,6 @@ class GoogleDriveProvider extends ProviderInterface {
   }
 
   _loadFile(metadata: any, callback: any) {
-    // @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'gapi'.
     const request = gapi.client.drive.files.get({
       fileId: metadata.providerData.id,
       fields: "id, mimeType, name, parents, capabilities(canEdit)",
@@ -384,7 +379,6 @@ class GoogleDriveProvider extends ProviderInterface {
       `\r\n--${boundary}--`
     ].join('')
 
-    // @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'gapi'.
     const request = gapi.client.request({
       path,
       method,

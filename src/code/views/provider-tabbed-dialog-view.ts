@@ -15,15 +15,10 @@ import modalTabbedDialogView from './modal-tabbed-dialog-view'
 import fileDialogTabView from './file-dialog-tab-view'
 import selectProviderDialogTabView from './select-provider-dialog-tab-view'
 
-// @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'createReactFactory'.
 const ModalTabbedDialog = createReactFactory(modalTabbedDialogView)
-// @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'createReactFactory'.
 const FileDialogTab = createReactFactory(fileDialogTabView)
-// @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'createReactFactory'.
 const SelectProviderDialogTab = createReactFactory(selectProviderDialogTabView)
 
-
-// @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'createReactClass'.
 export default createReactClass({
   displayName: 'ProviderTabbedDialog',
 

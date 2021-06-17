@@ -92,7 +92,6 @@ class ReadOnlyProvider extends ProviderInterface {
       if (err) { return callback(err) }
       const items = (metadata != null ? metadata.type : undefined) === (CloudMetadata as any).Folder ? metadata.providerData.children : this.tree
       // clone the metadata items so that any changes made to the filename or content in the edit is not cached
-      // @ts-expect-error ts-migrate(2686) FIXME: '_' refers to a UMD global, but the current file i... Remove this comment to see the full error message
       return callback(null, _.map(items, metadataItem => new CloudMetadata(metadataItem)))
     })
   }

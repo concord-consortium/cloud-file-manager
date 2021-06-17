@@ -30,7 +30,6 @@ import { CloudContent }  from './providers/provider-interface'
 import { CloudMetadata }  from './providers/provider-interface'
 import { reportError } from "./utils/report-error"
 
-
 let CLOUDFILEMANAGER_EVENT_ID =0
 const CLOUDFILEMANAGER_EVENTS ={}
 
@@ -60,7 +59,6 @@ class CloudFileManagerClientEvent {
       CLOUDFILEMANAGER_EVENTS[this.id] = this
     }
     // remove client from data to avoid structured clone error in postMessage
-    // @ts-expect-error ts-migrate(2686) FIXME: '_' refers to a UMD global, but the current file i... Remove this comment to see the full error message
     const eventData = _.clone(this.data)
     delete eventData.client
     const message = {type: "cfm::event", eventId: this.id, eventType: this.type, eventData}
@@ -1155,7 +1153,6 @@ class CloudFileManagerClient {
   }
 
   alert(message: any, titleOrCallback: any, callback: any) {
-    // @ts-expect-error ts-migrate(2686) FIXME: '_' refers to a UMD global, but the current file i... Remove this comment to see the full error message
     if (_.isFunction(titleOrCallback)) {
       callback = titleOrCallback
       titleOrCallback = null
@@ -1335,7 +1332,6 @@ class CloudFileManagerClient {
       const data = (oe as any).data || {}
       const reply = function(type: any, params: any) {
         if (params == null) { params = {} }
-        // @ts-expect-error ts-migrate(2686) FIXME: '_' refers to a UMD global, but the current file i... Remove this comment to see the full error message
         const message = _.merge({}, params, {type})
         return (oe as any).source.postMessage(message, (oe as any).origin)
       }

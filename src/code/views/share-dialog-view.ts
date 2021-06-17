@@ -7,13 +7,11 @@
  * DS207: Consider shorter variations of null checks
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
  */
-// @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'ReactDOMFactories'.
 const {div, input, a, button, strong, textarea, svg, g, path, circle, ul, li} = ReactDOMFactories
 
 const SHOW_LONGEVITY_WARNING = false
 
 import modalDialogView from './modal-dialog-view'
-// @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'createReactFactory'.
 const ModalDialog = createReactFactory(modalDialogView)
 import {ShareLoadingView} from './share-loading-view'
 
@@ -23,7 +21,6 @@ import {ShareLoadingView} from './share-loading-view'
 import translate from '../utils/translate'
 import socialIcons from 'svg-social-icons/lib/icons.json'
 
-// @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'createReactClassFactory'.
 const SocialIcon = createReactClassFactory({
 
   displayName: 'SocialIcon',
@@ -58,7 +55,6 @@ const SocialIcon = createReactClassFactory({
 
 const CFM_PRODUCTION = "https://cloud-file-manager.concord.org"
 
-// @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'createReactClass'.
 export default createReactClass({
 
   displayName: 'ShareDialogView',

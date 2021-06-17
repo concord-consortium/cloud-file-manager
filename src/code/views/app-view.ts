@@ -18,32 +18,21 @@ import alterDialogView from './alert-dialog-view'
 import confirmDialogView from './confirm-dialog-view'
 import importTabbedDialgView from './import-tabbed-dialog-view'
 
-// @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'createReactFactory'.
 const MenuBar = createReactFactory(menuBarView)
-// @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'createReactFactory'.
 const ProviderTabbedDialog = createReactFactory(providerTabbedDialogView)
-// @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'createReactFactory'.
 const DownloadDialog = createReactFactory(downloadDialogView)
-// @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'createReactFactory'.
 const RenameDialog = createReactFactory(renameDialogView)
-// @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'createReactFactory'.
 const ShareDialog = createReactFactory(shareDialogView)
-// @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'createReactFactory'.
 const BlockingModal = createReactFactory(blockingModalView)
-// @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'createReactFactory'.
 const AlertDialog = createReactFactory(alterDialogView)
-// @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'createReactFactory'.
 const ConfirmDialog = createReactFactory(confirmDialogView)
-// @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'createReactFactory'.
 const ImportTabbedDialog = createReactFactory(importTabbedDialgView)
 
 import tr from '../utils/translate'
 import isString from '../utils/is-string'
 
-// @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'ReactDOMFactories'.
 const {div, iframe} = ReactDOMFactories
 
-// @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'createReactClassFactory'.
 const InnerApp = createReactClassFactory({
 
   displayName: 'CloudFileManagerInnerApp',
@@ -249,7 +238,6 @@ class AppView extends React.Component {
       (this.state as any).alertDialog ?
         (AlertDialog({title: (this.state as any).alertDialog.title, message: (this.state as any).alertDialog.message, callback: (this.state as any).alertDialog.callback, close: this.closeAlert})) : undefined,
       (this.state as any).confirmDialog ?
-        // @ts-expect-error ts-migrate(2686) FIXME: '_' refers to a UMD global, but the current file i... Remove this comment to see the full error message
         (ConfirmDialog(_.merge({}, (this.state as any).confirmDialog, { close: this.closeConfirm }))) : undefined
     ))
   }

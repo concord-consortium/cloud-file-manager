@@ -8,14 +8,11 @@
  */
 import DropDownView from "./dropdown-view"
 import {TriangleOnlyAnchor} from './dropdown-anchors'
-import tr  from '../utils/translate'
+import tr from '../utils/translate'
 
-// @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'ReactDOMFactories'.
 const {div, i, span, input} = ReactDOMFactories
-// @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'createReactFactory'.
 const Dropdown = createReactFactory(DropDownView)
 
-// @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'createReactClass'.
 export default createReactClass({
 
   displayName: 'MenuBar',
@@ -94,7 +91,6 @@ export default createReactClass({
   },
 
   filename() {
-    // @ts-expect-error ts-migrate(2686) FIXME: 'ReactDOM' refers to a UMD global, but the current... Remove this comment to see the full error message
     return ReactDOM.findDOMNode(this.filenameRef)
   },
 

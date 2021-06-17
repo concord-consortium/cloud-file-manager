@@ -10,7 +10,6 @@
  * DS207: Consider shorter variations of null checks
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
  */
-// @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'ReactDOMFactories'.
 const {div, button, span} = ReactDOMFactories
 
 import getQueryParam  from '../utils/get-query-param'
@@ -26,7 +25,6 @@ import DocumentStoreUrl  from './document-store-url'
 import PatchableContent  from './patchable-content'
 import { reportError } from '../utils/report-error'
 
-// @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'createReactClassFactory'.
 const DocumentStoreAuthorizationDialog = createReactClassFactory({
   displayName: 'DocumentStoreAuthorizationDialog',
 
@@ -453,7 +451,6 @@ class DocumentStoreProvider extends ProviderInterface {
         withCredentials: true
       },
       success(data) {
-        // @ts-expect-error ts-migrate(2686) FIXME: '_' refers to a UMD global, but the current file i... Remove this comment to see the full error message
         this.savedContent.updateContent(this.options.patch ? _.cloneDeep(content) : null)
         if (data.id) { metadata.providerData.id = data.id }
 

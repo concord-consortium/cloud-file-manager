@@ -1,5 +1,4 @@
 import tr  from '../utils/translate'
-import { createReactFactory } from '../globals'
 import {
   cloudContentFactory, CloudMetadata, IProviderInterfaceOpts, ProviderInterface,
   ProviderListCallback, ProviderLoadCallback, ProviderSaveCallback

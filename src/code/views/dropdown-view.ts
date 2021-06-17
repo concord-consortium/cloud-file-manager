@@ -7,11 +7,10 @@
  * DS207: Consider shorter variations of null checks
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
  */
-// @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'ReactDOMFactories'.
 const {div, i, ul, li} = ReactDOMFactories
 
 import { DefaultAnchor } from './dropdown-anchors'
-// @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'createReactClassFactory'.
+
 const DropdownItem = createReactClassFactory({
   displayName: 'DropdownItem',
 
@@ -29,7 +28,6 @@ const DropdownItem = createReactClassFactory({
 
   showSubMenu() {
     if (this.props.item.items) {
-      // @ts-expect-error ts-migrate(2686) FIXME: 'ReactDOM' refers to a UMD global, but the current... Remove this comment to see the full error message
       const menuItem = $(ReactDOM.findDOMNode(this.itemRef))
       const menu = menuItem.parent().parent()
 
@@ -71,7 +69,6 @@ const DropdownItem = createReactClassFactory({
 
 const cfmMenuClass = 'cfm-menu dg-wants-touch'
 
-// @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'createReactClass'.
 const DropDown = createReactClass({
 
   displayName: 'Dropdown',
@@ -79,7 +76,6 @@ const DropDown = createReactClass({
   getInitialState() {
     return {
       showingMenu: false,
-      // @ts-expect-error ts-migrate(7018) FIXME: Object literal's property 'subMenu' implicitly has... Remove this comment to see the full error message
       subMenu: null
     }
   },

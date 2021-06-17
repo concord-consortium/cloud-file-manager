@@ -9,8 +9,6 @@
 //
 // This utility class simplifies working with document store URLs
 //
-
-// @ts-expect-error ts-migrate(7016) FIXME: Could not find a declaration file for module 'jiff... Remove this comment to see the full error message
 import jiff from 'jiff'
 
 class PatchableContent {

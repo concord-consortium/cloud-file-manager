@@ -8,12 +8,9 @@
 import tr  from '../utils/translate'
 import modalDialogView from './modal-dialog-view'
 
-// @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'ReactDOMFactories'.
 const {div, input, button} = ReactDOMFactories
-// @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'createReactFactory'.
 const ModalDialog = createReactFactory(modalDialogView)
 
-// @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'createReactClass'.
 export default createReactClass({
 
   displayName: 'RenameDialogView',
@@ -27,7 +24,6 @@ export default createReactClass({
   },
 
   componentDidMount() {
-    // @ts-expect-error ts-migrate(2686) FIXME: 'ReactDOM' refers to a UMD global, but the current... Remove this comment to see the full error message
     this.filename = ReactDOM.findDOMNode(this.filenameRef)
     return this.filename.focus()
   },

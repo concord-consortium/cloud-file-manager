@@ -12,13 +12,10 @@ import modalTabbedDialogView from './modal-tabbed-dialog-view'
 import localfileTabListView from './local-file-tab-list-view'
 import urlTabView from './url-tab-view'
 
-// @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'createReactFactory'.
 const ModalTabbedDialog = createReactFactory(modalTabbedDialogView)
-// @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'createReactFactory'.
 const LocalFileTab = createReactFactory(localfileTabListView)
-// @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'createReactFactory'.
 const UrlTab = createReactFactory(urlTabView)
-// @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'createReactClass'.
+
 export default createReactClass({
   displayName: 'ImportTabbedDialog',
 
@@ -47,7 +44,8 @@ export default createReactClass({
 
   render() {
     const tabs = [
-      TabbedPanel.Tab({
+      // "static" functions defined in the "statics" property don't get typed appropriately
+      (TabbedPanel as any).Tab({
         key: 0,
         // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
         label: (tr("~IMPORT.LOCAL_FILE")),
@@ -60,7 +58,8 @@ export default createReactClass({
           close: this.props.close
         })
       }),
-      TabbedPanel.Tab({
+      // "static" functions defined in the "statics" property don't get typed appropriately
+      (TabbedPanel as any).Tab({
         key: 1,
         // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
         label: (tr("~IMPORT.URL")),

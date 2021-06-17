@@ -9,13 +9,10 @@
 import tr  from '../utils/translate'
 import { CloudMetadata }  from '../providers/provider-interface'
 import modalDialogView from './modal-dialog-view'
-// @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'ReactDOMFactories'.
+
 const {div, input, a, button} = ReactDOMFactories
-// @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'createReactFactory'.
 const ModalDialog = createReactFactory(modalDialogView)
 
-
-// @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'createReactClass'.
 export default createReactClass({
 
   displayName: 'DownloadDialogView',

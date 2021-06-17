@@ -7,7 +7,6 @@
  * DS207: Consider shorter variations of null checks
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
  */
-// @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'ReactDOMFactories'.
 const {div, ul, li} = ReactDOMFactories
 
 class TabInfo {
@@ -22,7 +21,6 @@ class TabInfo {
   }
 }
 
-// @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'createReactClassFactory'.
 const Tab = createReactClassFactory({
 
   displayName: 'TabbedPanelTab',
@@ -38,7 +36,6 @@ const Tab = createReactClassFactory({
   }
 })
 
-// @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'createReactClass'.
 export default createReactClass({
 
   displayName: 'TabbedPanelView',

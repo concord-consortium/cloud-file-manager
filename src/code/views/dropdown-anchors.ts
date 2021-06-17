@@ -1,6 +1,5 @@
 // TODO: This file was created by bulk-decaffeinate.
 // Sanity-check the conversion and remove this comment.
-// @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'ReactDOMFactories'.
 const {svg, g, rect, polygon} = ReactDOMFactories
 
 const DefaultAnchor =

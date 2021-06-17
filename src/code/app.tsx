@@ -79,7 +79,6 @@ class CloudFileManager {
 
   _renderApp(anchor: any) {
     this.appOptions.client = this.client
-    // @ts-expect-error ts-migrate(2686) FIXME: 'ReactDOM' refers to a UMD global, but the current... Remove this comment to see the full error message
     ReactDOM.render(<AppView {... this.appOptions} />, anchor)
     this.client.iframe = anchor.getElementsByTagName('iframe')[0]
     this.client.rendered()

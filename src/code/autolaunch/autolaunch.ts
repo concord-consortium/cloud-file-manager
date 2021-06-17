@@ -1,7 +1,6 @@
 import iframePhone from "iframe-phone"
 import $ from "jquery"
 import { fullscreenSupport } from "./fullscreen"
-// @ts-expect-error ts-migrate(7016) FIXME: Could not find a declaration file for module 'js-b... Remove this comment to see the full error message
 import { Base64 } from "js-base64"
 import queryString from "query-string"
 

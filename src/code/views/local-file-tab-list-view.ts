@@ -5,12 +5,10 @@
  * DS102: Remove unnecessary code created because of implicit returns
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
  */
-// @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'ReactDOMFactories'.
 const {div, input, button} = ReactDOMFactories
-import tr  from '../utils/translate'
-import { CloudMetadata }  from '../providers/provider-interface'
+import tr from '../utils/translate'
+import { CloudMetadata } from '../providers/provider-interface'
 
-// @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'createReactClass'.
 export default createReactClass({
 
   displayName: 'LocalFileListTab',
