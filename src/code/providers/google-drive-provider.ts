@@ -259,7 +259,6 @@ class GoogleDriveProvider extends ProviderInterface {
       const request = gapi.client.drive.files.patch({
         fileId: metadata.providerData.id,
         resource: {
-          // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
           title: CloudMetadata.withExtension(newName)
         }
       })

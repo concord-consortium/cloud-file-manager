@@ -142,7 +142,7 @@ class CloudMetadata implements ICloudMetaDataSpec {
     return name.indexOf(FILE_EXTENSION_DELIMETER) >= 0
   }
 
-  static withExtension(name: string, defaultExtension:string, keepOriginalExtension:boolean) {
+  static withExtension(name: string, defaultExtension?: string, keepOriginalExtension?: boolean) {
     if (keepOriginalExtension && this.nameIncludesExtension(name)) {
       return name
     }

@@ -499,7 +499,6 @@ class DocumentStoreProvider extends ProviderInterface {
       url: this.docStoreUrl.renameDocument(),
       data: {
         recordid: metadata.providerData.id,
-        // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
         newRecordname: CloudMetadata.withExtension(newName)
       },
       context: this,

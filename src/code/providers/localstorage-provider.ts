@@ -101,7 +101,6 @@ class LocalStorageProvider extends ProviderInterface {
   rename(metadata: any, newName: any, callback: any) {
     try {
       const content = window.localStorage.getItem(this._getKey(metadata.filename))
-      // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
       window.localStorage.setItem(this._getKey(CloudMetadata.withExtension(newName)), content)
       window.localStorage.removeItem(this._getKey(metadata.filename))
       metadata.rename(newName)

@@ -150,7 +150,6 @@ class CloudFileManagerClient {
       if (providerOptions.mimeType == null) { providerOptions.mimeType = this.appOptions.mimeType }
       providerOptions.readableMimetypes = readableMimetypes
       if (!providerName) {
-        // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
         this.alert("Invalid provider spec - must either be string or object with name property")
       } else {
         if (providerSpec.createProvider) {
@@ -170,7 +169,6 @@ class CloudFileManagerClient {
           }
           availableProviders.push(provider)
         } else {
-          // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
           this.alert(`Unknown provider: ${providerName}`)
         }
       }
@@ -370,7 +368,6 @@ class CloudFileManagerClient {
       this._event('willOpenFile', {op: "openFile"})
       return metadata.provider.load(metadata, (err: any, content: any) => {
         if (err) {
-          // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 2.
           return this.alert(err, () => this.ready())
         }
         // should wait to close current file until client signals open is complete
@@ -465,7 +462,6 @@ class CloudFileManagerClient {
     if(shareProvider.loadSharedContent) {
       shareProvider.loadSharedContent(id, (err: any, content: any, metadata: any) => {
         if (err) {
-          // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 2.
           this.alert(err, () => this.ready())
         }
         else {
@@ -496,7 +492,6 @@ class CloudFileManagerClient {
         this._event('willOpenFile', {op: "confirmAuthorizeAndOpen"})
         return provider.openSaved(providerParams, (err: any, content: any, metadata: any) => {
           if (err) {
-            // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
             return this.alert(err)
           }
           this._fileOpened(content, metadata, {openedContent: content.clone()}, this._getHashParams(metadata))
@@ -515,7 +510,6 @@ class CloudFileManagerClient {
           this._event('willOpenFile', {op: "openProviderFile"})
           return provider.openSaved(providerParams, (err: any, content: any, metadata: any) => {
             if (err) {
-              // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 2.
               return this.alert(err, () => this.ready())
             }
             this._fileOpened(content, metadata, {openedContent: content.clone()}, this._getHashParams(metadata))
@@ -526,7 +520,6 @@ class CloudFileManagerClient {
         }
       })
     } else {
-      // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 2.
       return this.alert(tr("~ALERT.NO_PROVIDER"), () => this.ready())
     }
   }
@@ -535,7 +528,6 @@ class CloudFileManagerClient {
     return this.urlProvider.openFileFromUrl(url, (err: any, content: any, metadata: any) => {
       this._event('willOpenFile', {op: "openUrlFile"})
       if (err) {
-        // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 2.
         return this.alert(err, () => this.ready())
       }
       return this._fileOpened(content, metadata, {openedContent: content.clone()}, this._getHashParams(metadata))
@@ -636,7 +628,6 @@ class CloudFileManagerClient {
           }
           this._setState({ failures })
           if (failures === 1) {
-            // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
             return this.alert(err)
           }
         }
@@ -779,7 +770,6 @@ class CloudFileManagerClient {
   }
 
   shareUpdate() {
-    // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 2.
     return this.share(() => this.alert((tr("~SHARE_UPDATE.MESSAGE")), (tr("~SHARE_UPDATE.TITLE"))))
   }
 
@@ -826,7 +816,6 @@ class CloudFileManagerClient {
         }
         return this.state.shareProvider.share(shared, currentContent, sharedContent, this.state.metadata, (err: any, sharedContentId: any) => {
           if (err) {
-            // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
             return this.alert(err)
           }
           return (typeof callback === 'function' ? callback(null, sharedContentId, currentContent) : undefined)
@@ -871,7 +860,6 @@ class CloudFileManagerClient {
       return this.state.shareProvider.loadSharedContent(id, (err: any, content: any, metadata: any) => {
         let docName
         if (err) {
-          // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
           return this.alert(err)
         }
         this.state.currentContent.copyMetadataTo(content)
@@ -953,7 +941,6 @@ class CloudFileManagerClient {
       if (metadata?.provider?.can('rename', metadata)) {
         return this.state.metadata.provider.rename(this.state.metadata, newName, (err: any, metadata: any) => {
           if (err) {
-            // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
             return this.alert(err)
           }
           return _rename(metadata)
@@ -1025,7 +1012,6 @@ class CloudFileManagerClient {
     if (metadata?.provider?.can('export', metadata)) {
       return metadata.provider.saveAsExport(stringContent, metadata, (err: any, statusCode: any) => {
         if (err) {
-          // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
           return this.alert(err)
         }
         return (typeof callback === 'function' ? callback(stringContent, metadata) : undefined)
@@ -1080,7 +1066,6 @@ class CloudFileManagerClient {
       } else {
         const postSave = (err: any) => {
           if (err) {
-            // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
             this.alert(err)
             return this.confirm(tr('~CONFIRM.CHANGE_LANGUAGE'), () => callback(newLangCode))
           } else {
@@ -1143,7 +1128,7 @@ class CloudFileManagerClient {
     return this._ui.confirmDialog(params)
   }
 
-  alert(message: any, titleOrCallback: any, callback: any) {
+  alert(message: string, titleOrCallback?: string | (() => void), callback?: () => void) {
     if (_.isFunction(titleOrCallback)) {
       callback = titleOrCallback
       titleOrCallback = null
@@ -1190,7 +1175,6 @@ class CloudFileManagerClient {
     (eventData as any).metadata = {contentType, url: metadata.url, filename: metadata.filename}
     return this._event('openedFile', eventData, (iError: any, iSharedMetadata: any) => {
       if (iError) {
-        // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 2.
         return this.alert(iError, () => this.ready())
       }
 

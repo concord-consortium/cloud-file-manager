@@ -45,8 +45,7 @@ export default createReactClass({
             provider
           })
           const onSelected = provider.onProviderTabSelected ? provider.onProviderTabSelected.bind(provider) : null
-          // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
-          tabs.push(TabbedPanel.Tab({key: i, label: (tr(provider.displayName)), component, capability, onSelected}))
+          tabs.push((TabbedPanel as any).Tab({key: i, label: (tr(provider.displayName)), component, capability, onSelected}))
           if (provider.name === __guard__(this.props.client.state.metadata != null ? this.props.client.state.metadata.provider : undefined, (x: any) => x.name)) {
             selectedTabIndex = tabs.length - 1
           }

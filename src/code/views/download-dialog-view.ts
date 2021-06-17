@@ -18,7 +18,6 @@ export default createReactClass({
   displayName: 'DownloadDialogView',
 
   getInitialState() {
-    // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 2.
     const filename = CloudMetadata.withExtension(this.props.filename || (tr("~MENUBAR.UNTITLED_DOCUMENT")), 'json')
     return {
       filename,

@@ -237,7 +237,7 @@ class CloudFileManagerUI {
     return this.listenerCallback(new CloudFileManagerUIEvent('editInitialFilename'))
   }
 
-  alertDialog(message: any, title: any, callback: any) {
+  alertDialog(message: string, title?: string, callback?: () => void) {
     return this.listenerCallback(new CloudFileManagerUIEvent('showAlertDialog', { title, message, callback }))
   }
 

@@ -165,9 +165,8 @@ export default createReactClass({
       mark.style.whiteSpace = 'pre'
       // do not inherit user-select (it may be `none`)
       mark.style.webkitUserSelect = 'text';
-      (mark.style as any).MozUserSelect = 'text'
-      // @ts-expect-error ts-migrate(2551) FIXME: Property 'msUserSelect' does not exist on type 'CS... Remove this comment to see the full error message
-      mark.style.msUserSelect = 'text'
+      (mark.style as any).MozUserSelect = 'text';
+      (mark.style as any).msUserSelect = 'text'
       mark.style.userSelect = 'text'
       document.body.appendChild(mark)
 
