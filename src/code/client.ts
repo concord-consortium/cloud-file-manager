@@ -442,7 +442,7 @@ class CloudFileManagerClient {
       const content = cloudContentFactory.createEnvelopedCloudContent(data.content)
       const metadata = new CloudMetadata({
         name: data.name,
-        type: (CloudMetadata as any).File
+        type: CloudMetadata.File
       })
       this._fileOpened(content, metadata, {openedContent: content.clone()})
       return (typeof callback === 'function' ? callback(content, metadata) : undefined)
@@ -539,13 +539,13 @@ class CloudFileManagerClient {
     if (provider && provider.can('setFolder', this.state.metadata)) {
       if ((this.state.metadata == null)) {
         this.state.metadata = new CloudMetadata({
-          type: (CloudMetadata as any).File,
+          type: CloudMetadata.File,
           provider
         })
       }
 
       this.state.metadata.parent = new CloudMetadata({
-        type: (CloudMetadata as any).Folder,
+        type: CloudMetadata.Folder,
         providerData: {
           id: folder
         }
@@ -706,7 +706,7 @@ class CloudFileManagerClient {
       const content = cloudContentFactory.createEnvelopedCloudContent(copied.stringContent)
       const metadata = new CloudMetadata({
         name: copied.name,
-        type: (CloudMetadata as any).File
+        type: CloudMetadata.File
       })
       window.location.hash = ""
       this._fileOpened(content, metadata, {dirty: true, openedContent: content.clone()})
@@ -734,7 +734,7 @@ class CloudFileManagerClient {
         window.localStorage.setItem(key, value)
         const metadata = new CloudMetadata({
           name: currentContent.name,
-          type: (CloudMetadata as any).File
+          type: CloudMetadata.File
         })
         this._fileChanged('savedFile', currentContent, metadata, {saved: true}, "")
         return (typeof callback === 'function' ? callback(null) : undefined)
@@ -752,7 +752,7 @@ class CloudFileManagerClient {
       const content = cloudContentFactory.createEnvelopedCloudContent(tempFile.stringContent)
       const metadata = new CloudMetadata({
         name: tempFile.name,
-        type: (CloudMetadata as any).File
+        type: CloudMetadata.File
       })
       this._fileOpened(content, metadata, {dirty: true, openedContent: content.clone()})
       return window.localStorage.removeItem(key)
@@ -831,7 +831,7 @@ class CloudFileManagerClient {
       // in a few random places, but a new document that has never been renamed won't have this object available.
       this.state.metadata = new CloudMetadata({
         name: tr("~MENUBAR.UNTITLED_DOCUMENT"),
-        type: (CloudMetadata as any).File
+        type: CloudMetadata.File
       })
     }
     return this.setShareState(true, (err: any, sharedContentId: any, currentContent: any) => {
@@ -952,7 +952,7 @@ class CloudFileManagerClient {
         } else {
           metadata = new CloudMetadata({
             name: newName,
-            type: (CloudMetadata as any).File
+            type: CloudMetadata.File
           })
         }
         return _rename(metadata)

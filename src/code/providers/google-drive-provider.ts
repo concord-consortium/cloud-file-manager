@@ -218,8 +218,8 @@ class GoogleDriveProvider extends ProviderInterface {
         if (files?.length > 0) {
           for (let i = 0; i < files.length; i++) {
             const item = files[i]
-            const type = item.mimeType === 'application/vnd.google-apps.folder' ? (CloudMetadata as any).Folder : (CloudMetadata as any).File
-            if ((type === (CloudMetadata as any).Folder) || this.matchesExtension(item.name)) {
+            const type = item.mimeType === 'application/vnd.google-apps.folder' ? CloudMetadata.Folder : CloudMetadata.File
+            if ((type === CloudMetadata.Folder) || this.matchesExtension(item.name)) {
               list.push(new CloudMetadata({
                 name: item.name,
                 type,
@@ -280,7 +280,7 @@ class GoogleDriveProvider extends ProviderInterface {
 
   openSaved(openSavedParams: any, callback: any) {
     const metadata = new CloudMetadata({
-      type: (CloudMetadata as any).File,
+      type: CloudMetadata.File,
       provider: this,
       providerData: {
         id: openSavedParams
@@ -329,7 +329,7 @@ class GoogleDriveProvider extends ProviderInterface {
       metadata.mimeType = file.mimeType
       if ((metadata.parent == null) && ((file.parents != null ? file.parents.length : undefined) > 0)) {
         metadata.parent = new CloudMetadata({
-          type: (CloudMetadata as any).Folder,
+          type: CloudMetadata.Folder,
           provider: this,
           providerData: {
             id: file.parents[0]

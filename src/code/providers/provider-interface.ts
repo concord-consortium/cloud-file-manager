@@ -107,6 +107,10 @@ class CloudMetadata implements ICloudMetaDataSpec {
     readWrite?: string
   }
 
+  static Folder = ICloudFileTypes.Folder
+  static File = ICloudFileTypes.File
+  static Label = ICloudFileTypes.Label
+
   // TODO IMPORTANT: These are defined as class variables,
   // which seems like a mistake. Seems like it should match
   // the mimeType, which is an instance variable.

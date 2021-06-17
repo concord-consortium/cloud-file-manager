@@ -56,7 +56,7 @@ class ReadOnlyProvider extends ProviderInterface {
   }
 
   load(metadata: any, callback: any) {
-    if (metadata && !isArray(metadata && (metadata.type === (CloudMetadata as any).File))) {
+    if (metadata && !isArray(metadata && (metadata.type === CloudMetadata.File))) {
       if (metadata.content != null) {
         callback(null, metadata.content)
 
@@ -89,7 +89,7 @@ class ReadOnlyProvider extends ProviderInterface {
   list(metadata: any, callback: any) {
     return this._loadTree((err: any, tree: any) => {
       if (err) { return callback(err) }
-      const items = (metadata != null ? metadata.type : undefined) === (CloudMetadata as any).Folder ? metadata.providerData.children : this.tree
+      const items = (metadata != null ? metadata.type : undefined) === CloudMetadata.Folder ? metadata.providerData.children : this.tree
       // clone the metadata items so that any changes made to the filename or content in the edit is not cached
       return callback(null, _.map(items, metadataItem => new CloudMetadata(metadataItem)))
     })
@@ -100,7 +100,7 @@ class ReadOnlyProvider extends ProviderInterface {
   openSaved(openSavedParams: any, callback: any) {
     const metadata = new CloudMetadata({
       name: unescape(openSavedParams),
-      type: (CloudMetadata as any).File,
+      type: CloudMetadata.File,
       parent: null,
       provider: this
     })
@@ -199,7 +199,7 @@ class ReadOnlyProvider extends ProviderInterface {
             children: null
           }
         })
-        if (type === (CloudMetadata as any).Folder) {
+        if (type === CloudMetadata.Folder) {
           const newFolderPromise = (iItem: any, iMetadata: any) => {
             return new Promise((resolve, reject) => {
               if (iItem.children != null) {
@@ -240,7 +240,7 @@ class ReadOnlyProvider extends ProviderInterface {
       // { filename: "file contents", folderName: {... contents ...} }
       for (let filename of Object.keys(json || {})) {
         const itemContent = json[filename]
-        type = isString(itemContent) ? (CloudMetadata as any).File : (CloudMetadata as any).Folder
+        type = isString(itemContent) ? CloudMetadata.File : CloudMetadata.Folder
         metadata = new CloudMetadata({
           name: filename,
           type,
@@ -251,7 +251,7 @@ class ReadOnlyProvider extends ProviderInterface {
             children: null
           }
         })
-        if (type === (CloudMetadata as any).Folder) {
+        if (type === CloudMetadata.Folder) {
           metadata.providerData.children = this._convertJSONToMetadataTree(itemContent, baseUrl, metadata)
         }
         tree.push(metadata)
@@ -264,7 +264,7 @@ class ReadOnlyProvider extends ProviderInterface {
   // @ts-expect-error ts-migrate(7023) FIXME: '_findFile' implicitly has return type 'any' becau... Remove this comment to see the full error message
   _findFile(arr: any, filename: any) {
     for (let item of Array.from(arr)) {
-      if ((item as any).type === (CloudMetadata as any).File) {
+      if ((item as any).type === CloudMetadata.File) {
         if ((item != null ? (item as any).name : undefined) === filename) {
           return item
         }
@@ -286,7 +286,7 @@ class ReadOnlyProvider extends ProviderInterface {
   _createErrorMetadata(iParent: any) {
     return new CloudMetadata({
       name: tr("~FILE_DIALOG.LOAD_FOLDER_ERROR"),
-      type: (CloudMetadata as any).Label,
+      type: CloudMetadata.Label,
       content: "",
       parent: iParent,
       provider: this,

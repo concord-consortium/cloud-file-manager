@@ -39,7 +39,7 @@ export default createReactClass({
   openFile(file: any, via: any) {
     const metadata = new CloudMetadata({
       name: file.name.split('.')[0],
-      type: (CloudMetadata as any).File,
+      type: CloudMetadata.File,
       parent: null,
       provider: this.props.provider,
       providerData: {

@@ -258,7 +258,7 @@ class LaraProvider extends ProviderInterface {
 
   openSaved(openSavedParams: any, callback: any) {
     const metadata = new CloudMetadata({
-      type: (CloudMetadata as any).File,
+      type: CloudMetadata.File,
       // @ts-expect-error ts-migrate(2322) FIXME: Type 'this' is not assignable to type 'ProviderInt... Remove this comment to see the full error message
       provider: this
     })

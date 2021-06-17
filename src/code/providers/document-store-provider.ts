@@ -312,7 +312,7 @@ class DocumentStoreProvider extends ProviderInterface {
             list.push(new CloudMetadata({
               name: file.name,
               providerData: {id: file.id},
-              type: (CloudMetadata as any).File,
+              type: CloudMetadata.File,
               provider: this
             })
             )
@@ -528,7 +528,7 @@ class DocumentStoreProvider extends ProviderInterface {
                       ? openSavedParams
                       : { id: openSavedParams }
     const metadata = new CloudMetadata({
-      type: (CloudMetadata as any).File,
+      type: CloudMetadata.File,
       // @ts-expect-error ts-migrate(2322) FIXME: Type 'this' is not assignable to type 'ProviderInt... Remove this comment to see the full error message
       provider: this,
       providerData

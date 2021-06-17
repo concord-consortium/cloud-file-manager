@@ -29,7 +29,7 @@ class DocumentStoreShareProvider {
   loadSharedContent(id: any, callback: any) {
     const sharedMetadata = new CloudMetadata({
       sharedContentId: id,
-      type: (CloudMetadata as any).File,
+      type: CloudMetadata.File,
       overwritable: false
     })
     return this.provider.load(sharedMetadata, (err: any, content: any) => callback(err, content, sharedMetadata))

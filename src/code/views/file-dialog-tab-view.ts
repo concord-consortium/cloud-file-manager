@@ -35,14 +35,14 @@ const FileListFile = createReactClassFactory({
   },
 
   render() {
-    const selectableClass = this.props.metadata.type !== (CloudMetadata as any).Label ? 'selectable' : ''
+    const selectableClass = this.props.metadata.type !== CloudMetadata.Label ? 'selectable' : ''
     const selectedClass = this.props.selected ? 'selected' : ''
     const subFolderClass = this.props.isSubFolder ? 'subfolder' : ''
     return (div({className: `${selectableClass} ${selectedClass} ${subFolderClass}`
           , title: this.props.metadata.description || undefined
-          , onClick: this.props.metadata.type !== (CloudMetadata as any).Label ? this.fileSelected : undefined },
+          , onClick: this.props.metadata.type !== CloudMetadata.Label ? this.fileSelected : undefined },
       (italic({className: (() => {
-        if (this.props.metadata.type === (CloudMetadata as any).Folder) { return 'icon-inspectorArrow-collapse' } else if (this.props.metadata.type === (CloudMetadata as any).File) { return 'icon-noteTool' }
+        if (this.props.metadata.type === CloudMetadata.Folder) { return 'icon-inspectorArrow-collapse' } else if (this.props.metadata.type === CloudMetadata.File) { return 'icon-noteTool' }
       })()})),
       this.props.metadata.name
     ))
@@ -235,9 +235,9 @@ const FileDialogTab = createReactClass({
   },
 
   fileSelected(metadata: any) {
-    if ((metadata != null ? metadata.type : undefined) === (CloudMetadata as any).Folder) {
+    if ((metadata != null ? metadata.type : undefined) === CloudMetadata.Folder) {
       return this.setState(this.getStateForFolder(metadata))
-    } else if ((metadata != null ? metadata.type : undefined) === (CloudMetadata as any).File) {
+    } else if ((metadata != null ? metadata.type : undefined) === CloudMetadata.File) {
       return this.setState({
         filename: metadata.name,
         metadata
@@ -280,7 +280,7 @@ const FileDialogTab = createReactClass({
     } else {
       return confirmed(new CloudMetadata({
         name: filename,
-        type: (CloudMetadata as any).File,
+        type: CloudMetadata.File,
         parent: this.state.folder || null,
         provider: this.props.provider
       })
@@ -289,7 +289,7 @@ const FileDialogTab = createReactClass({
   },
 
   remove() {
-    if (this.state.metadata && (this.state.metadata.type !== (CloudMetadata as any).Folder)) {
+    if (this.state.metadata && (this.state.metadata.type !== CloudMetadata.Folder)) {
       return this.props.client.confirm(tr("~FILE_DIALOG.REMOVE_CONFIRM", {filename: this.state.metadata.name}), () => {
         return this.props.provider.remove(this.state.metadata, (err: any) => {
           if (!err) {
@@ -333,7 +333,7 @@ const FileDialogTab = createReactClass({
 
   renderWhenAuthorized() {
     const confirmDisabled = this.confirmDisabled()
-    const removeDisabled = (this.state.metadata === null) || (this.state.metadata.type === (CloudMetadata as any).Folder)
+    const removeDisabled = (this.state.metadata === null) || (this.state.metadata.type === CloudMetadata.Folder)
 
     return (div({className: 'dialogTab'},
       (input({type: 'text', value: this.state.filename, placeholder: (tr("~FILE_DIALOG.FILENAME")), onChange: this.filenameChanged, onKeyDown: this.watchForEnter})),

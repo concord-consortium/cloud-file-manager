@@ -103,7 +103,7 @@ export default createReactClass({
 
       const metadata = new CloudMetadata({
         name: this.state.downloadFilename.split('.')[0],
-        type: (CloudMetadata as any).File,
+        type: CloudMetadata.File,
         parent: null,
         provider: this.props.provider
       })

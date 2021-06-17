@@ -78,7 +78,7 @@ class LocalStorageProvider extends ProviderInterface {
         if (this.matchesExtension(name)) {
           list.push(new CloudMetadata({
             name,
-            type: remainder.length > 0 ? (CloudMetadata as any).Folder : (CloudMetadata as any).File,
+            type: remainder.length > 0 ? CloudMetadata.Folder : CloudMetadata.File,
             parent: metadata,
             provider: this
           })
@@ -115,7 +115,7 @@ class LocalStorageProvider extends ProviderInterface {
   openSaved(openSavedParams: any, callback: any) {
     const metadata = new CloudMetadata({
       name: openSavedParams,
-      type: (CloudMetadata as any).File,
+      type: CloudMetadata.File,
       parent: null,
       provider: this
     })
