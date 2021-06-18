@@ -11,6 +11,8 @@
 import tr  from './utils/translate'
 import isString  from './utils/is-string'
 
+export type UIEventCallback = (...args: any) => void;
+
 class CloudFileManagerUIEvent {
   data: any;
   type: any;
@@ -185,39 +187,35 @@ class CloudFileManagerUI {
     return this.listenerCallback(new CloudFileManagerUIEvent('setMenuBarInfo', info))
   }
 
-  saveFileDialog(callback: any) {
-    // @ts-expect-error ts-migrate(2554) FIXME: Expected 4 arguments, but got 3.
+  saveFileDialog(callback: UIEventCallback) {
     return this._showProviderDialog('saveFile', (tr('~DIALOG.SAVE')), callback)
   }
 
-  saveFileAsDialog(callback: any) {
-    // @ts-expect-error ts-migrate(2554) FIXME: Expected 4 arguments, but got 3.
+  saveFileAsDialog(callback: UIEventCallback) {
     return this._showProviderDialog('saveFileAs', (tr('~DIALOG.SAVE_AS')), callback)
   }
 
-  saveSecondaryFileAsDialog(data: any, callback: any) {
+  saveSecondaryFileAsDialog(data: any, callback: UIEventCallback) {
     return this._showProviderDialog('saveSecondaryFileAs', (tr('~DIALOG.EXPORT_AS')), callback, data)
   }
 
-  openFileDialog(callback: any) {
-    // @ts-expect-error ts-migrate(2554) FIXME: Expected 4 arguments, but got 3.
+  openFileDialog(callback: UIEventCallback) {
     return this._showProviderDialog('openFile', (tr('~DIALOG.OPEN')), callback)
   }
 
-  importDataDialog(callback: any) {
+  importDataDialog(callback: UIEventCallback) {
     return this.listenerCallback(new CloudFileManagerUIEvent('showImportDialog', {callback}))
   }
 
-  downloadDialog(filename: any, content: any, callback: any) {
+  downloadDialog(filename: any, content: any, callback: UIEventCallback) {
     return this.listenerCallback(new CloudFileManagerUIEvent('showDownloadDialog', { filename, content, callback }))
   }
 
-  renameDialog(filename: any, callback: any) {
+  renameDialog(filename: any, callback: UIEventCallback) {
     return this.listenerCallback(new CloudFileManagerUIEvent('showRenameDialog', { filename, callback }))
   }
 
-  shareDialog(client: any, enableLaraSharing: any) {
-    if (enableLaraSharing == null) { enableLaraSharing = false }
+  shareDialog(client: any, enableLaraSharing = false) {
     return this.listenerCallback(new CloudFileManagerUIEvent('showShareDialog', { client, enableLaraSharing }))
   }
 
@@ -243,7 +241,7 @@ class CloudFileManagerUI {
     return this.listenerCallback(new CloudFileManagerUIEvent('showConfirmDialog', params))
   }
 
-  _showProviderDialog(action: any, title: any, callback: any, data: any) {
+  _showProviderDialog(action: string, title: string, callback: UIEventCallback, data?: any) {
     return this.listenerCallback(new CloudFileManagerUIEvent('showProviderDialog', { action, title, callback, data }))
   }
 }

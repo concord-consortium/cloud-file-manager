@@ -6,12 +6,13 @@
  * DS207: Consider shorter variations of null checks
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
  */
-import tr  from './utils/translate'
-import isString  from './utils/is-string'
-import base64Array  from 'base64-js' // https://github.com/beatgammit/base64-js
-import getQueryParam  from './utils/get-query-param'
+import tr from './utils/translate'
+import isString from './utils/is-string'
+import base64Array from 'base64-js' // https://github.com/beatgammit/base64-js
+import getQueryParam from './utils/get-query-param'
 
-import { CloudFileManagerUI }  from './ui'
+import { CFMAppOptions, isCustomClientProvider } from './app-options'
+import { CloudFileManagerUI, UIEventCallback }  from './ui'
 
 import LocalStorageProvider  from './providers/localstorage-provider'
 import ReadOnlyProvider  from './providers/readonly-provider'
@@ -24,24 +25,37 @@ import LocalFileProvider  from './providers/local-file-provider'
 import PostMessageProvider  from './providers/post-message-provider'
 import URLProvider  from './providers/url-provider'
 
-import { ProviderInterface }  from './providers/provider-interface'
-import { cloudContentFactory }  from './providers/provider-interface'
-import { CloudContent }  from './providers/provider-interface'
-import { CloudMetadata }  from './providers/provider-interface'
+import {
+  CloudContent, cloudContentFactory, CloudMetadata, ECapabilities, ProviderInterface
+}  from './providers/provider-interface'
 import { reportError } from "./utils/report-error"
 
 let CLOUDFILEMANAGER_EVENT_ID = 0
 const CLOUDFILEMANAGER_EVENTS: Record<number, CloudFileManagerClientEvent> = {}
 
+interface IClientState {
+  availableProviders: any[];
+  shareProvider?: any;
+  openedContent?: any;
+  currentContent?: any;
+  metadata?: CloudMetadata;
+  saving?: CloudMetadata | null;
+  saved?: boolean;
+  sharing?: boolean;
+  dirty?: boolean;
+  failures?: number;
+}
+
+export type ClientEventCallback = (...args: any) => void;
+
 class CloudFileManagerClientEvent {
-  callback: any;
+  callback: ClientEventCallback;
   data: any;
   id: number;
-  state: any;
-  type: any;
+  state: Partial<IClientState>;
+  type: string;
 
-  // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'callback' implicitly has an 'any' type.
-  constructor(type: any, data: any, callback = null, state: any) {
+  constructor(type: string, data?: any, callback?: ClientEventCallback, state?: Partial<IClientState>) {
     this.type = type
     if (data == null) { data = {} }
     this.data = data
@@ -64,22 +78,24 @@ class CloudFileManagerClientEvent {
   }
 }
 
+export type ClientEventListener = (event: CloudFileManagerClientEvent) => void;
+export type OpenSaveCallback = (content: any, metadata: CloudMetadata) => void;
+
 class CloudFileManagerClient {
-  _autoSaveInterval: any;
-  _listeners: any;
-  _ui: any;
-  appOptions: any;
+  _autoSaveInterval: number;
+  _listeners: ClientEventListener[];
+  _ui: CloudFileManagerUI;
+  appOptions: CFMAppOptions;
   iframe: any;
-  newFileAddsNewToQuery: any;
-  newFileOpensInNewTab: any;
-  providers: any;
-  state: any;
+  newFileAddsNewToQuery: boolean;
+  newFileOpensInNewTab: boolean;
+  providers: Record<string, any>;
+  state: IClientState;
   urlProvider: any;
 
-  constructor(options: any) {
+  constructor(options?: any) {
     this.shouldAutoSave = this.shouldAutoSave.bind(this)
-    this.state =
-      {availableProviders: []}
+    this.state = {availableProviders: []}
     this._listeners = []
     this._resetState()
     this._ui = new CloudFileManagerUI(this)
@@ -87,7 +103,7 @@ class CloudFileManagerClient {
     this.urlProvider = new URLProvider()
   }
 
-  setAppOptions(appOptions: any){
+  setAppOptions(appOptions: CFMAppOptions){
 
     let providerName
     let Provider
@@ -142,18 +158,17 @@ class CloudFileManagerClient {
     const availableProviders = []
     let shareProvider = null
     for (let providerSpec of requestedProviders) {
-      let providerOptions;
-      [providerName, providerOptions] = isString(providerSpec)
-                                          ? [providerSpec, {}]
-                                          : [providerSpec.name, providerSpec]
+      const [providerName, providerOptions] = isString(providerSpec)
+                                                ? [providerSpec, {}]
+                                                : [providerSpec.name, providerSpec]
       // merge in other options as needed
       if (providerOptions.mimeType == null) { providerOptions.mimeType = this.appOptions.mimeType }
       providerOptions.readableMimetypes = readableMimetypes
       if (!providerName) {
         this.alert("Invalid provider spec - must either be string or object with name property")
       } else {
-        if (providerSpec.createProvider) {
-          allProviders[providerName] = providerSpec.createProvider(ProviderInterface)
+        if (isCustomClientProvider(providerOptions)) {
+          allProviders[providerName] = providerOptions.createProvider(ProviderInterface)
         }
         if (allProviders[providerName]) {
           Provider = allProviders[providerName]
@@ -178,7 +193,6 @@ class CloudFileManagerClient {
     if (!this.appOptions.ui) { this.appOptions.ui = {} }
     if (!this.appOptions.ui.windowTitleSuffix) { this.appOptions.ui.windowTitleSuffix = document.title }
     if (!this.appOptions.ui.windowTitleSeparator) { this.appOptions.ui.windowTitleSeparator = ' - ' }
-    // @ts-expect-error ts-migrate(2554) FIXME: Expected 1 arguments, but got 0.
     this._setWindowTitle()
 
     this._ui.init(this.appOptions.ui)
@@ -206,32 +220,24 @@ class CloudFileManagerClient {
     return this._startPostMessageListener()
   }
 
-  _getShareProvider(ignoredParentProvider: any) {
+  _getShareProvider(ignoredParentProvider: string) {
     // NP 2020-05-11:
     // Previous Code to document behavior before S3ShareProvider:
     // if we're using the DocumentStoreProvider, instantiate the ShareProvider
-    // if (inogredParentProvider === DocumentStoreProvider.Name) {
-    //   shareProvider = new DocumentStoreShareProvider(this, inogredParentProvider)
+    // if (ignoredParentProvider === DocumentStoreProvider.Name) {
+    //   shareProvider = new DocumentStoreShareProvider(this, ignoredParentProvider)
     // }
     // NB: The DocumentStoreShareProvider always used a DocumentStoreProvider ....
     return new S3ShareProvider(this, new S3Provider(this))
   }
 
-  // @ts-expect-error ts-migrate(7010) FIXME: 'setProviderOptions', which lacks return-type anno... Remove this comment to see the full error message
-  setProviderOptions(name: any, newOptions: any) {
-    const result = []
+  setProviderOptions(name: string, newOptions: Record<string, any>) {
     for (let provider of this.state.availableProviders) {
       if (provider.name === name) {
-        if (provider.options == null) { provider.options = {} }
-        for (let key in newOptions) {
-          provider.options[key] = newOptions[key]
-        }
+        provider.options = { ...provider.options, newOptions }
         break
-      } else {
-        result.push(undefined)
       }
     }
-    return result
   }
 
   connect() {
@@ -279,7 +285,6 @@ class CloudFileManagerClient {
   }
 
   ready() {
-    // @ts-expect-error ts-migrate(2554) FIXME: Expected 2-3 arguments, but got 1.
     return this._event('ready')
   }
 
@@ -287,7 +292,7 @@ class CloudFileManagerClient {
     return this._event('rendered', {client: this})
   }
 
-  listen(listener: any) {
+  listen(listener: ClientEventListener) {
     if (listener) {
       return this._listeners.push(listener)
     }
@@ -335,35 +340,32 @@ class CloudFileManagerClient {
     return this._ui.setMenuBarInfo(info)
   }
 
-  // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'callback' implicitly has an 'any' type.
-  newFile(callback = null) {
+  newFile(callback?: ClientEventCallback) {
     this._closeCurrentFile()
     this._resetState()
     window.location.hash = ""
-    return this._event('newedFile', {content: ""})
+    return this._event('newedFile', {content: ""}, callback)
   }
 
-  // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'callback' implicitly has an 'any' type.
-  newFileDialog(callback = null) {
+  newFileDialog(callback?: ClientEventCallback) {
     if (this.newFileOpensInNewTab) {
       return window.open(this.getCurrentUrl(this.newFileAddsNewToQuery ? "#new" : null), '_blank')
     } else if (this.state.dirty) {
       if (this._autoSaveInterval && this.state.metadata) {
         this.save()
-        return this.newFile()
+        return this.newFile(callback)
       } else {
-        return this.confirm(tr('~CONFIRM.NEW_FILE'), () => this.newFile())
+        return this.confirm(tr('~CONFIRM.NEW_FILE'), () => this.newFile(callback))
       }
     } else {
-      return this.newFile()
+      return this.newFile(callback)
     }
   }
 
-  // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'callback' implicitly has an 'any' type.
-  openFile(metadata: any, callback = null) {
-    if (metadata?.provider?.can('load', metadata)) {
+  openFile(metadata: CloudMetadata, callback?: OpenSaveCallback) {
+    if (metadata?.provider?.can(ECapabilities.load, metadata)) {
       this._event('willOpenFile', {op: "openFile"})
-      return metadata.provider.load(metadata, (err: any, content: any) => {
+      return metadata.provider.load(metadata, (err: string | null, content: any) => {
         if (err) {
           return this.alert(err, () => this.ready())
         }
@@ -380,10 +382,9 @@ class CloudFileManagerClient {
     }
   }
 
-  // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'callback' implicitly has an 'any' type.
-  openFileDialog(callback = null) {
+  openFileDialog(callback?: OpenSaveCallback): any {
     const showDialog = () => {
-      return this._ui.openFileDialog((metadata: any) => {
+      return this._ui.openFileDialog((metadata: CloudMetadata) => {
         return this.openFile(metadata, callback)
       })
     }
@@ -394,8 +395,7 @@ class CloudFileManagerClient {
     }
   }
 
-  // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'callback' implicitly has an 'any' type.
-  closeFile(callback = null) {
+  closeFile(callback?: () => void) {
     this._closeCurrentFile()
     this._resetState()
     window.location.hash = ""
@@ -403,8 +403,7 @@ class CloudFileManagerClient {
     return (typeof callback === 'function' ? callback() : undefined)
   }
 
-  // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'callback' implicitly has an 'any' type.
-  closeFileDialog(callback = null) {
+  closeFileDialog(callback?: () => void) {
     if (!this.state.dirty) {
       return this.closeFile(callback)
     } else {
@@ -412,28 +411,24 @@ class CloudFileManagerClient {
     }
   }
 
-  // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'callback' implicitly has an 'any' type.
-  importData(data: any, callback = null) {
+  importData(data: any, callback?: (data: any) => void) {
     this._event('importedData', data)
     return (typeof callback === 'function' ? callback(data) : undefined)
   }
 
-  // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'callback' implicitly has an 'any' type.
-  importDataDialog(callback = null) {
+  importDataDialog(callback?: (data: any) => void) {
     return this._ui.importDataDialog((data: any) => {
       return this.importData(data, callback)
     })
   }
 
-  // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'callback' implicitly has an 'any' type.
-  readLocalFile(file: any, callback=null) {
+  readLocalFile(file: any, callback?: (args: { name: string, content: any }) => void) {
     const reader = new FileReader()
     reader.onload = loaded => typeof callback === 'function' ? callback({name: file.name, content: loaded.target.result}) : undefined
     return reader.readAsText(file)
   }
 
-  // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'callback' implicitly has an 'any' type.
-  openLocalFile(file: any, callback=null) {
+  openLocalFile(file: any, callback?: OpenSaveCallback) {
     this._event('willOpenFile', {op: "openLocalFile"})
     return this.readLocalFile(file, (data: any) => {
       const content = cloudContentFactory.createEnvelopedCloudContent(data.content)
@@ -446,8 +441,7 @@ class CloudFileManagerClient {
     })
   }
 
-  // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'callback' implicitly has an 'any' type.
-  importLocalFile(file: any, callback=null) {
+  importLocalFile(file: any, callback?: (data: any) => void) {
     return this.readLocalFile(file, (data: any) => {
       return this.importData(data, callback)
     })
@@ -457,7 +451,7 @@ class CloudFileManagerClient {
     const { shareProvider } = this.state
     this._event('willOpenFile', {op: "openSharedContent"})
     if(shareProvider.loadSharedContent) {
-      shareProvider.loadSharedContent(id, (err: any, content: any, metadata: any) => {
+      shareProvider.loadSharedContent(id, (err: string | null, content: any, metadata: CloudMetadata) => {
         if (err) {
           this.alert(err, () => this.ready())
         }
@@ -470,13 +464,12 @@ class CloudFileManagerClient {
 
   // must be called as a result of user action (e.g. click) to avoid popup blockers
   parseUrlAuthorizeAndOpen() {
-    if ((this.appOptions.hashParams != null ? this.appOptions.hashParams.fileParams : undefined) != null) {
+    if (this.appOptions.hashParams?.fileParams != null) {
       const [providerName, providerParams] = this.appOptions.hashParams.fileParams.split(':')
       const provider = this.providers[providerName]
       if (provider) {
         return provider.authorize(() => {
-          // @ts-expect-error ts-migrate(2554) FIXME: Expected 2 arguments, but got 1.
-          return this.openProviderFile(providerName(providerParams))
+          return this.openProviderFile(providerName, providerParams)
         })
       }
     }
@@ -487,7 +480,7 @@ class CloudFileManagerClient {
     return this.confirm(tr("~CONFIRM.AUTHORIZE_OPEN"), () => {
       return provider.authorize(() => {
         this._event('willOpenFile', {op: "confirmAuthorizeAndOpen"})
-        return provider.openSaved(providerParams, (err: any, content: any, metadata: any) => {
+        return provider.openSaved(providerParams, (err: string | null, content: any, metadata: CloudMetadata) => {
           if (err) {
             return this.alert(err)
           }
@@ -498,14 +491,14 @@ class CloudFileManagerClient {
     })
   }
 
-  openProviderFile(providerName: any, providerParams: any) {
+  openProviderFile(providerName: string, providerParams?: any) {
     const provider = this.providers[providerName]
     if (provider) {
       return provider.authorized((authorized: any) => {
         // we can open the document without authorization in some cases
         if (authorized || !provider.isAuthorizationRequired()) {
           this._event('willOpenFile', {op: "openProviderFile"})
-          return provider.openSaved(providerParams, (err: any, content: any, metadata: any) => {
+          return provider.openSaved(providerParams, (err: string | null, content: any, metadata: CloudMetadata) => {
             if (err) {
               return this.alert(err, () => this.ready())
             }
@@ -522,7 +515,7 @@ class CloudFileManagerClient {
   }
 
   openUrlFile(url: any) {
-    return this.urlProvider.openFileFromUrl(url, (err: any, content: any, metadata: any) => {
+    return this.urlProvider.openFileFromUrl(url, (err: string | null, content: any, metadata: CloudMetadata) => {
       this._event('willOpenFile', {op: "openUrlFile"})
       if (err) {
         return this.alert(err, () => this.ready())
@@ -553,7 +546,7 @@ class CloudFileManagerClient {
     return this._event('newedFile', {content: ""})
   }
 
-  setInitialFilename(filename: any) {
+  setInitialFilename(filename: string) {
     this.state.metadata.rename(filename)
     return this.save()
   }
@@ -562,7 +555,7 @@ class CloudFileManagerClient {
     return (this.state.saving != null)
   }
 
-  confirmAuthorizeAndSave(stringContent: any, callback: any) {
+  confirmAuthorizeAndSave(stringContent: any, callback?: OpenSaveCallback) {
     // trigger authorize() from confirmation dialog to avoid popup blockers
     return this.confirm(tr("~CONFIRM.AUTHORIZE_SAVE"), () => {
       return this.state.metadata.provider.authorize(() => {
@@ -571,16 +564,14 @@ class CloudFileManagerClient {
     })
   }
 
-  // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'callback' implicitly has an 'any' type.
-  save(callback = null) {
+  save(callback?: OpenSaveCallback) {
     return this._event('getContent', { shared: this._sharedMetadata() }, (stringContent: any) => {
       return this.saveContent(stringContent, callback)
     })
   }
 
-  // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'callback' implicitly has an 'any' type.
-  saveContent(stringContent: any, callback = null) {
-    const provider = (this.state.metadata != null ? this.state.metadata.provider : undefined) || this.autoProvider('save')
+  saveContent(stringContent: any, callback?: OpenSaveCallback) {
+    const provider = this.state.metadata?.provider || this.autoProvider('save')
     if (provider != null) {
       return provider.authorized((isAuthorized: any) => {
         // we can save the document without authorization in some cases
@@ -595,22 +586,20 @@ class CloudFileManagerClient {
     }
   }
 
-  // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'callback' implicitly has an 'any' type.
-  saveFile(stringContent: any, metadata: any, callback = null) {
+  saveFile(stringContent: any, metadata: CloudMetadata, callback?: OpenSaveCallback) {
     // must be able to 'resave' to save silently, i.e. without save dialog
-    if (metadata?.provider?.can('resave', metadata)) {
+    if (metadata?.provider?.can(ECapabilities.resave, metadata)) {
       return this.saveFileNoDialog(stringContent, metadata, callback)
     } else {
       return this.saveFileDialog(stringContent, callback)
     }
   }
 
-  // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'callback' implicitly has an 'any' type.
-  saveFileNoDialog(stringContent: any, metadata: any, callback = null) {
+  saveFileNoDialog(stringContent: any, metadata: CloudMetadata, callback?: OpenSaveCallback) {
     this._setState({
       saving: metadata})
     const currentContent = this._createOrUpdateCurrentContent(stringContent, metadata)
-    return metadata.provider.save(currentContent, metadata, (err: any, statusCode: any) => {
+    return metadata.provider.save(currentContent, metadata, (err: string | null, statusCode: number) => {
       let failures
       if (err) {
         this._setState({ metadata, saving: null })
@@ -643,37 +632,34 @@ class CloudFileManagerClient {
     })
   }
 
-  // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'stringContent' implicitly has an 'any' ... Remove this comment to see the full error message
-  saveFileDialog(stringContent = null, callback = null) {
-    return this._ui.saveFileDialog((metadata: any) => {
+  saveFileDialog(stringContent: any, callback?: OpenSaveCallback) {
+    return this._ui.saveFileDialog((metadata: CloudMetadata) => {
       return this._dialogSave(stringContent, metadata, callback)
     })
   }
 
-  // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'stringContent' implicitly has an 'any' ... Remove this comment to see the full error message
-  saveFileAsDialog(stringContent = null, callback = null) {
-    return this._ui.saveFileAsDialog((metadata: any) => {
+  saveFileAsDialog(stringContent: any, callback?: OpenSaveCallback) {
+    return this._ui.saveFileAsDialog((metadata: CloudMetadata) => {
       return this._dialogSave(stringContent, metadata, callback)
     })
   }
 
-  // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'stringContent' implicitly has an 'any' ... Remove this comment to see the full error message
-  createCopy(stringContent = null, callback = null) {
+  createCopy(stringContent?: any, callback?: (errOrCopyParams?: number | string) => void) {
     const saveAndOpenCopy = (stringContent: any) => {
-      return this.saveCopiedFile(stringContent, this.state.metadata != null ? this.state.metadata.name : undefined, (err: any, copyParams: any) => {
+      return this.saveCopiedFile(stringContent, this.state.metadata?.name, (err: string | null, copyParams?: number) => {
         if (err) { return (typeof callback === 'function' ? callback(err) : undefined) }
         window.open(this.getCurrentUrl(`#copy=${copyParams}`))
         return (typeof callback === 'function' ? callback(copyParams) : undefined)
       })
     }
-    if (stringContent === null) {
+    if (stringContent == null) {
       return this._event('getContent', {}, (stringContent: any) => saveAndOpenCopy(stringContent))
     } else {
       return saveAndOpenCopy(stringContent)
     }
   }
 
-  saveCopiedFile(stringContent: any, name: any, callback: any) {
+  saveCopiedFile(stringContent: any, name?: string, callback?: (err: string | null, maxCopyNumber?: number) => void) {
     try {
       const prefix = 'cfm-copy::'
       let maxCopyNumber = 0
@@ -685,7 +671,7 @@ class CloudFileManagerClient {
       }
       maxCopyNumber++
       const value = JSON.stringify({
-        name: (name != null ? name.length : undefined) > 0 ? `Copy of ${name}` : "Copy of Untitled Document",
+        name: name?.length ? `Copy of ${name}` : "Copy of Untitled Document",
         stringContent
       })
       window.localStorage.setItem(`${prefix}${maxCopyNumber}`, value)
@@ -695,7 +681,7 @@ class CloudFileManagerClient {
     }
   }
 
-  openCopiedFile(copyParams: any) {
+  openCopiedFile(copyParams: string) {
     this._event('willOpenFile', {op: "openCopiedFile"})
     try {
       const key = `cfm-copy::${copyParams}`
@@ -797,7 +783,7 @@ class CloudFileManagerClient {
     return (shareEditKey || accessKeys.readWrite) && !(this.state.currentContent != null ? this.state.currentContent.get("isUnshared") : undefined)
   }
 
-  setShareState(shared: any, callback: any) {
+  setShareState(shared: boolean, callback: (err: string | null, sharedContentId: string, currentContent: any) => void) {
     if (this.state.shareProvider) {
       const sharingMetadata = this.state.shareProvider.getSharingMetadata(shared)
       return this._event('getContent', { shared: sharingMetadata }, (stringContent: any) => {
@@ -811,7 +797,7 @@ class CloudFileManagerClient {
         } else {
           currentContent.set('isUnshared', true)
         }
-        return this.state.shareProvider.share(shared, currentContent, sharedContent, this.state.metadata, (err: any, sharedContentId: any) => {
+        return this.state.shareProvider.share(shared, currentContent, sharedContent, this.state.metadata, (err: string | null, sharedContentId: any) => {
           if (err) {
             return this.alert(err)
           }
@@ -821,7 +807,7 @@ class CloudFileManagerClient {
     }
   }
 
-  share(callback: any) {
+  share(callback: (err: string | null, sharedContentId: string) => void) {
     if (!this.state.metadata) {
       // PJ, 07/10/2020: Without these lines the sharing process will fail (it looks for filename and later tries to
       // update metadata object). Apparently, there's an assumption that metadata already exists. It can initialized
@@ -831,30 +817,27 @@ class CloudFileManagerClient {
         type: CloudMetadata.File
       })
     }
-    return this.setShareState(true, (err: any, sharedContentId: any, currentContent: any) => {
-      // @ts-expect-error ts-migrate(2554) FIXME: Expected 4-5 arguments, but got 3.
+    return this.setShareState(true, (err: string | null, sharedContentId: string, currentContent: any) => {
       this._fileChanged('sharedFile', currentContent, this.state.metadata)
       return (typeof callback === 'function' ? callback(null, sharedContentId) : undefined)
     })
   }
 
-  unshare(callback: any) {
-    return this.setShareState(false, (err: any, sharedContentId: any, currentContent: any) => {
-      // @ts-expect-error ts-migrate(2554) FIXME: Expected 4-5 arguments, but got 3.
+  unshare(callback?: (err: string | null) => void) {
+    return this.setShareState(false, (err: string | null, sharedContentId: string, currentContent: any) => {
       this._fileChanged('unsharedFile', currentContent, this.state.metadata)
       return (typeof callback === 'function' ? callback(null) : undefined)
     })
   }
 
-  // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'callback' implicitly has an 'any' type.
-  revertToShared(callback = null) {
+  revertToShared(callback?: (err: string | null) => void) {
     // Look for sharedDocumentUrl or Url first:
     const id = this.state.currentContent?.get("sharedDocumentUrl")
             || this.state.currentContent?.get("url")
             || this.state.currentContent?.get("sharedDocumentId")
 
     if (id && (this.state.shareProvider != null)) {
-      return this.state.shareProvider.loadSharedContent(id, (err: any, content: any, metadata: any) => {
+      return this.state.shareProvider.loadSharedContent(id, (err: string | null, content: any, metadata: CloudMetadata) => {
         let docName
         if (err) {
           return this.alert(err)
@@ -869,22 +852,20 @@ class CloudFileManagerClient {
     }
   }
 
-  // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'callback' implicitly has an 'any' type.
-  revertToSharedDialog(callback = null) {
+  revertToSharedDialog(callback?: (err: string | null) => void) {
     if ((this.state.currentContent != null ? this.state.currentContent.get("sharedDocumentId") : undefined) && (this.state.shareProvider != null)) {
       return this.confirm(tr("~CONFIRM.REVERT_TO_SHARED_VIEW"), () => this.revertToShared(callback))
     }
   }
 
-  // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'callback' implicitly has an 'any' type.
-  downloadDialog(callback = null) {
+  downloadDialog(callback: UIEventCallback) {
     // should share metadata be included in downloaded local files?
     return this._event('getContent', { shared: this._sharedMetadata() }, (content: any) => {
       const envelopedContent = cloudContentFactory.createEnvelopedCloudContent(content)
       if (this.state.currentContent != null) {
         this.state.currentContent.copyMetadataTo(envelopedContent)
       }
-      return this._ui.downloadDialog(this.state.metadata != null ? this.state.metadata.name : undefined, envelopedContent, callback)
+      return this._ui.downloadDialog(this.state.metadata?.name, envelopedContent, callback)
     })
   }
 
@@ -925,9 +906,9 @@ class CloudFileManagerClient {
     if (wURL) { return wURL.createObjectURL(this.getDownloadBlob(content, includeShareInfo, mimeType)) }
   }
 
-  rename(metadata: any, newName: any, callback: any) {
+  rename(metadata: CloudMetadata, newName: string, callback?: (newName: string) => void) {
     const { dirty } = this.state
-    const _rename = (metadata: any) => {
+    const _rename = (metadata: CloudMetadata) => {
       if (this.state.currentContent != null) {
         this.state.currentContent.addMetadata({docName: metadata.name})
       }
@@ -935,8 +916,8 @@ class CloudFileManagerClient {
       return (typeof callback === 'function' ? callback(newName) : undefined)
     }
     if (newName !== (this.state.metadata != null ? this.state.metadata.name : undefined)) {
-      if (metadata?.provider?.can('rename', metadata)) {
-        return this.state.metadata.provider.rename(this.state.metadata, newName, (err: any, metadata: any) => {
+      if (metadata?.provider?.can(ECapabilities.rename, metadata)) {
+        return this.state.metadata.provider.rename(this.state.metadata, newName, (err: string | null, metadata: CloudMetadata) => {
           if (err) {
             return this.alert(err)
           }
@@ -957,23 +938,20 @@ class CloudFileManagerClient {
     }
   }
 
-  // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'callback' implicitly has an 'any' type.
-  renameDialog(callback = null) {
+  renameDialog(callback?: (newName: string) => void) {
     return this._ui.renameDialog(this.state.metadata != null ? this.state.metadata.name : undefined, (newName: any) => {
       return this.rename(this.state.metadata, newName, callback)
     })
   }
 
-  // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'callback' implicitly has an 'any' type.
-  revertToLastOpened(callback = null) {
+  revertToLastOpened(callback?: (err: string | null) => void) {
     this._event('willOpenFile', {op: "revertToLastOpened"})
     if ((this.state.openedContent != null) && this.state.metadata) {
       return this._fileOpened(this.state.openedContent, this.state.metadata, {openedContent: this.state.openedContent.clone()})
     }
   }
 
-  // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'callback' implicitly has an 'any' type.
-  revertToLastOpenedDialog(callback = null) {
+  revertToLastOpenedDialog(callback?: (err: string | null) => void) {
     if ((this.state.openedContent != null) && this.state.metadata) {
       return this.confirm(tr('~CONFIRM.REVERT_TO_LAST_OPENED'), () => this.revertToLastOpened(callback))
     } else {
@@ -981,14 +959,14 @@ class CloudFileManagerClient {
     }
   }
 
-  saveSecondaryFileAsDialog(stringContent: any, extension: any, mimeType: any, callback: any) {
+  saveSecondaryFileAsDialog(stringContent: any, extension: any, mimeType: any, callback: OpenSaveCallback) {
     const provider = this.autoProvider('export')
     if (provider) {
-      const metadata = { provider, extension, mimeType }
+      const metadata = { provider, extension, mimeType } as unknown as CloudMetadata
       return this.saveSecondaryFile(stringContent, metadata, callback)
     } else {
       const data = { content: stringContent, extension, mimeType }
-      return this._ui.saveSecondaryFileAsDialog(data, (metadata: any) => {
+      return this._ui.saveSecondaryFileAsDialog(data, (metadata: CloudMetadata) => {
         // replace defaults
         if (extension) {
           metadata.filename = CloudMetadata.newExtension(metadata.filename, extension)
@@ -1004,20 +982,15 @@ class CloudFileManagerClient {
 
   // Saves a file to backend, but does not update current metadata.
   // Used e.g. when exporting .csv files from CODAP
-  // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'callback' implicitly has an 'any' type.
-  saveSecondaryFile(stringContent: any, metadata: any, callback = null) {
-    if (metadata?.provider?.can('export', metadata)) {
-      return metadata.provider.saveAsExport(stringContent, metadata, (err: any, statusCode: any) => {
-        if (err) {
-          return this.alert(err)
-        }
-        return (typeof callback === 'function' ? callback(stringContent, metadata) : undefined)
+  saveSecondaryFile(stringContent: any, metadata: CloudMetadata, callback?: OpenSaveCallback) {
+    if (metadata?.provider?.can(ECapabilities["export"], metadata)) {
+      return metadata.provider.saveAsExport(stringContent, metadata, (err: string | null, statusCode?: number) => {
+        return err ? this.alert(err) : callback?.(stringContent, metadata)
       })
     }
   }
 
-  dirty(isDirty: any) {
-    if (isDirty == null) { isDirty = true }
+  dirty(isDirty = true) {
     this._setState({
       dirty: isDirty,
       saved: this.state.saved && !isDirty
@@ -1034,11 +1007,11 @@ class CloudFileManagerClient {
       this.state.dirty
       && !metadata?.autoSaveDisabled
       && !this.isSaveInProgress()
-      && metadata?.provider?.can('resave', metadata)
+      && metadata?.provider?.can(ECapabilities.resave, metadata)
     )
   }
 
-  autoSave(interval: any) {
+  autoSave(interval: number) {
     if (this._autoSaveInterval) {
       clearInterval(this._autoSaveInterval)
     }
@@ -1048,7 +1021,7 @@ class CloudFileManagerClient {
       interval = Math.round(interval / 1000)
     }
     if (interval > 0) {
-      return this._autoSaveInterval = setInterval((() => { if (this.shouldAutoSave()) { return this.save() } }), interval * 1000)
+      return this._autoSaveInterval = window.setInterval((() => { if (this.shouldAutoSave()) { return this.save() } }), interval * 1000)
     }
   }
 
@@ -1061,7 +1034,7 @@ class CloudFileManagerClient {
       if (!this.state.dirty) {
         return callback(newLangCode)
       } else {
-        const postSave = (err: any) => {
+        const postSave = (err: string | null) => {
           if (err) {
             this.alert(err)
             return this.confirm(tr('~CONFIRM.CHANGE_LANGUAGE'), () => callback(newLangCode))
@@ -1070,8 +1043,7 @@ class CloudFileManagerClient {
           }
         }
         if ((this.state.metadata != null ? this.state.metadata.provider : undefined) || this.autoProvider('save')) {
-          // @ts-expect-error ts-migrate(2554) FIXME: Expected 1 arguments, but got 0.
-          return this.save((err: any) => postSave())
+          return this.save((err: string | null) => postSave(err))
         } else {
           return this.saveTempFile(postSave)
         }
@@ -1087,8 +1059,7 @@ class CloudFileManagerClient {
     return this._ui.hideBlockingModal()
   }
 
-  // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'queryString' implicitly has an 'any' ty... Remove this comment to see the full error message
-  getCurrentUrl(queryString = null) {
+  getCurrentUrl(queryString?: string) {
     const suffix = (queryString != null) ? `?${queryString}` : ""
     // Check browser support for document.location.origin (& window.location.origin)
     return `${document.location.origin}${document.location.pathname}${suffix}`
@@ -1130,10 +1101,10 @@ class CloudFileManagerClient {
       callback = titleOrCallback
       titleOrCallback = null
     }
-    return this._ui.alertDialog(message, (titleOrCallback || tr("~CLIENT_ERROR.TITLE")), callback)
+    return this._ui.alertDialog(message, ((titleOrCallback as string) || tr("~CLIENT_ERROR.TITLE")), callback)
   }
 
-  _dialogSave(stringContent: any, metadata: any, callback: any) {
+  _dialogSave(stringContent: any, metadata: CloudMetadata, callback: any) {
     if (stringContent !== null) {
       return this.saveFileNoDialog(stringContent, metadata, callback)
     } else {
@@ -1144,7 +1115,7 @@ class CloudFileManagerClient {
   }
   // The purpose of this seems to be to definitely set whether or not the content
   // can be overwritten? Will mutate metadata:
-  _updateMetaDataOverwritable(metadata: any) {
+  _updateMetaDataOverwritable(metadata: CloudMetadata) {
     if (metadata != null) {
       metadata.overwritable = (metadata.overwritable != null)
         ? metadata.overwritable
@@ -1152,16 +1123,14 @@ class CloudFileManagerClient {
     }
   }
 
-  // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'hashParams' implicitly has an 'any' typ... Remove this comment to see the full error message
-  _fileChanged(type: any, content: any, metadata: any, additionalState: any, hashParams=null) {
+  _fileChanged(type: string, content: any, metadata: CloudMetadata, additionalState?: any, hashParams: string = null) {
     if (additionalState == null) { additionalState = {} }
     this._updateMetaDataOverwritable(metadata)
     this._updateState(content, metadata, additionalState, hashParams)
     return this._event(type, { content: (content != null ? content.getClientContent() : undefined), shared: this._sharedMetadata() })
   }
 
-  // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'hashParams' implicitly has an 'any' typ... Remove this comment to see the full error message
-  _fileOpened(content: any, metadata: any, additionalState: any, hashParams=null) {
+  _fileOpened(content: any, metadata: CloudMetadata, additionalState?: any, hashParams: string = null) {
     if (additionalState == null) { additionalState = {} }
     const eventData = { content: (content != null ? content.getClientContent() : undefined) }
     // update state before sending 'openedFile' events so that 'openedFile' listeners that
@@ -1170,7 +1139,7 @@ class CloudFileManagerClient {
     // add metadata contentType to event for CODAP to load via postmessage API (for SageModeler standalone)
     const contentType = metadata.mimeType || metadata.contentType;
     (eventData as any).metadata = {contentType, url: metadata.url, filename: metadata.filename}
-    return this._event('openedFile', eventData, (iError: any, iSharedMetadata: any) => {
+    return this._event('openedFile', eventData, (iError: string | null, iSharedMetadata: any) => {
       if (iError) {
         return this.alert(iError, () => this.ready())
       }
@@ -1185,31 +1154,24 @@ class CloudFileManagerClient {
     })
   }
 
-  // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'hashParams' implicitly has an 'any' typ... Remove this comment to see the full error message
-  _updateState(content: any, metadata: any, additionalState: any, hashParams=null) {
+  _updateState(content: any, metadata: CloudMetadata, additionalState?: Partial<IClientState>, hashParams: string = null) {
     if (additionalState == null) { additionalState = {} }
-    const state = {
+    const state: Partial<IClientState> = {
       currentContent: content,
       metadata,
-      // @ts-expect-error ts-migrate(7018) FIXME: Object literal's property 'saving' implicitly has ... Remove this comment to see the full error message
       saving: null,
       saved: false,
-      dirty: !additionalState.saved && (content != null ? content.requiresConversion() : undefined)
+      dirty: !additionalState.saved && content?.requiresConversion(),
+      ...additionalState
     }
-    for (let key of Object.keys(additionalState || {})) {
-      const value = additionalState[key]
-      // @ts-expect-error ts-migrate(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-      state[key] = value
-    }
-    this._setWindowTitle(metadata != null ? metadata.name : undefined)
+    this._setWindowTitle(metadata?.name)
     if (hashParams !== null) {
       window.location.hash = hashParams
     }
     return this._setState(state)
   }
 
-  // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'eventCallback' implicitly has an 'any' ... Remove this comment to see the full error message
-  _event(type: any, data: any, eventCallback = null) {
+  _event(type: string, data?: any, eventCallback?: ClientEventCallback) {
     if (data == null) { data = {} }
     const event = new CloudFileManagerClientEvent(type, data, eventCallback, this.state)
     for (let listener of this._listeners) {
@@ -1221,17 +1183,13 @@ class CloudFileManagerClient {
     // I tried sending the state but that causes CODAP to replace its state which breaks other things.
     // A permanent fix for this would be to send the new filename outside of the state metadata.
     const skipPostMessage = type === "renamedFile"
-    if ((this.appOptions != null ? this.appOptions.sendPostMessageClientEvents : undefined) && this.iframe && !skipPostMessage) {
+    if (this.appOptions?.sendPostMessageClientEvents && this.iframe && !skipPostMessage) {
       return event.postMessage(this.iframe.contentWindow)
     }
   }
 
-  _setState(options: any) {
-    for (let key of Object.keys(options || {})) {
-      const value = options[key]
-      this.state[key] = value
-    }
-    // @ts-expect-error ts-migrate(2554) FIXME: Expected 2-3 arguments, but got 1.
+  _setState(newState: Partial<IClientState>) {
+    this.state = { ...this.state, ...newState }
     return this._event('stateChanged')
   }
 
@@ -1249,13 +1207,12 @@ class CloudFileManagerClient {
 
   _closeCurrentFile() {
     const { metadata } = this.state
-    if (metadata?.provider?.can('close', metadata)) {
+    if (metadata?.provider?.can(ECapabilities.close, metadata)) {
       return metadata.provider.close(metadata)
     }
   }
 
-  // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'metadata' implicitly has an 'any' type.
-  _createOrUpdateCurrentContent(stringContent: any, metadata = null) {
+  _createOrUpdateCurrentContent(stringContent: any, metadata?: CloudMetadata) {
     let currentContent
     if (this.state.currentContent != null) {
       ({ currentContent } = this.state)
@@ -1269,7 +1226,7 @@ class CloudFileManagerClient {
     return currentContent
   }
 
-  _setWindowTitle(name: any) {
+  _setWindowTitle(name?: string) {
     if (this.appOptions?.appSetsWindowTitle) {
       return
     }
@@ -1285,13 +1242,12 @@ class CloudFileManagerClient {
     }
   }
 
-  _getHashParams(metadata: any) {
+  _getHashParams(metadata: CloudMetadata) {
     const canOpenSaved = metadata?.provider?.canOpenSaved() || false
     let openSavedParams = canOpenSaved ? metadata?.provider?.getOpenSavedParams(metadata) : null
-    if (canOpenSaved && (openSavedParams != null)) {
+    if (canOpenSaved && (openSavedParams != null) && (typeof openSavedParams === "string")) {
       return `#file=${metadata.provider.urlDisplayName || metadata.provider.name}:${encodeURIComponent(openSavedParams)}`
-    } else if ((metadata != null ? metadata.provider : undefined) instanceof URLProvider &&
-        (window.location.hash.indexOf("#file=http") === 0)) {
+    } else if (metadata?.provider instanceof URLProvider && (window.location.hash.indexOf("#file=http") === 0)) {
       return window.location.hash    // leave it alone
     } else { return "" }
   }

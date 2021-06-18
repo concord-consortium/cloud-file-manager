@@ -1,5 +1,6 @@
 import AppView from './views/app-view'
 import React from 'react'
+import { CFMAppOptions } from './app-options'
 import { CloudFileManagerUIMenu } from './ui'
 import { CloudFileManagerClient } from './client'
 
@@ -7,16 +8,19 @@ import getHashParam from './utils/get-hash-param'
 
 import '../style/app.styl'
 
+interface CFMAppRuntimeOptions extends CFMAppOptions {
+  client?: CloudFileManagerClient;
+}
+
 class CloudFileManager {
   DefaultMenu: any;
-  appOptions: any;
-  client: any;
+  appOptions: CFMAppRuntimeOptions;
+  client: CloudFileManagerClient;
 
-  constructor(options: any) {
+  constructor(options?: any) {
     // since the module exports an instance of the class we need to fake a class variable as an instance variable
     this.DefaultMenu = (CloudFileManagerUIMenu as any).DefaultMenu
 
-    // @ts-expect-error ts-migrate(2554) FIXME: Expected 1 arguments, but got 0.
     this.client = new CloudFileManagerClient()
     this.appOptions = {}
   }
@@ -26,7 +30,7 @@ class CloudFileManager {
   //   presents its UI and the wrapped client app within the specified element. If
   //   appOrMenuElemId is set and usingIframe is false, then the CFM presents its menubar
   //   UI within the specified element, but there is no iframe or wrapped client app.
-  init(appOptions: any) {
+  init(appOptions: CFMAppOptions) {
     this.appOptions = appOptions
     this.appOptions.hashParams = {
       sharedContentId: getHashParam("shared"),
@@ -85,7 +89,6 @@ class CloudFileManager {
   }
 }
 
-// @ts-expect-error ts-migrate(2554) FIXME: Expected 1 arguments, but got 0.
 const instance = new  CloudFileManager()
 export default instance;
 (global as any).CloudFileManager = instance

@@ -14,7 +14,7 @@ type AnyForNow = any
 export type GenericFileCallback = (arg: AnyForNow) => AnyForNow
 
 // TODO: What does a save callback signature really looklike?
-export type ProviderSaveCallback = GenericFileCallback
+export type ProviderSaveCallback = (err: string | null, statusCode?: number) => void;
 
 // TODO: What does a load callback signature really looklike?
 export type ProviderLoadCallback = (err: string | null, content?: any, metadata?: CloudMetadata) => AnyForNow
@@ -23,7 +23,7 @@ export type ProviderLoadCallback = (err: string | null, content?: any, metadata?
 export type ProviderListCallback = (err: string | null, content?: any, metadata?: CloudMetadata) => AnyForNow
 
 // TODO: What does a rename callback signature really looklike?
-export type ProviderRenameCallback = GenericFileCallback
+export type ProviderRenameCallback = (err: string | null, metadata: CloudMetadata) => void;
 
 // TODO: What does a list callback signature really looklike?
 export type ProviderRemoveCallback = GenericFileCallback
@@ -88,6 +88,7 @@ class CloudMetadata implements ICloudMetaDataSpec {
   docName?: string  // TODO: why is this used?
   description: string
   content: any
+  contentType?: any
   url: string
   type: ICloudFileTypes
   provider: providerType
@@ -106,6 +107,7 @@ class CloudMetadata implements ICloudMetaDataSpec {
     readOnly?: string
     readWrite?: string
   }
+  autoSaveDisabled?: boolean;
 
   static Folder = ICloudFileTypes.Folder
   static File = ICloudFileTypes.File
@@ -391,7 +393,7 @@ class CloudContent {
   }
 }
 
-enum ECapabilities {
+export enum ECapabilities {
   save='save',
   resave='resave',
   load='load',
@@ -443,6 +445,10 @@ class ProviderInterface implements IProviderInterfaceOpts {
     return callback ? callback(true) : true
   }
 
+  authorize(...args: any) {
+    console.warn('authorize not implemented')
+  }
+
   renderAuthorizationDialog() {
     console.warn('renderAuthorizationDialog not implemented')
   }
@@ -480,11 +486,11 @@ class ProviderInterface implements IProviderInterfaceOpts {
   }
 
 
-  save(content: any, metadata: ICloudMetaDataSpec, callback: ProviderSaveCallback) {
+  save(content: any, metadata: ICloudMetaDataSpec, callback?: ProviderSaveCallback) {
     return this._notImplemented('save')
   }
 
-  saveAsExport(content: any, metadata: ICloudMetaDataSpec, callback: ProviderSaveCallback) {
+  saveAsExport(content: any, metadata: ICloudMetaDataSpec, callback?: ProviderSaveCallback) {
     // default implementation invokes save
     if (this.can(ECapabilities.save, metadata)) {
       return this.save(content, metadata, callback)
@@ -493,23 +499,23 @@ class ProviderInterface implements IProviderInterfaceOpts {
     }
   }
 
-  load(metadata: ICloudMetaDataSpec, callback: ProviderLoadCallback) {
+  load(metadata: ICloudMetaDataSpec, callback?: ProviderLoadCallback) {
     return this._notImplemented('load')
   }
 
-  list(metadata: ICloudMetaDataSpec, callback: ProviderListCallback) {
+  list(metadata: ICloudMetaDataSpec, callback?: ProviderListCallback) {
     return this._notImplemented('list')
   }
 
-  remove(metadata: ICloudMetaDataSpec, callback: ProviderRemoveCallback) {
+  remove(metadata: ICloudMetaDataSpec, callback?: ProviderRemoveCallback) {
     return this._notImplemented('remove')
   }
 
-  rename(metadata: ICloudMetaDataSpec, newName: string, callback: ProviderRenameCallback) {
+  rename(metadata: ICloudMetaDataSpec, newName: string, callback?: ProviderRenameCallback) {
     return this._notImplemented('rename')
   }
 
-  close(metadata: ICloudMetaDataSpec, callback: ProviderCloseCallback) {
+  close(metadata: ICloudMetaDataSpec, callback?: ProviderCloseCallback) {
     return this._notImplemented('close')
   }
 
@@ -519,15 +525,15 @@ class ProviderInterface implements IProviderInterfaceOpts {
 
   canOpenSaved() { return false }
 
-  openSaved(openSavedParams: any, callback: ProviderOpenCallback) {
+  openSaved(openSavedParams: any, callback?: ProviderOpenCallback) {
     return this._notImplemented('openSaved')
   }
 
-  getOpenSavedParams(metadata: ICloudMetaDataSpec) {
-    return this._notImplemented('getOpenSavedParams')
+  getOpenSavedParams(metadata: ICloudMetaDataSpec): string | Record<string, string> | void {
+    this._notImplemented('getOpenSavedParams')
   }
 
-  fileOpened() {}
+  fileOpened(content: any, metadata: ICloudMetaDataSpec) {}
     // do nothing by default
 
   _notImplemented(methodName: string) {

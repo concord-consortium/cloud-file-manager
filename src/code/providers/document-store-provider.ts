@@ -529,7 +529,6 @@ class DocumentStoreProvider extends ProviderInterface {
                       : { id: openSavedParams }
     const metadata = new CloudMetadata({
       type: CloudMetadata.File,
-      // @ts-expect-error ts-migrate(2322) FIXME: Type 'this' is not assignable to type 'ProviderInt... Remove this comment to see the full error message
       provider: this,
       providerData
     })
@@ -544,8 +543,7 @@ class DocumentStoreProvider extends ProviderInterface {
     return metadata.providerData.id
   }
 
-  // @ts-expect-error ts-migrate(2416) FIXME: Property 'fileOpened' in type 'DocumentStoreProvid... Remove this comment to see the full error message
-  fileOpened(content: any, metadata: any) {
+  fileOpened(content: any, metadata: CloudMetadata) {
     const deprecationPhase = this.options.deprecationPhase || 0
     const fromLara = !!getQueryParam("launchFromLara") || !!getHashParam("lara")
     if (!deprecationPhase || fromLara) { return }
@@ -559,10 +557,9 @@ class DocumentStoreProvider extends ProviderInterface {
         this.disableForNextSave = true
         return this.client.saveFileAsDialog()
       },
-      // @ts-expect-error ts-migrate(7011) FIXME: Function expression, which lacks return-type annot... Remove this comment to see the full error message
       rejectCallback: () => {
         if (deprecationPhase > 1) {
-          return this.client.appOptions.autoSaveInterval = null
+          this.client.appOptions.autoSaveInterval = null
         }
       }
     })
