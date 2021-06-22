@@ -147,7 +147,7 @@ class DocumentStoreProvider extends ProviderInterface {
     }
   }
 
-  authorize(completionCallback: any) {
+  authorize(completionCallback: () => void) {
     return this._showLoginWindow(completionCallback)
   }
 
@@ -189,7 +189,7 @@ class DocumentStoreProvider extends ProviderInterface {
       this._loginWindow.focus()
     } else {
 
-      const computeScreenLocation = function(w: any, h: any) {
+      const computeScreenLocation = function(w: number, h: number) {
         const screenLeft = window.screenLeft || (screen as any).left
         const screenTop  = window.screenTop  || (screen as any).top
         const width  = window.innerWidth  || document.documentElement.clientWidth  || screen.width

@@ -708,7 +708,7 @@ class CloudFileManagerClient {
     }
   }
 
-  saveTempFile(callback: (err: string | null) => void) {
+  saveTempFile(callback?: (err: string | null) => void) {
     return this._event('getContent', { shared: this._sharedMetadata() }, (stringContent: any) => {
       const currentContent = this._createOrUpdateCurrentContent(stringContent)
       try {
@@ -783,7 +783,7 @@ class CloudFileManagerClient {
     return (shareEditKey || accessKeys.readWrite) && !(this.state.currentContent != null ? this.state.currentContent.get("isUnshared") : undefined)
   }
 
-  setShareState(shared: boolean, callback: (err: string | null, sharedContentId: string, currentContent: any) => void) {
+  setShareState(shared: boolean, callback?: (err: string | null, sharedContentId: string, currentContent: any) => void) {
     if (this.state.shareProvider) {
       const sharingMetadata = this.state.shareProvider.getSharingMetadata(shared)
       return this._event('getContent', { shared: sharingMetadata }, (stringContent: any) => {
@@ -807,7 +807,7 @@ class CloudFileManagerClient {
     }
   }
 
-  share(callback: (err: string | null, sharedContentId: string) => void) {
+  share(callback?: (err: string | null, sharedContentId: string) => void) {
     if (!this.state.metadata) {
       // PJ, 07/10/2020: Without these lines the sharing process will fail (it looks for filename and later tries to
       // update metadata object). Apparently, there's an assumption that metadata already exists. It can initialized
@@ -819,14 +819,14 @@ class CloudFileManagerClient {
     }
     return this.setShareState(true, (err: string | null, sharedContentId: string, currentContent: any) => {
       this._fileChanged('sharedFile', currentContent, this.state.metadata)
-      return (typeof callback === 'function' ? callback(null, sharedContentId) : undefined)
+      return callback?.(null, sharedContentId)
     })
   }
 
   unshare(callback?: (err: string | null) => void) {
     return this.setShareState(false, (err: string | null, sharedContentId: string, currentContent: any) => {
       this._fileChanged('unsharedFile', currentContent, this.state.metadata)
-      return (typeof callback === 'function' ? callback(null) : undefined)
+      return callback?.(null)
     })
   }
 
@@ -847,7 +847,7 @@ class CloudFileManagerClient {
           metadata.name = docName
         }
         this._fileOpened(content, metadata, {dirty: true, openedContent: content.clone()})
-        return (typeof callback === 'function' ? callback(null) : undefined)
+        return callback?.(null)
       })
     }
   }
@@ -1154,8 +1154,7 @@ class CloudFileManagerClient {
     })
   }
 
-  _updateState(content: any, metadata: CloudMetadata, additionalState?: Partial<IClientState>, hashParams: string = null) {
-    if (additionalState == null) { additionalState = {} }
+  _updateState(content: any, metadata: CloudMetadata, additionalState: Partial<IClientState> = {}, hashParams: string = null) {
     const state: Partial<IClientState> = {
       currentContent: content,
       metadata,

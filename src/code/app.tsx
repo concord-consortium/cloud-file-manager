@@ -18,7 +18,7 @@ class CloudFileManager {
   appOptions: CFMAppRuntimeOptions;
   client: CloudFileManagerClient;
 
-  constructor(options?: any) {
+  constructor() {
     // since the module exports an instance of the class we need to fake a class variable as an instance variable
     this.DefaultMenu = CloudFileManagerUIMenu.DefaultMenu
 
@@ -81,7 +81,7 @@ class CloudFileManager {
     this._renderApp(anchor)
   }
 
-  _renderApp(anchor: any) {
+  _renderApp(anchor: HTMLElement) {
     this.appOptions.client = this.client
     ReactDOM.render(<AppView {... this.appOptions} />, anchor)
     this.client.iframe = anchor.getElementsByTagName('iframe')[0]
@@ -89,6 +89,6 @@ class CloudFileManager {
   }
 }
 
-const instance = new  CloudFileManager()
+const instance = new CloudFileManager()
 export default instance;
 (global as any).CloudFileManager = instance

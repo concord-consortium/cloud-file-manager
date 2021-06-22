@@ -24,7 +24,7 @@ function getURLParam(name: string) {
 // Adds query params to CODAP urls
 // this was taken from the document server `documents_v2_helper.rb`
 // We could also add documentServer parameter, or check query params
-function codap_v2_link(codapServer: any) {
+function codap_v2_link(codapServer?: string) {
   const defaultCodapUrl = "https://codap.concord.org/releases/latest/"
   const documentServer = "https://document-store.concord.org/"
   const extraData = {
@@ -46,7 +46,8 @@ export default function autolaunchInteractive() {
   const documentId = getURLParam("documentId")
 
   // CODAP SERVER:
-  const server = getURLParam("server")
+  const serverParam = getURLParam("server")
+  const server = typeof serverParam === "string" ? serverParam : undefined
   const launchUrl = codap_v2_link(server)
 
   var fullscreenScaling = getURLParam('scaling')
@@ -73,7 +74,7 @@ export default function autolaunchInteractive() {
   }
 
   function showDataSelectDialog (twoLinkedStates: boolean) {
-    function showPreview (element: any) {
+    function showPreview (element: HTMLElement) {
       $(element).addClass('preview-active')
       $('.overlay').show()
     }
