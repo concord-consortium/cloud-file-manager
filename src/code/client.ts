@@ -89,9 +89,9 @@ class CloudFileManagerClient {
   iframe: any;
   newFileAddsNewToQuery: boolean;
   newFileOpensInNewTab: boolean;
-  providers: Record<string, any>;
+  providers: Record<string, ProviderInterface>;
   state: IClientState;
-  urlProvider: any;
+  urlProvider: URLProvider;
 
   constructor(options?: any) {
     this.shouldAutoSave = this.shouldAutoSave.bind(this)
@@ -103,7 +103,7 @@ class CloudFileManagerClient {
     this.urlProvider = new URLProvider()
   }
 
-  setAppOptions(appOptions: CFMAppOptions){
+  setAppOptions(appOptions: CFMAppOptions) {
 
     let providerName
     let Provider
@@ -494,7 +494,7 @@ class CloudFileManagerClient {
   openProviderFile(providerName: string, providerParams?: any) {
     const provider = this.providers[providerName]
     if (provider) {
-      return provider.authorized((authorized: any) => {
+      return provider.authorized((authorized: boolean) => {
         // we can open the document without authorization in some cases
         if (authorized || !provider.isAuthorizationRequired()) {
           this._event('willOpenFile', {op: "openProviderFile"})
@@ -526,7 +526,7 @@ class CloudFileManagerClient {
 
   createNewInFolder(providerName: any, folder: any) {
     const provider = this.providers[providerName]
-    if (provider && provider.can('setFolder', this.state.metadata)) {
+    if (provider && provider.can(ECapabilities.setFolder, this.state.metadata)) {
       if ((this.state.metadata == null)) {
         this.state.metadata = new CloudMetadata({
           type: CloudMetadata.File,

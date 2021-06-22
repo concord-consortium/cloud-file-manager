@@ -31,8 +31,7 @@ function codap_v2_link(codapServer: any) {
     documentServer
   }
   const baseUrl = codapServer || defaultCodapUrl
-    // @ts-expect-error ts-migrate(2345) FIXME: Argument of type '{ fragmentIdentifier: boolean; }... Remove this comment to see the full error message
-  const {url, query, fragmentIdentifier} = queryString.parseUrl(baseUrl, {fragmentIdentifier: true})
+  const {url, query, fragmentIdentifier} = queryString.parseUrl(baseUrl, {parseFragmentIdentifier: true})
   const newCodapUrl = queryString.stringifyUrl({
     url: url,
     query: Object.assign({}, extraData, query),
@@ -73,7 +72,7 @@ export default function autolaunchInteractive() {
     return !!(state && state.docStore && state.docStore.recordid && state.docStore.accessKeys && state.docStore.accessKeys.readOnly)
   }
 
-  function showDataSelectDialog (twoLinkedStates: any) {
+  function showDataSelectDialog (twoLinkedStates: boolean) {
     function showPreview (element: any) {
       $(element).addClass('preview-active')
       $('.overlay').show()
@@ -240,17 +239,16 @@ export default function autolaunchInteractive() {
     })
     // Find linked state which is directly linked to this one. In fact it's a state which is the closest to given one
     // if there are some "gaps".
-    directlyLinkedState = linkedStates && linkedStates[0]
+    directlyLinkedState = linkedStates?.[0]
     // Find the most recent linked state.
-    mostRecentLinkedState = linkedStates && linkedStates.slice().sort(function (a: any, b: any) {
-      // @ts-expect-error ts-migrate(2362) FIXME: The left-hand side of an arithmetic operation must... Remove this comment to see the full error message
-      return new Date(b.updatedAt) - new Date(a.updatedAt)
+    mostRecentLinkedState = linkedStates?.slice().sort(function (a: any, b: any) {
+      return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
     })[0]
 
     // There are a few possible cases now:
     var currentDataTimestamp = interactiveStateAvailable && new Date(interactiveData.updatedAt)
-    var mostRecentLinkedStateTimestamp = stateValid(mostRecentLinkedState && mostRecentLinkedState.interactiveState) && new Date(mostRecentLinkedState.updatedAt)
-    var directlyLinkedStateTimestamp = stateValid(directlyLinkedState && directlyLinkedState.interactiveState) && new Date(directlyLinkedState.updatedAt)
+    var mostRecentLinkedStateTimestamp = stateValid(mostRecentLinkedState?.interactiveState) && new Date(mostRecentLinkedState.updatedAt)
+    var directlyLinkedStateTimestamp = stateValid(directlyLinkedState?.interactiveState) && new Date(directlyLinkedState.updatedAt)
 
     // Current state is available, but there's most recent data in one of the linked states. Ask user.
     if (interactiveStateAvailable && mostRecentLinkedStateTimestamp && mostRecentLinkedStateTimestamp > currentDataTimestamp) {

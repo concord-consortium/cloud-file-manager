@@ -10,6 +10,7 @@ node_modules/
 .nvmrc
 
 # test folders
+coverage
 cypress/screenshots
 
 # Local SSL certificates:

@@ -1,7 +1,5 @@
-// @ts-expect-error ts-migrate(7011) FIXME: Function expression, which lacks return-type annot... Remove this comment to see the full error message
-export default function(param: any) {
+export default function(param: string): string | null {
   let ret = null
-  //eslint-disable-next-line array-callback-return
   location.hash.substr(1).split("&").some(function(pair) {
     const key = pair.split("=")[0]
     if (key === param) {
@@ -14,6 +12,7 @@ export default function(param: any) {
       }
       return ret = value
     }
+    return false
   })
   return ret
 }

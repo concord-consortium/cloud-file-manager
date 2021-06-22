@@ -12,21 +12,21 @@
 import jiff from 'jiff'
 
 class PatchableContent {
-  patchObjectHash: any;
+  patchObjectHash?: (obj: any) => string;
   savedContent: any;
 
-  constructor(patchObjectHash: any, savedContent: any) {
+  constructor(patchObjectHash: (obj: any) => string, savedContent?: any) {
     this.patchObjectHash = patchObjectHash
     this.savedContent = savedContent
   }
 
-  createPatch(content: any, canPatch: any) {
+  createPatch(content: any, canPatch: boolean) {
     const diff = canPatch && this.savedContent ? this._createDiff(this.savedContent, content) : undefined
     const result = {
       shouldPatch: false,
       mimeType: 'application/json',
       contentJson: JSON.stringify(content),
-      diffLength: diff && diff.length,
+      diffLength: diff?.length,
       diffJson: diff && JSON.stringify(diff)
     }
 
@@ -50,7 +50,7 @@ class PatchableContent {
   _createDiff(obj1: any, obj2: any) {
     try {
       const opts = {
-        hash: typeof this.patchObjectHash === "function" ? this.patchObjectHash : undefined,
+        hash: this.patchObjectHash,
         invertible: false // smaller patches are worth more than invertibility
       }
       // clean objects before diffing

@@ -6,8 +6,11 @@
  * DS207: Consider shorter variations of null checks
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
  */
-import { CloudMetadata }  from './provider-interface'
 import pako from 'pako'
+import { CloudFileManagerClient } from '../client'
+import { CloudMetadata }  from './provider-interface'
+import DocumentStoreProvider from './document-store-provider'
+import DocumentStoreUrl, { DocumentStoreUrlParams } from './document-store-url'
 
 //
 // A utility class for providing sharing functionality via the Concord Document Store.
@@ -16,30 +19,30 @@ import pako from 'pako'
 // cleaner to break out the sharing functionality into its own class.
 //
 class DocumentStoreShareProvider {
-  client: any;
-  docStoreUrl: any;
-  provider: any;
+  client: CloudFileManagerClient
+  docStoreUrl: DocumentStoreUrl
+  provider: DocumentStoreProvider
 
-  constructor(client: any, provider: any) {
+  constructor(client: CloudFileManagerClient, provider: DocumentStoreProvider) {
     this.client = client
     this.provider = provider
     this.docStoreUrl = this.provider.docStoreUrl
   }
 
-  loadSharedContent(id: any, callback: any) {
+  loadSharedContent(id: string, callback: (err: string | null, content: any, sharedMetadata: CloudMetadata) => void) {
     const sharedMetadata = new CloudMetadata({
       sharedContentId: id,
       type: CloudMetadata.File,
       overwritable: false
     })
-    return this.provider.load(sharedMetadata, (err: any, content: any) => callback(err, content, sharedMetadata))
+    return this.provider.load(sharedMetadata, (err: string | null, content: any) => callback(err, content, sharedMetadata))
   }
 
-  getSharingMetadata(shared: any) {
+  getSharingMetadata(shared: boolean) {
     return { _permissions: shared ? 1 : 0 }
   }
 
-  share(shared: any, masterContent: any, sharedContent: any, metadata: any, callback: any) {
+  share(shared: boolean, masterContent: any, sharedContent: any, metadata: CloudMetadata, callback: (err: string | null, id?: string) => void) {
 
     // document ID is stored in masterContent
     let method, url
@@ -50,11 +53,11 @@ class DocumentStoreShareProvider {
     const accessKeys = masterContent.get('accessKeys')
     const runKey = masterContent.get('shareEditKey')
 
-    const accessKey = (accessKeys != null ? accessKeys.readWrite : undefined) || runKey
+    const accessKey = accessKeys?.readWrite || runKey
 
-    const params = {shared}
+    const params: DocumentStoreUrlParams = {shared}
     if (accessKey) {
-      (params as any).accessKey = `RW::${accessKey}`
+      params.accessKey = `RW::${accessKey}`
     }
 
     // if we already have a documentID and some form of accessKey,
@@ -84,7 +87,7 @@ class DocumentStoreShareProvider {
           return callback(null, data.id)
         },
         error(jqXHR) {
-          const docName = (metadata != null ? metadata.filename : undefined) || 'document'
+          const docName = metadata?.filename || 'document'
           return callback(`Unable to update shared '${docName}'`)
         }
       })
@@ -116,12 +119,12 @@ class DocumentStoreShareProvider {
           return callback(null, data.id)
         },
         error(jqXHR) {
-          const docName = (metadata != null ? metadata.filename : undefined) || 'document'
+          const docName = metadata?.filename || 'document'
           return callback(`Unable to share '${docName}'`)
         }
       })
     } else {
-      const docName = (metadata != null ? metadata.filename : undefined) || 'document'
+      const docName = metadata?.filename || 'document'
       return callback(`Unable to unshare '${docName}'`)
     }
   }

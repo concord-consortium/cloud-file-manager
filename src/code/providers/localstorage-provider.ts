@@ -6,23 +6,25 @@
  * DS207: Consider shorter variations of null checks
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
  */
+import { CFMBaseProviderOptions } from '../app-options'
+import { CloudFileManagerClient } from '../client'
 import tr from '../utils/translate'
 
-import { ProviderInterface }  from './provider-interface'
-import { cloudContentFactory }  from './provider-interface'
-import { CloudMetadata }  from './provider-interface'
+import {
+  cloudContentFactory, CloudMetadata, ProviderInterface, ProviderListCallback, ProviderLoadCallback,
+  ProviderOpenCallback, ProviderRemoveCallback, ProviderRenameCallback, ProviderSaveCallback
+}  from './provider-interface'
 
 class LocalStorageProvider extends ProviderInterface {
   static Name = 'localStorage';
-  client: any;
-  options: any;
+  client: CloudFileManagerClient;
+  options: CFMBaseProviderOptions;
 
-  constructor(options: any, client: any) {
-    const opts = options || {}
+  constructor(options: CFMBaseProviderOptions | undefined, client: CloudFileManagerClient) {
     super({
       name: LocalStorageProvider.Name,
-      displayName: opts.displayName || (tr('~PROVIDER.LOCAL_STORAGE')),
-      urlDisplayName: opts.urlDisplayName,
+      displayName: options?.displayName || (tr('~PROVIDER.LOCAL_STORAGE')),
+      urlDisplayName: options?.urlDisplayName,
       capabilities: {
         save: true,
         resave: true,
@@ -34,7 +36,7 @@ class LocalStorageProvider extends ProviderInterface {
         close: false
       }
     })
-    this.options = opts
+    this.options = options
     this.client = client
   }
   static Available() {
@@ -48,17 +50,17 @@ class LocalStorageProvider extends ProviderInterface {
     }
   }
 
-  save(content: any, metadata: any, callback: any) {
+  save(content: any, metadata: CloudMetadata, callback?: ProviderSaveCallback) {
     try {
       const fileKey = this._getKey(metadata.filename)
-      window.localStorage.setItem(fileKey, ((typeof content.getContentAsJSON === 'function' ? content.getContentAsJSON() : undefined) || content))
-      return (typeof callback === 'function' ? callback(null) : undefined)
+      window.localStorage.setItem(fileKey, content.getContentAsJSON?.() || content)
+      return callback?.(null)
     } catch (e) {
-      return callback(`Unable to save: ${e.message}`)
+      return callback?.(`Unable to save: ${e.message}`)
     }
   }
 
-  load(metadata: any, callback: any) {
+  load(metadata: CloudMetadata, callback: ProviderLoadCallback) {
     try {
       const content = window.localStorage.getItem(this._getKey(metadata.filename))
       return callback(null, cloudContentFactory.createEnvelopedCloudContent(content))
@@ -67,9 +69,9 @@ class LocalStorageProvider extends ProviderInterface {
     }
   }
 
-  list(metadata: any, callback: any) {
+  list(metadata: CloudMetadata, callback: ProviderListCallback) {
     const list = []
-    const prefix = this._getKey(((metadata != null ? metadata.path() : undefined) || []).join('/'))
+    const prefix = this._getKey((metadata?.path?.() || []).join('/'))
     for (let key of Object.keys(window.localStorage || {})) {
       if (key.substr(0, prefix.length) === prefix) {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -89,48 +91,46 @@ class LocalStorageProvider extends ProviderInterface {
     return callback(null, list)
   }
 
-  remove(metadata: any, callback: any) {
+  remove(metadata: CloudMetadata, callback?: ProviderRemoveCallback) {
     try {
       window.localStorage.removeItem(this._getKey(metadata.filename))
-      return (typeof callback === 'function' ? callback(null) : undefined)
+      return callback?.(null)
     } catch (error) {
-      return (typeof callback === 'function' ? callback('Unable to delete') : undefined)
+      return callback?.('Unable to delete')
     }
   }
 
-  rename(metadata: any, newName: any, callback: any) {
+  rename(metadata: CloudMetadata, newName: string, callback?: ProviderRenameCallback) {
     try {
       const content = window.localStorage.getItem(this._getKey(metadata.filename))
       window.localStorage.setItem(this._getKey(CloudMetadata.withExtension(newName)), content)
       window.localStorage.removeItem(this._getKey(metadata.filename))
       metadata.rename(newName)
-      return callback(null, metadata)
+      return callback?.(null, metadata)
     } catch (error) {
-      return (typeof callback === 'function' ? callback('Unable to rename') : undefined)
+      return callback?.('Unable to rename')
     }
   }
 
   canOpenSaved() { return true }
 
-  openSaved(openSavedParams: any, callback: any) {
+  openSaved(openSavedParams: any, callback: ProviderOpenCallback) {
     const metadata = new CloudMetadata({
       name: openSavedParams,
       type: CloudMetadata.File,
       parent: null,
       provider: this
     })
-    return this.load(metadata, (err: any, content: any) => callback(err, content, metadata))
+    return this.load(metadata, (err: string | null, content: any) => callback(err, content, metadata))
   }
 
-  getOpenSavedParams(metadata: any) {
+  getOpenSavedParams(metadata: CloudMetadata) {
     return metadata.name
   }
 
-  _getKey(name: any) {
-    if (name == null) { name = '' }
+  _getKey(name = '') {
     return `cfm::${name.replace(/\t/g, ' ')}`
   }
 }
 
-LocalStorageProvider.Name='localStorage'
 export default LocalStorageProvider

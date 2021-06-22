@@ -1,5 +1,4 @@
 import {
-  ICloudMetaDataSpec,
   ProviderLoadCallback,
   ProviderSaveCallback,
   ProviderInterface,
@@ -7,28 +6,24 @@ import {
   CloudMetadata,
   cloudContentFactory
 }  from './provider-interface'
-
+import { CloudFileManagerClient } from '../client'
 import { createFile, getLegacyUrl } from '../utils/s3-share-provider-token-service-helper'
 import { reportError } from '../utils/report-error'
 import tr from '../utils/translate'
-
-// TODO: Type the cient
-interface IClientInterface {}
 
 // New method for sharing read only documents using S3.
 // The readWrite key must be retained in the original document
 // so that the shared document can be upadted.
 // Based on the historical `document-store-share-provider`
 class S3Provider extends ProviderInterface {
-  public static Name ='s3-provider'
-  client: IClientInterface
+  public static Name = 's3-provider'
+  client: CloudFileManagerClient
   options: IProviderInterfaceOpts
   provider: ProviderInterface
-  constructor(client:IClientInterface) {
+  constructor(client: CloudFileManagerClient) {
     const opts:IProviderInterfaceOpts = {
       urlDisplayName: 'S3 Provider',
       name: S3Provider.Name,
-      // displayName: opts.displayName || (tr('~PROVIDER.LOCAL_FILE')),
       displayName: "S3 Provider",
       capabilities: {
         save: true,
@@ -47,7 +42,7 @@ class S3Provider extends ProviderInterface {
     this.client = client
   }
 
-  save(content: any, metadata: ICloudMetaDataSpec, callback: ProviderSaveCallback) {
+  save(content: any, metadata: CloudMetadata, callback: ProviderSaveCallback) {
     let payloadContent = content
     if(typeof(payloadContent) !== "string") {
       payloadContent = JSON.stringify(payloadContent)
@@ -69,7 +64,7 @@ class S3Provider extends ProviderInterface {
     fetch(documentUrl)
       .then(response => {
         if (response.status === 404) {
-          callback(tr("~DOCSTORE.LOAD_SHARED_404_ERROR"), {})
+          callback(tr("~DOCSTORE.LOAD_SHARED_404_ERROR"))
         } else {
           return response.json()
             .then(data => {
@@ -92,7 +87,7 @@ class S3Provider extends ProviderInterface {
               return callback(null, content)
             })
             .catch(e => { // eslint-disable-line @typescript-eslint/dot-notation
-              callback(`Unable to load '${metadata.name}': ${e.message}`, {})
+              callback(`Unable to load '${metadata.name}': ${e.message}`)
             })
         }
       })
@@ -118,7 +113,7 @@ class S3Provider extends ProviderInterface {
       this.loadFromUrl(loadUrl, metadata, callback)
     }
     else {
-      callback(`Unable to load ${id}`, {})
+      callback(`Unable to load ${id}`)
     }
   }
 }

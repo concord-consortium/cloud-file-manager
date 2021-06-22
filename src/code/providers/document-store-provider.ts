@@ -17,10 +17,12 @@ import getHashParam  from '../utils/get-hash-param'
 import tr  from '../utils/translate'
 import pako  from 'pako'
 
-import { ProviderInterface }  from './provider-interface'
+import { CFMDocumentStoreProviderOptions } from '../app-options'
+import { ECapabilities, ProviderInterface }  from './provider-interface'
 import { cloudContentFactory }  from './provider-interface'
 import { CloudMetadata }  from './provider-interface'
 
+import { CloudFileManagerClient } from '../client'
 import DocumentStoreUrl  from './document-store-url'
 import PatchableContent  from './patchable-content'
 import { reportError } from '../utils/report-error'
@@ -56,56 +58,49 @@ const DocumentStoreAuthorizationDialog = createReactClassFactory({
 })
 
 class DocumentStoreProvider extends ProviderInterface {
-  Name: any;
-  _docStoreLoaded: any;
-  _loginWindow: any;
-  authCallback: any;
-  client: any;
-  disableForNextSave: any;
-  docStoreLoadedCallback: any;
-  docStoreUrl: any;
-  options: any;
-  removableQueryParams: any;
-  savedContent: any;
-  urlParams: any;
-  user: any;
-
-  static initClass() {
-    (this as any).Name = 'documentStore'
-    this.prototype._loginWindow = null
-  }
+  static Name = 'documentStore'
+  _docStoreLoaded: boolean
+  _loginWindow: any = null
+  authCallback: (authorized: boolean) => void
+  client: CloudFileManagerClient
+  disableForNextSave?: boolean
+  docStoreLoadedCallback: () => void
+  docStoreUrl: DocumentStoreUrl
+  options: CFMDocumentStoreProviderOptions
+  removableQueryParams: string[]
+  savedContent: any
+  urlParams: Record<string, string>
+  user: any
 
   static get deprecationPhase() {
     return 3
   }
 
-  static isNotDeprecated(capability: any) {
+  static isNotDeprecated(capability: ECapabilities) {
     if (capability === 'save') {
       return DocumentStoreProvider.deprecationPhase < 2
     } else {
       return DocumentStoreProvider.deprecationPhase < 3
     }
   }
-  constructor(options: any, client: any) {
-    const opts = options || {}
-
+  constructor(options: CFMDocumentStoreProviderOptions, client: CloudFileManagerClient) {
     super({
       name: (DocumentStoreProvider as any).Name,
-      displayName: opts.displayName || (tr('~PROVIDER.DOCUMENT_STORE')),
-      urlDisplayName: opts.urlDisplayName,
+      displayName: options?.displayName || (tr('~PROVIDER.DOCUMENT_STORE')),
+      urlDisplayName: options?.urlDisplayName,
       capabilities: {
-        save: DocumentStoreProvider.isNotDeprecated('save'),
-        resave: DocumentStoreProvider.isNotDeprecated('save'),
+        save: DocumentStoreProvider.isNotDeprecated(ECapabilities.save),
+        resave: DocumentStoreProvider.isNotDeprecated(ECapabilities.save),
         "export": false,
-        load: DocumentStoreProvider.isNotDeprecated('load'),
-        list: DocumentStoreProvider.isNotDeprecated('list'),
-        remove: DocumentStoreProvider.isNotDeprecated('remove'),
-        rename: DocumentStoreProvider.isNotDeprecated('rename'),
+        load: DocumentStoreProvider.isNotDeprecated(ECapabilities.load),
+        list: DocumentStoreProvider.isNotDeprecated(ECapabilities.list),
+        remove: DocumentStoreProvider.isNotDeprecated(ECapabilities.remove),
+        rename: DocumentStoreProvider.isNotDeprecated(ECapabilities.rename),
         close: false
       }
     })
 
-    this.options = opts
+    this.options = options
     this.client = client
     this.urlParams = {
       documentServer: getQueryParam("documentServer"),
@@ -121,13 +116,12 @@ class DocumentStoreProvider extends ProviderInterface {
 
     this.user = null
 
-    // @ts-expect-error ts-migrate(2554) FIXME: Expected 2 arguments, but got 1.
     this.savedContent = new PatchableContent(this.options.patchObjectHash)
   }
 
-  can(capability: any, metadata: any) {
+  can(capability: ECapabilities, metadata: CloudMetadata) {
     // legacy sharing support - can't save to old-style shared documents
-    if (((capability === 'save') || (capability === 'resave')) && __guard__(metadata != null ? metadata.providerData : undefined, (x: any) => x.owner)) { return false }
+    if (((capability === 'save') || (capability === 'resave')) && __guard__(metadata?.providerData, (x: any) => x.owner)) { return false }
     return super.can(capability, metadata)
   }
 
@@ -136,7 +130,7 @@ class DocumentStoreProvider extends ProviderInterface {
     return !(this.urlParams.runKey || (this.urlParams.docName && this.urlParams.docOwner))
   }
 
-  authorized(authCallback: any) {
+  authorized(authCallback: (authorized: boolean) => void) {
     this.authCallback = authCallback
     if (this.authCallback) {
       if (this.user) {
@@ -153,7 +147,7 @@ class DocumentStoreProvider extends ProviderInterface {
     return this._showLoginWindow(completionCallback)
   }
 
-  _onDocStoreLoaded(docStoreLoadedCallback: any) {
+  _onDocStoreLoaded(docStoreLoadedCallback: () => void) {
     this.docStoreLoadedCallback = docStoreLoadedCallback
     if (this._docStoreLoaded) {
       return this.docStoreLoadedCallback()
@@ -172,7 +166,7 @@ class DocumentStoreProvider extends ProviderInterface {
           this._loginWindow.close()
         }
       }
-      if (this.authCallback) { return this.authCallback((user !== null)) }
+      if (this.authCallback) { return this.authCallback((user != null)) }
     }
 
     return $.ajax({
@@ -186,7 +180,7 @@ class DocumentStoreProvider extends ProviderInterface {
     })
   }
 
-  _showLoginWindow(completionCallback: any) {
+  _showLoginWindow(completionCallback: () => void) {
     if (this._loginWindow && !this._loginWindow.closed) {
       this._loginWindow.focus()
     } else {
@@ -251,7 +245,7 @@ class DocumentStoreProvider extends ProviderInterface {
     }
   }
 
-  filterTabComponent(capability: any, defaultComponent: any) {
+  filterTabComponent(capability: ECapabilities, defaultComponent: React.Component): React.Component | null {
     // allow the save elsewhere button to hide the document provider tab in save
     if ((capability === 'save') && this.disableForNextSave) {
       this.disableForNextSave = false
@@ -278,7 +272,7 @@ class DocumentStoreProvider extends ProviderInterface {
 `
   }
 
-  onProviderTabSelected(capability: any) {
+  onProviderTabSelected(capability: ECapabilities) {
     if ((capability === 'save') && this.deprecationMessage()) {
       return this.client.alert(this.deprecationMessage(), (tr('~CONCORD_CLOUD_DEPRECATION.ALERT_SAVE_TITLE')))
     }
@@ -296,7 +290,7 @@ class DocumentStoreProvider extends ProviderInterface {
     }
   }
 
-  list(metadata: any, callback: any) {
+  list(metadata: CloudMetadata, callback: (err: string | null, list: CloudMetadata[]) => void) {
     return $.ajax({
       dataType: 'json',
       url: this.docStoreUrl.listDocuments(),
@@ -332,15 +326,15 @@ class DocumentStoreProvider extends ProviderInterface {
     })
   }
 
-  load(metadata: any, callback: any) {
+  load(metadata: CloudMetadata, callback: (err: string | null, data?: any) => void) {
     const withCredentials = !metadata.sharedContentId
     const recordid = (metadata.providerData != null ? metadata.providerData.id : undefined) || metadata.sharedContentId
-    const requestData = {}
-    if (recordid) { (requestData as any).recordid = recordid }
-    if (this.urlParams.runKey) { (requestData as any).runKey = this.urlParams.runKey }
+    const requestData: { recordid?: any; runKey?: any; recordname?: any; owner?: any; } = {}
+    if (recordid) { requestData.recordid = recordid }
+    if (this.urlParams.runKey) { requestData.runKey = this.urlParams.runKey }
     if (!recordid) {
-      if (metadata.providerData != null ? metadata.providerData.name : undefined) { (requestData as any).recordname = metadata.providerData != null ? metadata.providerData.name : undefined }
-      if (metadata.providerData != null ? metadata.providerData.owner : undefined) { (requestData as any).owner = metadata.providerData != null ? metadata.providerData.owner : undefined }
+      if (metadata.providerData?.name) { requestData.recordname = metadata.providerData.name }
+      if (metadata.providerData?.owner) { requestData.owner = metadata.providerData.owner }
     }
     return $.ajax({
       url: this.docStoreUrl.loadDocument(),
@@ -358,7 +352,7 @@ class DocumentStoreProvider extends ProviderInterface {
         // 'name' at the top level for unwrapped documents (e.g. CODAP)
         // 'name' at the top level of 'content' for wrapped CODAP documents
         metadata.rename(metadata.name || metadata.providerData.name ||
-                        data.docName || data.name || (data.content != null ? data.content.name : undefined))
+                        data.docName || data.name || data.content?.name)
         if (metadata.name) {
           content.addMetadata({docName: metadata.filename})
         }
@@ -382,7 +376,7 @@ class DocumentStoreProvider extends ProviderInterface {
     })
   }
 
-  save(cloudContent: any, metadata: any, callback: any) {
+  save(cloudContent: any, metadata: CloudMetadata, callback: (err: string | null, data?: any) => void) {
     const content = cloudContent.getContent()
 
     // See if we can patch
@@ -469,7 +463,7 @@ class DocumentStoreProvider extends ProviderInterface {
       }})
   }
 
-  remove(metadata: any, callback: any) {
+  remove(metadata: CloudMetadata, callback: (err: string | null, data?: any) => void) {
     return $.ajax({
       url: this.docStoreUrl.deleteDocument(),
       data: {
@@ -494,7 +488,7 @@ class DocumentStoreProvider extends ProviderInterface {
       }})
   }
 
-  rename(metadata: any, newName: any, callback: any) {
+  rename(metadata: CloudMetadata, newName: string, callback: (err: string | null, data?: any) => void) {
     return $.ajax({
       url: this.docStoreUrl.renameDocument(),
       data: {
@@ -533,13 +527,13 @@ class DocumentStoreProvider extends ProviderInterface {
       providerData
     })
 
-    return this.load(metadata, (err: any, content: any) => {
+    return this.load(metadata, (err: string | null, content: any) => {
       this.client.removeQueryParams(this.removableQueryParams)
       return callback(err, content, metadata)
     })
   }
 
-  getOpenSavedParams(metadata: any) {
+  getOpenSavedParams(metadata: CloudMetadata) {
     return metadata.providerData.id
   }
 
@@ -555,7 +549,7 @@ class DocumentStoreProvider extends ProviderInterface {
       hideNoButton: deprecationPhase >= 3,
       callback: () => {
         this.disableForNextSave = true
-        return this.client.saveFileAsDialog()
+        return this.client.saveFileAsDialog(content)
       },
       rejectCallback: () => {
         if (deprecationPhase > 1) {
@@ -565,7 +559,6 @@ class DocumentStoreProvider extends ProviderInterface {
     })
   }
 }
-DocumentStoreProvider.initClass()
 
 export default DocumentStoreProvider
 

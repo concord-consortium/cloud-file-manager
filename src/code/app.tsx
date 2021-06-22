@@ -2,7 +2,7 @@ import AppView from './views/app-view'
 import React from 'react'
 import { CFMAppOptions } from './app-options'
 import { CloudFileManagerUIMenu } from './ui'
-import { CloudFileManagerClient } from './client'
+import { ClientEventCallback, CloudFileManagerClient } from './client'
 
 import getHashParam from './utils/get-hash-param'
 
@@ -43,8 +43,7 @@ class CloudFileManager {
   }
 
   // Convenience function for setting up CFM with an iframe-wrapped client app
-  // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'eventCallback' implicitly has an 'any' ... Remove this comment to see the full error message
-  createFrame(appOptions: any, appElemId: any, eventCallback = null) {
+  createFrame(appOptions: CFMAppOptions, appElemId: string, eventCallback?: ClientEventCallback) {
     this.appOptions = appOptions
     this.appOptions.usingIframe = true
     this.appOptions.appOrMenuElemId = appElemId
@@ -53,7 +52,7 @@ class CloudFileManager {
     this._renderApp(document.getElementById(appElemId))
   }
 
-  clientConnect(eventCallback: any) {
+  clientConnect(eventCallback: ClientEventCallback) {
     try {
       if (this.appOptions.appOrMenuElemId != null) {
         this._renderApp(document.getElementById(this.appOptions.appOrMenuElemId))

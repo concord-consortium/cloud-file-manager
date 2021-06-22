@@ -1,7 +1,17 @@
+import React from 'react'
 import tr  from '../utils/translate'
-import { ProviderInterface }  from './provider-interface'
+import {
+  ProviderCloseCallback, ProviderInterface, ProviderListCallback,
+  ProviderLoadCallback, ProviderRemoveCallback, ProviderSaveCallback
+}  from './provider-interface'
 import { cloudContentFactory }  from './provider-interface'
 import { CloudMetadata }  from './provider-interface'
+
+enum ELoadState {
+  notLoaded = "not-loaded",
+  loaded = "loaded",
+  errored = "errored"
+}
 
 const {div, button, span} = ReactDOMFactories
 const GoogleDriveAuthorizationDialog = createReactClassFactory({
@@ -34,16 +44,16 @@ const GoogleDriveAuthorizationDialog = createReactClassFactory({
   },
 
   authenticate() {
-    return this.props.provider.authorize((GoogleDriveProvider as any).SHOW_POPUP)
+    return this.props.provider.authorize(GoogleDriveProvider.SHOW_POPUP)
   },
 
   render() {
-    // @ts-expect-error ts-migrate(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-    const contents = {
-      "not-loaded": tr("~GOOGLE_DRIVE.CONNECTING_MESSAGE"),
-      "loaded": button({onClick: this.authenticate}, (tr("~GOOGLE_DRIVE.LOGIN_BUTTON_LABEL"))),
-      "errored": tr("~GOOGLE_DRIVE.ERROR_CONNECTING_MESSAGE")
-    }[this.state.gapiLoadState] || "An unknown error occurred!"
+    const messageMap: Record<ELoadState, React.ReactChild> = {
+      [ELoadState.notLoaded]: tr("~GOOGLE_DRIVE.CONNECTING_MESSAGE"),
+      [ELoadState.loaded]: button({onClick: this.authenticate}, (tr("~GOOGLE_DRIVE.LOGIN_BUTTON_LABEL"))),
+      [ELoadState.errored]: tr("~GOOGLE_DRIVE.ERROR_CONNECTING_MESSAGE")
+    }
+    const contents = messageMap[this.state.gapiLoadState as ELoadState] || "An unknown error occurred!"
     return (div({className: 'google-drive-auth'},
       (div({className: 'google-drive-concord-logo'}, '')),
       (div({className: 'google-drive-footer'},
@@ -59,36 +69,27 @@ declare global {
 }
 
 class GoogleDriveProvider extends ProviderInterface {
-  IMMEDIATE: any;
-  Name: any;
-  SHOW_POPUP: any;
-  _autoRenewTimeout: any;
-  apiKey: any;
-  authCallback: any;
-  authToken: any;
-  client: any;
-  clientId: any;
-  gapiLoadState: any;
-  mimeType: any;
-  options: any;
-  readableMimetypes: any;
-  scopes: any;
-  user: any;
+  static Name = 'googleDrive'
+  static IMMEDIATE = true
+  static SHOW_POPUP = false
+  _autoRenewTimeout: number
+  apiKey: string
+  authCallback: (authorized: boolean) => void
+  authToken: any
+  client: CloudFileManagerClient
+  clientId: string
+  gapiLoadState: ELoadState
+  mimeType: string
+  options: CFMGoogleDriveProviderOptions
+  readableMimetypes: string[]
+  scopes: string
+  user: any
 
-  static initClass() {
-    (this as any).Name = 'googleDrive';
-
-    // aliases for boolean parameter to authorize
-    (this as any).IMMEDIATE = true;
-    (this as any).SHOW_POPUP = false
-  }
-
-  constructor(options: any, client: any) {
-    const opts = options || {}
+  constructor(options: CFMGoogleDriveProviderOptions | undefined, client: CloudFileManagerClient) {
     super({
-      name: (GoogleDriveProvider as any).Name,
-      displayName: opts.displayName || (tr('~PROVIDER.GOOGLE_DRIVE')),
-      urlDisplayName: opts.urlDisplayName,
+      name: GoogleDriveProvider.Name,
+      displayName: options?.displayName || (tr('~PROVIDER.GOOGLE_DRIVE')),
+      urlDisplayName: options?.urlDisplayName,
       capabilities: {
         save: true,
         resave: true,
@@ -98,11 +99,10 @@ class GoogleDriveProvider extends ProviderInterface {
         remove: false,
         rename: true,
         close: true,
-        // @ts-expect-error ts-migrate(2322) FIXME: Type '{ save: true; resave: true; export: true; lo... Remove this comment to see the full error message
         setFolder: true
       }
     })
-    this.options = opts
+    this.options = options
     this.client = client
     this.authToken = null
     this.user = null
@@ -123,10 +123,10 @@ class GoogleDriveProvider extends ProviderInterface {
     this.mimeType = this.options.mimeType || "text/plain"
     this.readableMimetypes = this.options.readableMimetypes
 
-    this.gapiLoadState = "not-loaded"
+    this.gapiLoadState = ELoadState.notLoaded
     this._waitForGAPILoad()
-      .then(() => this.gapiLoadState = "loaded")
-      .catch(() => this.gapiLoadState = "errored")  // eslint-disable-line @typescript-eslint/dot-notation
+      .then(() => this.gapiLoadState = ELoadState.loaded)
+      .catch(() => this.gapiLoadState = ELoadState.errored)  // eslint-disable-line @typescript-eslint/dot-notation
   }
 
   authorized(authCallback: any) {
@@ -135,14 +135,14 @@ class GoogleDriveProvider extends ProviderInterface {
       if (this.authToken) {
         return authCallback(true)
       } else {
-        return this.authorize((GoogleDriveProvider as any).IMMEDIATE)
+        return this.authorize(GoogleDriveProvider.IMMEDIATE)
       }
     } else {
       return this.authToken !== null
     }
   }
 
-  authorize(immediate: any) {
+  authorize(immediate: boolean) {
     return this._waitForGAPILoad().then(() => {
       const auth = gapi.auth2.getAuthInstance()
       const finishAuthorization = () => {
@@ -176,7 +176,7 @@ class GoogleDriveProvider extends ProviderInterface {
       clearTimeout(this._autoRenewTimeout)
     }
     if (authToken && !authToken.error) {
-      return this._autoRenewTimeout = setTimeout((() => this.authorize((GoogleDriveProvider as any).IMMEDIATE)), (parseInt(authToken.expires_in, 10) * 0.75) * 1000)
+      return this._autoRenewTimeout = window.setTimeout((() => this.authorize(GoogleDriveProvider.IMMEDIATE)), (parseInt(authToken.expires_in, 10) * 0.75) * 1000)
     }
   }
 
@@ -192,24 +192,24 @@ class GoogleDriveProvider extends ProviderInterface {
     }
   }
 
-  save(content: any, metadata: any, callback: any) {
+  save(content: any, metadata: CloudMetadata, callback: ProviderSaveCallback) {
     return this._waitForGAPILoad().then(() => {
       return this._saveFile(content, metadata, callback)
     })
   }
 
-  load(metadata: any, callback: any) {
+  load(metadata: CloudMetadata, callback: ProviderLoadCallback) {
     return this._waitForGAPILoad().then(() => {
       return this._loadFile(metadata, callback)
     })
   }
 
-  list(metadata: any, callback: any) {
+  list(metadata: CloudMetadata, callback: ProviderListCallback) {
     return this._waitForGAPILoad().then(() => {
       const mimeTypesQuery = (this.readableMimetypes || []).map((mimeType: any) => `mimeType = '${mimeType}'`).join(" or ")
       const request = gapi.client.drive.files.list({
         fields: "files(id, mimeType, name, capabilities(canEdit))",
-        q: `trashed = false and (${mimeTypesQuery} or mimeType = 'application/vnd.google-apps.folder') and '${metadata ? metadata.providerData.id : 'root'}' in parents`
+        q: `trashed = false and (${mimeTypesQuery} or mimeType = 'application/vnd.google-apps.folder') and '${metadata?.providerData.id || 'root'}' in parents`
       })
       return request.execute((result: any) => {
         if (!result || result.error) { return callback(this._apiError(result, 'Unable to list files')) }
@@ -246,15 +246,15 @@ class GoogleDriveProvider extends ProviderInterface {
     })
   }
 
-  remove(metadata: any, callback: any) {
+  remove(metadata: CloudMetadata, callback?: ProviderRemoveCallback) {
     return this._waitForGAPILoad().then(() => {
       const request = gapi.client.drive.files["delete"]({
         fileId: metadata.providerData.id})
-      return request.execute((result: any) => typeof callback === 'function' ? callback((result != null ? result.error : undefined) || null) : undefined)
+      return request.execute((result: any) => callback?.(result?.error))
     })
   }
 
-  rename(metadata: any, newName: any, callback: any) {
+  rename(metadata: CloudMetadata, newName: string, callback?: (err: string | null, metadata?: CloudMetadata) => void) {
     return this._waitForGAPILoad().then(() => {
       const request = gapi.client.drive.files.patch({
         fileId: metadata.providerData.id,
@@ -264,21 +264,21 @@ class GoogleDriveProvider extends ProviderInterface {
       })
       return request.execute((result: any) => {
         if (result != null ? result.error : undefined) {
-          return (typeof callback === 'function' ? callback(result.error) : undefined)
+          return callback?.(result.error)
         } else {
           metadata.rename(newName)
-          return callback(null, metadata)
+          return callback?.(null, metadata)
         }
       })
     })
   }
 
-  close(metadata: any, callback: any) {}
+  close(metadata: CloudMetadata, callback: ProviderCloseCallback) {}
     // nothing to do now that the realtime library was removed
 
   canOpenSaved() { return true }
 
-  openSaved(openSavedParams: any, callback: any) {
+  openSaved(openSavedParams: any, callback: ProviderLoadCallback) {
     const metadata = new CloudMetadata({
       type: CloudMetadata.File,
       provider: this,
@@ -286,10 +286,10 @@ class GoogleDriveProvider extends ProviderInterface {
         id: openSavedParams
       }
     })
-    return this.load(metadata, (err: any, content: any) => callback(err, content, metadata))
+    return this.load(metadata, (err: string | null, content: any) => callback(err, content, metadata))
   }
 
-  getOpenSavedParams(metadata: any) {
+  getOpenSavedParams(metadata: CloudMetadata) {
     return metadata.providerData.id
   }
 
@@ -317,7 +317,7 @@ class GoogleDriveProvider extends ProviderInterface {
     })
   }
 
-  _loadFile(metadata: any, callback: any) {
+  _loadFile(metadata: CloudMetadata, callback: ProviderLoadCallback) {
     const request = gapi.client.drive.files.get({
       fileId: metadata.providerData.id,
       fields: "id, mimeType, name, parents, capabilities(canEdit)",
@@ -327,7 +327,7 @@ class GoogleDriveProvider extends ProviderInterface {
       metadata.overwritable = file.capabilities.canEdit
       metadata.providerData = {id: file.id}
       metadata.mimeType = file.mimeType
-      if ((metadata.parent == null) && ((file.parents != null ? file.parents.length : undefined) > 0)) {
+      if ((metadata.parent == null) && file.parents?.length) {
         metadata.parent = new CloudMetadata({
           type: CloudMetadata.Folder,
           provider: this,
@@ -347,7 +347,7 @@ class GoogleDriveProvider extends ProviderInterface {
     })
   }
 
-  _saveFile(content: any, metadata: any, callback: any) {
+  _saveFile(content: any, metadata: CloudMetadata, callback: ProviderSaveCallback) {
     const boundary = '-------314159265358979323846'
     const mimeType = metadata.mimeType || this.mimeType
     const header = JSON.stringify({
@@ -394,15 +394,14 @@ class GoogleDriveProvider extends ProviderInterface {
     })
   }
 
-  _apiError(result: any, prefix: any) {
-    if ((result != null ? result.message : undefined) != null) {
+  _apiError(result: any, prefix: string) {
+    if (result?.message) {
       return `${prefix}: ${result.message}`
     } else {
       return prefix
     }
   }
 }
-GoogleDriveProvider.initClass()
 
 export default GoogleDriveProvider
 

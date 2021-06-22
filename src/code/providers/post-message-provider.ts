@@ -8,23 +8,19 @@
  * DS207: Consider shorter variations of null checks
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
  */
-import { ProviderInterface } from './provider-interface'
+import { CFMBaseProviderOptions } from '../app-options'
+import { CloudFileManagerClient } from '../client'
+import { CloudMetadata, ProviderInterface } from './provider-interface'
 import getQueryParam from '../utils/get-query-param'
 
 class PostMessageProvider extends ProviderInterface {
-  Name: any;
-  client: any;
-  options: any;
+  static Name = 'postMessage'
+  client: CloudFileManagerClient
+  options: CFMBaseProviderOptions
 
-  static initClass() {
-    (this as any).Name = 'postMessage'
-  }
-
-  constructor(options: any, client: any) {
-    const opts = options || {}
-
-    // @ts-expect-error ts-migrate(2345) FIXME: Argument of type '{ capabilities: { save: false; r... Remove this comment to see the full error message
+  constructor(options: CFMBaseProviderOptions | undefined, client: CloudFileManagerClient) {
     super({
+      name: PostMessageProvider.Name,
       capabilities: {
         save: false,
         resave: false,
@@ -37,21 +33,20 @@ class PostMessageProvider extends ProviderInterface {
       }
     })
     this.client = client
-    this.options = opts
+    this.options = options || {}
   }
 
   canOpenSaved() { return false }
 
-  saveAsExport(content: any, metadata: any, callback: any) {
+  saveAsExport(content: any, metadata: CloudMetadata, callback?: (err: string | null) => void) {
     window.parent.postMessage({
       action: "saveSecondaryFile",
       extension: metadata.extension,
       mimeType: metadata.mimeType,
       content
     }, "*")
-    return (typeof callback === 'function' ? callback(null) : undefined)
+    callback?.(null)
   }
 }
-PostMessageProvider.initClass()
 
 export default PostMessageProvider

@@ -72,7 +72,7 @@ const FileList = createReactClassFactory({
   },
 
   load(folder: any) {
-    return this.props.provider.list(folder, (err: any, list: any) => {
+    return this.props.provider.list(folder, (err: string | null, list: CloudMetadata[]) => {
       if (err) { return this.props.client.alert(err) }
       // asynchronous callback may be called after dialog has been dismissed
       if (this._isMounted) {
@@ -83,7 +83,7 @@ const FileList = createReactClassFactory({
   },
 
   parentSelected(e: any) {
-    return this.props.fileSelected(this.props.folder != null ? this.props.folder.parent : undefined)
+    return this.props.fileSelected(this.props.folder?.parent)
   },
 
   render() {
@@ -110,8 +110,8 @@ const FileDialogTab = createReactClass({
 
   getInitialState() {
     this._isMounted = true
-    const initialState = this.getStateForFolder(this.props.client.state.metadata != null ? this.props.client.state.metadata.parent : undefined, true) || null
-    initialState.filename = (initialState.metadata != null ? initialState.metadata.name : undefined) || ''
+    const initialState = this.getStateForFolder(this.props.client.state.metadata?.parent, true) || null
+    initialState.filename = initialState.metadata?.name || ''
 
     // NP 2020-04-23 Copied from authorize-mixin.js
     this._isAuthorized = false
@@ -190,7 +190,7 @@ const FileDialogTab = createReactClass({
     })
   },
 
-  listLoaded(list: any) {
+  listLoaded(list: CloudMetadata[]) {
     // asynchronous callback may be called after dialog has been dismissed
     if (this._isMounted) {
       return this.setState({list})
@@ -215,10 +215,10 @@ const FileDialogTab = createReactClass({
     return saveMetadata
   },
 
-  getStateForFolder(folder: any, initialFolder: any) {
-    const metadata = this.isOpen() ? (this.state != null ? this.state.metadata : undefined) || null : this.getSaveMetadata()
+  getStateForFolder(folder: CloudMetadata, initialFolder: any) {
+    const metadata = this.isOpen() ? this.state?.metadata || null : this.getSaveMetadata()
 
-    if (initialFolder && ((this.props.client.state.metadata != null ? this.props.client.state.metadata.provider : undefined) !== this.props.provider)) {
+    if (initialFolder && (this.props.client.state.metadata?.provider !== this.props.provider)) {
       folder = null
     } else {
       if (metadata != null) {
@@ -229,26 +229,22 @@ const FileDialogTab = createReactClass({
     return {
       folder,
       metadata,
-      // @ts-expect-error ts-migrate(7018) FIXME: Object literal's property 'list' implicitly has an... Remove this comment to see the full error message
-      list: []
+      list: [] as CloudMetadata[]
     }
   },
 
-  fileSelected(metadata: any) {
-    if ((metadata != null ? metadata.type : undefined) === CloudMetadata.Folder) {
+  fileSelected(metadata: CloudMetadata) {
+    if (metadata?.type === CloudMetadata.Folder) {
       return this.setState(this.getStateForFolder(metadata))
-    } else if ((metadata != null ? metadata.type : undefined) === CloudMetadata.File) {
-      return this.setState({
-        filename: metadata.name,
-        metadata
-      })
+    } else if (metadata?.type === CloudMetadata.File) {
+      return this.setState({ filename: metadata.name, metadata })
     } else {
       return this.setState(this.getStateForFolder(null))
     }
   },
 
   confirm() {
-    const confirmed = (_metadata: any) => {
+    const confirmed = (_metadata: CloudMetadata) => {
       const metadata = _metadata
       // ensure the metadata provider is the currently-showing tab
       if (metadata.provider !== this.props.provider) {
@@ -312,7 +308,7 @@ const FileDialogTab = createReactClass({
     return this.props.close()
   },
 
-  findMetadata(filename: any, list: any) {
+  findMetadata(filename: string, list: CloudMetadata[]) {
     for (let metadata of Array.from(list)) {
       if ((metadata as any).name === filename) {
         return metadata

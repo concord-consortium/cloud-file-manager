@@ -5,16 +5,18 @@
 // default document store URL if client doesn't provide one
 const defaultDocStoreUrl = "//document-store.concord.org"
 
-class DocumentStoreUrl {
-  docStoreUrl: any;
+export type DocumentStoreUrlParams = Record<string, string | number | boolean>
 
-  constructor(docStoreUrl: any) {
+class DocumentStoreUrl {
+  docStoreUrl: string;
+
+  constructor(docStoreUrl: string) {
     this.docStoreUrl = docStoreUrl || defaultDocStoreUrl
     // eliminate trailing slashes
     this.docStoreUrl = this.docStoreUrl.replace(/\/+$/, '')
   }
 
-  addParams(url: any, params: any) {
+  addParams(url: string, params?: DocumentStoreUrlParams) {
     if (!params) { return url }
     const kvp = []
     for (let key in params) {
@@ -27,64 +29,64 @@ class DocumentStoreUrl {
   //
   // Version 1 API
   //
-  authorize(params: any) {
+  authorize(params?: DocumentStoreUrlParams) {
     return this.addParams(`${this.docStoreUrl}/user/authenticate`, params)
   }
 
-  checkLogin(params: any) {
+  checkLogin(params?: DocumentStoreUrlParams) {
     return this.addParams(`${this.docStoreUrl}/user/info`, params)
   }
 
-  listDocuments(params: any) {
+  listDocuments(params?: DocumentStoreUrlParams) {
     return this.addParams(`${this.docStoreUrl}/document/all`, params)
   }
 
-  loadDocument(params: any) {
+  loadDocument(params?: DocumentStoreUrlParams) {
     return this.addParams(`${this.docStoreUrl}/document/open`, params)
   }
 
-  saveDocument(params: any) {
+  saveDocument(params?: DocumentStoreUrlParams) {
     return this.addParams(`${this.docStoreUrl}/document/save`, params)
   }
 
-  patchDocument(params: any) {
+  patchDocument(params?: DocumentStoreUrlParams) {
     return this.addParams(`${this.docStoreUrl}/document/patch`, params)
   }
 
-  deleteDocument(params: any) {
+  deleteDocument(params?: DocumentStoreUrlParams) {
     return this.addParams(`${this.docStoreUrl}/document/delete`, params)
   }
 
-  renameDocument(params: any) {
+  renameDocument(params?: DocumentStoreUrlParams) {
     return this.addParams(`${this.docStoreUrl}/document/rename`, params)
   }
 
   //
   // Version 2 API
   //
-  v2Document(id: any, params: any) {
+  v2Document(id: string, params?: DocumentStoreUrlParams) {
     return this.addParams(`${this.docStoreUrl}/v2/documents/${id}`, params)
   }
 
-  v2CreateDocument(params: any) {
+  v2CreateDocument(params?: DocumentStoreUrlParams) {
     return { method: 'POST', url: this.v2Document('', params) }
   }
 
-  v2LoadDocument(id: any, params: any) {
+  v2LoadDocument(id: string, params?: DocumentStoreUrlParams) {
     return { method: 'GET', url: this.v2Document(id, params) }
   }
 
-  v2SaveDocument(id: any, params: any) {
+  v2SaveDocument(id: string, params?: DocumentStoreUrlParams) {
     return { method: 'PUT', url: this.v2Document(id, params) }
   }
 
-  v2PatchDocument(id: any, params: any) {
+  v2PatchDocument(id: string, params?: DocumentStoreUrlParams) {
     return { method: 'PATCH', url: this.v2Document(id, params) }
   }
 }
-    
+
   // Not implemented by the server
   // v2DeleteDocument: (id, params) ->
   //   { method: 'DELETE', url: @v2Document(id, params) }
-    
+
 export default DocumentStoreUrl

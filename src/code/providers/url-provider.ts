@@ -7,6 +7,7 @@
  * DS207: Consider shorter variations of null checks
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
  */
+import { CloudFileManagerClient } from '../client'
 import {
   cloudContentFactory, CloudMetadata, ICloudFileTypes, IProviderInterfaceOpts, ProviderOpenCallback, ProviderInterface
 }  from './provider-interface'
@@ -16,10 +17,10 @@ import {
 
 class URLProvider extends ProviderInterface {
   public static Name = 'url-provider'
-  client?: any
+  client?: CloudFileManagerClient
   options?: IProviderInterfaceOpts
 
-  constructor(options?: IProviderInterfaceOpts, client?: any) {
+  constructor(options?: IProviderInterfaceOpts, client?: CloudFileManagerClient) {
     super({
       name: URLProvider.name,
       displayName: "URL Provider",

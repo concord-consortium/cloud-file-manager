@@ -49,6 +49,8 @@ export interface CFMBaseProviderOptions {
 export interface CFMReadOnlyProviderOptions extends CFMBaseProviderOptions {
   src: string;
   alphabetize: boolean;
+  json: any;
+  jsonCallback: (callback: (err: string | null, json: any) => void) => void;
 }
 
 export interface CFMPatchProviderOptions extends CFMBaseProviderOptions {
@@ -56,17 +58,27 @@ export interface CFMPatchProviderOptions extends CFMBaseProviderOptions {
   patchObjectHash: (obj: any) => string;
 }
 
+export interface CFMLaraProviderLogData {
+  operation: string;
+  documentID?: string;
+  documentUrl?: string;
+  runStateUrl?: string;
+  run_remote_endpoint?: string;
+  collaboratorUrls?: string[];
+}
+
 export interface CFMLaraProviderOptions extends CFMPatchProviderOptions {
-  logLaraData: (obj: any) => void;
+  logLaraData: (laraData: CFMLaraProviderLogData) => void;
 }
 
 export interface CFMDocumentStoreProviderOptions extends CFMPatchProviderOptions {
-  deprecationPhase: () => number;
+  deprecationPhase: number;
 }
 
 export interface CFMGoogleDriveProviderOptions extends CFMBaseProviderOptions {
   clientId: string;
   apiKey: string;
+  scopes?: string[];
 }
 
 export interface CFMCustomClientProviderOptions extends CFMBaseProviderOptions {

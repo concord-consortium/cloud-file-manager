@@ -163,8 +163,7 @@ export default createReactClass({
       mark.style.all = 'unset'
       // prevents scrolling to the end of the page
       mark.style.position = 'fixed'
-      // @ts-expect-error ts-migrate(2322) FIXME: Type 'number' is not assignable to type 'string'.
-      mark.style.top = 0
+      mark.style.top = '0'
       mark.style.clip = 'rect(0, 0, 0, 0)'
       // used to preserve spaces and line breaks
       mark.style.whiteSpace = 'pre'
