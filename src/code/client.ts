@@ -11,7 +11,7 @@ import isString from './utils/is-string'
 import base64Array from 'base64-js' // https://github.com/beatgammit/base64-js
 import getQueryParam from './utils/get-query-param'
 
-import { CFMAppOptions, isCustomClientProvider } from './app-options'
+import { CFMAppOptions, CFMMenuItem, isCustomClientProvider } from './app-options'
 import { CloudFileManagerUI, UIEventCallback }  from './ui'
 
 import LocalStorageProvider  from './providers/localstorage-provider'
@@ -311,32 +311,32 @@ class CloudFileManagerClient {
     }
   }
 
-  appendMenuItem(item: any) {
+  appendMenuItem(item: CFMMenuItem) {
     this._ui.appendMenuItem(item)
     return this
   }
 
-  prependMenuItem(item: any) {
+  prependMenuItem(item: CFMMenuItem) {
     this._ui.prependMenuItem(item)
     return this
   }
 
-  replaceMenuItem(key: any, item: any) {
+  replaceMenuItem(key: string, item: CFMMenuItem) {
     this._ui.replaceMenuItem(key, item)
     return this
   }
 
-  insertMenuItemBefore(key: any, item: any) {
+  insertMenuItemBefore(key: string, item: CFMMenuItem) {
     this._ui.insertMenuItemBefore(key, item)
     return this
   }
 
-  insertMenuItemAfter(key: any, item: any) {
+  insertMenuItemAfter(key: string, item: CFMMenuItem) {
     this._ui.insertMenuItemAfter(key, item)
     return this
   }
 
-  setMenuBarInfo(info: any) {
+  setMenuBarInfo(info: string) {
     return this._ui.setMenuBarInfo(info)
   }
 

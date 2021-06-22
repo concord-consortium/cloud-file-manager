@@ -8,16 +8,16 @@
  * DS207: Consider shorter variations of null checks
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
  */
+import { CloudFileManagerClient } from './client'
+import { CFMMenuItem, CFMUIOptions } from './app-options'
 import tr  from './utils/translate'
 import isString  from './utils/is-string'
 
-export type UIEventCallback = (...args: any) => void;
-
 class CloudFileManagerUIEvent {
   data: any;
-  type: any;
+  type: string;
 
-  constructor(type: any, data: any) {
+  constructor(type: string, data?: any) {
     this.type = type
     if (data == null) { data = {} }
     this.data = data
@@ -25,24 +25,20 @@ class CloudFileManagerUIEvent {
 }
 
 class CloudFileManagerUIMenu {
-  DefaultMenu: any;
-  items: any;
-  options: any;
+  static DefaultMenu: CFMMenuItem[] = ['newFileDialog', 'openFileDialog', 'revertSubMenu', 'separator', 'save', 'createCopy', 'shareSubMenu', 'renameDialog'];
 
-  static initClass() {
-    (this as any).DefaultMenu = ['newFileDialog', 'openFileDialog', 'revertSubMenu', 'separator', 'save', 'createCopy', 'shareSubMenu', 'renameDialog']
-  }
+  items: CFMMenuItem[];
+  options: CFMUIOptions;
 
-  constructor(options: any, client: any) {
+  constructor(options: CFMUIOptions, client: CloudFileManagerClient) {
     this.options = options
     this.items = this.parseMenuItems(options.menu, client)
   }
 
-  // @ts-expect-error ts-migrate(7023) FIXME: 'parseMenuItems' implicitly has return type 'any' ... Remove this comment to see the full error message
-  parseMenuItems(menuItems: any, client: any) {
-    const setAction = (action: any) => (client[action] != null ? client[action].bind(client) : undefined) || (() => client.alert(`No ${action} action is available in the client`))
+  parseMenuItems(menuItems: CFMMenuItem[], client: CloudFileManagerClient) {
+    const setAction = (action: string) => (client as any)[action]?.bind(client) || (() => client.alert(`No ${action} action is available in the client`))
 
-    const setEnabled = function(action: any) {
+    const setEnabled = function(action: string) {
       switch (action) {
         case 'revertSubMenu':
           // revert sub-menu state depends on presence of shareEditKey
@@ -63,8 +59,7 @@ class CloudFileManagerUIMenu {
       }
     }
 
-    // @ts-expect-error ts-migrate(7024) FIXME: Function implicitly has return type 'any' because ... Remove this comment to see the full error message
-    const getItems = (subMenuItems: any) => {
+    const getItems = (subMenuItems: CFMMenuItem[]) => {
       if (subMenuItems) {
         return this.parseMenuItems(subMenuItems, client)
       } else {
@@ -90,12 +85,12 @@ class CloudFileManagerUIMenu {
       shareSubMenu: tr("~MENU.SHARE")
     }
 
-    const subMenus: Record<string, string[]> = {
+    const subMenus: Record<string, CFMMenuItem[]> = {
       revertSubMenu: ['revertToLastOpenedDialog', 'revertToSharedDialog'],
       shareSubMenu: ['shareGetLink', 'shareUpdate']
     }
 
-    const items = []
+    const items: CFMMenuItem[] = []
     for (let i = 0; i < menuItems.length; i++) {
       var menuItem
       const item = menuItems[i]
@@ -107,7 +102,7 @@ class CloudFileManagerUIMenu {
       } else if (isString(item)) {
         menuItem = {
           key: item,
-          name: (this.options.menuNames != null ? this.options.menuNames[item] : undefined) || names[item] || `Unknown item: ${item}`,
+          name: this.options.menuNames?.[item] || names[item] || `Unknown item: ${item}`,
           enabled: setEnabled(item),
           items: getItems(subMenus[item]),
           action: setAction(item)
@@ -129,61 +124,62 @@ class CloudFileManagerUIMenu {
     return items
   }
 }
-CloudFileManagerUIMenu.initClass()
+
+export type UIEventCallback = (...args: any) => void;
+export type UIEventListenerCallback = (event: CloudFileManagerUIEvent) => void;
 
 class CloudFileManagerUI {
-  client: any;
-  listenerCallbacks: any;
-  menu: any;
+  client: CloudFileManagerClient;
+  listenerCallbacks: UIEventListenerCallback[];
+  menu: CloudFileManagerUIMenu;
 
-  constructor(client: any){
+  constructor(client: CloudFileManagerClient) {
     this.client = client
     this.menu = null
     this.listenerCallbacks = []
   }
 
-  init(options: any) {
+  init(options: CFMUIOptions) {
     options = options || {}
     // skip the menu if explicity set to null (meaning no menu)
     if (options.menu !== null) {
       if (typeof options.menu === 'undefined') {
-        options.menu = (CloudFileManagerUIMenu as any).DefaultMenu
+        options.menu = CloudFileManagerUIMenu.DefaultMenu
       }
       return this.menu = new CloudFileManagerUIMenu(options, this.client)
     }
   }
 
   // for React to listen for dialog changes
-  listen(callback: any) {
+  listen(callback: UIEventListenerCallback) {
     return this.listenerCallbacks.push(callback)
   }
 
-  listenerCallback(evt: any) {
-    // @ts-expect-error ts-migrate(2349) FIXME: This expression is not callable.
+  listenerCallback(evt: CloudFileManagerUIEvent) {
     return Array.from(this.listenerCallbacks).map((callback) => callback(evt))
   }
 
-  appendMenuItem(item: any) {
+  appendMenuItem(item: CFMMenuItem) {
     return this.listenerCallback(new CloudFileManagerUIEvent('appendMenuItem', item))
   }
 
-  prependMenuItem(item: any) {
+  prependMenuItem(item: CFMMenuItem) {
     return this.listenerCallback(new CloudFileManagerUIEvent('prependMenuItem', item))
   }
 
-  replaceMenuItem(key: any, item: any) {
+  replaceMenuItem(key: string, item: CFMMenuItem) {
     return this.listenerCallback(new CloudFileManagerUIEvent('replaceMenuItem', { key, item }))
   }
 
-  insertMenuItemBefore(key: any, item: any) {
+  insertMenuItemBefore(key: string, item: CFMMenuItem) {
     return this.listenerCallback(new CloudFileManagerUIEvent('insertMenuItemBefore', { key, item }))
   }
 
-  insertMenuItemAfter(key: any, item: any) {
+  insertMenuItemAfter(key: string, item: CFMMenuItem) {
     return this.listenerCallback(new CloudFileManagerUIEvent('insertMenuItemAfter', { key, item }))
   }
 
-  setMenuBarInfo(info: any) {
+  setMenuBarInfo(info: string) {
     return this.listenerCallback(new CloudFileManagerUIEvent('setMenuBarInfo', info))
   }
 
@@ -207,15 +203,15 @@ class CloudFileManagerUI {
     return this.listenerCallback(new CloudFileManagerUIEvent('showImportDialog', {callback}))
   }
 
-  downloadDialog(filename: any, content: any, callback: UIEventCallback) {
+  downloadDialog(filename: string, content: any, callback: UIEventCallback) {
     return this.listenerCallback(new CloudFileManagerUIEvent('showDownloadDialog', { filename, content, callback }))
   }
 
-  renameDialog(filename: any, callback: UIEventCallback) {
+  renameDialog(filename: string, callback: UIEventCallback) {
     return this.listenerCallback(new CloudFileManagerUIEvent('showRenameDialog', { filename, callback }))
   }
 
-  shareDialog(client: any, enableLaraSharing = false) {
+  shareDialog(client: CloudFileManagerClient, enableLaraSharing = false) {
     return this.listenerCallback(new CloudFileManagerUIEvent('showShareDialog', { client, enableLaraSharing }))
   }
 
@@ -224,12 +220,10 @@ class CloudFileManagerUI {
   }
 
   hideBlockingModal() {
-    // @ts-expect-error ts-migrate(2554) FIXME: Expected 2 arguments, but got 1.
     return this.listenerCallback(new CloudFileManagerUIEvent('hideBlockingModal'))
   }
 
   editInitialFilename() {
-    // @ts-expect-error ts-migrate(2554) FIXME: Expected 2 arguments, but got 1.
     return this.listenerCallback(new CloudFileManagerUIEvent('editInitialFilename'))
   }
 

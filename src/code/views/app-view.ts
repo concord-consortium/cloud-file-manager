@@ -30,6 +30,10 @@ const ImportTabbedDialog = createReactFactory(importTabbedDialgView)
 
 import tr from '../utils/translate'
 import isString from '../utils/is-string'
+import { CloudMetadata } from "../providers/provider-interface"
+import { CFMMenuBarOptions, CFMMenuItem, CFMShareDialogSettings, CFMUIOptions } from "../app-options"
+import { CloudFileManagerClient, CloudFileManagerClientEvent } from "../client"
+import { CloudFileManagerUIEvent } from "../ui"
 
 const {div, iframe} = ReactDOMFactories
 
@@ -48,41 +52,69 @@ const InnerApp = createReactClassFactory({
   }
 })
 
-class AppView extends React.Component {
-  displayName: any;
+interface IAppViewProps {
+  client?: CloudFileManagerClient;
+  ui?: CFMUIOptions;
+  appOrMenuElemId?: string;
+  hideMenuBar?: boolean;
+  enableLaraSharing?: boolean;
+  usingIframe?: boolean;
+  app?: string;   // src url for <iframe>
+}
+
+interface IAppViewState {
+  filename: string | null;
+  provider?: any;
+  menuItems: CFMMenuItem[];
+  menuOptions: CFMMenuBarOptions;
+  providerDialog: null | Record<string, any>;
+  downloadDialog: null | Record<string, any>;
+  renameDialog: null | Record<string, any>;
+  shareDialog: null | CFMShareDialogSettings;
+  blockingModalProps: null | Record<string, any>;
+  alertDialog: null | Record<string, any>;
+  confirmDialog: null | Record<string, any>;
+  importDialog: null | Record<string, any>;
+  fileStatus?: { message: string, type: string };
+  dirty: boolean;
+}
+
+class AppView extends React.Component<IAppViewProps, IAppViewState> {
+  displayName: string;
+  state: IAppViewState;
 
   constructor(props: any) {
     super(props)
     this.displayName = 'CloudFileManager'
     this.state = {
-      filename: this.getFilename((this.props as any).client.state.metadata),
-      provider: ((this.props as any).client.state.metadata != null ? (this.props as any).client.state.metadata.provider : undefined),
-      menuItems: ((this.props as any).client._ui.menu != null ? (this.props as any).client._ui.menu.items : undefined) || [],
-      menuOptions: ((this.props as any).ui != null ? (this.props as any).ui.menuBar : undefined) || {},
+      filename: this.getFilename(this.props.client.state.metadata),
+      provider: this.props.client.state.metadata?.provider,
+      menuItems: this.props.client._ui.menu?.items || [],
+      menuOptions: this.props.ui?.menuBar || {},
       providerDialog: null,
       downloadDialog: null,
       renameDialog: null,
       shareDialog: null,
+      blockingModalProps: null,
       alertDialog: null,
       confirmDialog: null,
+      importDialog: null,
       dirty: false
     }
   }
 
-  getFilename(metadata: any) {
+  getFilename(metadata: CloudMetadata) {
     return metadata?.name || null
   }
 
   componentDidMount() {
-    (this.props as any).client.listen((event: any) => {
+    this.props.client.listen((event: CloudFileManagerClientEvent) => {
       const fileStatus = (() => {
         let message
         if (event.state.saving) {
           return {message: tr('~FILE_STATUS.SAVING'), type: 'info'}
         } else if (event.state.saved) {
-          const providerName = event.state.metadata.provider != null
-            ? event.state.metadata.provider.displayName
-            : undefined
+          const providerName = event.state.metadata.provider?.displayName
           message = providerName
             ? tr('~FILE_STATUS.SAVED_TO_PROVIDER', { providerName })
             : tr('~FILE_STATUS.SAVED')
@@ -103,12 +135,11 @@ class AppView extends React.Component {
 
       switch (event.type) {
         case 'connected':
-          return this.setState({menuItems: ((this.props as any).client._ui.menu != null ? (this.props as any).client._ui.menu.items : undefined) || []})
+          return this.setState({menuItems: (this.props.client._ui.menu != null ? this.props.client._ui.menu.items : undefined) || []})
       }
   })
 
-    return (this.props as any).client._ui.listen((event: any) => {
-      // @ts-expect-error ts-migrate(2339) FIXME: Property 'menuOptions' does not exist on type 'Rea... Remove this comment to see the full error message
+    return this.props.client._ui.listen((event: CloudFileManagerUIEvent) => {
       const {menuOptions} = this.state
       switch (event.type) {
         case 'showProviderDialog':
@@ -130,62 +161,65 @@ class AppView extends React.Component {
         case 'showConfirmDialog':
           return this.setState({confirmDialog: event.data})
         case 'appendMenuItem':
-          (this.state as any).menuItems.push(event.data)
-          return this.setState({menuItems: (this.state as any).menuItems})
+          this.state.menuItems.push(event.data)
+          return this.setState({menuItems: this.state.menuItems})
         case 'prependMenuItem':
-          (this.state as any).menuItems.unshift(event.data)
-          return this.setState({menuItems: (this.state as any).menuItems})
+          this.state.menuItems.unshift(event.data)
+          return this.setState({menuItems: this.state.menuItems})
         case 'replaceMenuItem':
           var index = this._getMenuItemIndex(event.data.key)
           if (index !== -1) {
-            // @ts-expect-error ts-migrate(2339) FIXME: Property 'menuItems' does not exist on type 'Reado... Remove this comment to see the full error message
             const {menuItems} = this.state
             menuItems[index] = event.data.item
             this.setState({menuItems: menuItems})
-            return this.setState({menuItems: (this.state as any).menuItems})
+            return this.setState({menuItems: this.state.menuItems})
           }
           break
         case 'insertMenuItemBefore':
           index = this._getMenuItemIndex(event.data.key)
           if (index !== -1) {
             if (index === 0) {
-              (this.state as any).menuItems.unshift(event.data.item)
+              this.state.menuItems.unshift(event.data.item)
             } else {
-              (this.state as any).menuItems.splice(index, 0, event.data.item)
+              this.state.menuItems.splice(index, 0, event.data.item)
             }
-            return this.setState({menuItems: (this.state as any).menuItems})
+            return this.setState({menuItems: this.state.menuItems})
           }
           break
         case 'insertMenuItemAfter':
           index = this._getMenuItemIndex(event.data.key)
           if (index !== -1) {
-            if (index === ((this.state as any).menuItems.length - 1)) {
-              (this.state as any).menuItems.push(event.data.item)
+            if (index === (this.state.menuItems.length - 1)) {
+              this.state.menuItems.push(event.data.item)
             } else {
-              (this.state as any).menuItems.splice(index + 1, 0, event.data.item)
+              this.state.menuItems.splice(index + 1, 0, event.data.item)
             }
-            return this.setState({menuItems: (this.state as any).menuItems})
+            return this.setState({menuItems: this.state.menuItems})
           }
           break
         case 'setMenuBarInfo':
           menuOptions.info = event.data
           this.setState({menuOptions: menuOptions})
-          return this.setState({menuOptions: (this.state as any).menuOptions})
+          return this.setState({menuOptions: this.state.menuOptions})
       }
     })
   }
 
-  _getMenuItemIndex = (key: any) => {
+  _getMenuItemIndex = (key: string) => {
     let index
     if (isString(key)) {
-      for (index = 0; index < (this.state as any).menuItems.length; index++) {
-        const item = (this.state as any).menuItems[index]
-        if (item.key === key) { return index }
+      for (index = 0; index < this.state.menuItems.length; index++) {
+        const item = this.state.menuItems[index]
+        const itemKey = typeof item === "string" ? item : item.key
+        if (itemKey === key) { return index }
       }
       return -1
     } else {
+      // TODO: seems like this was designed to support specifying an item by index, but
+      // since the key is always a string (which is the only way parseInt makes sense),
+      // the code can never reach this else branch, so apparently it's unused.
       index = parseInt(key, 10)
-      if (isNaN(index) || (index < 0) || (index > ((this.state as any).menuItems.length - 1))) {
+      if (isNaN(index) || (index < 0) || (index > (this.state.menuItems.length - 1))) {
         return -1
       } else {
         return index
@@ -214,41 +248,41 @@ class AppView extends React.Component {
   renderDialogs = () => {
     return (div({},
       (() => {
-      if ((this.state as any).blockingModalProps) {
-        return (BlockingModal((this.state as any).blockingModalProps))
-      } else if ((this.state as any).providerDialog) {
-        return (ProviderTabbedDialog({client: (this.props as any).client, dialog: (this.state as any).providerDialog, close: this.closeDialogs}))
-      } else if ((this.state as any).downloadDialog) {
-        return (DownloadDialog({client: (this.props as any).client, filename: (this.state as any).downloadDialog.filename, mimeType: (this.state as any).downloadDialog.mimeType, content: (this.state as any).downloadDialog.content, close: this.closeDialogs}))
-      } else if ((this.state as any).renameDialog) {
-        return (RenameDialog({filename: (this.state as any).renameDialog.filename, callback: (this.state as any).renameDialog.callback, close: this.closeDialogs}))
-      } else if ((this.state as any).importDialog) {
-        return (ImportTabbedDialog({client: (this.props as any).client, dialog: (this.state as any).importDialog, close: this.closeDialogs}))
-      } else if ((this.state as any).shareDialog) {
-        return (ShareDialog({client: (this.props as any).client, enableLaraSharing: (this.props as any).enableLaraSharing, close: this.closeDialogs, settings: ((this.props as any).ui != null ? (this.props as any).ui.shareDialog : undefined) || {}}))
+      if (this.state.blockingModalProps) {
+        return (BlockingModal(this.state.blockingModalProps))
+      } else if (this.state.providerDialog) {
+        return (ProviderTabbedDialog({client: this.props.client, dialog: this.state.providerDialog, close: this.closeDialogs}))
+      } else if (this.state.downloadDialog) {
+        return (DownloadDialog({client: this.props.client, filename: this.state.downloadDialog.filename, mimeType: this.state.downloadDialog.mimeType, content: this.state.downloadDialog.content, close: this.closeDialogs}))
+      } else if (this.state.renameDialog) {
+        return (RenameDialog({filename: this.state.renameDialog.filename, callback: this.state.renameDialog.callback, close: this.closeDialogs}))
+      } else if (this.state.importDialog) {
+        return (ImportTabbedDialog({client: this.props.client, dialog: this.state.importDialog, close: this.closeDialogs}))
+      } else if (this.state.shareDialog) {
+        return (ShareDialog({client: this.props.client, enableLaraSharing: this.props.enableLaraSharing, close: this.closeDialogs, settings: this.props.ui?.shareDialog || {}}))
       }
     })(),
 
       // alert and confirm dialogs can be overlayed on other dialogs
-      (this.state as any).alertDialog ?
-        (AlertDialog({title: (this.state as any).alertDialog.title, message: (this.state as any).alertDialog.message, callback: (this.state as any).alertDialog.callback, close: this.closeAlert})) : undefined,
-      (this.state as any).confirmDialog ?
-        (ConfirmDialog(_.merge({}, (this.state as any).confirmDialog, { close: this.closeConfirm }))) : undefined
+      this.state.alertDialog ?
+        (AlertDialog({title: this.state.alertDialog.title, message: this.state.alertDialog.message, callback: this.state.alertDialog.callback, close: this.closeAlert})) : undefined,
+      this.state.confirmDialog ?
+        (ConfirmDialog(_.merge({}, this.state.confirmDialog, { close: this.closeConfirm }))) : undefined
     ))
   }
 
   render() {
-    const menuItems = !(this.props as any).hideMenuBar ? (this.state as any).menuItems : []
-    if ((this.props as any).appOrMenuElemId) {
+    const menuItems = !this.props.hideMenuBar ? this.state.menuItems : []
+    if (this.props.appOrMenuElemId) {
       // CSS class depends on whether we're in app (iframe) or view (menubar-only) mode
-      return (div({className: (this.props as any).usingIframe ? 'app' : 'view' },
-        (MenuBar({client: (this.props as any).client, filename: (this.state as any).filename, provider: (this.state as any).provider, fileStatus: (this.state as any).fileStatus, items: menuItems, options: (this.state as any).menuOptions})),
+      return (div({className: this.props.usingIframe ? 'app' : 'view' },
+        (MenuBar({client: this.props.client, filename: this.state.filename, provider: this.state.provider, fileStatus: this.state.fileStatus, items: menuItems, options: this.state.menuOptions})),
         // only render the wrapped client app in app (iframe) mode
-        (this.props as any).usingIframe ?
-          (InnerApp({app: (this.props as any).app})) : undefined,
+        this.props.usingIframe ?
+          (InnerApp({app: this.props.app})) : undefined,
         this.renderDialogs()
       ))
-    } else if ((this.state as any).providerDialog || (this.state as any).downloadDialog) {
+    } else if (this.state.providerDialog || this.state.downloadDialog) {
       return (div({className: 'app'},
         this.renderDialogs()
       ))

@@ -45,7 +45,7 @@ const DropdownItem = createReactClassFactory({
   },
 
   render() {
-    const enabled = this.props.item != null
+    const enabled = this.props.item.enabled != null
                       ? typeof this.props.item.enabled === 'function'
                         ? this.props.item.enabled()
                         : this.props.item.enabled

@@ -1,24 +1,40 @@
-export interface CFMMenuItem {
-  name: string;
+export interface CFMMenuItemObject {
+  name?: string;
+  key?: string;
   action?: string | (() => void);
   items?: CFMMenuItem[];
+  enabled?: boolean | (() => boolean);
+  separator?: boolean;
+}
+
+export type CFMMenuItem = string | CFMMenuItemObject;
+
+export type CFMMenu = CFMMenuItem[];
+
+export interface CFMMenuBarOptions {
+  info?: string;
+  languageMenu?: {
+    currentLang: string;
+    options: { label: string, langCode: string }[];
+  };
+  onLangChanged?: (langCode: string) => void;
+}
+
+export interface CFMShareDialogSettings {
+  serverUrl?: string;
+  serverUrlLabel?: string;
 }
 
 export interface CFMUIOptions {
-  menuBar?: {
-    info: string;
-    languageMenu?: {
-      currentLang: string;
-      options: { label: string, langCode: string }[];
-    };
-    onLangChanged?: (langCode: string) => void;
-  };
-  menu?: CFMMenuItem[];
+  menuBar?: CFMMenuBarOptions;
+  menu?: CFMMenu | null;                // null => no menu; undefined => default menu
+  menuNames?: Record<string, string>;   // map from menu item string to menu display name for string-only menu items
   windowTitleSuffix?: string;
   windowTitleSeparator?: string;
   newFileOpensInNewTab?: boolean;
   newFileAddsNewToQuery?: boolean;
   confirmCloseIfDirty?: boolean;
+  shareDialog?: CFMShareDialogSettings;
 }
 
 export interface CFMBaseProviderOptions {
@@ -92,4 +108,5 @@ export interface CFMAppOptions {
   hashParams?: CFMHashParams;
   sendPostMessageClientEvents?: boolean;
   usingIframe?: boolean;
+  app?: string;   // required when iframing - relative path to the app to wrap
 }

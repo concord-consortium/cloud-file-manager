@@ -5,7 +5,7 @@ import { Base64 } from "js-base64"
 import queryString from "query-string"
 
 // TODO: Maybe we can remove this now that we are using queryString
-function getURLParam(name: any) {
+function getURLParam(name: string) {
   const url = window.location.href
   try {
     name = name.replace(/[[]]/g, '\\$&')
