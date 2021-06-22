@@ -1,7 +1,7 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
 import AppView from './views/app-view'
-import { CFMAppOptions } from './app-options'
+import { CFMAppOptions, CFMMenu } from './app-options'
 import { CloudFileManagerUIMenu } from './ui'
 import { ClientEventCallback, CloudFileManagerClient } from './client'
 
@@ -14,13 +14,13 @@ interface CFMAppRuntimeOptions extends CFMAppOptions {
 }
 
 class CloudFileManager {
-  DefaultMenu: any;
+  DefaultMenu: CFMMenu;
   appOptions: CFMAppRuntimeOptions;
   client: CloudFileManagerClient;
 
   constructor(options?: any) {
     // since the module exports an instance of the class we need to fake a class variable as an instance variable
-    this.DefaultMenu = (CloudFileManagerUIMenu as any).DefaultMenu
+    this.DefaultMenu = CloudFileManagerUIMenu.DefaultMenu
 
     this.client = new CloudFileManagerClient()
     this.appOptions = {}

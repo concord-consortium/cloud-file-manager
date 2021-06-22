@@ -9,7 +9,7 @@
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
  */
 import { CloudFileManagerClient } from './client'
-import { CFMMenuItem, CFMUIOptions } from './app-options'
+import { CFMMenu, CFMMenuItem, CFMUIOptions } from './app-options'
 import tr  from './utils/translate'
 import isString  from './utils/is-string'
 
@@ -25,7 +25,7 @@ class CloudFileManagerUIEvent {
 }
 
 class CloudFileManagerUIMenu {
-  static DefaultMenu: CFMMenuItem[] = ['newFileDialog', 'openFileDialog', 'revertSubMenu', 'separator', 'save', 'createCopy', 'shareSubMenu', 'renameDialog'];
+  static DefaultMenu: CFMMenu = ['newFileDialog', 'openFileDialog', 'revertSubMenu', 'separator', 'save', 'createCopy', 'shareSubMenu', 'renameDialog'];
 
   items: CFMMenuItem[];
   options: CFMUIOptions;
