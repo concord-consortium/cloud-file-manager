@@ -23,7 +23,12 @@ const replacementStrings = {
     }
   ],
   css: [],
-  js: []
+  js: [
+    {
+      search: /__PACKAGE_VERSION__/g,
+      replace: version
+    }
+  ]
 }
 
 if (codap) {
