@@ -92,8 +92,12 @@ const appConfig = (env) => ({
   ...baseConfig(env),
   entry: {
     'js/app.js': './code/app.tsx'
-    // 'app.js': './code/app.jsx' to put at top level rather than in js/css subdirs
+    // 'app.js': './code/app.tsx' to put at top level rather than in js subdir
   },
+  // These third-party libraries are bundled separately in the globals bundle and then
+  // accessed as global variables. This configures webpack to replace imports of these
+  // libraries with references to the corresponding global variables. See globals.ts
+  // for the code that loads the libraries and defines the global variables.
   externals : {
     'create-react-class': 'createReactClass',
     'jquery' : '$',
@@ -108,7 +112,7 @@ const globalsConfig = (env) => ({
   ...baseConfig(env),
   entry: {
     'js/globals.js': './code/globals.ts'
-    // 'globals.js': './code/globals.js' to put at top level rather than in js/css subdirs
+    // 'globals.js': './code/globals.ts' to put at top level rather than in js subdir
   }
 })
 

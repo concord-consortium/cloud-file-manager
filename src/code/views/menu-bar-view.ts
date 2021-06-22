@@ -6,6 +6,10 @@
  * DS207: Consider shorter variations of null checks
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
  */
+import createReactClass from "create-react-class"
+import ReactDOM from "react-dom"
+import ReactDOMFactories from "react-dom-factories"
+import { createReactFactory } from '../create-react-factory'
 import DropDownView from "./dropdown-view"
 import {TriangleOnlyAnchor} from './dropdown-anchors'
 import tr from '../utils/translate'

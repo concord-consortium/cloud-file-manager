@@ -6,6 +6,7 @@
  * DS207: Consider shorter variations of null checks
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
  */
+import _ from 'lodash'
 import tr from './utils/translate'
 import isString from './utils/is-string'
 import base64Array from 'base64-js' // https://github.com/beatgammit/base64-js

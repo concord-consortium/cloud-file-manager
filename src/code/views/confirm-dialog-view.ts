@@ -5,6 +5,9 @@
  * DS102: Remove unnecessary code created because of implicit returns
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
  */
+import createReactClass from 'create-react-class'
+import ReactDOMFactories from 'react-dom-factories'
+import { createReactFactory } from '../create-react-factory'
 const {div, button} = ReactDOMFactories
 
 import modalDialogView from './modal-dialog-view'

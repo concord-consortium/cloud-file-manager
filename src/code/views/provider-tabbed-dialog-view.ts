@@ -9,6 +9,8 @@
  * DS207: Consider shorter variations of null checks
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
  */
+import createReactClass from 'create-react-class'
+import { createReactFactory } from '../create-react-factory'
 import tr  from '../utils/translate'
 import TabbedPanel  from './tabbed-panel-view'
 import modalTabbedDialogView from './modal-tabbed-dialog-view'

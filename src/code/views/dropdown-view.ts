@@ -7,9 +7,13 @@
  * DS207: Consider shorter variations of null checks
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
  */
-const {div, i, ul, li} = ReactDOMFactories
-
+import createReactClass from 'create-react-class'
+import ReactDOM from 'react-dom'
+import ReactDOMFactories from 'react-dom-factories'
+import { createReactClassFactory } from '../create-react-factory'
 import { DefaultAnchor } from './dropdown-anchors'
+
+const {div, i, ul, li} = ReactDOMFactories
 
 const DropdownItem = createReactClassFactory({
   displayName: 'DropdownItem',

@@ -10,6 +10,10 @@
  * DS207: Consider shorter variations of null checks
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
  */
+import _ from 'lodash'
+import React from 'react'
+import ReactDOMFactories from 'react-dom-factories'
+import { createReactClassFactory } from '../create-react-factory'
 const {div, button, span} = ReactDOMFactories
 
 import getQueryParam  from '../utils/get-query-param'
@@ -329,7 +333,7 @@ class DocumentStoreProvider extends ProviderInterface {
   load(metadata: CloudMetadata, callback: (err: string | null, data?: any) => void) {
     const withCredentials = !metadata.sharedContentId
     const recordid = (metadata.providerData != null ? metadata.providerData.id : undefined) || metadata.sharedContentId
-    const requestData: { recordid?: any; runKey?: any; recordname?: any; owner?: any; } = {}
+    const requestData: { recordid?: string; runKey?: string; recordname?: string; owner?: string; } = {}
     if (recordid) { requestData.recordid = recordid }
     if (this.urlParams.runKey) { requestData.runKey = this.urlParams.runKey }
     if (!recordid) {

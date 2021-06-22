@@ -7,10 +7,14 @@
  * DS207: Consider shorter variations of null checks
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
  */
+import createReactClass from 'create-react-class'
+import ReactDOMFactories from 'react-dom-factories'
+import socialIcons from 'svg-social-icons/lib/icons.json'
 const {div, input, a, button, strong, textarea, svg, g, path, circle, ul, li} = ReactDOMFactories
 
 const SHOW_LONGEVITY_WARNING = false
 
+import { createReactClassFactory, createReactFactory } from '../create-react-factory'
 import modalDialogView from './modal-dialog-view'
 const ModalDialog = createReactFactory(modalDialogView)
 import {ShareLoadingView} from './share-loading-view'
@@ -19,7 +23,7 @@ import {ShareLoadingView} from './share-loading-view'
 // Using the fullname, "translate" here, to avoid the potential overloading
 // of the react function, "tr".
 import translate from '../utils/translate'
-import socialIcons from 'svg-social-icons/lib/icons.json'
+
 interface SVGSocialIcon {
   icon: string;   // SVG icon path string
   mask: string;   // SVG mask path string

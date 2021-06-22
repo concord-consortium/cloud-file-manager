@@ -21,6 +21,7 @@ import PatchableContent  from './patchable-content'
 import getQueryParam  from '../utils/get-query-param'
 import { Base64 }  from 'js-base64'
 import pako  from 'pako'
+import _ from 'lodash'
 
 // This provider supports the lara:... protocol used for documents launched
 // from LARA. It looks up the document ID and access keys from the LARA

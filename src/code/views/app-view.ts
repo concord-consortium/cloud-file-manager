@@ -7,7 +7,10 @@
  * DS207: Consider shorter variations of null checks
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
  */
+import _ from "lodash"
 import React from "react"
+import ReactDOMFactories from "react-dom-factories"
+import { createReactFactory, createReactClassFactory } from "../create-react-factory"
 import menuBarView from './menu-bar-view'
 import providerTabbedDialogView from './provider-tabbed-dialog-view'
 import downloadDialogView from './download-dialog-view'

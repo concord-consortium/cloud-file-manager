@@ -1,5 +1,8 @@
 // TODO: This file was created by bulk-decaffeinate.
 // Sanity-check the conversion and remove this comment.
+
+import ReactDOMFactories from "react-dom-factories"
+
 const {svg, g, rect, polygon} = ReactDOMFactories
 
 const DefaultAnchor =

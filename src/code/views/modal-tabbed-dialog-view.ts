@@ -5,6 +5,8 @@
  * DS102: Remove unnecessary code created because of implicit returns
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
  */
+import createReactClass from 'create-react-class'
+import { createReactFactory } from '../create-react-factory'
 import modalDialogView from './modal-dialog-view'
 import tabbedPanelView from './tabbed-panel-view'
 

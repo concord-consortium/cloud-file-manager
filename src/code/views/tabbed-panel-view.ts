@@ -7,6 +7,10 @@
  * DS207: Consider shorter variations of null checks
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
  */
+import createReactClass from "create-react-class"
+import ReactDOMFactories from "react-dom-factories"
+import { createReactClassFactory } from "../create-react-factory"
+
 const {div, ul, li} = ReactDOMFactories
 
 class TabInfo {

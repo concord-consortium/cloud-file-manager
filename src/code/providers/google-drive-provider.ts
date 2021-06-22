@@ -1,11 +1,13 @@
 import React from 'react'
+import ReactDOMFactories from 'react-dom-factories'
+import { CFMGoogleDriveProviderOptions } from '../app-options'
+import { CloudFileManagerClient } from '../client'
+import { createReactClassFactory } from '../create-react-factory'
 import tr  from '../utils/translate'
 import {
-  ProviderCloseCallback, ProviderInterface, ProviderListCallback,
-  ProviderLoadCallback, ProviderRemoveCallback, ProviderSaveCallback
+  cloudContentFactory, CloudMetadata, ProviderCloseCallback, ProviderInterface,
+  ProviderListCallback, ProviderLoadCallback, ProviderRemoveCallback, ProviderSaveCallback
 }  from './provider-interface'
-import { cloudContentFactory }  from './provider-interface'
-import { CloudMetadata }  from './provider-interface'
 
 enum ELoadState {
   notLoaded = "not-loaded",

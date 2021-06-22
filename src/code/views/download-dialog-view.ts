@@ -6,6 +6,9 @@
  * DS207: Consider shorter variations of null checks
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
  */
+import createReactClass from 'create-react-class'
+import ReactDOMFactories from 'react-dom-factories'
+import { createReactFactory } from '../create-react-factory'
 import tr  from '../utils/translate'
 import { CloudMetadata }  from '../providers/provider-interface'
 import modalDialogView from './modal-dialog-view'

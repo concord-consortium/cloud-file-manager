@@ -1,3 +1,5 @@
+import React from 'react'
+import { createReactFactory } from "../create-react-factory"
 import tr  from '../utils/translate'
 import { CFMBaseProviderOptions } from "../app-options"
 import {

@@ -1,5 +1,6 @@
-import AppView from './views/app-view'
 import React from 'react'
+import ReactDOM from 'react-dom'
+import AppView from './views/app-view'
 import { CFMAppOptions } from './app-options'
 import { CloudFileManagerUIMenu } from './ui'
 import { ClientEventCallback, CloudFileManagerClient } from './client'
