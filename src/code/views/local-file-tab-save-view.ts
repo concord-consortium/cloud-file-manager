@@ -80,7 +80,7 @@ export default createReactClass({
     return this.setState({includeShareInfo: this.includeShareInfoRef.checked})
   },
 
-  getDownloadFilename(hasPropsContent: any, filename: any, extension: any) {
+  getDownloadFilename(hasPropsContent: boolean, filename: string, extension: string) {
     const newName = filename.replace(/^\s+|\s+$/, '')
     if (hasPropsContent) {
       return CloudMetadata.newExtension(newName, extension)
@@ -90,7 +90,7 @@ export default createReactClass({
     }
   },
 
-  confirm(e: any, simulateClick: any) {
+  confirm(e: any, simulateClick: boolean) {
     if (!this.confirmDisabled()) {
       if (this.state.supportsDownloadAttribute) {
         this.downloadRef.href = this.props.client.getDownloadUrl(this.state.content, this.state.includeShareInfo, this.state.mimeType)

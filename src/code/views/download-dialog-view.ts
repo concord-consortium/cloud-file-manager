@@ -46,11 +46,11 @@ export default createReactClass({
     return this.setState({includeShareInfo: this.includeShareInfoRef.checked})
   },
 
-  trim(s: any) {
+  trim(s: string) {
     return s.replace(/^\s+|\s+$/, '')
   },
 
-  download(e: any, simulateClick: any) {
+  download(e: any, simulateClick: boolean) {
     if (!this.downloadDisabled()) {
       this.downloadRef.setAttribute('href', this.props.client.getDownloadUrl(this.props.content, this.state.includeShareInfo))
       if (simulateClick) { this.downloadRef.click() }

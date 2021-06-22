@@ -40,8 +40,8 @@ export default createReactClass({
     }
   },
 
-  importUrl(url: any, via: any) {
-    return (typeof this.props.dialog.callback === 'function' ? this.props.dialog.callback({url, via}) : undefined)
+  importUrl(url: string, via: any) {
+    return this.props.dialog.callback?.({url, via})
   },
 
   render() {

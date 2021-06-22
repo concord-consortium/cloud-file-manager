@@ -146,7 +146,7 @@ class ReadOnlyProvider extends ProviderInterface {
           this.tree = this._convertJSONToMetadataTree(iResponse, baseUrl)
           // alphabetize remotely loaded folder contents if requested
           if (this.options.alphabetize) {
-            this.tree.sort(function(iMeta1: any, iMeta2: any) {
+            this.tree.sort(function(iMeta1: CloudMetadata, iMeta2: CloudMetadata) {
               if (iMeta1.name < iMeta2.name) { return -1 }
               if (iMeta1.name > iMeta2.name) { return  1 }
               return  0

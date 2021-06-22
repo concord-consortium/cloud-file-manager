@@ -17,7 +17,7 @@ import { CloudMetadata }  from '../providers/provider-interface'
 
 import tr  from '../utils/translate'
 
-let {div, i, input, button} = ReactDOMFactories
+const {div, i, input, button} = ReactDOMFactories
 const italic = i
 
 const FileListFile = createReactClassFactory({
@@ -314,7 +314,7 @@ const FileDialogTab = createReactClass({
 
   findMetadata(filename: string, list: CloudMetadata[]) {
     for (let metadata of Array.from(list)) {
-      if ((metadata as any).name === filename) {
+      if (metadata.name === filename) {
         return metadata
       }
     }

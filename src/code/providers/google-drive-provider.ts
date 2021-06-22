@@ -131,7 +131,7 @@ class GoogleDriveProvider extends ProviderInterface {
       .catch(() => this.gapiLoadState = ELoadState.errored)  // eslint-disable-line @typescript-eslint/dot-notation
   }
 
-  authorized(authCallback: any) {
+  authorized(authCallback: (authorized: boolean) => void) {
     if (!(authCallback == null)) { this.authCallback = authCallback }
     if (authCallback) {
       if (this.authToken) {

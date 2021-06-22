@@ -22,7 +22,7 @@ import tr  from '../utils/translate'
 import pako  from 'pako'
 
 import { CFMDocumentStoreProviderOptions } from '../app-options'
-import { ECapabilities, ProviderInterface }  from './provider-interface'
+import { ECapabilities, ProviderInterface, ProviderOpenCallback }  from './provider-interface'
 import { cloudContentFactory }  from './provider-interface'
 import { CloudMetadata }  from './provider-interface'
 
@@ -89,7 +89,7 @@ class DocumentStoreProvider extends ProviderInterface {
   }
   constructor(options: CFMDocumentStoreProviderOptions, client: CloudFileManagerClient) {
     super({
-      name: (DocumentStoreProvider as any).Name,
+      name: DocumentStoreProvider.Name,
       displayName: options?.displayName || (tr('~PROVIDER.DOCUMENT_STORE')),
       urlDisplayName: options?.urlDisplayName,
       capabilities: {
@@ -521,7 +521,7 @@ class DocumentStoreProvider extends ProviderInterface {
 
   canOpenSaved() { return true }
 
-  openSaved(openSavedParams: any, callback: any) {
+  openSaved(openSavedParams: any, callback: ProviderOpenCallback) {
     const providerData = typeof openSavedParams === "object"
                       ? openSavedParams
                       : { id: openSavedParams }

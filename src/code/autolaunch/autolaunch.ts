@@ -188,7 +188,7 @@ export default function autolaunchInteractive() {
     var iframeCanAutosave = false
     var iframeLoaded = function () {
       $(window).on('message', function (e) {
-                var data = (e.originalEvent as any).data
+        var data = (e.originalEvent as any).data
         if (data) {
           switch (data.type) {
             case 'cfm::commands':

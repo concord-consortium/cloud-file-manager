@@ -113,9 +113,8 @@ class CloudFileManagerClient {
     if (this.appOptions.wrapFileContent == null) { this.appOptions.wrapFileContent = true }
     CloudContent.wrapFileContent = this.appOptions.wrapFileContent
 
-    // We can't use ProviderInterface here because all providers don't currently meet the requirements
-    type AnyProvider = any;
-    const allProviders: Record<string, AnyProvider> = {}  // TODO: type the providers
+    type ProviderClass = any;
+    const allProviders: Record<string, ProviderClass> = {}
 
     // Determine the available providers. Note that order in the list can
     // be significant in provider searches (e.g. @autoProvider).
@@ -306,7 +305,7 @@ class CloudFileManagerClient {
     }
   }
 
-  autoProvider(capability: any) {
+  autoProvider(capability: ECapabilities) {
     for (let provider of this.state.availableProviders) {
       if (provider.canAuto(capability)) { return provider }
     }
@@ -448,7 +447,7 @@ class CloudFileManagerClient {
     })
   }
 
-  openSharedContent(id: any) {
+  openSharedContent(id: string) {
     const { shareProvider } = this.state
     this._event('willOpenFile', {op: "openSharedContent"})
     if(shareProvider.loadSharedContent) {
@@ -476,7 +475,7 @@ class CloudFileManagerClient {
     }
   }
 
-  confirmAuthorizeAndOpen(provider: any, providerParams: any) {
+  confirmAuthorizeAndOpen(provider: ProviderInterface, providerParams: any) {
     // trigger authorize() from confirmation dialog to avoid popup blockers
     return this.confirm(tr("~CONFIRM.AUTHORIZE_OPEN"), () => {
       return provider.authorize(() => {
@@ -515,7 +514,7 @@ class CloudFileManagerClient {
     }
   }
 
-  openUrlFile(url: any) {
+  openUrlFile(url: string) {
     return this.urlProvider.openFileFromUrl(url, (err: string | null, content: any, metadata: CloudMetadata) => {
       this._event('willOpenFile', {op: "openUrlFile"})
       if (err) {
@@ -525,7 +524,7 @@ class CloudFileManagerClient {
     })
   }
 
-  createNewInFolder(providerName: any, folder: any) {
+  createNewInFolder(providerName: string, folder: string) {
     const provider = this.providers[providerName]
     if (provider && provider.can(ECapabilities.setFolder, this.state.metadata)) {
       if ((this.state.metadata == null)) {
@@ -572,9 +571,9 @@ class CloudFileManagerClient {
   }
 
   saveContent(stringContent: any, callback?: OpenSaveCallback) {
-    const provider = this.state.metadata?.provider || this.autoProvider('save')
+    const provider = this.state.metadata?.provider || this.autoProvider(ECapabilities.save)
     if (provider != null) {
-      return provider.authorized((isAuthorized: any) => {
+      return provider.authorized((isAuthorized: boolean) => {
         // we can save the document without authorization in some cases
         if (isAuthorized || !provider.isAuthorizationRequired()) {
           return this.saveFile(stringContent, this.state.metadata, callback)
@@ -709,7 +708,7 @@ class CloudFileManagerClient {
     }
   }
 
-  saveTempFile(callback: any) {
+  saveTempFile(callback: (err: string | null) => void) {
     return this._event('getContent', { shared: this._sharedMetadata() }, (stringContent: any) => {
       const currentContent = this._createOrUpdateCurrentContent(stringContent)
       try {
@@ -721,9 +720,9 @@ class CloudFileManagerClient {
           type: CloudMetadata.File
         })
         this._fileChanged('savedFile', currentContent, metadata, {saved: true}, "")
-        return (typeof callback === 'function' ? callback(null) : undefined)
+        return callback?.(null)
       } catch (e) {
-        return callback("Unable to temporarily save copied file")
+        return callback?.("Unable to temporarily save copied file")
       }
     })
   }
@@ -746,7 +745,7 @@ class CloudFileManagerClient {
   }
 
   _sharedMetadata() {
-    return (this.state.currentContent != null ? this.state.currentContent.getSharedMetadata() : undefined) || {}
+    return this.state.currentContent?.getSharedMetadata() || {}
   }
 
   shareGetLink() {
@@ -757,7 +756,7 @@ class CloudFileManagerClient {
     return this.share(() => this.alert((tr("~SHARE_UPDATE.MESSAGE")), (tr("~SHARE_UPDATE.TITLE"))))
   }
 
-  toggleShare(callback: any) {
+  toggleShare(callback: (err: string | null, sharedContentId?: string) => void) {
     if (this.isShared()) {
       return this.unshare(callback)
     } else {
@@ -802,7 +801,7 @@ class CloudFileManagerClient {
           if (err) {
             return this.alert(err)
           }
-          return (typeof callback === 'function' ? callback(null, sharedContentId, currentContent) : undefined)
+          return callback?.(null, sharedContentId, currentContent)
         })
       })
     }
@@ -870,7 +869,7 @@ class CloudFileManagerClient {
     })
   }
 
-  getDownloadBlob(content: any, includeShareInfo: any, mimeType: any) {
+  getDownloadBlob(content: any, includeShareInfo: boolean, mimeType: string) {
     let contentToSave
     if (mimeType == null) { mimeType = 'text/plain' }
     if (typeof content === "string") {
@@ -892,7 +891,7 @@ class CloudFileManagerClient {
       delete json.isUnshared
       delete json.accessKeys
       // CODAP moves the keys into its own namespace
-      if ((json.metadata != null ? json.metadata.shared : undefined) != null) {
+      if (json.metadata?.shared != null) {
         delete json.metadata.shared
       }
       contentToSave = JSON.stringify(json)
@@ -901,7 +900,7 @@ class CloudFileManagerClient {
     return new Blob([contentToSave], {type: mimeType})
   }
 
-  getDownloadUrl(content: any, includeShareInfo: any, mimeType: any) {
+  getDownloadUrl(content: any, includeShareInfo: boolean, mimeType: string) {
     if (mimeType == null) { mimeType = 'text/plain' }
     const wURL = window.URL || window.webkitURL
     if (wURL) { return wURL.createObjectURL(this.getDownloadBlob(content, includeShareInfo, mimeType)) }
@@ -960,8 +959,8 @@ class CloudFileManagerClient {
     }
   }
 
-  saveSecondaryFileAsDialog(stringContent: any, extension: any, mimeType: any, callback: OpenSaveCallback) {
-    const provider = this.autoProvider('export')
+  saveSecondaryFileAsDialog(stringContent: any, extension: string, mimeType: string, callback: OpenSaveCallback) {
+    const provider = this.autoProvider(ECapabilities['export'])
     if (provider) {
       const metadata = { provider, extension, mimeType } as unknown as CloudMetadata
       return this.saveSecondaryFile(stringContent, metadata, callback)
@@ -1030,7 +1029,7 @@ class CloudFileManagerClient {
     return (this._autoSaveInterval != null)
   }
 
-  changeLanguage(newLangCode: any, callback: any) {
+  changeLanguage(newLangCode: string, callback: (newLangCode?: string) => void) {
     if (callback) {
       if (!this.state.dirty) {
         return callback(newLangCode)
@@ -1043,7 +1042,7 @@ class CloudFileManagerClient {
             return callback(newLangCode)
           }
         }
-        if ((this.state.metadata != null ? this.state.metadata.provider : undefined) || this.autoProvider('save')) {
+        if (this.state.metadata?.provider || this.autoProvider(ECapabilities.save)) {
           return this.save((err: string | null) => postSave(err))
         } else {
           return this.saveTempFile(postSave)
@@ -1070,7 +1069,7 @@ class CloudFileManagerClient {
   // Removes the specified parameters from the URL and then uses the history API's
   // pushState() method to update the URL without reloading the page.
   // Adapted from http://stackoverflow.com/a/11654436.
-  removeQueryParams(params: any) {
+  removeQueryParams(params: string[]) {
     let url = window.location.href
     const hash = url.split('#')
 
@@ -1105,7 +1104,7 @@ class CloudFileManagerClient {
     return this._ui.alertDialog(message, ((titleOrCallback as string) || tr("~CLIENT_ERROR.TITLE")), callback)
   }
 
-  _dialogSave(stringContent: any, metadata: CloudMetadata, callback: any) {
+  _dialogSave(stringContent: any, metadata: CloudMetadata, callback: OpenSaveCallback) {
     if (stringContent !== null) {
       return this.saveFileNoDialog(stringContent, metadata, callback)
     } else {
