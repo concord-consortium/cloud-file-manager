@@ -1,9 +1,9 @@
 import {CloudFileManagerClient, CloudFileManagerClientEvent} from "./client"
 
 test('ClientEvent id increments with each event registered', () => {
-  const clientEvent = new CloudFileManagerClientEvent({type: "any", data: {}, state: {}})
+  const clientEvent = new CloudFileManagerClientEvent("any")
   expect(clientEvent.id).toBe(1)
-  const clientEvent2 = new CloudFileManagerClientEvent({type: "any", data: {}, state: {}})
+  const clientEvent2 = new CloudFileManagerClientEvent("any")
   expect(clientEvent2.id).toBe(2)
 })
 

@@ -1,33 +1,33 @@
 
-import { ImportMock } from 'ts-mock-imports'
 import S3ShareProvider from "./s3-share-provider"
-import * as helperModule from '../utils/s3-share-provider-token-service-helper'
-import * as Client from "../client"
-import { CloudContent, CloudMetadata } from "./provider-interface"
+import { CloudFileManagerClient } from "../client"
+import { CloudContent, CloudContentFormat, CloudMetadata } from "./provider-interface"
 import LocalStorageProvider from './localstorage-provider'
-
-const clientMockManager = ImportMock.mockClass(Client, 'CloudFileManagerClient')
-const client = clientMockManager.getMockInstance()
-const localstorageProvider = new LocalStorageProvider({},client)
 
 const publicUrl = 'publicUrl'
 const resourceId = 'resourceId'
 const readWriteToken = 'RWToken'
+const mockResult = new Promise( resolve => {
+  resolve ({ publicUrl, resourceId, readWriteToken })
+})
+
+jest.mock('../utils/s3-share-provider-token-service-helper', () => {
+  return {
+    createFile: () => mockResult,
+    updateFile: () => mockResult
+  }
+})
+
+const client = new CloudFileManagerClient()
+const localstorageProvider = new LocalStorageProvider({}, client)
+const testContentFormat: CloudContentFormat = { isCfmWrapped: false, isPreCfmFormat: true }
 
 describe("S3ShareProvider", () => {
   const provider = new S3ShareProvider(client, localstorageProvider)
-  const masterContent = new CloudContent({content: "test"}, "huh")
-  const sharedContent = new CloudContent({content: "test 2"}, "huh")
+  const masterContent = new CloudContent({content: "test"}, testContentFormat)
+  const sharedContent = new CloudContent({content: "test 2"}, testContentFormat)
   const metadata = new CloudMetadata({filename: "test"})
 
-  const createResult = new Promise( (resolve) => {
-    const data = { publicUrl, resourceId, readWriteToken }
-    resolve (data)
-  })
-
-  const updateResult = createResult
-  const create = ImportMock.mockFunction(helperModule, "createFile", createResult)
-  const upate = ImportMock.mockFunction(helperModule, 'updateFile', updateResult)
   describe("share", () => {
     describe("When not previously shared", () => {
       it("Should return a new ReadWrite token", done => {
@@ -58,5 +58,3 @@ describe("S3ShareProvider", () => {
 
   })
 })
-
-

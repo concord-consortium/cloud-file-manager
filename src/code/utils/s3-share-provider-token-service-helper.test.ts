@@ -1,16 +1,21 @@
-import { ImportMock } from 'ts-mock-imports'
 import { getLegacyUrl } from './s3-share-provider-token-service-helper'
-import * as Config from "./config"
+
+const getTokenServiceEnvMock = jest.fn()
+jest.mock('./config', () => {
+  const { getTokenServiceEnv, ...others } = jest.requireActual('./config')
+  return {
+    getTokenServiceEnv: () => getTokenServiceEnvMock(),
+    ...others
+  }
+})
 
 const legacyId = "23424"
 
 describe("s3-share-provider-token-service-helper", () => {
   describe("production environment", () => {
     beforeEach( () => {
-      ImportMock.mockFunction(Config, 'getTokenServiceEnv', 'production')
-    })
-    afterEach( () => {
-      ImportMock.restore();
+      getTokenServiceEnvMock.mockReset()
+      getTokenServiceEnvMock.mockImplementation(() => 'production')
     })
     describe("getLegacyUrl", () => {
       it("should return a production legacy url … ", () => {
@@ -21,10 +26,8 @@ describe("s3-share-provider-token-service-helper", () => {
   })
   describe("staging environment", () => {
     beforeEach( () => {
-      ImportMock.mockFunction(Config, 'getTokenServiceEnv', 'staging')
-    })
-    afterEach( () => {
-      ImportMock.restore();
+      getTokenServiceEnvMock.mockReset()
+      getTokenServiceEnvMock.mockImplementation(() => 'staging')
     })
     describe("getLegacyUrl", () => {
       it("should return a legacy url … ", () => {
@@ -34,7 +37,3 @@ describe("s3-share-provider-token-service-helper", () => {
     })
   })
 })
-
-
-
-

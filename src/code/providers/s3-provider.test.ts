@@ -1,12 +1,9 @@
 
-import { ImportMock } from 'ts-mock-imports'
 import S3Provider from "./s3-provider"
-import * as Client from "../client"
+import { CloudFileManagerClient } from "../client"
 import { CloudMetadata } from "./provider-interface"
 
-const clientMockManager = ImportMock.mockClass(Client, 'CloudFileManagerClient')
-const client = clientMockManager.getMockInstance()
-
+const client = new CloudFileManagerClient()
 
 describe("S3ShareProvider", () => {
   const provider = new S3Provider(client)
@@ -33,5 +30,3 @@ describe("S3ShareProvider", () => {
 
   })
 })
-
-

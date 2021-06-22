@@ -1,9 +1,12 @@
+import React from 'react'
+import { createReactFactory } from "../create-react-factory"
 import tr  from '../utils/translate'
-import { createReactFactory } from '../globals'
+import { CFMBaseProviderOptions } from "../app-options"
 import {
-  cloudContentFactory, CloudMetadata, IProviderInterfaceOpts, ProviderInterface,
+  cloudContentFactory, CloudMetadata, ECapabilities, ProviderInterface,
   ProviderListCallback, ProviderLoadCallback, ProviderSaveCallback
 }  from './provider-interface'
+import { CloudFileManagerClient } from '../client'
 import localFileTabListView from '../views/local-file-tab-list-view'
 import localFileTabSaveView from '../views/local-file-tab-save-view'
 
@@ -12,9 +15,9 @@ const LocalFileSaveTab = createReactFactory(localFileTabSaveView)
 
 class LocalFileProvider extends ProviderInterface {
   public static Name = 'localFile'
-  private options: IProviderInterfaceOpts;
-  private client: any;
-  constructor(options: IProviderInterfaceOpts, client: any) {
+  private options: CFMBaseProviderOptions;
+  private client: CloudFileManagerClient;
+  constructor(options: CFMBaseProviderOptions, client: CloudFileManagerClient) {
     super({
       name: LocalFileProvider.Name,
       displayName: options.displayName || (tr('~PROVIDER.LOCAL_FILE')),
@@ -34,7 +37,7 @@ class LocalFileProvider extends ProviderInterface {
     this.client = client
   }
 
-  filterTabComponent(capability: string, defaultComponent: any) {
+  filterTabComponent(capability: ECapabilities, defaultComponent: React.Component): React.Component | null {
     if (capability === 'list') {
       return LocalFileListTab
     } else if ((capability === 'save') || (capability === 'export')) {

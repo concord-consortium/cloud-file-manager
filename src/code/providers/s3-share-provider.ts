@@ -1,5 +1,4 @@
 import {
-  ICloudMetaDataSpec,
   ProviderShareCallback,
   ProviderLoadCallback,
   ProviderInterface,
@@ -7,13 +6,11 @@ import {
   CloudContent,
   CloudMetadata
 }  from './provider-interface'
-
+import { CloudFileManagerClient } from '../client'
 import { IShareProvider} from './share-provider-interface'
 import { createFile, updateFile, deleteFile } from '../utils/s3-share-provider-token-service-helper'
 import { reportError } from '../utils/report-error'
 import { sha256 } from 'js-sha256'
-
-interface IClientInterface {}
 
 // New method for sharing read only documents using S3.
 // The readWrite key must be retained in the original document
@@ -21,10 +18,10 @@ interface IClientInterface {}
 // Based on the historical `document-store-share-provider`
 class S3ShareProvider implements IShareProvider  {
   public static Name ='s3-share-provider'
-  client: IClientInterface
+  client: CloudFileManagerClient
   provider: ProviderInterface
 
-  constructor(client:IClientInterface, _provider: ProviderInterface) {
+  constructor(client:CloudFileManagerClient, _provider: ProviderInterface) {
     this.provider = _provider
     this.client = client
   }
@@ -59,7 +56,7 @@ class S3ShareProvider implements IShareProvider  {
         callback(null, documentID)
       }).catch(e => { // eslint-disable-line @typescript-eslint/dot-notation
         reportError(e)
-        return callback(`Unable to update shared file ${e}`, {})
+        return callback(`Unable to update shared file ${e}`)
       })
   }
 
@@ -72,14 +69,14 @@ class S3ShareProvider implements IShareProvider  {
       callback(null, documentID)
     }).catch((e: Error) => {  // eslint-disable-line @typescript-eslint/dot-notation
       reportError(e)
-      return callback(`Unable to delete shared file ${e}`, {})
+      return callback(`Unable to delete shared file ${e}`)
     })
   }
 
   private createShare(
     masterContent: CloudContent,
     contentJSON: string,
-    metadata:ICloudMetaDataSpec,
+    metadata: CloudMetadata,
     callback: ProviderShareCallback,
     ) {
     const result = createFile({
@@ -97,7 +94,7 @@ class S3ShareProvider implements IShareProvider  {
       })
       return callback(null, readWriteToken)
     }).catch( e => {  // eslint-disable-line @typescript-eslint/dot-notation
-      return callback(`Unable to share file ${e}`, {})
+      return callback(`Unable to share file ${e}`)
     })
   }
 
@@ -105,8 +102,8 @@ class S3ShareProvider implements IShareProvider  {
   share(
     shared: boolean,
     masterContent: CloudContent,
-    sharedContent:CloudContent,
-    metadata:ICloudMetaDataSpec,
+    sharedContent: CloudContent,
+    metadata: CloudMetadata,
     callback: ProviderShareCallback) {
 
     // document ID is stored in masterContent
@@ -151,7 +148,7 @@ class S3ShareProvider implements IShareProvider  {
     } else if (shared) {
       this.createShare(masterContent, contentJson, metadata, callback)
     } else {
-      return callback(`Unable to stop sharing the file - no access key`, {})
+      return callback(`Unable to stop sharing the file - no access key`)
     }
   }
 
