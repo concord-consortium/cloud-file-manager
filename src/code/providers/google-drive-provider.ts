@@ -74,6 +74,7 @@ class GoogleDriveProvider extends ProviderInterface {
   static Name = 'googleDrive'
   static IMMEDIATE = true
   static SHOW_POPUP = false
+  static loadPromise: Promise<unknown> = null
   _autoRenewTimeout: number
   apiKey: string
   authCallback: (authorized: boolean) => void
@@ -300,7 +301,7 @@ class GoogleDriveProvider extends ProviderInterface {
   }
 
   _waitForGAPILoad() {
-    return new Promise((resolve, reject) => {
+    return GoogleDriveProvider.loadPromise || (GoogleDriveProvider.loadPromise = new Promise((resolve, reject) => {
       const script = document.createElement('script')
       script.src = "https://apis.google.com/js/api.js"
       script.onload = () => {
@@ -316,7 +317,7 @@ class GoogleDriveProvider extends ProviderInterface {
         })
       }
       document.head.appendChild(script)
-    })
+    }))
   }
 
   _loadFile(metadata: CloudMetadata, callback: ProviderLoadCallback) {
