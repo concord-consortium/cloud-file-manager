@@ -19,6 +19,7 @@ import LocalStorageProvider  from './providers/localstorage-provider'
 import ReadOnlyProvider  from './providers/readonly-provider'
 import GoogleDriveProvider  from './providers/google-drive-provider'
 import LaraProvider  from './providers/lara-provider'
+import LaraInteractiveProvider from './providers/lara-interactive-provider'
 import DocumentStoreProvider  from './providers/document-store-provider'
 import S3ShareProvider  from './providers/s3-share-provider'
 import S3Provider  from './providers/s3-provider'
@@ -123,6 +124,7 @@ class CloudFileManagerClient {
       ReadOnlyProvider,
       GoogleDriveProvider,
       LaraProvider,
+      LaraInteractiveProvider,
       DocumentStoreProvider,
       LocalFileProvider,
       PostMessageProvider,
@@ -298,7 +300,7 @@ class CloudFileManagerClient {
     }
   }
 
-  log(event: any, eventData: any) {
+  log(event: string, eventData: any) {
     this._event('log', {logEvent: event, logEventData: eventData})
     if (this.appOptions.log) {
       return this.appOptions.log(event, eventData)
