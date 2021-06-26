@@ -1,8 +1,9 @@
 import $ from "jquery"
-import screenfull from "screenfull"
+// must use `require` not `import` (cf. https://github.com/sindresorhus/screenfull.js/releases/tag/v5.0.0)
+import _screenfull = require('screenfull')
 
 /* globals */
-(window as any).GetIframeTransforms = function (_window: any, _screen: any) {
+const getIframeTransforms = (_window: Window, _screen: Screen) => {
   var MAX_WIDTH = 2000
   // Scale iframe, but make sure that:
   // 1. Iframe is smaller than MAX_WIDTH which should be enough for all the documents. It prevents creating
@@ -19,10 +20,13 @@ import screenfull from "screenfull"
 }
 
 export function fullscreenSupport (iframe: any) {
+  // must check isEnabled before accessing other APIs
+  // cf. https://github.com/sindresorhus/screenfull.js/issues/173#issuecomment-735226048
+  const screenfull = _screenfull.isEnabled ? _screenfull : undefined
   var $target = $(iframe)
   function setScaling () {
-    if (!(screenfull as any).isFullscreen) {
-      var trans = (window as any).GetIframeTransforms(window, screen)
+    if (!screenfull?.isFullscreen) {
+      var trans = getIframeTransforms(window, screen)
       $target.css('width', trans.unscaledWidth)
       $target.css('height', trans.unscaledHeight)
       $target.css('transform-origin', 'top left')
@@ -38,13 +42,13 @@ export function fullscreenSupport (iframe: any) {
     $('#fullscreen-help').css('fontSize', `${fontSize}px`)
   }
 
-  function setupFullsceenButton () {
+  function setupFullscreenButton () {
     $('#fullscreen-help').show()
     var $button = $('.fullscreen-icon')
     $button.show()
-    $button.on('click', () => (screenfull as any).toggle());
-    (screenfull as any).on('change', () => {
-      if((screenfull as any).isFullscreen) {
+    $button.on('click', () => screenfull.toggle())
+    screenfull.on('change', () => {
+      if(screenfull.isFullscreen) {
         $button.addClass('fullscreen')
       }
       else {
@@ -54,8 +58,8 @@ export function fullscreenSupport (iframe: any) {
   }
 
   setScaling()
-  if (screenfull.isEnabled) {
-    setupFullsceenButton()
+  if (screenfull?.isEnabled) {
+    setupFullscreenButton()
   }
   $(window).on('resize', setScaling)
 }
