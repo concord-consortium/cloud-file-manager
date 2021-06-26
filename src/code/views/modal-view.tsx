@@ -1,24 +1,34 @@
-// TODO: This file was created by bulk-decaffeinate.
-// Sanity-check the conversion and remove this comment.
-/*
- * decaffeinate suggestions:
- * DS102: Remove unnecessary code created because of implicit returns
- * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
- */
-import createReactClass from "create-react-class"
-import ReactDOMFactories from "react-dom-factories"
+import React from "react"
 
-const {div} = ReactDOMFactories
+interface IProps {
+  zIndex: number;
+  close?: () => void;
+}
+interface IState {
+  backgroundStyle: React.CSSProperties;
+  contentStyle: React.CSSProperties;
+}
+interface IDimensions {
+  width: string;
+  height: string;
+}
+export default class ModalView extends React.Component<IProps, IState> {
 
-export default createReactClass({
+  constructor(props: IProps) {
+    super(props)
 
-  displayName: 'Modal',
-
-  watchForEscape(e: any) {
-    if (e.keyCode === 27) {
-      return (typeof this.props.close === 'function' ? this.props.close() : undefined)
+    const dimensions = this.getDimensions()
+    this.state = {
+      backgroundStyle: this.getBackgroundStyle(dimensions),
+      contentStyle: this.getContentStyle(dimensions)
     }
-  },
+  }
+
+  closeOnEscape(e: any) {
+    if (e.keyCode === 27) {
+      this.props.close?.()
+    }
+  }
 
   // shadow the entire viewport behind the dialog
   getDimensions() {
@@ -26,55 +36,52 @@ export default createReactClass({
       width: '100vw',
       height: '100vh'
     }
-  },
+  }
 
-  getInitialState() {
-    const dimensions = this.getDimensions()
-    return {
-      backgroundStyle: this.getBackgroundStyle(dimensions),
-      contentStyle: this.getContentStyle(dimensions)
-    }
-  },
-
-  getBackgroundStyle(dimensions: any) {
+  getBackgroundStyle(dimensions: IDimensions) {
     if (this.props.zIndex) {
       return { zIndex: this.props.zIndex, width: dimensions.width, height: dimensions.height }
     } else {
       return dimensions
     }
-  },
+  }
 
-  getContentStyle(dimensions: any) {
+  getContentStyle(dimensions: IDimensions) {
     if (this.props.zIndex) {
       return { zIndex: this.props.zIndex + 1, width: dimensions.width, height: dimensions.height }
     } else {
       return dimensions
     }
-  },
+  }
 
   updateStyles() {
     const dimensions = this.getDimensions()
-    return this.setState({
+    this.setState({
       backgroundStyle: this.getBackgroundStyle(dimensions),
       contentStyle: this.getContentStyle(dimensions)
     })
-  },
+  }
 
   // use bind/unbind for clients using older versions of jQuery
   componentDidMount() {
-    $(window).bind('keyup', this.watchForEscape)
-    return $(window).bind('resize', this.updateStyles)
-  },
+    $(window).bind('keyup', this.closeOnEscape)
+    $(window).bind('resize', this.updateStyles)
+  }
 
   componentWillUnmount() {
-    $(window).unbind('keyup', this.watchForEscape)
-    return $(window).unbind('resize', this.updateStyles)
-  },
+    $(window).unbind('keyup', this.closeOnEscape)
+    $(window).unbind('resize', this.updateStyles)
+  }
 
   render() {
-    return (div({className: 'modal'},
-      (div({className: 'modal-background', style: this.state.backgroundStyle})),
-      (div({className: 'modal-content', style: this.state.contentStyle}, this.props.children))
-    ))
+    const { backgroundStyle, contentStyle } = this.state
+    return (
+      <div className='modal'>
+        <div className='modal-background' style={backgroundStyle} />
+        <div className='modal-content' style={contentStyle}>
+          {this.props.children}
+        </div>
+      </div>
+    )
   }
-})
+}

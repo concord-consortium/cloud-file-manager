@@ -1,36 +1,26 @@
-// TODO: This file was created by bulk-decaffeinate.
-// Sanity-check the conversion and remove this comment.
-/*
- * decaffeinate suggestions:
- * DS102: Remove unnecessary code created because of implicit returns
- * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
- */
-import createReactClass from 'create-react-class'
-import ReactDOMFactories from 'react-dom-factories'
-import { createReactFactory } from '../create-react-factory'
-import modalView from './modal-view'
-const {div, i} = ReactDOMFactories
-const Modal = createReactFactory(modalView)
+import React from "react"
+import ModalView from "./modal-view"
 
-export default createReactClass({
-
-  displayName: 'ModalDialog',
-
-  close() {
-    return (typeof this.props.close === 'function' ? this.props.close() : undefined)
-  },
-
-  render() {
-    return (Modal({close: this.close, zIndex: this.props.zIndex},
-      (div({className: 'modal-dialog'},
-        (div({className: 'modal-dialog-wrapper'},
-          (div({className: 'modal-dialog-title'},
-            (i({className: "modal-dialog-title-close icon-ex", onClick: this.close})),
-            this.props.title || 'Untitled Dialog'
-          )),
-          (div({className: 'modal-dialog-workspace'}, this.props.children))
-        ))
-      ))
-    ))
-  }
-})
+interface IProps {
+  title?: string;
+  zIndex?: number;
+  close?: () => void;
+}
+const ModalDialogView: React.FC<IProps> = ({ title, zIndex = 10, children }) => {
+  return (
+    <ModalView zIndex={zIndex} close={() => close?.()}>
+      <div className='modal-dialog'>
+        <div className='modal-dialog-wrapper'>
+          <div className='modal-dialog-title'>
+            <i className='modal-dialog-title-close icon-ex' onClick={() => close?.()}/>
+            {title || 'Untitled Dialog'}
+          </div>
+          <div className='modal-dialog-workspace'>
+            {children}
+          </div>
+        </div>
+      </div>
+    </ModalView>
+  )
+}
+export default ModalDialogView

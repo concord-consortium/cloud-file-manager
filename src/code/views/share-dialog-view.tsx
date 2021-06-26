@@ -1,91 +1,63 @@
-// TODO: This file was created by bulk-decaffeinate.
-// Sanity-check the conversion and remove this comment.
-/*
- * decaffeinate suggestions:
- * DS102: Remove unnecessary code created because of implicit returns
- * DS205: Consider reworking code to avoid use of IIFEs
- * DS207: Consider shorter variations of null checks
- * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
- */
-import createReactClass from 'create-react-class'
-import ReactDOMFactories from 'react-dom-factories'
-import socialIcons from 'svg-social-icons/lib/icons.json'
-const {div, input, a, button, strong, textarea, svg, g, path, circle, ul, li} = ReactDOMFactories
+import React from 'react'
 
 const SHOW_LONGEVITY_WARNING = false
 
-import { createReactClassFactory, createReactFactory } from '../create-react-factory'
-import modalDialogView from './modal-dialog-view'
-const ModalDialog = createReactFactory(modalDialogView)
+import ModalDialogView from './modal-dialog-view'
 import {ShareLoadingView} from './share-loading-view'
-
-// This function is named "tr" elsewhere in this codeline.
-// Using the fullname, "translate" here, to avoid the potential overloading
-// of the react function, "tr".
+import { ShareDialogStatusView } from './share-dialog-status-view'
+import { ShareDialogTabsView } from './share-dialog-tabs-view'
+import { CloudFileManagerClient } from '../client'
 import translate from '../utils/translate'
 
-interface SVGSocialIcon {
-  icon: string;   // SVG icon path string
-  mask: string;   // SVG mask path string
-  color: string;
+const CFM_PRODUCTION_URL = "https://cloud-file-manager.concord.org"
+const CFM_PRODUCTION_AUTOLAUNCH_URL = `${CFM_PRODUCTION_URL}/autolaunch/autolaunch.html`
+const CODAP_PRODUCTION_URL = "https://codap.concord.org/releases/latest/"
+
+interface IShareDialogPropsSettings {
+  serverUrl?: string;
+  serverUrlLabel?: string;
 }
-type SVGSocialIconMap = Record<string, SVGSocialIcon>
+interface IShareDialogProps {
+  client: CloudFileManagerClient;
+  settings?: IShareDialogPropsSettings;
+  enableLaraSharing?: boolean;
+  close: () => void;
+}
+interface IShareDialogState {
+  link: string | null;
+  embed: string | null;
+  serverUrl: string;
+  serverUrlLabel: string;
+  fullscreenScaling: boolean;
+  graphVisToggles: boolean;
+  tabSelected: 'embed' | 'link' | 'lara';
+  isLoadingShared: boolean;
+}
 
-const SocialIcon = createReactClassFactory({
+export default class ShareDialogView extends React.Component<IShareDialogProps, IShareDialogState> {
 
-  displayName: 'SocialIcon',
+  state: IShareDialogState
 
-  getInitialState() {
-    return {data: (socialIcons as SVGSocialIconMap)[this.props.icon]}
-  },
+  constructor(props: IShareDialogProps) {
+    super(props)
 
-  clicked() {
-    return window.open(this.props.url)
-  },
-
-  render() {
-    return (a({className: 'social-icon', href: this.props.url, target: '_blank'},
-      (div({className: 'social-container'},
-        (svg({className: 'social-svg', viewBox: '0 0 64 64'},
-          (g({className: 'social-svg-background'},
-            (circle({cx: 32, cy: 32, r: 31}))
-          )),
-          (g({className: 'social-svg-icon'},
-            (path({d: this.state.data.icon}))
-          )),
-          (g({className: 'social-svg-mask', style: {fill: this.state.data.color}},
-            (path({d: this.state.data.mask}))
-          ))
-        ))
-      ))
-    ))
-  }
-})
-
-const CFM_PRODUCTION = "https://cloud-file-manager.concord.org"
-
-export default createReactClass({
-
-  displayName: 'ShareDialogView',
-
-  getInitialState() {
-    return {
+    this.state = {
       link: this.getShareLink(),
       embed: this.getEmbed(),
-      serverUrl: this.props.settings.serverUrl || "https://codap.concord.org/releases/latest/",
+      serverUrl: this.props.settings.serverUrl || CODAP_PRODUCTION_URL,
       serverUrlLabel: this.props.settings.serverUrlLabel || translate("~SHARE_DIALOG.LARA_CODAP_URL"),
       fullscreenScaling: true,
       graphVisToggles: false,
       tabSelected: 'link',
       isLoadingShared: false
     }
-  },
+  }
 
   // To support legacy shares:
   getSharedDocumentId() {
     const { client } = this.props
     return client.state?.currentContent?.get("sharedDocumentId")
-  },
+  }
 
   // Get a documentID, or going forward, always return a URL to a document
   getShareUrl() {
@@ -104,7 +76,7 @@ export default createReactClass({
       }
     }
     return null
-  },
+  }
 
   // Return a sharable link to this document (includes the app CODAP)
   getShareLink() {
@@ -113,7 +85,7 @@ export default createReactClass({
       return `${this.props.client.getCurrentUrl()}#shared=${encodeURIComponent(shareRef)}`
     }
     return null
-  },
+  }
 
   getEmbed() {
     if (this.getShareLink()) {
@@ -121,7 +93,7 @@ export default createReactClass({
     } else {
       return null
     }
-  },
+  }
 
   getLara() {
     // Update the LARA share link as per this story:
@@ -136,9 +108,8 @@ export default createReactClass({
     //
     // It will point to SPA hosted in this repo -- NP 2020-06-29
     //  1: Get the resource URL (S3 shared document public URL)
-    //  2: Get the URL for the autoLauch page (hosted here ...)
-    //  3: Construct a URL to <AutlaunchPage
-    const autoLaunchpage = `${CFM_PRODUCTION}/autolaunch/autolaunch.html`
+    //  2: Get the URL for the autoLaunch page (hosted here ...)
+    //  3: Construct a URL to <AutolaunchPage
     const documentId = encodeURIComponent(this.getShareUrl())
     const graphVisToggles = this.state.graphVisToggles ? '?app=is' : ''
     // graphVisToggles is a parameter handled by CODAP, so it needs to be added to its URL.
@@ -146,12 +117,12 @@ export default createReactClass({
     // Other params are handled by document server itself:
     const fullscreenScaling = this.state.fullscreenScaling ? '&scaling' : ''
 
-    return `${autoLaunchpage}?documentId=${documentId}&server=${server}${fullscreenScaling}`
-  },
+    return `${CFM_PRODUCTION_AUTOLAUNCH_URL}?documentId=${documentId}&server=${server}${fullscreenScaling}`
+  }
   // TODO: Consider using queryparams to make URL construction less janky⬆
 
   // adapted from https://github.com/sudodoki/copy-to-clipboard/blob/master/index.js
-  copy(e: any) {
+  copy = (e: any) => {
     let mark, range, selection
     e.preventDefault()
     let copied = false
@@ -205,15 +176,16 @@ export default createReactClass({
       if (mark) {
         document.body.removeChild(mark)
       }
-      this.props.client.alert(translate(copied ? "~SHARE_DIALOG.COPY_SUCCESS" : "~SHARE_DIALOG.COPY_ERROR"), (translate("~SHARE_DIALOG.COPY_TITLE")))
+      this.props.client.alert(translate(copied ? "~SHARE_DIALOG.COPY_SUCCESS" : "~SHARE_DIALOG.COPY_ERROR"),
+                              translate("~SHARE_DIALOG.COPY_TITLE"))
     }
-  },
+  }
 
-  updateShare() {
+  updateShare = () => {
     return this.props.client.shareUpdate()
-  },
+  }
 
-  toggleShare(e: any) {
+  toggleShare = (e: React.MouseEvent) => {
     e.preventDefault()
     this.setState({
       isLoadingShared: true
@@ -225,133 +197,80 @@ export default createReactClass({
         isLoadingShared: false
       })
     })
-  },
+  }
 
-  selectLinkTab() {
+  selectLinkTab = () => {
     return this.setState({tabSelected: 'link'})
-  },
+  }
 
-  selectEmbedTab() {
+  selectEmbedTab = () => {
     return this.setState({tabSelected: 'embed'})
-  },
+  }
 
-  selectLaraTab() {
+  selectLaraTab = () => {
     return this.setState({tabSelected: 'lara'})
-  },
+  }
 
-  changedServerUrl(event: any) {
+  changedServerUrl = (event: React.ChangeEvent<HTMLInputElement>) => {
     return this.setState({serverUrl: event.target.value})
-  },
+  }
 
-  changedFullscreenScaling(event: any) {
+  changedFullscreenScaling = (event: React.ChangeEvent<HTMLInputElement>) => {
     return this.setState({fullscreenScaling: event.target.checked})
-  },
+  }
 
-  changedGraphVisToggles(event: any) {
+  changedGraphVisToggles = (event: React.ChangeEvent<HTMLInputElement>) => {
     return this.setState({graphVisToggles: event.target.checked})
-  },
+  }
 
   render() {
 
     const { isLoadingShared, link } = this.state
-    const sharing = link !== null
+    const sharing = link != null
 
-    return (ModalDialog({title: (translate('~DIALOG.SHARED')), close: this.props.close},
-      (div({className: 'share-dialog'},
-        (div({className: 'share-top-dialog'},
-          isLoadingShared
-          ? ShareLoadingView({})
-          : sharing ?
-            (div({},
-              (div({className: 'share-status'},
-                (translate("~SHARE_DIALOG.SHARE_STATE")), (strong({}, translate("~SHARE_DIALOG.SHARE_STATE_ENABLED"))),
-                (a({href: '#', onClick: this.toggleShare}, translate("~SHARE_DIALOG.STOP_SHARING")))
-              )),
-              (div({className: 'share-button'},
-                (button({onClick: this.updateShare}, translate("~SHARE_DIALOG.UPDATE_SHARING"))),
-                (div({className: 'share-button-help-sharing'},
-                  (a({href: this.state.link, target: '_blank'}, translate("~SHARE_DIALOG.PREVIEW_SHARING")))
-                ))
-              ))
-            ))
-          :
-            (div({},
-              (div({className: 'share-status'},
-                (translate("~SHARE_DIALOG.SHARE_STATE")), (strong({}, translate("~SHARE_DIALOG.SHARE_STATE_DISABLED")))
-              )),
-              (div({className: 'share-button'},
-                (button({onClick: this.toggleShare}, translate("~SHARE_DIALOG.ENABLE_SHARING"))),
-                (div({className: 'share-button-help-not-sharing'}, translate("~SHARE_DIALOG.ENABLE_SHARING_MESSAGE")))
-              ))
-            ))
-        )),
-        sharing ?
-          (div({},
-            (ul({className: 'sharing-tabs'},
-              (li({className: `sharing-tab${this.state.tabSelected === 'link' ? ' sharing-tab-selected' : ''}`, style: {marginLeft: 10}, onClick: this.selectLinkTab}, translate("~SHARE_DIALOG.LINK_TAB"))),
-              (li({className: `sharing-tab sharing-tab-embed${this.state.tabSelected === 'embed' ? ' sharing-tab-selected' : ''}`, onClick: this.selectEmbedTab}, translate("~SHARE_DIALOG.EMBED_TAB"))),
-              this.props.enableLaraSharing ?
-                (li({className: `sharing-tab sharing-tab-lara${this.state.tabSelected === 'lara' ? ' sharing-tab-selected' : ''}`, onClick: this.selectLaraTab}, "LARA")) : undefined
-            )),
-            (div({className: 'sharing-tab-contents'},
-              (() => { switch (this.state.tabSelected) {
-                case 'embed':
-                  return (div({},
-                    translate("~SHARE_DIALOG.EMBED_MESSAGE"),
-                    document.execCommand || (window as any).clipboardData ?
-                      (a({className: 'copy-link', href: '#', onClick: this.copy}, translate('~SHARE_DIALOG.COPY'))) : undefined,
-                    (div({},
-                      (textarea({value: this.state.embed, readOnly: true}))
-                    ))
-                  ))
-                case 'lara':
-                  return (div({},
-                    translate("~SHARE_DIALOG.LARA_MESSAGE"),
-                    document.execCommand || (window as any).clipboardData ?
-                      (a({className: 'copy-link', href: '#', onClick: this.copy}, translate('~SHARE_DIALOG.COPY'))) : undefined,
-                    (div({},
-                      (input({value: this.getLara(), readOnly: true}))
-                    )),
-                    (div({className: 'lara-settings'},
-                      (div({className: 'codap-server-url'},
-                        this.state.serverUrlLabel,
-                        (div({},
-                          (input({value: this.state.serverUrl, onChange: this.changedServerUrl}))
-                        ))
-                      )),
-                      (div({className: 'fullsceen-scaling'},
-                        (input({type: 'checkbox', checked: this.state.fullscreenScaling, onChange: this.changedFullscreenScaling})),
-                        translate("~SHARE_DIALOG.LARA_FULLSCREEN_BUTTON_AND_SCALING")
-                      )),
-                      (div({},
-                        (input({type: 'checkbox', checked: this.state.graphVisToggles, onChange: this.changedGraphVisToggles})),
-                        translate("~SHARE_DIALOG.LARA_DISPLAY_VISIBILITY_TOGGLES")
-                      ))
-                    ))
-                  ))
-                default:
-                  return (div({},
-                    translate("~SHARE_DIALOG.LINK_MESSAGE"),
-                    document.execCommand || (window as any).clipboardData ?
-                      (a({className: 'copy-link', href: '#', onClick: this.copy}, translate('~SHARE_DIALOG.COPY'))) : undefined,
-                    (div({},
-                      (input({value: this.state.link, readOnly: true}))
-                    )),
-                    (div({className: 'social-icons'},
-                      (SocialIcon({icon: 'facebook', url: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(this.state.link)}`})),
-                      (SocialIcon({icon: 'twitter', url: `https://twitter.com/home?status=${encodeURIComponent(this.state.link)}`})))
-                      // not working with url parameter: (SocialIcon {icon: 'google', url: "https://plus.google.com/share?url=#{encodeURIComponent @state.link}"})
-                    )
-                  ))
-              } })()
-            ))
-          )) : undefined,
+    return (
+      <ModalDialogView title={translate('~DIALOG.SHARED')} close={this.props.close}>
+        <div className='share-dialog'>
+          <div className='share-top-dialog'>
+            {isLoadingShared
+              ? <ShareLoadingView />
+              : <ShareDialogStatusView isSharing={sharing} previewLink={this.state.link}
+                  onToggleShare={this.toggleShare} onUpdateShare={this.updateShare}/>}
+          </div>
 
-        (div({className: 'buttons'},
-          (button({onClick: this.props.close}, translate('~SHARE_DIALOG.CLOSE')))
-        )),
-        SHOW_LONGEVITY_WARNING ? (div({className: 'longevity-warning'}, translate('~SHARE_DIALOG.LONGEVITY_WARNING'))) : undefined
-      ))
-    ))
+          {sharing &&
+            <ShareDialogTabsView
+              tabSelected={this.state.tabSelected}
+              linkUrl={this.state.link}
+              embedUrl={this.state.embed}
+              lara={{
+                enableLaraSharing: this.props.enableLaraSharing,
+                url: this.getLara(),
+                serverUrlLabel: this.state.serverUrlLabel,
+                serverUrl: this.state.serverUrl,
+                fullscreenScaling: this.state.fullscreenScaling,
+                visibilityToggles: this.state.graphVisToggles,
+                onChangeServerUrl: this.changedServerUrl,
+                onChangeFullscreenScaling: this.changedFullscreenScaling,
+                onChangeVisibilityToggles: this.changedGraphVisToggles
+              }}
+              onSelectLinkTab={this.selectLinkTab}
+              onSelectEmbedTab={this.selectEmbedTab}
+              onSelectLaraTab={this.selectLaraTab}
+              onCopyClick={this.copy}
+            />}
+
+          <div className='buttons'>
+            <button onClick={this.props.close}>
+              {translate('~SHARE_DIALOG.CLOSE')}
+            </button>
+          </div>
+          {SHOW_LONGEVITY_WARNING &&
+            <div className='longevity-warning'>
+              {translate('~SHARE_DIALOG.LONGEVITY_WARNING')}
+            </div>}
+        </div>
+      </ModalDialogView>
+    )
   }
-})
+}
