@@ -4,25 +4,18 @@ import _ from 'lodash'
 
 const FILE_EXTENSION_DELIMETER = "."
 
-// TODO: What does a save callback signature really looklike?
 export type ProviderSaveCallback = (err: string | null, statusCode?: number) => void;
 
-// TODO: What does a load callback signature really looklike?
-export type ProviderLoadCallback = (err: string | null, content?: CloudContent, metadata?: CloudMetadata) => void
+export type ProviderOpenCallback = (err: string | null, content?: CloudContent, metadata?: CloudMetadata) => void
+export type ProviderLoadCallback = ProviderOpenCallback
 
-// TODO: What does a list callback signature really looklike?
 export type ProviderListCallback = (err: string | null, list?: CloudMetadata[]) => void
 
-// TODO: What does a rename callback signature really looklike?
 export type ProviderRenameCallback = (err: string | null, metadata?: CloudMetadata) => void;
 
-// TODO: What does a list callback signature really looklike?
 export type ProviderRemoveCallback = (err: string) => void
 
-// TODO: What does a close callback signature really looklike?
 export type ProviderCloseCallback = (err: string) => void
-
-export type ProviderOpenCallback = (err: string | null, content?: CloudContent, metadata?: CloudMetadata) => void
 
 // TODO: When the document is shared, this is the callback signature
 export type ProviderShareCallback = (err: string, data?: string) => void

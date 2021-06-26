@@ -4,8 +4,6 @@
  * decaffeinate suggestions:
  * DS001: Remove Babel/TypeScript constructor workaround
  * DS102: Remove unnecessary code created because of implicit returns
- * DS103: Rewrite code to no longer use __guard__
- * DS206: Consider reworking classes to avoid initClass
  * DS207: Consider shorter variations of null checks
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
  */
@@ -43,6 +41,11 @@ interface LaraProviderUrlParams {
   launchFromLara?: string;
 }
 
+interface LaraProviderLaraParams {
+  url?: string;
+  source?: string;
+}
+
 interface LaraProviderCreateResponse {
   id: string;
   readAccessKey: string;
@@ -63,7 +66,7 @@ class LaraProvider extends ProviderInterface {
   client: CloudFileManagerClient;
   collaboratorUrls: string[];
   docStoreUrl: DocumentStoreUrl;
-  laraParams: any;
+  laraParams: LaraProviderLaraParams;
   openSavedParams: LaraProviderOpenSavedParams;
   options: CFMLaraProviderOptions;
   removableQueryParams: string[];
@@ -148,19 +151,19 @@ class LaraProvider extends ProviderInterface {
   }
 
   can(capability: ECapabilities, metadata: CloudMetadata) {
-    const hasReadOnlyAccess = (__guard__(__guard__(metadata != null ? metadata.providerData : undefined, (x1: any) => x1.accessKeys), (x: any) => x.readOnly) != null) &&
-                        (__guard__(__guard__(metadata != null ? metadata.providerData : undefined, (x3: any) => x3.accessKeys), (x2: any) => x2.readWrite) == null)
+    const hasReadOnlyAccess = (metadata?.providerData?.accessKeys?.readOnly != null) &&
+                              (metadata?.providerData?.accessKeys?.readWrite == null)
     const requiresWriteAccess = ['save', 'resave', 'remove', 'rename'].indexOf(capability) >= 0
     return super.can(capability, metadata) && !(requiresWriteAccess && hasReadOnlyAccess)
   }
 
-  load(metadata: any, callback: any) {
+  load(metadata: CloudMetadata, callback: ProviderLoadCallback) {
     let accessKey
-    const {method, url} = this.docStoreUrl.v2LoadDocument(metadata.providerData != null ? metadata.providerData.recordid : undefined)
+    const {method, url} = this.docStoreUrl.v2LoadDocument(metadata.providerData?.recordid)
 
-    if (__guard__(metadata.providerData != null ? metadata.providerData.accessKeys : undefined, (x: any) => x.readOnly)) {
+    if (metadata.providerData?.accessKeys?.readOnly) {
       accessKey = `RO::${metadata.providerData.accessKeys.readOnly}`
-    } else if (__guard__(metadata.providerData != null ? metadata.providerData.accessKeys : undefined, (x1: any) => x1.readWrite)) {
+    } else if (metadata.providerData?.accessKeys?.readWrite) {
       accessKey = `RW::${metadata.providerData.accessKeys.readWrite}`
     }
 
@@ -186,7 +189,7 @@ class LaraProvider extends ProviderInterface {
         // 'docName' at the top level for CFM-wrapped documents
         // 'name' at the top level for unwrapped documents (e.g. CODAP)
         // 'name' at the top level of 'content' for wrapped CODAP documents
-        metadata.rename(metadata.name || data.docName || data.name || (data.content != null ? data.content.name : undefined))
+        metadata.rename(metadata.name || data.docName || data.name || data.content?.name)
         if (metadata.name) {
           content.addMetadata({docName: metadata.filename})
         }
@@ -195,7 +198,7 @@ class LaraProvider extends ProviderInterface {
       },
 
       error(jqXHR) {
-        return callback(`Unable to load ${metadata.name || (metadata.providerData != null ? metadata.providerData.recordid : undefined) || 'file'}`)
+        return callback(`Unable to load ${metadata.name || metadata.providerData?.recordid || 'file'}`)
       }
     })
   }
@@ -213,13 +216,13 @@ class LaraProvider extends ProviderInterface {
       return
     }
 
-    const params = {}
+    const params: { accessKey?: string, recordname?: string } = {}
     if (!patchResults.shouldPatch && metadata.filename) {
-      (params as any).recordname = metadata.filename
+      params.recordname = metadata.filename
     }
 
-    if (__guard__(__guard__(metadata != null ? metadata.providerData : undefined, (x1: any) => x1.accessKeys), (x: any) => x.readWrite) != null) {
-      (params as any).accessKey = `RW::${metadata.providerData.accessKeys.readWrite}`
+    if (metadata?.providerData?.accessKeys?.readWrite != null) {
+      params.accessKey = `RW::${metadata.providerData.accessKeys.readWrite}`
     }
 
     const {method, url} = patchResults.shouldPatch
@@ -233,7 +236,7 @@ class LaraProvider extends ProviderInterface {
       method,
       // elide all but first two chars of accessKey
       url: url.substr(0, url.indexOf('accessKey') + 16) + '...',
-      params: JSON.stringify({ recordname: (params as any).recordname }),
+      params: JSON.stringify({ recordname: params.recordname }),
       content: patchResults.sendContent.substr(0, 512)
     }
     this.client.log('save', logData)
@@ -280,7 +283,7 @@ class LaraProvider extends ProviderInterface {
   canOpenSaved() { return true }
 
   openSaved(_openSavedParams: any, callback: ProviderOpenCallback) {
-    const metadata: CloudMetadata = new CloudMetadata({
+    const metadata = new CloudMetadata({
       type: CloudMetadata.File,
       provider: this
     })
@@ -569,7 +572,7 @@ class LaraProvider extends ProviderInterface {
     // We have a run state URL and a source document. We must copy the source
     // document and update the run state before opening the copied document.
     //
-    if (openSavedParams && openSavedParams.url) {
+    if (openSavedParams?.url) {
       // (1) request the interactive run state
       $.ajax({
         type: 'GET',
@@ -610,7 +613,3 @@ class LaraProvider extends ProviderInterface {
 }
 
 export default LaraProvider
-
-function __guard__(value: any, transform: any) {
-  return (typeof value !== 'undefined' && value !== null) ? transform(value) : undefined
-}
