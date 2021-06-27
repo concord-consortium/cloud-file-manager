@@ -40,7 +40,7 @@ interface ICopyAnchorLinkProps {
 }
 const CopyAnchorLink = ({ onClick }: ICopyAnchorLinkProps) => {
   return document.execCommand || (window as any).clipboardData
-          ? <a className='copy-link' href='#' onClick={onClick}>
+          ? <a className='copy-link' href='#' onClick={onClick} data-testid='copy-anchor-link'>
               {translate('~SHARE_DIALOG.COPY')}
             </a>
           : null
@@ -52,7 +52,7 @@ interface IEmbedTabProps {
 }
 export const EmbedTabContents: React.FC<IEmbedTabProps> = ({ url, onCopyClick }) => {
   return (
-    <div>
+    <div data-testid='embed-tab-contents'>
       {translate("~SHARE_DIALOG.EMBED_MESSAGE")}
       <CopyAnchorLink onClick={onCopyClick} />
       <div>
@@ -62,7 +62,7 @@ export const EmbedTabContents: React.FC<IEmbedTabProps> = ({ url, onCopyClick })
   )
 }
 
-interface ILaraTabProps {
+export interface ILaraTabProps {
   serverUrlLabel: string;
   serverUrl: string;
   fullscreenScaling: boolean;
@@ -78,9 +78,9 @@ export const LaraTabContents: React.FC<ILaraTabProps> = ({
         onCopyClick, onChangeServerUrl, onChangeFullscreenScaling, onChangeVisibilityToggles
 }) => {
   return (
-    <div>
+    <div data-testid='lara-tab-contents'>
       {translate("~SHARE_DIALOG.LARA_MESSAGE")}
-      <CopyAnchorLink onClick={onCopyClick} />
+      <CopyAnchorLink onClick={onCopyClick}/>
       <div>
         <input value={url} readOnly={true} />
       </div>
@@ -88,15 +88,17 @@ export const LaraTabContents: React.FC<ILaraTabProps> = ({
         <div className='codap-server-url'>
           {serverUrlLabel}
           <div>
-            <input value={serverUrl} onChange={onChangeServerUrl} />
+            <input value={serverUrl} data-testid='codap-server-url-input' onChange={onChangeServerUrl} />
           </div>
         </div>
         <div className='fullscreen-scaling'>
-          <input type='checkbox' checked={fullscreenScaling} onChange={onChangeFullscreenScaling} />
+          <input type='checkbox' data-testid='fullscreen-scaling-checkbox'
+            checked={fullscreenScaling} onChange={onChangeFullscreenScaling} />
           {translate("~SHARE_DIALOG.LARA_FULLSCREEN_BUTTON_AND_SCALING")}
         </div>
         <div>
-          <input type='checkbox' checked={visibilityToggles} onChange={onChangeVisibilityToggles} />
+          <input type='checkbox' data-testid='visibility-toggles-checkbox'
+            checked={visibilityToggles} onChange={onChangeVisibilityToggles} />
           {translate("~SHARE_DIALOG.LARA_DISPLAY_VISIBILITY_TOGGLES")}
         </div>
       </div>
@@ -114,7 +116,7 @@ export const LinkTabContents: React.FC<ILinkTabProps> = ({ url, onCopyClick }) =
   const twitterUrl = `https://twitter.com/home?status=${encodedUrl}`
   // not working: googleUrl = `https://plus.google.com/share?url=${url}`
   return (
-    <div>
+    <div data-testid='link-tab-contents'>
       {translate("~SHARE_DIALOG.LINK_MESSAGE")}
       <CopyAnchorLink onClick={onCopyClick} />
       <div>
@@ -129,7 +131,6 @@ export const LinkTabContents: React.FC<ILinkTabProps> = ({ url, onCopyClick }) =
 }
 
 interface IShareDialogLaraTabProps {
-  enableLaraSharing?: boolean;
   url: string;
   serverUrlLabel: string;
   serverUrl: string;
@@ -143,31 +144,31 @@ interface IShareDialogTabsProps {
   tabSelected: 'embed' | 'lara' | 'link';
   linkUrl: string;
   embedUrl: string;
-  lara: IShareDialogLaraTabProps;
+  enableLaraSharing?: boolean;
+  lara?: IShareDialogLaraTabProps;
   onSelectLinkTab: () => void;
   onSelectEmbedTab: () => void;
-  onSelectLaraTab: () => void;
+  onSelectLaraTab?: () => void;
   onCopyClick: (e: React.MouseEvent) => void;
 }
 export const ShareDialogTabsView: React.FC<IShareDialogTabsProps> = ({
-              tabSelected, embedUrl, linkUrl, lara,
+              tabSelected, embedUrl, linkUrl, enableLaraSharing, lara,
               onSelectLinkTab, onSelectEmbedTab, onSelectLaraTab, onCopyClick
 }) => {
-  const { enableLaraSharing, url: laraUrl, ...laraProps } = lara
   return (
-    <div>
+    <div data-testid='share-dialog-tabs-view'>
       <ul className='sharing-tabs'>
         <li className={classNames('sharing-tab', 'sharing-tab-link', { 'sharing-tab-selected': tabSelected === 'link' })}
-            style={{ marginLeft: 10 }} onClick={onSelectLinkTab} >
+            style={{ marginLeft: 10 }} onClick={onSelectLinkTab} data-testid='sharing-tab-link'>
           {translate("~SHARE_DIALOG.LINK_TAB")}
         </li>
         <li className={classNames('sharing-tab', 'sharing-tab-embed', { 'sharing-tab-selected': tabSelected === 'embed' })}
-            onClick={onSelectEmbedTab} >
+            onClick={onSelectEmbedTab} data-testid='sharing-tab-embed'>
           {translate("~SHARE_DIALOG.EMBED_TAB")}
         </li>
         {enableLaraSharing &&
           <li className={classNames('sharing-tab', 'sharing-tab-lara', { 'sharing-tab-selected': tabSelected === 'lara' })}
-              onClick={onSelectLaraTab} >
+              onClick={onSelectLaraTab} data-testid='sharing-tab-lara'>
             LARA
           </li>}
       </ul>
@@ -178,8 +179,10 @@ export const ShareDialogTabsView: React.FC<IShareDialogTabsProps> = ({
               return LinkTabContents({ url: linkUrl, onCopyClick })
             case 'embed':
               return EmbedTabContents({ url: embedUrl, onCopyClick })
-            case 'lara':
+            case 'lara': {
+              const { url: laraUrl, ...laraProps } = lara
               return LaraTabContents({ url: laraUrl, onCopyClick, ...laraProps })
+            }
             default:
               return null
           }

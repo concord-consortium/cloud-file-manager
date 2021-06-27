@@ -10,24 +10,24 @@ interface IProps {
 export const ShareDialogStatusView: React.FC<IProps> = ({ isSharing, previewLink, onToggleShare, onUpdateShare }) => {
   return (
     <div>
-      <div className='share-status'>
+      <div className='share-status' data-testid='share-status'>
         {translate("~SHARE_DIALOG.SHARE_STATE")}
         <strong>
           {translate(isSharing ? "~SHARE_DIALOG.SHARE_STATE_ENABLED" : "~SHARE_DIALOG.SHARE_STATE_DISABLED")}
           {isSharing &&
-            <a href='#' onClick={onToggleShare}>
+            <a href='#' onClick={onToggleShare} data-testid='toggle-anchor'>
               {translate("~SHARE_DIALOG.STOP_SHARING")}
             </a>
           }
         </strong>
       </div>
       <div className='share-button'>
-        <button onClick={isSharing ? onUpdateShare : onToggleShare}>
+        <button onClick={isSharing ? onUpdateShare : onToggleShare} data-testid='share-button-element'>
           {translate(isSharing ? "~SHARE_DIALOG.UPDATE_SHARING" : "~SHARE_DIALOG.ENABLE_SHARING")}
         </button>
         <div className={isSharing ? 'share-button-help-sharing' : 'share-button-help-not-sharing'}>
           {isSharing
-            ? <a href={previewLink} target="_blank" rel="noreferrer">
+            ? <a href={previewLink} target="_blank" rel="noreferrer" data-testid='preview-anchor'>
                 {translate("~SHARE_DIALOG.PREVIEW_SHARING")}
               </a>
             : translate("~SHARE_DIALOG.ENABLE_SHARING_MESSAGE")}

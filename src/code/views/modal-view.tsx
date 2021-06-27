@@ -1,4 +1,5 @@
-import React from "react"
+import $ from 'jquery'
+import React from 'react'
 
 interface IProps {
   zIndex: number;
@@ -24,7 +25,7 @@ export default class ModalView extends React.Component<IProps, IState> {
     }
   }
 
-  closeOnEscape(e: any) {
+  closeOnEscape = (e: any) => {
     if (e.keyCode === 27) {
       this.props.close?.()
     }
@@ -54,7 +55,7 @@ export default class ModalView extends React.Component<IProps, IState> {
     }
   }
 
-  updateStyles() {
+  updateStyles = () => {
     const dimensions = this.getDimensions()
     this.setState({
       backgroundStyle: this.getBackgroundStyle(dimensions),

@@ -6,7 +6,6 @@ import ModalDialogView from './modal-dialog-view'
 import {ShareLoadingView} from './share-loading-view'
 import { ShareDialogStatusView } from './share-dialog-status-view'
 import { ShareDialogTabsView } from './share-dialog-tabs-view'
-import { CloudFileManagerClient } from '../client'
 import translate from '../utils/translate'
 
 const CFM_PRODUCTION_URL = "https://cloud-file-manager.concord.org"
@@ -18,9 +17,15 @@ interface IShareDialogPropsSettings {
   serverUrlLabel?: string;
 }
 interface IShareDialogProps {
-  client: CloudFileManagerClient;
+  currentBaseUrl: string;
+  isShared: boolean;
+  sharedDocumentId?: string;  // to support legacy shares
+  sharedDocumentUrl?: string;
   settings?: IShareDialogPropsSettings;
   enableLaraSharing?: boolean;
+  onAlert: (message: string, title?: string) => void;
+  onToggleShare: (callback: (err: string | null, sharedContentId?: string) => void) => void;
+  onUpdateShare: () => void;
   close: () => void;
 }
 interface IShareDialogState {
@@ -44,8 +49,8 @@ export default class ShareDialogView extends React.Component<IShareDialogProps, 
     this.state = {
       link: this.getShareLink(),
       embed: this.getEmbed(),
-      serverUrl: this.props.settings.serverUrl || CODAP_PRODUCTION_URL,
-      serverUrlLabel: this.props.settings.serverUrlLabel || translate("~SHARE_DIALOG.LARA_CODAP_URL"),
+      serverUrl: this.props.settings?.serverUrl || CODAP_PRODUCTION_URL,
+      serverUrlLabel: this.props.settings?.serverUrlLabel || translate("~SHARE_DIALOG.LARA_CODAP_URL"),
       fullscreenScaling: true,
       graphVisToggles: false,
       tabSelected: 'link',
@@ -53,19 +58,10 @@ export default class ShareDialogView extends React.Component<IShareDialogProps, 
     }
   }
 
-  // To support legacy shares:
-  getSharedDocumentId() {
-    const { client } = this.props
-    return client.state?.currentContent?.get("sharedDocumentId")
-  }
-
   // Get a documentID, or going forward, always return a URL to a document
   getShareUrl() {
-    const { client } = this.props
-    const shared = client.isShared()
-    const sharedDocumentUrl = client.state?.currentContent?.get("sharedDocumentUrl")
-    const sharedDocumentId = this.getSharedDocumentId()
-    if (shared) {
+    const { isShared, sharedDocumentId, sharedDocumentUrl } = this.props
+    if (isShared) {
       if(sharedDocumentUrl) {
         return sharedDocumentUrl
       }
@@ -82,7 +78,7 @@ export default class ShareDialogView extends React.Component<IShareDialogProps, 
   getShareLink() {
     const shareRef = this.getShareUrl()
     if (shareRef) {
-      return `${this.props.client.getCurrentUrl()}#shared=${encodeURIComponent(shareRef)}`
+      return `${this.props.currentBaseUrl}#shared=${encodeURIComponent(shareRef)}`
     }
     return null
   }
@@ -176,13 +172,13 @@ export default class ShareDialogView extends React.Component<IShareDialogProps, 
       if (mark) {
         document.body.removeChild(mark)
       }
-      this.props.client.alert(translate(copied ? "~SHARE_DIALOG.COPY_SUCCESS" : "~SHARE_DIALOG.COPY_ERROR"),
-                              translate("~SHARE_DIALOG.COPY_TITLE"))
+      this.props.onAlert(translate(copied ? "~SHARE_DIALOG.COPY_SUCCESS" : "~SHARE_DIALOG.COPY_ERROR"),
+                          translate("~SHARE_DIALOG.COPY_TITLE"))
     }
   }
 
   updateShare = () => {
-    return this.props.client.shareUpdate()
+    return this.props.onUpdateShare()
   }
 
   toggleShare = (e: React.MouseEvent) => {
@@ -190,7 +186,7 @@ export default class ShareDialogView extends React.Component<IShareDialogProps, 
     this.setState({
       isLoadingShared: true
     })
-    return this.props.client.toggleShare(() => {
+    return this.props.onToggleShare(() => {
       return this.setState({
         link: this.getShareLink(),
         embed: this.getEmbed(),
@@ -224,13 +220,12 @@ export default class ShareDialogView extends React.Component<IShareDialogProps, 
   }
 
   render() {
-
     const { isLoadingShared, link } = this.state
     const sharing = link != null
 
     return (
       <ModalDialogView title={translate('~DIALOG.SHARED')} close={this.props.close}>
-        <div className='share-dialog'>
+        <div className='share-dialog' data-testid='share-dialog'>
           <div className='share-top-dialog'>
             {isLoadingShared
               ? <ShareLoadingView />
@@ -243,8 +238,8 @@ export default class ShareDialogView extends React.Component<IShareDialogProps, 
               tabSelected={this.state.tabSelected}
               linkUrl={this.state.link}
               embedUrl={this.state.embed}
+              enableLaraSharing={this.props.enableLaraSharing}
               lara={{
-                enableLaraSharing: this.props.enableLaraSharing,
                 url: this.getLara(),
                 serverUrlLabel: this.state.serverUrlLabel,
                 serverUrl: this.state.serverUrl,

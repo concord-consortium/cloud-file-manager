@@ -29,4 +29,9 @@ describe('getQueryParam', () => {
     setQueryParams("foo")
     expect(getQueryParam("foo")).toBeNull()
   })
+
+  it('should parse params with values', () => {
+    setQueryParams("foo=bar")
+    expect(getQueryParam("foo")).toBe('bar')
+  })
 })

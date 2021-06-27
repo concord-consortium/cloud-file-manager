@@ -15,7 +15,7 @@ import menuBarView from './menu-bar-view'
 import providerTabbedDialogView from './provider-tabbed-dialog-view'
 import downloadDialogView from './download-dialog-view'
 import renameDialogView from './rename-dialog-view'
-import shareDialogView from './share-dialog-view'
+import ShareDialogView from './share-dialog-view'
 import blockingModalView from './blocking-modal-view'
 import alterDialogView from './alert-dialog-view'
 import confirmDialogView from './confirm-dialog-view'
@@ -25,7 +25,6 @@ const MenuBar = createReactFactory(menuBarView)
 const ProviderTabbedDialog = createReactFactory(providerTabbedDialogView)
 const DownloadDialog = createReactFactory(downloadDialogView)
 const RenameDialog = createReactFactory(renameDialogView)
-const ShareDialog = createReactFactory(shareDialogView)
 const BlockingModal = createReactFactory(blockingModalView)
 const AlertDialog = createReactFactory(alterDialogView)
 const ConfirmDialog = createReactFactory(confirmDialogView)
@@ -262,7 +261,18 @@ class AppView extends React.Component<IAppViewProps, IAppViewState> {
       } else if (this.state.importDialog) {
         return (ImportTabbedDialog({client: this.props.client, dialog: this.state.importDialog, close: this.closeDialogs}))
       } else if (this.state.shareDialog) {
-        return (ShareDialog({client: this.props.client, enableLaraSharing: this.props.enableLaraSharing, close: this.closeDialogs, settings: this.props.ui?.shareDialog || {}}))
+        const { client, enableLaraSharing, ui } = this.props
+        return (
+          <ShareDialogView currentBaseUrl={client.getCurrentUrl()} isShared={client.isShared()}
+            sharedDocumentId={client.state?.currentContent?.get('sharedDocumentId')}
+            sharedDocumentUrl={client.state?.currentContent?.get('sharedDocumentUrl')}
+            settings={ui?.shareDialog || {}}
+            enableLaraSharing={enableLaraSharing}
+            onAlert={(message: string, title?: string) => client.alert(message, title)}
+            onToggleShare={(callback: (err: string | null, sharedContentId?: string) => void) => client.toggleShare(callback)}
+            onUpdateShare={() => client.shareUpdate()}
+            close={this.closeDialogs} />
+        )
       }
     })(),
 
