@@ -386,6 +386,8 @@ abstract class ProviderInterface implements IProviderInterfaceOpts {
 
   static Available() { return true }
 
+  static hasValidOptions(options: any) { return true }
+
   // TODO: do we need metadata, saw two different sigs in code
   // see saveAsExport
   can(capability: ECapabilities, metadata?: CloudMetadata) {

@@ -56,6 +56,9 @@ describe('InteractiveApiProvider', () => {
     expect(mockApi.getInteractiveState).toHaveBeenCalledTimes(0)
     expect(mockApi.setInteractiveState).toHaveBeenCalledTimes(0)
 
+    // should "inherit" static hasValidOptions() method
+    expect(InteractiveApiProvider.hasValidOptions({})).toBe(true)
+
     setQueryParams("")
     expect(provider.handleUrlParams()).toBeFalsy()
     setQueryParams("interactiveApi")

@@ -175,10 +175,10 @@ class CloudFileManagerClient {
         if (allProviders[providerName]) {
           Provider = allProviders[providerName]
           // don't add providers that require configuration if no (or invalid) configuration provided
-          if (!Provider.hasValidOptions || Provider.hasValidOptions(providerOptions)) {
+          if (Provider.hasValidOptions(providerOptions)) {
             const provider = new Provider(providerOptions, this)
             this.providers[providerName] = provider
-            shareProvider = this._getShareProvider(provider)
+            shareProvider = this._getShareProvider()
             // also add to here in providers list so we can look it up when parsing url hash
             if (provider.urlDisplayName) {
               this.providers[provider.urlDisplayName] = provider
@@ -225,14 +225,7 @@ class CloudFileManagerClient {
     return this._startPostMessageListener()
   }
 
-  _getShareProvider(ignoredParentProvider: string) {
-    // NP 2020-05-11:
-    // Previous Code to document behavior before S3ShareProvider:
-    // if we're using the DocumentStoreProvider, instantiate the ShareProvider
-    // if (ignoredParentProvider === DocumentStoreProvider.Name) {
-    //   shareProvider = new DocumentStoreShareProvider(this, ignoredParentProvider)
-    // }
-    // NB: The DocumentStoreShareProvider always used a DocumentStoreProvider ....
+  _getShareProvider() {
     return new S3ShareProvider(this, new S3Provider(this))
   }
 
