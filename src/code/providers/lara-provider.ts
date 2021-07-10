@@ -139,7 +139,7 @@ class LaraProvider extends ProviderInterface {
   }
 
   extractRawDataFromRunState(runState: any) {
-    let rawData = (runState != null ? runState.raw_data : undefined) || {}
+    let rawData = runState?.raw_data || {}
     if (typeof rawData === "string") {
       try {
         rawData = JSON.parse(rawData)
@@ -591,7 +591,7 @@ class LaraProvider extends ProviderInterface {
         if (data?.run_remote_endpoint != null) { laraData.run_remote_endpoint = data.run_remote_endpoint }
         this.logLaraData(laraData)
         return processInitialRunState(openSavedParams.url, openSavedParams.source, openSavedParams.readOnlyKey, data)
-    }).fail((jqXHR, status, error) => callback("Could not open the specified document because an error occurred [getState]"))
+      }).fail((jqXHR, status, error) => callback("Could not open the specified document because an error occurred [getState]"))
 
       return
     }

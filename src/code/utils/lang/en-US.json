@@ -83,6 +83,7 @@
   "~SHARE_DIALOG.LARA_CODAP_URL": "CODAP Server URL:",
   "~SHARE_DIALOG.LARA_FULLSCREEN_BUTTON_AND_SCALING": "Fullscreen button and scaling",
   "~SHARE_DIALOG.LARA_DISPLAY_VISIBILITY_TOGGLES": "Display data visibility toggles on graphs",
+  "~SHARE_DIALOG.INTERACTIVE_API_MESSAGE": "Use this link when creating an activity for the Activity Player",
   "~SHARE_DIALOG.PLEASE_WAIT": "Please wait while we generate a shared link …",
 
   "~SHARE_UPDATE.TITLE": "Shared View Updated",
@@ -146,4 +147,3 @@
   "~CONCORD_CLOUD_DEPRECATION.SHUT_DOWN_MESSAGE": "The Concord Cloud has been shut down!",
   "~CONCORD_CLOUD_DEPRECATION.PLEASE_SAVE_ELSEWHERE": "Please save your documents to another location."
 }
-

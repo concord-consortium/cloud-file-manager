@@ -5,7 +5,7 @@ const SHOW_LONGEVITY_WARNING = false
 import ModalDialogView from './modal-dialog-view'
 import {ShareLoadingView} from './share-loading-view'
 import { ShareDialogStatusView } from './share-dialog-status-view'
-import { ShareDialogTabsView } from './share-dialog-tabs-view'
+import { ShareDialogTab, ShareDialogTabsView } from './share-dialog-tabs-view'
 import translate from '../utils/translate'
 
 const CFM_PRODUCTION_URL = "https://cloud-file-manager.concord.org"
@@ -23,6 +23,7 @@ interface IShareDialogProps {
   sharedDocumentUrl?: string;
   settings?: IShareDialogPropsSettings;
   enableLaraSharing?: boolean;
+  enableInteractiveApiSharing?: boolean;
   onAlert: (message: string, title?: string) => void;
   onToggleShare: (callback: (err: string | null, sharedContentId?: string) => void) => void;
   onUpdateShare: () => void;
@@ -31,11 +32,13 @@ interface IShareDialogProps {
 interface IShareDialogState {
   link: string | null;
   embed: string | null;
-  serverUrl: string;
-  serverUrlLabel: string;
+  laraServerUrl: string;
+  laraServerUrlLabel: string;
+  interactiveApiServerUrl: string;
+  interactiveApiServerUrlLabel: string;
   fullscreenScaling: boolean;
   graphVisToggles: boolean;
-  tabSelected: 'embed' | 'link' | 'lara';
+  tabSelected: ShareDialogTab;
   isLoadingShared: boolean;
 }
 
@@ -49,8 +52,10 @@ export default class ShareDialogView extends React.Component<IShareDialogProps, 
     this.state = {
       link: this.getShareLink(),
       embed: this.getEmbed(),
-      serverUrl: this.props.settings?.serverUrl || CODAP_PRODUCTION_URL,
-      serverUrlLabel: this.props.settings?.serverUrlLabel || translate("~SHARE_DIALOG.LARA_CODAP_URL"),
+      laraServerUrl: this.props.settings?.serverUrl || CODAP_PRODUCTION_URL,
+      laraServerUrlLabel: this.props.settings?.serverUrlLabel || translate("~SHARE_DIALOG.LARA_CODAP_URL"),
+      interactiveApiServerUrl: this.props.currentBaseUrl,
+      interactiveApiServerUrlLabel: 'Server URL',
       fullscreenScaling: true,
       graphVisToggles: false,
       tabSelected: 'link',
@@ -91,6 +96,13 @@ export default class ShareDialogView extends React.Component<IShareDialogProps, 
     }
   }
 
+  getEncodedServerUrl(serverUrl: string) {
+    // graphVisToggles is a parameter handled by CODAP, so it needs to be added to its URL.
+    const delimiter = serverUrl.includes('?') ? '&' : '?'
+    const togglesParam = this.state.graphVisToggles ? 'app=is' : ''
+    return encodeURIComponent(`${serverUrl}${delimiter}${togglesParam}`)
+  }
+
   getLara() {
     // Update the LARA share link as per this story:
     // https://www.pivotaltracker.com/story/show/172302663
@@ -107,15 +119,20 @@ export default class ShareDialogView extends React.Component<IShareDialogProps, 
     //  2: Get the URL for the autoLaunch page (hosted here ...)
     //  3: Construct a URL to <AutolaunchPage
     const documentId = encodeURIComponent(this.getShareUrl())
-    const graphVisToggles = this.state.graphVisToggles ? '?app=is' : ''
-    // graphVisToggles is a parameter handled by CODAP, so it needs to be added to its URL.
-    const server = encodeURIComponent(`${this.state.serverUrl}${graphVisToggles}`)
+    const server = this.getEncodedServerUrl(this.state.laraServerUrl)
     // Other params are handled by document server itself:
     const fullscreenScaling = this.state.fullscreenScaling ? '&scaling' : ''
 
     return `${CFM_PRODUCTION_AUTOLAUNCH_URL}?documentId=${documentId}&server=${server}${fullscreenScaling}`
   }
   // TODO: Consider using queryparams to make URL construction less janky⬆
+
+  getInteractiveApiLink() {
+    const documentId = encodeURIComponent(this.getShareUrl())
+    const separator = this.state.interactiveApiServerUrl.includes('?') ? '&' : '?'
+    const togglesParam = this.state.graphVisToggles ? 'app=is&' : ''
+    return `${this.state.interactiveApiServerUrl}${separator}${togglesParam}interactiveApi&documentId=${documentId}`
+  }
 
   // adapted from https://github.com/sudodoki/copy-to-clipboard/blob/master/index.js
   copy = (e: any) => {
@@ -126,6 +143,7 @@ export default class ShareDialogView extends React.Component<IShareDialogProps, 
       case 'embed': return this.getEmbed()
       case 'link': return this.getShareLink()
       case 'lara': return this.getLara()
+      case 'api': return this.getInteractiveApiLink()
     } })()
     try {
       mark = document.createElement('mark')
@@ -195,20 +213,16 @@ export default class ShareDialogView extends React.Component<IShareDialogProps, 
     })
   }
 
-  selectLinkTab = () => {
-    return this.setState({tabSelected: 'link'})
+  selectShareTab = (tab: ShareDialogTab) => {
+    this.setState({ tabSelected: tab })
   }
 
-  selectEmbedTab = () => {
-    return this.setState({tabSelected: 'embed'})
+  changedLaraServerUrl = (event: React.ChangeEvent<HTMLInputElement>) => {
+    return this.setState({laraServerUrl: event.target.value})
   }
 
-  selectLaraTab = () => {
-    return this.setState({tabSelected: 'lara'})
-  }
-
-  changedServerUrl = (event: React.ChangeEvent<HTMLInputElement>) => {
-    return this.setState({serverUrl: event.target.value})
+  changedInteractiveApiServerUrl = (event: React.ChangeEvent<HTMLInputElement>) => {
+    return this.setState({interactiveApiServerUrl: event.target.value})
   }
 
   changedFullscreenScaling = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -220,9 +234,11 @@ export default class ShareDialogView extends React.Component<IShareDialogProps, 
   }
 
   render() {
+    const { isShared, enableInteractiveApiSharing } = this.props
     const { isLoadingShared, link } = this.state
-    const sharing = link != null
-
+    const sharing = enableInteractiveApiSharing
+                      ? isShared
+                      : link != null
     return (
       <ModalDialogView title={translate('~DIALOG.SHARED')} close={this.props.close}>
         <div className='share-dialog' data-testid='share-dialog'>
@@ -238,20 +254,27 @@ export default class ShareDialogView extends React.Component<IShareDialogProps, 
               tabSelected={this.state.tabSelected}
               linkUrl={this.state.link}
               embedUrl={this.state.embed}
-              enableLaraSharing={this.props.enableLaraSharing}
-              lara={{
-                url: this.getLara(),
-                serverUrlLabel: this.state.serverUrlLabel,
-                serverUrl: this.state.serverUrl,
-                fullscreenScaling: this.state.fullscreenScaling,
-                visibilityToggles: this.state.graphVisToggles,
-                onChangeServerUrl: this.changedServerUrl,
-                onChangeFullscreenScaling: this.changedFullscreenScaling,
-                onChangeVisibilityToggles: this.changedGraphVisToggles
-              }}
-              onSelectLinkTab={this.selectLinkTab}
-              onSelectEmbedTab={this.selectEmbedTab}
-              onSelectLaraTab={this.selectLaraTab}
+              lara={this.props.enableLaraSharing
+                ? {
+                    linkUrl: this.getLara(),
+                    serverUrlLabel: this.state.laraServerUrlLabel,
+                    serverUrl: this.state.laraServerUrl,
+                    onChangeServerUrl: this.changedLaraServerUrl
+                  }
+                : undefined}
+              interactiveApi={this.props.enableInteractiveApiSharing
+                ? {
+                    linkUrl: this.getInteractiveApiLink(),
+                    serverUrlLabel: this.state.interactiveApiServerUrlLabel,
+                    serverUrl: this.state.interactiveApiServerUrl,
+                    onChangeServerUrl: this.changedInteractiveApiServerUrl
+                  }
+                : undefined}
+              fullscreenScaling={this.state.fullscreenScaling}
+              visibilityToggles={this.state.graphVisToggles}
+              onChangeFullscreenScaling={this.changedFullscreenScaling}
+              onChangeVisibilityToggles={this.changedGraphVisToggles}
+              onSelectTab={this.selectShareTab}
               onCopyClick={this.copy}
             />}
 

@@ -56,47 +56,51 @@ export const EmbedTabContents: React.FC<IEmbedTabProps> = ({ url, onCopyClick })
       {translate("~SHARE_DIALOG.EMBED_MESSAGE")}
       <CopyAnchorLink onClick={onCopyClick} />
       <div>
-        <textarea value={url} readOnly={true} />
+        <textarea value={url || ""} readOnly={true} />
       </div>
     </div>
   )
 }
 
-export interface ILaraTabProps {
+export interface ILaraApiTabProps {
+  mode: 'lara' | 'api';
+  linkUrl: string;
   serverUrlLabel: string;
   serverUrl: string;
-  fullscreenScaling: boolean;
-  visibilityToggles: boolean;
-  url: string;
+  disableScaling?: boolean;
+  fullscreenScaling?: boolean;
+  visibilityToggles?: boolean;
   onCopyClick: (e: React.MouseEvent) => void;
   onChangeServerUrl: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  onChangeFullscreenScaling: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  onChangeVisibilityToggles: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onChangeFullscreenScaling?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onChangeVisibilityToggles?: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }
-export const LaraTabContents: React.FC<ILaraTabProps> = ({
-        serverUrlLabel, serverUrl, fullscreenScaling, visibilityToggles, url,
+export const LaraApiTabContents: React.FC<ILaraApiTabProps> = ({
+        mode, linkUrl, serverUrlLabel, serverUrl, disableScaling, fullscreenScaling, visibilityToggles,
         onCopyClick, onChangeServerUrl, onChangeFullscreenScaling, onChangeVisibilityToggles
 }) => {
   return (
-    <div data-testid='lara-tab-contents'>
-      {translate("~SHARE_DIALOG.LARA_MESSAGE")}
+    <div className={mode} data-testid='lara-api-tab-contents'>
+      {translate(mode === 'lara' ? '~SHARE_DIALOG.LARA_MESSAGE' : '~SHARE_DIALOG.INTERACTIVE_API_MESSAGE')}
       <CopyAnchorLink onClick={onCopyClick}/>
       <div>
-        <input value={url} readOnly={true} />
+        <input value={linkUrl} readOnly={true} />
       </div>
-      <div className='lara-settings'>
+      <div className='lara-api-settings'>
         <div className='codap-server-url'>
           {serverUrlLabel}
           <div>
-            <input value={serverUrl} data-testid='codap-server-url-input' onChange={onChangeServerUrl} />
+            <input value={serverUrl || ""} data-testid='server-url-input' onChange={onChangeServerUrl} />
           </div>
         </div>
         <div className='fullscreen-scaling'>
-          <input type='checkbox' data-testid='fullscreen-scaling-checkbox'
+          <input type='checkbox' data-testid='fullscreen-scaling-checkbox' disabled={disableScaling}
             checked={fullscreenScaling} onChange={onChangeFullscreenScaling} />
-          {translate("~SHARE_DIALOG.LARA_FULLSCREEN_BUTTON_AND_SCALING")}
+          <span className={disableScaling ? 'disabled' : ''}>
+            {translate("~SHARE_DIALOG.LARA_FULLSCREEN_BUTTON_AND_SCALING")}
+          </span>
         </div>
-        <div>
+        <div className='visibility-toggles'>
           <input type='checkbox' data-testid='visibility-toggles-checkbox'
             checked={visibilityToggles} onChange={onChangeVisibilityToggles} />
           {translate("~SHARE_DIALOG.LARA_DISPLAY_VISIBILITY_TOGGLES")}
@@ -120,7 +124,7 @@ export const LinkTabContents: React.FC<ILinkTabProps> = ({ url, onCopyClick }) =
       {translate("~SHARE_DIALOG.LINK_MESSAGE")}
       <CopyAnchorLink onClick={onCopyClick} />
       <div>
-        <input value={url} readOnly={true} />
+        <input value={url || ""} readOnly={true} />
       </div>
       <div className='social-icons'>
         <SocialIcon icon='facebook' url={facebookUrl} />
@@ -130,58 +134,69 @@ export const LinkTabContents: React.FC<ILinkTabProps> = ({ url, onCopyClick }) =
   )
 }
 
-interface IShareDialogLaraTabProps {
-  url: string;
+export type ShareDialogTab = 'api' | 'embed' | 'lara' | 'link'
+export interface IShareDialogLaraApiTabProps {
+  linkUrl: string;
   serverUrlLabel: string;
   serverUrl: string;
-  fullscreenScaling: boolean;
-  visibilityToggles: boolean;
   onChangeServerUrl: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  onChangeFullscreenScaling: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  onChangeVisibilityToggles: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }
 interface IShareDialogTabsProps {
-  tabSelected: 'embed' | 'lara' | 'link';
+  tabSelected: ShareDialogTab;
   linkUrl: string;
   embedUrl: string;
-  enableLaraSharing?: boolean;
-  lara?: IShareDialogLaraTabProps;
-  onSelectLinkTab: () => void;
-  onSelectEmbedTab: () => void;
-  onSelectLaraTab?: () => void;
+  lara?: IShareDialogLaraApiTabProps;
+  interactiveApi?: IShareDialogLaraApiTabProps;
+  fullscreenScaling?: boolean;
+  visibilityToggles?: boolean;
+  onChangeFullscreenScaling?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onChangeVisibilityToggles?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onSelectTab: (tab: ShareDialogTab) => void;
   onCopyClick: (e: React.MouseEvent) => void;
 }
 export const ShareDialogTabsView: React.FC<IShareDialogTabsProps> = ({
-              tabSelected, embedUrl, linkUrl, enableLaraSharing, lara,
-              onSelectLinkTab, onSelectEmbedTab, onSelectLaraTab, onCopyClick
+              tabSelected, embedUrl, linkUrl, lara, interactiveApi, onSelectTab, onCopyClick, ...others
 }) => {
   return (
     <div data-testid='share-dialog-tabs-view'>
       <ul className='sharing-tabs'>
         <li className={classNames('sharing-tab', 'sharing-tab-link', { 'sharing-tab-selected': tabSelected === 'link' })}
-            style={{ marginLeft: 10 }} onClick={onSelectLinkTab} data-testid='sharing-tab-link'>
+            style={{ marginLeft: 10 }} onClick={() => onSelectTab('link')} data-testid='sharing-tab-link'>
           {translate("~SHARE_DIALOG.LINK_TAB")}
         </li>
         <li className={classNames('sharing-tab', 'sharing-tab-embed', { 'sharing-tab-selected': tabSelected === 'embed' })}
-            onClick={onSelectEmbedTab} data-testid='sharing-tab-embed'>
+            onClick={() => onSelectTab('embed')} data-testid='sharing-tab-embed'>
           {translate("~SHARE_DIALOG.EMBED_TAB")}
         </li>
-        {enableLaraSharing &&
+        {lara &&
           <li className={classNames('sharing-tab', 'sharing-tab-lara', { 'sharing-tab-selected': tabSelected === 'lara' })}
-              onClick={onSelectLaraTab} data-testid='sharing-tab-lara'>
+              onClick={() => onSelectTab('lara')} data-testid='sharing-tab-lara'>
             LARA
+          </li>}
+        {interactiveApi &&
+          <li className={classNames('sharing-tab', 'sharing-tab-api', { 'sharing-tab-selected': tabSelected === 'api' })}
+              onClick={() => onSelectTab('api')} data-testid='sharing-tab-api'>
+            Interactive API
           </li>}
       </ul>
       <div className="sharing-tab-contents">
         {(() => {
           switch (tabSelected) {
             case 'link':
-              return LinkTabContents({ url: linkUrl, onCopyClick })
+              return <LinkTabContents url={linkUrl} onCopyClick={onCopyClick} />
             case 'embed':
-              return EmbedTabContents({ url: embedUrl, onCopyClick })
+              return <EmbedTabContents url={embedUrl} onCopyClick={onCopyClick} />
             case 'lara': {
-              const { url: laraUrl, ...laraProps } = lara
-              return LaraTabContents({ url: laraUrl, onCopyClick, ...laraProps })
+              const { linkUrl: url, ...laraOthers } = lara
+              return <LaraApiTabContents mode='lara' linkUrl={url} onCopyClick={onCopyClick}
+                                        {...others} {...laraOthers} />
+            }
+            case 'api': {
+              const { linkUrl: url, ...apiOthers } = interactiveApi
+              // disable scaling until scaling interactive is ready
+              others.fullscreenScaling = false
+              return <LaraApiTabContents mode='api' linkUrl={url} onCopyClick={onCopyClick}
+                                        disableScaling={true} {...others} {...apiOthers} />
             }
             default:
               return null

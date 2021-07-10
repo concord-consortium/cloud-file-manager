@@ -133,7 +133,48 @@ describe('ShareDialogView', () => {
 
     act(() => {
       // trigger change handlers
-      fireEvent.change(screen.getByTestId('codap-server-url-input'), { target: { value: 'https://concord.org/newServerUrl' } })
+      fireEvent.change(screen.getByTestId('server-url-input'), { target: { value: 'https://concord.org/newServerUrl' } })
+      userEvent.click(screen.getByTestId('fullscreen-scaling-checkbox'))
+      userEvent.click(screen.getByTestId('visibility-toggles-checkbox'))
+    })
+  })
+
+
+  it('should render shared with interactive api sharing', () => {
+    const mockAlert = jest.fn()
+    const mockToggleShare = jest.fn(callback => callback?.())
+    const mockUpdateShare = jest.fn()
+    const mockClose = jest.fn()
+
+    ;(window as any).clipboardData = {
+      getData: jest.fn(),
+      setData: jest.fn()
+    }
+
+    // render shared with interactive api sharing
+    const { rerender } = render(
+      <ShareDialogView currentBaseUrl='https://concord.org/baseUrl' isShared={true} enableInteractiveApiSharing={true}
+        onAlert={mockAlert} onToggleShare={mockToggleShare} onUpdateShare={mockUpdateShare} close={mockClose} />
+    )
+    expect(screen.getByTestId('share-dialog')).toBeInTheDocument()
+
+    act(() => {
+      userEvent.click(screen.getByTestId('sharing-tab-api'))
+    })
+
+    rerender(
+      <ShareDialogView currentBaseUrl='https://concord.org/baseUrl' isShared={true} enableInteractiveApiSharing={true}
+        onAlert={mockAlert} onToggleShare={mockToggleShare} onUpdateShare={mockUpdateShare} close={mockClose} />
+    )
+
+    act(() => {
+      // copy interactive api share url
+      userEvent.click(screen.getByTestId('copy-anchor-link'))
+    })
+
+    act(() => {
+      // trigger change handlers
+      fireEvent.change(screen.getByTestId('server-url-input'), { target: { value: 'https://concord.org/newServerUrl' } })
       userEvent.click(screen.getByTestId('fullscreen-scaling-checkbox'))
       userEvent.click(screen.getByTestId('visibility-toggles-checkbox'))
     })

@@ -18,8 +18,8 @@ import { CloudFileManagerUI, UIEventCallback }  from './ui'
 import LocalStorageProvider  from './providers/localstorage-provider'
 import ReadOnlyProvider  from './providers/readonly-provider'
 import GoogleDriveProvider  from './providers/google-drive-provider'
+import InteractiveApiProvider from './providers/interactive-api-provider'
 import LaraProvider  from './providers/lara-provider'
-import LaraInteractiveProvider from './providers/lara-interactive-provider'
 import DocumentStoreProvider  from './providers/document-store-provider'
 import S3ShareProvider  from './providers/s3-share-provider'
 import S3Provider  from './providers/s3-provider'
@@ -124,7 +124,7 @@ class CloudFileManagerClient {
       ReadOnlyProvider,
       GoogleDriveProvider,
       LaraProvider,
-      LaraInteractiveProvider,
+      InteractiveApiProvider,
       DocumentStoreProvider,
       LocalFileProvider,
       PostMessageProvider,
@@ -136,7 +136,7 @@ class CloudFileManagerClient {
       }
     }
 
-    // default to all providers if non specified
+    // default to all providers if none specified
     if (!this.appOptions.providers) {
       this.appOptions.providers = []
       for (providerName of Object.keys(allProviders || {})) {
@@ -174,14 +174,17 @@ class CloudFileManagerClient {
         }
         if (allProviders[providerName]) {
           Provider = allProviders[providerName]
-          const provider = new Provider(providerOptions, this)
-          this.providers[providerName] = provider
-          shareProvider = this._getShareProvider(provider)
-          // also add to here in providers list so we can look it up when parsing url hash
-          if (provider.urlDisplayName) {
-            this.providers[provider.urlDisplayName] = provider
+          // don't add providers that require configuration if no (or invalid) configuration provided
+          if (!Provider.hasValidOptions || Provider.hasValidOptions(providerOptions)) {
+            const provider = new Provider(providerOptions, this)
+            this.providers[providerName] = provider
+            shareProvider = this._getShareProvider(provider)
+            // also add to here in providers list so we can look it up when parsing url hash
+            if (provider.urlDisplayName) {
+              this.providers[provider.urlDisplayName] = provider
+            }
+            availableProviders.push(provider)
           }
-          availableProviders.push(provider)
         } else {
           this.alert(`Unknown provider: ${providerName}`)
         }
@@ -1262,7 +1265,7 @@ class CloudFileManagerClient {
         const message = _.merge({}, params, {type})
         return (oe as any).source.postMessage(message, (oe as any).origin)
       }
-      switch (((oe as any).data != null ? (oe as any).data.type : undefined)) {
+      switch (data?.type) {
         case 'cfm::getCommands':
           return reply('cfm::commands', {commands: ['cfm::autosave', 'cfm::event', 'cfm::event:reply', 'cfm::setDirty', 'cfm::iframedClientConnected']})
         case 'cfm::autosave':

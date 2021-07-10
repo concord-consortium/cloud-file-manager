@@ -3,7 +3,7 @@
     <script src="../js/globals.js"></script>
     <script src="../js/app.js"></script>
     <link rel="stylesheet" href="../css/app.css">
-    <title>Examples: Enable LARA Sharing</title>
+    <title>Examples: Enable Interactive API Sharing</title>
   </head>
   <body>
     <div id="wrapper">
@@ -16,6 +16,7 @@
         appVersion: "0.1",
         appBuildNum: "1",
         enableLaraSharing: true,
+        enableInteractiveApiSharing: true,
         providers: [
           "localStorage",
           "localFile",
@@ -25,15 +26,6 @@
               "first-example": "This is the first readonly example",
               "second-example": "This is the second readonly example"
             }
-          },
-          {
-            "name": "googleDrive",
-            "apiKey": "AIzaSyAUobrEXqtbZHBvr24tamdE6JxmPYTRPEA",
-            "clientId": "1095918012594-svs72eqfalasuc4t1p1ps1m8r9b8psso.apps.googleusercontent.com"
-          },
-          {
-            "name": "documentStore",
-            "patch": true
           }
         ],
         ui: {

@@ -7,9 +7,10 @@
  * DS207: Consider shorter variations of null checks
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
  */
+import { CFMBaseProviderOptions } from '../app-options'
 import { CloudFileManagerClient } from '../client'
 import {
-  cloudContentFactory, CloudMetadata, ICloudFileTypes, IProviderInterfaceOpts, ProviderOpenCallback, ProviderInterface
+  cloudContentFactory, CloudMetadata, ICloudFileTypes, ProviderOpenCallback, ProviderInterface
 }  from './provider-interface'
 
 // This provider gets created by the client when needed to open a url directly.
@@ -18,9 +19,9 @@ import {
 class URLProvider extends ProviderInterface {
   public static Name = 'url-provider'
   client?: CloudFileManagerClient
-  options?: IProviderInterfaceOpts
+  options?: CFMBaseProviderOptions
 
-  constructor(options?: IProviderInterfaceOpts, client?: CloudFileManagerClient) {
+  constructor(options?: CFMBaseProviderOptions, client?: CloudFileManagerClient) {
     super({
       name: URLProvider.name,
       displayName: "URL Provider",
