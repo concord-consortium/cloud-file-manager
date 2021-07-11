@@ -94,6 +94,8 @@ class CloudFileManagerClient {
   providers: Record<string, ProviderInterface>;
   state: IClientState;
   urlProvider: URLProvider;
+  connectedPromise: Promise<void>;
+  connectedPromiseResolver: { resolve: () => void; reject: () => void };
 
   constructor(options?: any) {
     this.shouldAutoSave = this.shouldAutoSave.bind(this)
@@ -103,10 +105,22 @@ class CloudFileManagerClient {
     this._ui = new CloudFileManagerUI(this)
     this.providers = {}
     this.urlProvider = new URLProvider()
+
+    this.connectedPromise = new Promise((resolve, reject) => {
+      this.connectedPromiseResolver = {
+        resolve: () => {
+          resolve()
+          this.connectedPromiseResolver = null
+        },
+        reject: () => {
+          reject()
+          this.connectedPromiseResolver = null
+        }
+      }
+    })
   }
 
   setAppOptions(appOptions: CFMAppOptions) {
-
     let providerName
     let Provider
     if (appOptions == null) { appOptions = {} }
@@ -239,6 +253,7 @@ class CloudFileManagerClient {
   }
 
   connect() {
+    this.connectedPromiseResolver?.resolve()
     return this._event('connected', {client: this})
   }
 
@@ -487,6 +502,10 @@ class CloudFileManagerClient {
         })
       })
     })
+  }
+
+  openProviderFileWhenConnected(providerName: string, providerParams?: any) {
+    this.connectedPromise.then(() => this.openProviderFile(providerName, providerParams))
   }
 
   openProviderFile(providerName: string, providerParams?: any) {

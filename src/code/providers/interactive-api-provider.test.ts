@@ -208,13 +208,15 @@ describe('InteractiveApiProvider', () => {
       .mockImplementation(() => Promise.resolve(mockInitInteractiveMessage))
 
     const client = new CloudFileManagerClient()
+    client.connect()
     const provider = new InteractiveApiProvider({}, client)
     await provider.isReady()
 
-    // should call callback with error if called with invalid parameters
+    // if no content provided, default content to the empty string
     const mockOpenSavedCallback = jest.fn()
     provider.openSaved({}, mockOpenSavedCallback)
-    expect(typeof mockOpenSavedCallback.mock.calls[0][0]).toBe("string")
+    expect(mockOpenSavedCallback.mock.calls[0][0]).toBeNull()
+    expect(mockOpenSavedCallback.mock.calls[0][1].content.content).toBe("")
 
     // should call callback with error if fetch throws an exception (e.g. network failure)
     setQueryParams("documentId=https://initial/state")
@@ -239,7 +241,8 @@ describe('InteractiveApiProvider', () => {
     mockFetch.mockImplementation(() => ({ ok: true }))
 
     const client = new CloudFileManagerClient()
-    client.setAppOptions({ enableInteractiveApiSharing: true })
+    client.setAppOptions({ providers: ['interactiveApi'] })
+    client.connect()
     const clientListener = jest.fn()
     client.listen(clientListener)
     const provider = client.providers[InteractiveApiProvider.Name] as InteractiveApiProvider
@@ -268,7 +271,8 @@ describe('InteractiveApiProvider', () => {
     mockFetch.mockImplementation(() => ({ ok: true, json: () => Promise.resolve("foo") }))
 
     const client = new CloudFileManagerClient()
-    client.setAppOptions({ enableInteractiveApiSharing: true })
+    client.setAppOptions({ providers: ['interactiveApi'] })
+    client.connect()
     const clientListener = jest.fn()
     client.listen(clientListener)
     const provider = client.providers[InteractiveApiProvider.Name] as InteractiveApiProvider
@@ -298,7 +302,8 @@ describe('InteractiveApiProvider', () => {
     mockFetch.mockImplementation(() => ({ ok: false }))
 
     const client = new CloudFileManagerClient()
-    client.setAppOptions({ enableInteractiveApiSharing: true })
+    client.setAppOptions({ providers: ['interactiveApi'] })
+    client.connect()
     const provider = client.providers[InteractiveApiProvider.Name] as InteractiveApiProvider
     await provider.isReady()
     expect(provider.name).toBe(InteractiveApiProvider.Name)

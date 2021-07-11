@@ -97,7 +97,7 @@ class InteractiveApiProvider extends ProviderInterface {
       // interactive state is used on subsequent visits
       interactiveState: initInteractiveMessage.interactiveState
     }
-    this.client.openProviderFile(this.name, providerParams)
+    this.client.openProviderFileWhenConnected(this.name, providerParams)
   }
 
   handleInitInteractive() {
@@ -181,7 +181,10 @@ class InteractiveApiProvider extends ProviderInterface {
       callback(`Unable to open saved document: ${openSavedParams.documentId}!`)
     }
     else {
-      callback(`Invalid request to open saved document!`)
+      // in the absence of any provided content, initialize with an empty string
+      setInteractiveState("")
+      // notify that we have new state
+      successCallback("")
     }
   }
 }

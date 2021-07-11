@@ -15,26 +15,11 @@
         appName: "CFM_Demo",
         appVersion: "0.1",
         appBuildNum: "1",
-        enableLaraSharing: true,
-        enableInteractiveApiSharing: true,
+        autoSaveInterval: 5,
         providers: [
-          "localStorage",
-          "localFile",
-          {
-            "name": "readOnly",
-            "json": {
-              "first-example": "This is the first readonly example",
-              "second-example": "This is the second readonly example"
-            }
-          }
+          "interactiveApi"
         ],
-        ui: {
-          menu: CloudFileManager.DefaultMenu,
-          menuBar: {
-            info: "Version 1.0.0",
-            help: "http://lmgtfy.com/"
-          }
-        }
+        hideMenuBar: true
       };
       CloudFileManager.createFrame(options, "wrapper");
     </script>
