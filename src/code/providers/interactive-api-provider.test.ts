@@ -43,7 +43,7 @@ describe('InteractiveApiProvider', () => {
     return fn.mock.calls.some(args => args[0].type === type)
   }
 
-  it('should prevent calling client api functions until initInteractiveMessage has been received', () => {
+  it('should prevent calling client api functions until initInteractiveMessage has been received', done => {
     // getInitInteractiveMessage returns a promise that never resolves
     mockApi.getInitInteractiveMessage.mockImplementation(() => new Promise(() => {}))
 
@@ -77,6 +77,15 @@ describe('InteractiveApiProvider', () => {
     expect(mockApi.setInteractiveState).toHaveBeenCalledTimes(0)
 
     expect(provider.filterTabComponent(ECapabilities.save, {} as any)).toBeNull()
+
+    setTimeout(() => {
+      // verify that we don't make api calls before initInteractive promise resolves
+      expect(mockApi.getInitInteractiveMessage).toHaveBeenCalledTimes(1)
+      expect(mockApi.getInteractiveState).toHaveBeenCalledTimes(0)
+      expect(mockApi.setInteractiveState).toHaveBeenCalledTimes(0)
+      expect.assertions(17)
+      done()
+    }, 100)
   })
 
   it('should call client api functions as needed once initInteractiveMessage has been received', async () => {
