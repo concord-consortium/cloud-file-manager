@@ -58,13 +58,13 @@ const baseConfig = (env) => ({
       moduleFilename: ({ name }) =>
         `${name.replace(/js\//, 'css/').replace(/\.js$/, '.css')}`
     }),
-      new CopyPlugin({
-        patterns: assets.map(name => ({
-          from: path.resolve(__dirname, `./src/assets/${name}`),
-          to: `${destDir}/${name}`
-        }))
-      }),
-      new ReplaceInFileWebpackPlugin([
+    new CopyPlugin({
+      patterns: assets.map(name => ({
+        from: path.resolve(__dirname, `./src/assets/${name}`),
+        to: `${destDir}/${name}`
+      }))
+    }),
+    new ReplaceInFileWebpackPlugin([
       {
         dir: destDir,
         test: /\.html$/,
