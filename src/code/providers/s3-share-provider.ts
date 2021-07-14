@@ -14,7 +14,7 @@ import { sha256 } from 'js-sha256'
 
 // New method for sharing read only documents using S3.
 // The readWrite key must be retained in the original document
-// so that the shared document can be upadted.
+// so that the shared document can be updated.
 // Based on the historical `document-store-share-provider`
 class S3ShareProvider implements IShareProvider  {
   public static Name ='s3-share-provider'
@@ -25,7 +25,6 @@ class S3ShareProvider implements IShareProvider  {
     this.provider = _provider
     this.client = client
   }
-
 
   loadSharedContent(id: string, callback: ProviderLoadCallback) {
     const sharedMetadata = new CloudMetadata({

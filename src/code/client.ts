@@ -18,6 +18,7 @@ import { CloudFileManagerUI, UIEventCallback }  from './ui'
 import LocalStorageProvider  from './providers/localstorage-provider'
 import ReadOnlyProvider  from './providers/readonly-provider'
 import GoogleDriveProvider  from './providers/google-drive-provider'
+import InteractiveApiProvider from './providers/interactive-api-provider'
 import LaraProvider  from './providers/lara-provider'
 import DocumentStoreProvider  from './providers/document-store-provider'
 import S3ShareProvider  from './providers/s3-share-provider'
@@ -93,6 +94,8 @@ class CloudFileManagerClient {
   providers: Record<string, ProviderInterface>;
   state: IClientState;
   urlProvider: URLProvider;
+  connectedPromise: Promise<void>;
+  connectedPromiseResolver: { resolve: () => void; reject: () => void };
 
   constructor(options?: any) {
     this.shouldAutoSave = this.shouldAutoSave.bind(this)
@@ -102,10 +105,22 @@ class CloudFileManagerClient {
     this._ui = new CloudFileManagerUI(this)
     this.providers = {}
     this.urlProvider = new URLProvider()
+
+    this.connectedPromise = new Promise((resolve, reject) => {
+      this.connectedPromiseResolver = {
+        resolve: () => {
+          resolve()
+          this.connectedPromiseResolver = null
+        },
+        reject: () => {
+          reject()
+          this.connectedPromiseResolver = null
+        }
+      }
+    })
   }
 
   setAppOptions(appOptions: CFMAppOptions) {
-
     let providerName
     let Provider
     if (appOptions == null) { appOptions = {} }
@@ -123,6 +138,7 @@ class CloudFileManagerClient {
       ReadOnlyProvider,
       GoogleDriveProvider,
       LaraProvider,
+      InteractiveApiProvider,
       DocumentStoreProvider,
       LocalFileProvider,
       PostMessageProvider,
@@ -134,7 +150,7 @@ class CloudFileManagerClient {
       }
     }
 
-    // default to all providers if non specified
+    // default to all providers if none specified
     if (!this.appOptions.providers) {
       this.appOptions.providers = []
       for (providerName of Object.keys(allProviders || {})) {
@@ -172,14 +188,17 @@ class CloudFileManagerClient {
         }
         if (allProviders[providerName]) {
           Provider = allProviders[providerName]
-          const provider = new Provider(providerOptions, this)
-          this.providers[providerName] = provider
-          shareProvider = this._getShareProvider(provider)
-          // also add to here in providers list so we can look it up when parsing url hash
-          if (provider.urlDisplayName) {
-            this.providers[provider.urlDisplayName] = provider
+          // don't add providers that require configuration if no (or invalid) configuration provided
+          if (Provider.hasValidOptions(providerOptions)) {
+            const provider = new Provider(providerOptions, this)
+            this.providers[providerName] = provider
+            shareProvider = this._getShareProvider()
+            // also add to here in providers list so we can look it up when parsing url hash
+            if (provider.urlDisplayName) {
+              this.providers[provider.urlDisplayName] = provider
+            }
+            availableProviders.push(provider)
           }
-          availableProviders.push(provider)
         } else {
           this.alert(`Unknown provider: ${providerName}`)
         }
@@ -220,14 +239,7 @@ class CloudFileManagerClient {
     return this._startPostMessageListener()
   }
 
-  _getShareProvider(ignoredParentProvider: string) {
-    // NP 2020-05-11:
-    // Previous Code to document behavior before S3ShareProvider:
-    // if we're using the DocumentStoreProvider, instantiate the ShareProvider
-    // if (ignoredParentProvider === DocumentStoreProvider.Name) {
-    //   shareProvider = new DocumentStoreShareProvider(this, ignoredParentProvider)
-    // }
-    // NB: The DocumentStoreShareProvider always used a DocumentStoreProvider ....
+  _getShareProvider() {
     return new S3ShareProvider(this, new S3Provider(this))
   }
 
@@ -241,6 +253,7 @@ class CloudFileManagerClient {
   }
 
   connect() {
+    this.connectedPromiseResolver?.resolve()
     return this._event('connected', {client: this})
   }
 
@@ -298,7 +311,7 @@ class CloudFileManagerClient {
     }
   }
 
-  log(event: any, eventData: any) {
+  log(event: string, eventData: any) {
     this._event('log', {logEvent: event, logEventData: eventData})
     if (this.appOptions.log) {
       return this.appOptions.log(event, eventData)
@@ -489,6 +502,10 @@ class CloudFileManagerClient {
         })
       })
     })
+  }
+
+  openProviderFileWhenConnected(providerName: string, providerParams?: any) {
+    this.connectedPromise.then(() => this.openProviderFile(providerName, providerParams))
   }
 
   openProviderFile(providerName: string, providerParams?: any) {
@@ -1260,7 +1277,7 @@ class CloudFileManagerClient {
         const message = _.merge({}, params, {type})
         return (oe as any).source.postMessage(message, (oe as any).origin)
       }
-      switch (((oe as any).data != null ? (oe as any).data.type : undefined)) {
+      switch (data?.type) {
         case 'cfm::getCommands':
           return reply('cfm::commands', {commands: ['cfm::autosave', 'cfm::event', 'cfm::event:reply', 'cfm::setDirty', 'cfm::iframedClientConnected']})
         case 'cfm::autosave':

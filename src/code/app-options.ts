@@ -71,6 +71,10 @@ export interface CFMLaraProviderOptions extends CFMPatchProviderOptions {
   logLaraData: (laraData: CFMLaraProviderLogData) => void;
 }
 
+export interface CFMInteractiveApiProviderOptions extends CFMBaseProviderOptions {
+  logLaraData?: (laraData: CFMLaraProviderLogData) => void;
+}
+
 export interface CFMDocumentStoreProviderOptions extends CFMPatchProviderOptions {
   deprecationPhase: number;
 }
@@ -115,6 +119,7 @@ export interface CFMAppOptions {
   extension?: string;
   readableExtensions?: string[];
   enableLaraSharing?: boolean;
+  enableInteractiveApiSharing?: boolean;
   log?: (event: string, eventData: any) => void;
   providers?: (CFMProviderOptions | string)[];
   hashParams?: CFMHashParams;

@@ -72,6 +72,8 @@ declare global {
 
 class GoogleDriveProvider extends ProviderInterface {
   static Name = 'googleDrive'
+  static hasValidOptions = (options: any) => (typeof options?.clientId === 'string') &&
+                                              (typeof options?.apiKey === 'string')
   static IMMEDIATE = true
   static SHOW_POPUP = false
   static loadPromise: Promise<unknown> = null

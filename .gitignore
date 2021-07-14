@@ -3,6 +3,8 @@ dist/
 .publish/
 # Packages folder.
 node_modules/
+yalc.lock
+.yalc
 
 # OS or Editor folders
 .DS_Store
