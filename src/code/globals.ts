@@ -10,15 +10,12 @@
   bundle to work, the global environment must be similarly configured, e.g. in setupTests.ts.
  */
 
-import {polyfill} from 'es6-promise'
 import _ from 'lodash'
 import $ from 'jquery'
 import React from 'react'
 import ReactDOM from 'react-dom'
 import ReactDOMFactories from 'react-dom-factories'
 import createReactClass from 'create-react-class'
-
-polyfill()
 
 const g = global as any
 g._ = _
