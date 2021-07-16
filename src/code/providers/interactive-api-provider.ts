@@ -7,7 +7,8 @@ import {
   ProviderLoadCallback, ProviderOpenCallback, ProviderSaveCallback
 }  from './provider-interface'
 import {
-  getInitInteractiveMessage, getInteractiveState, IRuntimeInitInteractive, setInteractiveState
+  getInitInteractiveMessage, getInteractiveState, IRuntimeInitInteractive,
+  readAttachment, setInteractiveState, writeAttachment
 } from '@concord-consortium/lara-interactive-api'
 
 interface InteractiveApiProviderParams {
@@ -15,13 +16,23 @@ interface InteractiveApiProviderParams {
   interactiveState?: any;
 }
 
+// pass `interactiveApi=attachment` as url parameter to save state as an attachment
+const kAttachmentUrlParameter = "attachment"
+
+// in solidarity with legacy DocumentStore implementation and S3 sharing implementation
+const kAttachmentFilename = "file.json"
+
+// when writing attachments, interactive state is just a reference to the attachment
+const kInteractiveStateAttachment = { __attachment__: kAttachmentFilename }
+const isInteractiveStateAttachment = (content: any) => content?.__attachment__ === kAttachmentFilename
+
 // This provider supports LARA interactives that save/restore state via the LARA interactive API.
 // To signal to the CFM that this provider should handle save/restore operations, add
 // `interactiveApi` to the query params, e.g. `?interactiveApi` or `?interactiveApi=true`.
 class InteractiveApiProvider extends ProviderInterface {
   static Name = 'interactiveApi'
-  client: CloudFileManagerClient;
-  options: CFMInteractiveApiProviderOptions;
+  client: CloudFileManagerClient
+  options: CFMInteractiveApiProviderOptions
   initInteractivePromise: Promise<IRuntimeInitInteractive>
   readyPromise: Promise<boolean>
 
@@ -52,6 +63,10 @@ class InteractiveApiProvider extends ProviderInterface {
 
   isReady() {
     return this.readyPromise
+  }
+
+  isSavingAsAttachment() {
+    return queryString.parse(location.search).interactiveApi === kAttachmentUrlParameter
   }
 
   logLaraData(interactiveStateUrl?: string, runRemoteEndpoint?: string) {
@@ -126,7 +141,10 @@ class InteractiveApiProvider extends ProviderInterface {
 
   async load(metadata: CloudMetadata, callback: ProviderLoadCallback) {
     await this.getInitInteractiveMessage()
-    const interactiveState = await getInteractiveState()
+    let interactiveState = await getInteractiveState()
+    if (isInteractiveStateAttachment(interactiveState)) {
+      interactiveState = await readAttachment(kAttachmentFilename)
+    }
     // following the example of the LaraProvider, wrap the content in a CFM envelope
     const content = cloudContentFactory.createEnvelopedCloudContent(interactiveState)
     callback(null, content, metadata)
@@ -134,7 +152,15 @@ class InteractiveApiProvider extends ProviderInterface {
 
   async save(cloudContent: any, metadata: CloudMetadata, callback?: ProviderSaveCallback, disablePatch?: boolean) {
     await this.getInitInteractiveMessage()
-    setInteractiveState(cloudContent.getClientContent())
+
+    const content = cloudContent.getClientContent()
+    if (this.isSavingAsAttachment()) {
+      await writeAttachment({ name: kAttachmentFilename, content })
+      setInteractiveState(kInteractiveStateAttachment)
+    }
+    else {
+      setInteractiveState(content)
+    }
     callback?.(null)
   }
 
