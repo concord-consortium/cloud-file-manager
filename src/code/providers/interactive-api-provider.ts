@@ -16,15 +16,21 @@ interface InteractiveApiProviderParams {
   interactiveState?: any;
 }
 
-// pass `interactiveApi=attachment` as url parameter to save state as an attachment
+// pass `interactiveApi=attachment` as url parameter to always save state as an attachment
 const kAttachmentUrlParameter = "attachment"
+
+// pass `interactiveApi=dynamic` to save large documents as attachments
+const kDynamicAttachmentUrlParameter = "dynamic"
+// can save it twice with room to spare in 1MB Firestore limit
+const kDynamicAttachmentSizeThreshold = 480 * 1024
 
 // in solidarity with legacy DocumentStore implementation and S3 sharing implementation
 const kAttachmentFilename = "file.json"
 
 // when writing attachments, interactive state is just a reference to the attachment
 const kInteractiveStateAttachment = { __attachment__: kAttachmentFilename }
-const isInteractiveStateAttachment = (content: any) => content?.__attachment__ === kAttachmentFilename
+const isInteractiveStateAttachment = (content: any) =>
+        (typeof content === "object") && (content.__attachment__ === kAttachmentFilename)
 
 // This provider supports LARA interactives that save/restore state via the LARA interactive API.
 // To signal to the CFM that this provider should handle save/restore operations, add
@@ -65,8 +71,15 @@ class InteractiveApiProvider extends ProviderInterface {
     return this.readyPromise
   }
 
-  isSavingAsAttachment() {
-    return queryString.parse(location.search).interactiveApi === kAttachmentUrlParameter
+  shouldSaveAsAttachment(content: any) {
+    const interactiveApi = queryString.parse(location.search).interactiveApi
+    switch (interactiveApi) {
+      case kAttachmentUrlParameter:
+        return true
+      case kDynamicAttachmentUrlParameter:
+        return JSON.stringify(content).length >= kDynamicAttachmentSizeThreshold
+    }
+    return false
   }
 
   logLaraData(interactiveStateUrl?: string, runRemoteEndpoint?: string) {
@@ -154,7 +167,7 @@ class InteractiveApiProvider extends ProviderInterface {
     await this.getInitInteractiveMessage()
 
     const content = cloudContent.getClientContent()
-    if (this.isSavingAsAttachment()) {
+    if (this.shouldSaveAsAttachment(content)) {
       await writeAttachment({ name: kAttachmentFilename, content })
       setInteractiveState(kInteractiveStateAttachment)
     }
