@@ -519,7 +519,9 @@ class CloudFileManagerClient {
             if (err) {
               return this.alert(err, () => this.ready())
             }
-            this._fileOpened(content, metadata, {openedContent: content.clone()}, this._getHashParams(metadata))
+            // if we just opened the file, it doesn't need to be saved until the contents are changed
+            const additionalState = { openedContent: content.clone(), saved: true }
+            this._fileOpened(content, metadata, additionalState, this._getHashParams(metadata))
             return provider.fileOpened(content, metadata)
           })
         } else {

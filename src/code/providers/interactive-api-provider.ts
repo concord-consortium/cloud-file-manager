@@ -17,15 +17,15 @@ interface InteractiveApiProviderParams {
 }
 
 // pass `interactiveApi=attachment` as url parameter to always save state as an attachment
-const kAttachmentUrlParameter = "attachment"
+export const kAttachmentUrlParameter = "attachment"
 
 // pass `interactiveApi=dynamic` to save large documents as attachments
-const kDynamicAttachmentUrlParameter = "dynamic"
+export const kDynamicAttachmentUrlParameter = "dynamic"
 // can save it twice with room to spare in 1MB Firestore limit
 const kDynamicAttachmentSizeThreshold = 480 * 1024
 
 // in solidarity with legacy DocumentStore implementation and S3 sharing implementation
-const kAttachmentFilename = "file.json"
+export const kAttachmentFilename = "file.json"
 
 // when writing attachments, interactive state is just a reference to the attachment
 const kInteractiveStateAttachment = { __attachment__: kAttachmentFilename }
@@ -118,12 +118,35 @@ class InteractiveApiProvider extends ProviderInterface {
     }
   }
 
+  async readAttachmentContent() {
+    const response = await readAttachment(kAttachmentFilename)
+    if (response.ok) {
+      return response.text()
+    }
+    else {
+      throw new Error(`Error reading attachment contents! ["${response.statusText}"]`)
+    }
+  }
+
+  async processRawInteractiveState(interactiveState: any) {
+    return isInteractiveStateAttachment(interactiveState)
+            ? await this.readAttachmentContent()
+            : interactiveState
+  }
+
   async handleInitialInteractiveState(initInteractiveMessage: IRuntimeInitInteractive) {
+    let interactiveState: any
+    try {
+      interactiveState = await this.processRawInteractiveState(initInteractiveMessage.interactiveState)
+    }
+    catch(e) {
+      // on initial interactive state there's not much we can do on error besides ignore it
+    }
     const providerParams: InteractiveApiProviderParams = {
       // documentId is used to load initial state from shared document
       documentId: queryString.parse(location.search).documentId as string,
       // interactive state is used on subsequent visits
-      interactiveState: initInteractiveMessage.interactiveState
+      interactiveState
     }
     this.client.openProviderFileWhenConnected(this.name, providerParams)
   }
@@ -154,13 +177,15 @@ class InteractiveApiProvider extends ProviderInterface {
 
   async load(metadata: CloudMetadata, callback: ProviderLoadCallback) {
     await this.getInitInteractiveMessage()
-    let interactiveState = await getInteractiveState()
-    if (isInteractiveStateAttachment(interactiveState)) {
-      interactiveState = await readAttachment(kAttachmentFilename)
+    try {
+      const interactiveState = await this.processRawInteractiveState(await getInteractiveState())
+      // following the example of the LaraProvider, wrap the content in a CFM envelope
+      const content = cloudContentFactory.createEnvelopedCloudContent(interactiveState)
+      callback(null, content, metadata)
     }
-    // following the example of the LaraProvider, wrap the content in a CFM envelope
-    const content = cloudContentFactory.createEnvelopedCloudContent(interactiveState)
-    callback(null, content, metadata)
+    catch(e) {
+      callback(e.message)
+    }
   }
 
   async save(cloudContent: any, metadata: CloudMetadata, callback?: ProviderSaveCallback, disablePatch?: boolean) {
@@ -168,8 +193,14 @@ class InteractiveApiProvider extends ProviderInterface {
 
     const content = cloudContent.getClientContent()
     if (this.shouldSaveAsAttachment(content)) {
-      await writeAttachment({ name: kAttachmentFilename, content })
-      setInteractiveState(kInteractiveStateAttachment)
+      const response = await writeAttachment({ name: kAttachmentFilename, content, contentType: 'text/plain' })
+      if (response.ok) {
+        setInteractiveState(kInteractiveStateAttachment)
+      }
+      else {
+        // if write failed, pass error to callback
+        return callback(response.statusText)
+      }
     }
     else {
       setInteractiveState(content)
