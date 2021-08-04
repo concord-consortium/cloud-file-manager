@@ -40,10 +40,12 @@ describe("CloudFileManagerClient", () => {
       ]
     }
     client.setAppOptions(options)
-    expect(Object.keys(client.providers).length).toBe(3)
+    expect(Object.keys(client.providers).length).toBe(4)
     expect(client.providers.localStorage.name).toBe('localStorage')
     expect(client.providers.localFile.name).toBe('localFile')
     expect(client.providers.lara.name).toBe('lara')
+    // InteractiveApiProvider should be included when LaraProvider is specified
+    expect(client.providers.interactiveApi.name).toBe('interactiveApi')
     expect(availableProvidersIncludes(client, 'localStorage')).toBe(true)
     expect(availableProvidersIncludes(client, 'localFile')).toBe(true)
     expect(availableProvidersIncludes(client, 'lara')).toBe(true)

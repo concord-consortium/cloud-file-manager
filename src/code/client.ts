@@ -202,7 +202,9 @@ class CloudFileManagerClient {
 
             // InteractiveApiProvider is a newer form of Lara provider
             if (!isInteractiveApiRequested && (providerName === "lara")) {
-              availableProviders.push(new InteractiveApiProvider(providerOptions, this))
+              const interactiveApiProvider = new InteractiveApiProvider(providerOptions, this)
+              this.providers.interactiveApi = interactiveApiProvider
+              availableProviders.push(interactiveApiProvider)
             }
           }
         } else {
