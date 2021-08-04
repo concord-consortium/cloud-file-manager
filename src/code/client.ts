@@ -171,6 +171,7 @@ class CloudFileManagerClient {
     if (getQueryParam("saveSecondaryFileViaPostMessage")) {
       requestedProviders.push('postMessage')
     }
+    const isInteractiveApiRequested = requestedProviders.includes('interactiveApi')
     const availableProviders = []
     let shareProvider = null
     for (let providerSpec of requestedProviders) {
@@ -200,7 +201,7 @@ class CloudFileManagerClient {
             availableProviders.push(provider)
 
             // InteractiveApiProvider is a newer form of Lara provider
-            if (providerName === "lara") {
+            if (!isInteractiveApiRequested && (providerName === "lara")) {
               availableProviders.push(new InteractiveApiProvider(providerOptions, this))
             }
           }
