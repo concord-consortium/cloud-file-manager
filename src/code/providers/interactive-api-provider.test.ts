@@ -1,6 +1,6 @@
 import { IRuntimeInitInteractive } from "@concord-consortium/lara-interactive-api"
 import { CloudFileManagerClient } from "../client"
-import InteractiveApiProvider from "./interactive-api-provider"
+import InteractiveApiProvider, { kAttachmentFilename, kAttachmentUrlParameter, kDynamicAttachmentUrlParameter } from "./interactive-api-provider"
 import { CloudContent, CloudMetadata, ECapabilities } from "./provider-interface"
 
 jest.mock('@concord-consortium/lara-interactive-api')
@@ -32,6 +32,8 @@ describe('InteractiveApiProvider', () => {
     mockApi.getInitInteractiveMessage.mockReset()
     mockApi.getInteractiveState.mockReset()
     mockApi.setInteractiveState.mockReset()
+    mockApi.readAttachment.mockReset()
+    mockApi.writeAttachment.mockReset()
   })
 
   afterEach(() => {
@@ -321,4 +323,127 @@ describe('InteractiveApiProvider', () => {
     expect(mockApi.getInteractiveState).not.toHaveBeenCalled()
     expect(mockApi.setInteractiveState).not.toHaveBeenCalled()
   })
+
+  it('should save/restore using attachments when configured to do so', async () => {
+    // getInitInteractiveMessage returns a promise that resolves to a mock initInteractiveMessage
+    const mockInitInteractiveMessage: Partial<IRuntimeInitInteractive> = {
+      version: 1,
+      mode: "runtime",
+      classInfoUrl: 'https://concord.org/classInfo'
+    }
+    mockApi.getInitInteractiveMessage
+      .mockImplementation(() => Promise.resolve(mockInitInteractiveMessage))
+
+    setQueryParams(`interactiveApi=${kAttachmentUrlParameter}`)
+
+    const client = new CloudFileManagerClient()
+    const content = new CloudContent('fooContent', { isCfmWrapped: false, isPreCfmFormat: false })
+    const metadata = new CloudMetadata({ name: 'foo' })
+    const provider = new InteractiveApiProvider({}, client)
+    await provider.isReady()
+    expect(provider.name).toBe(InteractiveApiProvider.Name)
+    expect(mockApi.getInitInteractiveMessage).toHaveBeenCalledTimes(1)
+    expect(mockApi.getInteractiveState).toHaveBeenCalledTimes(0)
+    expect(mockApi.setInteractiveState).toHaveBeenCalledTimes(0)
+
+    // save with a callback
+    mockApi.writeAttachment.mockImplementation(() => ({ ok: true }))
+    const saveCallback = jest.fn()
+    await provider.save(content, metadata, saveCallback)
+    expect(mockApi.getInitInteractiveMessage).toHaveBeenCalledTimes(1)
+    expect(mockApi.getInteractiveState).toHaveBeenCalledTimes(0)
+    expect(mockApi.setInteractiveState).toHaveBeenCalledTimes(1)
+    expect(mockApi.writeAttachment).toHaveBeenCalledTimes(1)
+    expect(saveCallback).toHaveBeenCalled()
+    expect(saveCallback.mock.calls[0][0]).toBeNull()
+
+    // save without a callback
+    await provider.save(content, metadata)
+    expect(mockApi.getInitInteractiveMessage).toHaveBeenCalledTimes(1)
+    expect(mockApi.getInteractiveState).toHaveBeenCalledTimes(0)
+    expect(mockApi.setInteractiveState).toHaveBeenCalledTimes(2)
+    expect(mockApi.writeAttachment).toHaveBeenCalledTimes(2)
+
+    // handles save error
+    mockApi.writeAttachment.mockImplementation(() => ({ ok: false, statusText: "No attachment for you!" }))
+    saveCallback.mockReset()
+    await provider.save(content, metadata, saveCallback)
+    expect(mockApi.writeAttachment).toHaveBeenCalledTimes(3)
+    expect(typeof saveCallback.mock.calls[0][0]).toBe("string")
+
+    // load with callback
+    mockApi.getInteractiveState.mockImplementation(() => ({ __attachment__: kAttachmentFilename }))
+    mockApi.readAttachment.mockImplementation(() => ({ ok: true, text: () => "fooContent" }))
+    const loadCallback = jest.fn()
+    await provider.load(metadata, loadCallback)
+    expect(mockApi.getInitInteractiveMessage).toHaveBeenCalledTimes(1)
+    expect(mockApi.getInteractiveState).toHaveBeenCalledTimes(1)
+    expect(mockApi.setInteractiveState).toHaveBeenCalledTimes(2)
+    expect(mockApi.readAttachment).toHaveBeenCalledTimes(1)
+    expect(loadCallback).toHaveBeenCalledTimes(1)
+    expect(loadCallback.mock.calls[0][0]).toBeNull()
+
+    // handles load error
+    mockApi.readAttachment.mockImplementation(() => ({ ok: false, statusText: "No attachment for you!" }))
+    loadCallback.mockReset()
+    await provider.load(metadata, loadCallback)
+    expect(mockApi.readAttachment).toHaveBeenCalledTimes(2)
+    expect(typeof loadCallback.mock.calls[0][0]).toBe("string")
+  })
+
+
+  it('should save/restore using dynamic attachments when configured to do so', async () => {
+    // getInitInteractiveMessage returns a promise that resolves to a mock initInteractiveMessage
+    const mockInitInteractiveMessage: Partial<IRuntimeInitInteractive> = {
+      version: 1,
+      mode: "runtime",
+      classInfoUrl: 'https://concord.org/classInfo'
+    }
+    mockApi.getInitInteractiveMessage
+      .mockImplementation(() => Promise.resolve(mockInitInteractiveMessage))
+
+    setQueryParams(`interactiveApi=${kDynamicAttachmentUrlParameter}`)
+
+    const client = new CloudFileManagerClient()
+    CloudContent.wrapFileContent = false
+    const content = new CloudContent('fooContent', { isCfmWrapped: false, isPreCfmFormat: false })
+    const metadata = new CloudMetadata({ name: 'foo' })
+    const provider = new InteractiveApiProvider({}, client)
+    await provider.isReady()
+    expect(provider.name).toBe(InteractiveApiProvider.Name)
+    expect(mockApi.getInitInteractiveMessage).toHaveBeenCalledTimes(1)
+    expect(mockApi.getInteractiveState).toHaveBeenCalledTimes(0)
+    expect(mockApi.setInteractiveState).toHaveBeenCalledTimes(0)
+
+    // save with a callback
+    mockApi.writeAttachment.mockImplementation(() => ({ ok: true }))
+    const saveCallback = jest.fn()
+    await provider.save(content, metadata, saveCallback)
+    expect(mockApi.getInitInteractiveMessage).toHaveBeenCalledTimes(1)
+    expect(mockApi.getInteractiveState).toHaveBeenCalledTimes(0)
+    expect(mockApi.setInteractiveState).toHaveBeenCalledTimes(1)
+    expect(mockApi.writeAttachment).toHaveBeenCalledTimes(0)
+    expect(saveCallback).toHaveBeenCalled()
+    expect(saveCallback.mock.calls[0][0]).toBeNull()
+
+    // save without a callback
+    await provider.save(content, metadata)
+    expect(mockApi.getInitInteractiveMessage).toHaveBeenCalledTimes(1)
+    expect(mockApi.getInteractiveState).toHaveBeenCalledTimes(0)
+    expect(mockApi.setInteractiveState).toHaveBeenCalledTimes(2)
+    expect(mockApi.writeAttachment).not.toHaveBeenCalled()
+
+    // load with callback
+    mockApi.getInteractiveState.mockImplementation(() => "fooContent")
+    mockApi.readAttachment.mockImplementation(() => ({ ok: true, text: () => "fooContent" }))
+    const loadCallback = jest.fn()
+    await provider.load(metadata, loadCallback)
+    expect(mockApi.getInitInteractiveMessage).toHaveBeenCalledTimes(1)
+    expect(mockApi.getInteractiveState).toHaveBeenCalledTimes(1)
+    expect(mockApi.setInteractiveState).toHaveBeenCalledTimes(2)
+    expect(mockApi.readAttachment).not.toHaveBeenCalled()
+    expect(loadCallback).toHaveBeenCalledTimes(1)
+    expect(loadCallback.mock.calls[0][0]).toBeNull()
+  })
+
 })

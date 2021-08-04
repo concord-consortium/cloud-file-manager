@@ -1,13 +1,14 @@
 import queryString from 'query-string'
 import React from 'react'
-import { CFMInteractiveApiProviderOptions, CFMLaraProviderLogData } from '../app-options'
+import { CFMLaraProviderOptions, CFMLaraProviderLogData } from '../app-options'
 import { CloudFileManagerClient } from '../client'
 import {
   cloudContentFactory, CloudMetadata, ECapabilities, ProviderInterface,
   ProviderLoadCallback, ProviderOpenCallback, ProviderSaveCallback
 }  from './provider-interface'
 import {
-  getInitInteractiveMessage, getInteractiveState, IRuntimeInitInteractive, setInteractiveState
+  getInitInteractiveMessage, getInteractiveState, IRuntimeInitInteractive,
+  readAttachment, setInteractiveState, writeAttachment
 } from '@concord-consortium/lara-interactive-api'
 
 interface InteractiveApiProviderParams {
@@ -15,17 +16,33 @@ interface InteractiveApiProviderParams {
   interactiveState?: any;
 }
 
+// pass `interactiveApi=attachment` as url parameter to always save state as an attachment
+export const kAttachmentUrlParameter = "attachment"
+
+// pass `interactiveApi=dynamic` to save large documents as attachments
+export const kDynamicAttachmentUrlParameter = "dynamic"
+// can save it twice with room to spare in 1MB Firestore limit
+const kDynamicAttachmentSizeThreshold = 480 * 1024
+
+// in solidarity with legacy DocumentStore implementation and S3 sharing implementation
+export const kAttachmentFilename = "file.json"
+
+// when writing attachments, interactive state is just a reference to the attachment
+const kInteractiveStateAttachment = { __attachment__: kAttachmentFilename }
+const isInteractiveStateAttachment = (content: any) =>
+        (typeof content === "object") && (content.__attachment__ === kAttachmentFilename)
+
 // This provider supports LARA interactives that save/restore state via the LARA interactive API.
 // To signal to the CFM that this provider should handle save/restore operations, add
 // `interactiveApi` to the query params, e.g. `?interactiveApi` or `?interactiveApi=true`.
 class InteractiveApiProvider extends ProviderInterface {
   static Name = 'interactiveApi'
-  client: CloudFileManagerClient;
-  options: CFMInteractiveApiProviderOptions;
+  client: CloudFileManagerClient
+  options: CFMLaraProviderOptions
   initInteractivePromise: Promise<IRuntimeInitInteractive>
   readyPromise: Promise<boolean>
 
-  constructor(options: CFMInteractiveApiProviderOptions, client: CloudFileManagerClient) {
+  constructor(options: CFMLaraProviderOptions, client: CloudFileManagerClient) {
     super({
       name: InteractiveApiProvider.Name,
       capabilities: {
@@ -52,6 +69,17 @@ class InteractiveApiProvider extends ProviderInterface {
 
   isReady() {
     return this.readyPromise
+  }
+
+  shouldSaveAsAttachment(content: any) {
+    const interactiveApi = queryString.parse(location.search).interactiveApi
+    switch (interactiveApi) {
+      case kAttachmentUrlParameter:
+        return true
+      case kDynamicAttachmentUrlParameter:
+        return JSON.stringify(content).length >= kDynamicAttachmentSizeThreshold
+    }
+    return false
   }
 
   logLaraData(interactiveStateUrl?: string, runRemoteEndpoint?: string) {
@@ -90,12 +118,35 @@ class InteractiveApiProvider extends ProviderInterface {
     }
   }
 
+  async readAttachmentContent() {
+    const response = await readAttachment(kAttachmentFilename)
+    if (response.ok) {
+      return response.text()
+    }
+    else {
+      throw new Error(`Error reading attachment contents! ["${response.statusText}"]`)
+    }
+  }
+
+  async processRawInteractiveState(interactiveState: any) {
+    return isInteractiveStateAttachment(interactiveState)
+            ? await this.readAttachmentContent()
+            : interactiveState
+  }
+
   async handleInitialInteractiveState(initInteractiveMessage: IRuntimeInitInteractive) {
+    let interactiveState: any
+    try {
+      interactiveState = await this.processRawInteractiveState(initInteractiveMessage.interactiveState)
+    }
+    catch(e) {
+      // on initial interactive state there's not much we can do on error besides ignore it
+    }
     const providerParams: InteractiveApiProviderParams = {
       // documentId is used to load initial state from shared document
       documentId: queryString.parse(location.search).documentId as string,
       // interactive state is used on subsequent visits
-      interactiveState: initInteractiveMessage.interactiveState
+      interactiveState
     }
     this.client.openProviderFileWhenConnected(this.name, providerParams)
   }
@@ -126,15 +177,34 @@ class InteractiveApiProvider extends ProviderInterface {
 
   async load(metadata: CloudMetadata, callback: ProviderLoadCallback) {
     await this.getInitInteractiveMessage()
-    const interactiveState = await getInteractiveState()
-    // following the example of the LaraProvider, wrap the content in a CFM envelope
-    const content = cloudContentFactory.createEnvelopedCloudContent(interactiveState)
-    callback(null, content, metadata)
+    try {
+      const interactiveState = await this.processRawInteractiveState(await getInteractiveState())
+      // following the example of the LaraProvider, wrap the content in a CFM envelope
+      const content = cloudContentFactory.createEnvelopedCloudContent(interactiveState)
+      callback(null, content, metadata)
+    }
+    catch(e) {
+      callback(e.message)
+    }
   }
 
   async save(cloudContent: any, metadata: CloudMetadata, callback?: ProviderSaveCallback, disablePatch?: boolean) {
     await this.getInitInteractiveMessage()
-    setInteractiveState(cloudContent.getClientContent())
+
+    const content = cloudContent.getClientContent()
+    if (this.shouldSaveAsAttachment(content)) {
+      const response = await writeAttachment({ name: kAttachmentFilename, content, contentType: 'text/plain' })
+      if (response.ok) {
+        setInteractiveState(kInteractiveStateAttachment)
+      }
+      else {
+        // if write failed, pass error to callback
+        return callback(response.statusText)
+      }
+    }
+    else {
+      setInteractiveState(content)
+    }
     callback?.(null)
   }
 

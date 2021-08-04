@@ -60,7 +60,6 @@ interface IAppViewProps {
   appOrMenuElemId?: string;
   hideMenuBar?: boolean;
   enableLaraSharing?: boolean;
-  enableInteractiveApiSharing?: boolean;
   usingIframe?: boolean;
   app?: string;   // src url for <iframe>
 }
@@ -262,14 +261,13 @@ class AppView extends React.Component<IAppViewProps, IAppViewState> {
       } else if (this.state.importDialog) {
         return (ImportTabbedDialog({client: this.props.client, dialog: this.state.importDialog, close: this.closeDialogs}))
       } else if (this.state.shareDialog) {
-        const { client, enableInteractiveApiSharing, enableLaraSharing, ui } = this.props
+        const { client, enableLaraSharing, ui } = this.props
         return (
           <ShareDialogView currentBaseUrl={client.getCurrentUrl()} isShared={client.isShared()}
             sharedDocumentId={client.state?.currentContent?.get('sharedDocumentId')}
             sharedDocumentUrl={client.state?.currentContent?.get('sharedDocumentUrl')}
             settings={ui?.shareDialog || {}}
             enableLaraSharing={enableLaraSharing}
-            enableInteractiveApiSharing={enableInteractiveApiSharing}
             onAlert={(message: string, title?: string) => client.alert(message, title)}
             onToggleShare={(callback: (err: string | null, sharedContentId?: string) => void) => client.toggleShare(callback)}
             onUpdateShare={() => client.shareUpdate()}
