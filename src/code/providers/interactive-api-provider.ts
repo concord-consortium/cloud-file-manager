@@ -1,6 +1,6 @@
 import queryString from 'query-string'
 import React from 'react'
-import { CFMInteractiveApiProviderOptions, CFMLaraProviderLogData } from '../app-options'
+import { CFMLaraProviderOptions, CFMLaraProviderLogData } from '../app-options'
 import { CloudFileManagerClient } from '../client'
 import {
   cloudContentFactory, CloudMetadata, ECapabilities, ProviderInterface,
@@ -38,11 +38,11 @@ const isInteractiveStateAttachment = (content: any) =>
 class InteractiveApiProvider extends ProviderInterface {
   static Name = 'interactiveApi'
   client: CloudFileManagerClient
-  options: CFMInteractiveApiProviderOptions
+  options: CFMLaraProviderOptions
   initInteractivePromise: Promise<IRuntimeInitInteractive>
   readyPromise: Promise<boolean>
 
-  constructor(options: CFMInteractiveApiProviderOptions, client: CloudFileManagerClient) {
+  constructor(options: CFMLaraProviderOptions, client: CloudFileManagerClient) {
     super({
       name: InteractiveApiProvider.Name,
       capabilities: {

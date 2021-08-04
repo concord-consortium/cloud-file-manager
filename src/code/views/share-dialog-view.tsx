@@ -23,7 +23,6 @@ interface IShareDialogProps {
   sharedDocumentUrl?: string;
   settings?: IShareDialogPropsSettings;
   enableLaraSharing?: boolean;
-  enableInteractiveApiSharing?: boolean;
   onAlert: (message: string, title?: string) => void;
   onToggleShare: (callback: (err: string | null, sharedContentId?: string) => void) => void;
   onUpdateShare: () => void;
@@ -234,11 +233,9 @@ export default class ShareDialogView extends React.Component<IShareDialogProps, 
   }
 
   render() {
-    const { isShared, enableInteractiveApiSharing } = this.props
+    const { isShared } = this.props
     const { isLoadingShared, link } = this.state
-    const sharing = enableInteractiveApiSharing
-                      ? isShared
-                      : link != null
+    const sharing = isShared || (link != null)
     return (
       <ModalDialogView title={translate('~DIALOG.SHARED')} close={this.props.close}>
         <div className='share-dialog' data-testid='share-dialog'>
@@ -262,7 +259,7 @@ export default class ShareDialogView extends React.Component<IShareDialogProps, 
                     onChangeServerUrl: this.changedLaraServerUrl
                   }
                 : undefined}
-              interactiveApi={this.props.enableInteractiveApiSharing
+              interactiveApi={this.props.enableLaraSharing
                 ? {
                     linkUrl: this.getInteractiveApiLink(),
                     serverUrlLabel: this.state.interactiveApiServerUrlLabel,

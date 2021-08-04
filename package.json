@@ -9,7 +9,7 @@
   },
   "license": "MIT",
   "dependencies": {
-    "@concord-consortium/lara-interactive-api": "^1.1.1",
+    "@concord-consortium/lara-interactive-api": "^1.1.2",
     "@concord-consortium/token-service": "^2.0.0",
     "aws-sdk": "^2.958.0",
     "base64-js": "^1.5.1",

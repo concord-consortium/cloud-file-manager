@@ -198,6 +198,11 @@ class CloudFileManagerClient {
               this.providers[provider.urlDisplayName] = provider
             }
             availableProviders.push(provider)
+
+            // InteractiveApiProvider is a newer form of Lara provider
+            if (providerName === "lara") {
+              availableProviders.push(new InteractiveApiProvider(providerOptions, this))
+            }
           }
         } else {
           this.alert(`Unknown provider: ${providerName}`)

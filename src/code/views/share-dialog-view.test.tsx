@@ -153,7 +153,7 @@ describe('ShareDialogView', () => {
 
     // render shared with interactive api sharing
     const { rerender } = render(
-      <ShareDialogView currentBaseUrl='https://concord.org/baseUrl' isShared={true} enableInteractiveApiSharing={true}
+      <ShareDialogView currentBaseUrl='https://concord.org/baseUrl' isShared={true} enableLaraSharing={true}
         onAlert={mockAlert} onToggleShare={mockToggleShare} onUpdateShare={mockUpdateShare} close={mockClose} />
     )
     expect(screen.getByTestId('share-dialog')).toBeInTheDocument()
@@ -163,7 +163,7 @@ describe('ShareDialogView', () => {
     })
 
     rerender(
-      <ShareDialogView currentBaseUrl='https://concord.org/baseUrl' isShared={true} enableInteractiveApiSharing={true}
+      <ShareDialogView currentBaseUrl='https://concord.org/baseUrl' isShared={true} enableLaraSharing={true}
         onAlert={mockAlert} onToggleShare={mockToggleShare} onUpdateShare={mockUpdateShare} close={mockClose} />
     )
 
