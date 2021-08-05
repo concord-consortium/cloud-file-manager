@@ -38,16 +38,16 @@ if (codap) {
       replace: 'static_url('
     },
     {
-      search: /\.\.\/fonts/g,
-      replace: 'webfonts'
+      search: /fonts\//g,
+      replace: 'webfonts/'
     },
     {
       search: /MuseoSans_500_italic/g,
       replace: 'MuseoSans_500_Italic'
     },
     {
-      search: /\.\.\/img/g,
-      replace: 'cloud-file-manager/img'
+      search: /img\//g,
+      replace: 'cloud-file-manager/img/'
     }
   )
 }
