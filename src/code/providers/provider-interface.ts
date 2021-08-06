@@ -276,9 +276,7 @@ class CloudContent {
 
   // returns the client-visible content (excluding wrapper for wrapped clients)
   getClientContent() {
-    return CloudContent.wrapFileContent
-            ? this.content.content
-            : this.content
+    return this.content.content ?? this.content
   }
 
   requiresConversion() {

@@ -1159,11 +1159,11 @@ class CloudFileManagerClient {
 
   _fileOpened(content: any, metadata: CloudMetadata, additionalState?: any, hashParams: string = null) {
     if (additionalState == null) { additionalState = {} }
-    const eventData = { content: (content != null ? content.getClientContent() : undefined) }
+    const eventData = { content: content?.getClientContent?.() ?? content }
     // update state before sending 'openedFile' events so that 'openedFile' listeners that
     // reference state have the updated state values
     this._updateState(content, metadata, additionalState, hashParams)
-    // add metadata contentType to event for CODAP to load via postmessage API (for SageModeler standalone)
+    // add metadata contentType to event for CODAP to load via postMessage API (for SageModeler standalone)
     const contentType = metadata.mimeType || metadata.contentType;
     (eventData as any).metadata = {contentType, url: metadata.url, filename: metadata.filename}
     return this._event('openedFile', eventData, (iError: string | null, iSharedMetadata: any) => {

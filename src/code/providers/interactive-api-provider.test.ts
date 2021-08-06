@@ -405,7 +405,6 @@ describe('InteractiveApiProvider', () => {
     setQueryParams(`interactiveApi=${kDynamicAttachmentUrlParameter}`)
 
     const client = new CloudFileManagerClient()
-    CloudContent.wrapFileContent = false
     const content = new CloudContent('fooContent', { isCfmWrapped: false, isPreCfmFormat: false })
     const metadata = new CloudMetadata({ name: 'foo' })
     const provider = new InteractiveApiProvider({}, client)

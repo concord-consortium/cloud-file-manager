@@ -28,7 +28,14 @@ const kDynamicAttachmentSizeThreshold = 480 * 1024
 export const kAttachmentFilename = "file.json"
 
 // when writing attachments, interactive state is just a reference to the attachment
-const kInteractiveStateAttachment = { __attachment__: kAttachmentFilename }
+interface InteractiveStateAttachment {
+  __attachment__: typeof kAttachmentFilename,
+  contentType?: "application/json" | "text/plain"
+}
+const interactiveStateAttachment =
+(contentType?: InteractiveStateAttachment["contentType"]): InteractiveStateAttachment => {
+  return { __attachment__: kAttachmentFilename, contentType }
+}
 const isInteractiveStateAttachment = (content: any) =>
         (typeof content === "object") && (content.__attachment__ === kAttachmentFilename)
 
@@ -118,10 +125,10 @@ class InteractiveApiProvider extends ProviderInterface {
     }
   }
 
-  async readAttachmentContent() {
-    const response = await readAttachment(kAttachmentFilename)
+  async readAttachmentContent(interactiveState: InteractiveStateAttachment) {
+    const response = await readAttachment(interactiveState.__attachment__)
     if (response.ok) {
-      return response.text()
+      return interactiveState.contentType === "application/json" ? response.json() : response.text()
     }
     else {
       throw new Error(`Error reading attachment contents! ["${response.statusText}"]`)
@@ -130,7 +137,7 @@ class InteractiveApiProvider extends ProviderInterface {
 
   async processRawInteractiveState(interactiveState: any) {
     return isInteractiveStateAttachment(interactiveState)
-            ? await this.readAttachmentContent()
+            ? await this.readAttachmentContent(interactiveState)
             : interactiveState
   }
 
@@ -145,7 +152,7 @@ class InteractiveApiProvider extends ProviderInterface {
     const providerParams: InteractiveApiProviderParams = {
       // documentId is used to load initial state from shared document
       documentId: queryString.parse(location.search).documentId as string,
-      // interactive state is used on subsequent visits
+      // interactive state is used all other times; undefined => empty document
       interactiveState
     }
     this.client.openProviderFileWhenConnected(this.name, providerParams)
@@ -191,11 +198,13 @@ class InteractiveApiProvider extends ProviderInterface {
   async save(cloudContent: any, metadata: CloudMetadata, callback?: ProviderSaveCallback, disablePatch?: boolean) {
     await this.getInitInteractiveMessage()
 
-    const content = cloudContent.getClientContent()
-    if (this.shouldSaveAsAttachment(content)) {
-      const response = await writeAttachment({ name: kAttachmentFilename, content, contentType: 'text/plain' })
+    const clientContent = cloudContent.getContent()
+    const contentType = typeof clientContent === 'string' ? 'text/plain' : 'application/json'
+    if (this.shouldSaveAsAttachment(clientContent)) {
+      const content = contentType === 'application/json' ? JSON.stringify(clientContent) : clientContent
+      const response = await writeAttachment({ name: kAttachmentFilename, content, contentType })
       if (response.ok) {
-        setInteractiveState(kInteractiveStateAttachment)
+        setInteractiveState(interactiveStateAttachment(contentType))
       }
       else {
         // if write failed, pass error to callback
@@ -203,7 +212,7 @@ class InteractiveApiProvider extends ProviderInterface {
       }
     }
     else {
-      setInteractiveState(content)
+      setInteractiveState(clientContent)
     }
     callback?.(null)
   }
@@ -229,10 +238,10 @@ class InteractiveApiProvider extends ProviderInterface {
     }
 
     // if we have an initial state, then use it
-    if (initialInteractiveState) {
+    if (initialInteractiveState != null) {
       successCallback(initialInteractiveState)
     }
-    // otherwise, load the intial state from its document id (url)
+    // otherwise, load the initial state from its document id (url)
     else if (openSavedParams.documentId) {
       try {
         const response = await fetch(openSavedParams.documentId)
@@ -260,6 +269,3 @@ class InteractiveApiProvider extends ProviderInterface {
 }
 
 export default InteractiveApiProvider
-
-// onBeforeUnload -- does client have any mechanism for this?
-// does CODAP dialog occur when embedded in iframe?
