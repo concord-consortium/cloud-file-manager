@@ -1,4 +1,5 @@
 import queryString from 'query-string'
+import { cloneDeep } from 'lodash'
 import React from 'react'
 import { CFMLaraProviderOptions, CFMLaraProviderLogData } from '../app-options'
 import { CloudFileManagerClient } from '../client'
@@ -7,9 +8,12 @@ import {
   ProviderLoadCallback, ProviderOpenCallback, ProviderSaveCallback
 }  from './provider-interface'
 import {
-  getInitInteractiveMessage, getInteractiveState, IRuntimeInitInteractive,
-  readAttachment, setInteractiveState, writeAttachment
+  getInitInteractiveMessage, getInteractiveState as _getInteractiveState, IRuntimeInitInteractive,
+  readAttachment, setInteractiveState as _setInteractiveState, writeAttachment
 } from '@concord-consortium/lara-interactive-api'
+const getInteractiveState = () => cloneDeep(_getInteractiveState())
+const setInteractiveState = <InteractiveState>(newState: InteractiveState | null) =>
+        _setInteractiveState(cloneDeep(newState))
 
 interface InteractiveApiProviderParams {
   documentId?: string;
@@ -128,6 +132,7 @@ class InteractiveApiProvider extends ProviderInterface {
   async readAttachmentContent(interactiveState: InteractiveStateAttachment) {
     const response = await readAttachment(interactiveState.__attachment__)
     if (response.ok) {
+      // TODO: Scott suggests reading contentType from response rather than from interactiveState
       return interactiveState.contentType === "application/json" ? response.json() : response.text()
     }
     else {
