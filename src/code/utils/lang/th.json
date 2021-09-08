@@ -122,5 +122,7 @@
     "~FILE_STATUS.FAILURE": "กำลังลองใหม่...",
     "~SHARE_DIALOG.PLEASE_WAIT": "โปรดรอ..กำลังสร้างลิงก์แชร์",
     "~GOOGLE_DRIVE.ERROR_CONNECTING_MESSAGE": "ล้มเหลวในการเชื่อมต่อ Google!",
-    "~GOOGLE_DRIVE.ERROR_MISSING_APIKEY": "Missing required apiKey in googleDrive provider options"
+    "~GOOGLE_DRIVE.ERROR_MISSING_APIKEY": "Missing required apiKey in googleDrive provider options",
+    "~GOOGLE_DRIVE.UNABLE_TO_UPLOAD": "Unable to upload file",
+    "~GOOGLE_DRIVE.UNABLE_TO_UPLOAD_MSG": "Unable to upload file: %{message}"
 }

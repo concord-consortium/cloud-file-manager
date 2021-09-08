@@ -388,12 +388,12 @@ class GoogleDriveProvider extends ProviderInterface {
     return request.execute((file: any) => {
       if (callback) {
         if (file != null ? file.error : undefined) {
-          return callback(`Unabled to upload file: ${file.error.message}`)
+          return callback(tr("~GOOGLE_DRIVE.UNABLE_TO_UPLOAD_MSG", {message: file.error.message}))
         } else if (file) {
           metadata.providerData = {id: file.id}
           return callback(null, file)
         } else {
-          return callback(this._apiError(file, 'Unabled to upload file'))
+          return callback(this._apiError(file, tr("~GOOGLE_DRIVE.UNABLE_TO_UPLOAD")))
         }
       }
     })
