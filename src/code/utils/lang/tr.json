@@ -122,5 +122,8 @@
     "~FILE_STATUS.FAILURE": "Retrying...",
     "~SHARE_DIALOG.PLEASE_WAIT": "Please wait while we generate a shared link …",
     "~GOOGLE_DRIVE.ERROR_CONNECTING_MESSAGE": "Error connecting to Google!",
-    "~GOOGLE_DRIVE.ERROR_MISSING_APIKEY": "Missing required apiKey in googleDrive provider options"
+    "~GOOGLE_DRIVE.ERROR_MISSING_APIKEY": "Missing required apiKey in googleDrive provider options",
+    "~GOOGLE_DRIVE.UNABLE_TO_UPLOAD": "Unable to upload file",
+    "~GOOGLE_DRIVE.UNABLE_TO_UPLOAD_MSG": "Unable to upload file: %{message}",
+    "~SHARE_DIALOG.INTERACTIVE_API_MESSAGE": "Use this link when creating an activity for the Activity Player"
 }
