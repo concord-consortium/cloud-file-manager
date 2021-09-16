@@ -1132,7 +1132,7 @@ class CloudFileManagerClient {
   }
 
   _dialogSave(stringContent: any, metadata: CloudMetadata, callback: OpenSaveCallback) {
-    if (stringContent !== null) {
+    if (stringContent != null) {
       return this.saveFileNoDialog(stringContent, metadata, callback)
     } else {
       return this._event('getContent', { shared: this._sharedMetadata() }, (stringContent: any) => {
