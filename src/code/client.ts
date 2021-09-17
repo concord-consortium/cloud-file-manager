@@ -57,7 +57,7 @@ class CloudFileManagerClientEvent {
   state: Partial<IClientState>;
   type: string;
 
-  constructor(type: string, data?: any, callback?: ClientEventCallback, state?: Partial<IClientState>) {
+  constructor(type: string, data?: any, callback: ClientEventCallback = null, state?: Partial<IClientState>) {
     this.type = type
     if (data == null) { data = {} }
     this.data = data
@@ -361,14 +361,14 @@ class CloudFileManagerClient {
     return this._ui.setMenuBarInfo(info)
   }
 
-  newFile(callback?: ClientEventCallback) {
+  newFile(callback: ClientEventCallback = null) {
     this._closeCurrentFile()
     this._resetState()
     window.location.hash = ""
     return this._event('newedFile', {content: ""}, callback)
   }
 
-  newFileDialog(callback?: ClientEventCallback) {
+  newFileDialog(callback: ClientEventCallback = null) {
     if (this.newFileOpensInNewTab) {
       return window.open(this.getCurrentUrl(this.newFileAddsNewToQuery ? "#new" : null), '_blank')
     } else if (this.state.dirty) {
@@ -383,7 +383,7 @@ class CloudFileManagerClient {
     }
   }
 
-  openFile(metadata: CloudMetadata, callback?: OpenSaveCallback) {
+  openFile(metadata: CloudMetadata, callback: OpenSaveCallback = null) {
     if (metadata?.provider?.can(ECapabilities.load, metadata)) {
       this._event('willOpenFile', {op: "openFile"})
       return metadata.provider.load(metadata, (err: string | null, content: any) => {
@@ -403,7 +403,7 @@ class CloudFileManagerClient {
     }
   }
 
-  openFileDialog(callback?: OpenSaveCallback): any {
+  openFileDialog(callback: OpenSaveCallback = null): any {
     const showDialog = () => {
       return this._ui.openFileDialog((metadata: CloudMetadata) => {
         return this.openFile(metadata, callback)
@@ -416,7 +416,7 @@ class CloudFileManagerClient {
     }
   }
 
-  closeFile(callback?: () => void) {
+  closeFile(callback: () => void = null) {
     this._closeCurrentFile()
     this._resetState()
     window.location.hash = ""
@@ -424,7 +424,7 @@ class CloudFileManagerClient {
     return (typeof callback === 'function' ? callback() : undefined)
   }
 
-  closeFileDialog(callback?: () => void) {
+  closeFileDialog(callback: () => void = null) {
     if (!this.state.dirty) {
       return this.closeFile(callback)
     } else {
@@ -432,24 +432,24 @@ class CloudFileManagerClient {
     }
   }
 
-  importData(data: any, callback?: (data: any) => void) {
+  importData(data: any, callback: (data: any) => void = null) {
     this._event('importedData', data)
     return (typeof callback === 'function' ? callback(data) : undefined)
   }
 
-  importDataDialog(callback?: (data: any) => void) {
+  importDataDialog(callback: (data: any) => void = null) {
     return this._ui.importDataDialog((data: any) => {
       return this.importData(data, callback)
     })
   }
 
-  readLocalFile(file: any, callback?: (args: { name: string, content: any }) => void) {
+  readLocalFile(file: any, callback: (args: { name: string, content: any }) => void = null) {
     const reader = new FileReader()
     reader.onload = loaded => typeof callback === 'function' ? callback({name: file.name, content: loaded.target.result}) : undefined
     return reader.readAsText(file)
   }
 
-  openLocalFile(file: any, callback?: OpenSaveCallback) {
+  openLocalFile(file: any, callback: OpenSaveCallback = null) {
     this._event('willOpenFile', {op: "openLocalFile"})
     return this.readLocalFile(file, (data: any) => {
       const content = cloudContentFactory.createEnvelopedCloudContent(data.content)
@@ -462,7 +462,7 @@ class CloudFileManagerClient {
     })
   }
 
-  importLocalFile(file: any, callback?: (data: any) => void) {
+  importLocalFile(file: any, callback: (data: any) => void = null) {
     return this.readLocalFile(file, (data: any) => {
       return this.importData(data, callback)
     })
@@ -591,13 +591,13 @@ class CloudFileManagerClient {
     })
   }
 
-  save(callback?: OpenSaveCallback) {
+  save(callback: OpenSaveCallback = null) {
     return this._event('getContent', { shared: this._sharedMetadata() }, (stringContent: any) => {
       return this.saveContent(stringContent, callback)
     })
   }
 
-  saveContent(stringContent: any, callback?: OpenSaveCallback) {
+  saveContent(stringContent: any, callback: OpenSaveCallback = null) {
     const provider = this.state.metadata?.provider || this.autoProvider(ECapabilities.save)
     if (provider != null) {
       return provider.authorized((isAuthorized: boolean) => {
@@ -613,7 +613,7 @@ class CloudFileManagerClient {
     }
   }
 
-  saveFile(stringContent: any, metadata: CloudMetadata, callback?: OpenSaveCallback) {
+  saveFile(stringContent: any, metadata: CloudMetadata, callback: OpenSaveCallback = null) {
     // must be able to 'resave' to save silently, i.e. without save dialog
     if (metadata?.provider?.can(ECapabilities.resave, metadata)) {
       return this.saveFileNoDialog(stringContent, metadata, callback)
@@ -622,7 +622,7 @@ class CloudFileManagerClient {
     }
   }
 
-  saveFileNoDialog(stringContent: any, metadata: CloudMetadata, callback?: OpenSaveCallback) {
+  saveFileNoDialog(stringContent: any, metadata: CloudMetadata, callback: OpenSaveCallback = null) {
     this._setState({
       saving: metadata})
     const currentContent = this._createOrUpdateCurrentContent(stringContent, metadata)
@@ -659,19 +659,19 @@ class CloudFileManagerClient {
     })
   }
 
-  saveFileDialog(stringContent: any, callback?: OpenSaveCallback) {
+  saveFileDialog(stringContent: any = null, callback: OpenSaveCallback = null) {
     return this._ui.saveFileDialog((metadata: CloudMetadata) => {
       return this._dialogSave(stringContent, metadata, callback)
     })
   }
 
-  saveFileAsDialog(stringContent: any, callback?: OpenSaveCallback) {
+  saveFileAsDialog(stringContent: any = null, callback: OpenSaveCallback = null) {
     return this._ui.saveFileAsDialog((metadata: CloudMetadata) => {
       return this._dialogSave(stringContent, metadata, callback)
     })
   }
 
-  createCopy(stringContent?: any, callback?: (errOrCopyParams?: number | string) => void) {
+  createCopy(stringContent: any = null, callback: (errOrCopyParams?: number | string) => void = null) {
     const saveAndOpenCopy = (stringContent: any) => {
       return this.saveCopiedFile(stringContent, this.state.metadata?.name, (err: string | null, copyParams?: number) => {
         if (err) { return (typeof callback === 'function' ? callback(err) : undefined) }
@@ -857,7 +857,7 @@ class CloudFileManagerClient {
     })
   }
 
-  revertToShared(callback?: (err: string | null) => void) {
+  revertToShared(callback: (err: string | null) => void = null) {
     // Look for sharedDocumentUrl or Url first:
     const id = this.state.currentContent?.get("sharedDocumentUrl")
             || this.state.currentContent?.get("url")
@@ -879,13 +879,13 @@ class CloudFileManagerClient {
     }
   }
 
-  revertToSharedDialog(callback?: (err: string | null) => void) {
+  revertToSharedDialog(callback: (err: string | null) => void = null) {
     if ((this.state.currentContent != null ? this.state.currentContent.get("sharedDocumentId") : undefined) && (this.state.shareProvider != null)) {
       return this.confirm(tr("~CONFIRM.REVERT_TO_SHARED_VIEW"), () => this.revertToShared(callback))
     }
   }
 
-  downloadDialog(callback: UIEventCallback) {
+  downloadDialog(callback: UIEventCallback = null) {
     // should share metadata be included in downloaded local files?
     return this._event('getContent', { shared: this._sharedMetadata() }, (content: any) => {
       const envelopedContent = cloudContentFactory.createEnvelopedCloudContent(content)
@@ -965,20 +965,20 @@ class CloudFileManagerClient {
     }
   }
 
-  renameDialog(callback?: (newName: string) => void) {
+  renameDialog(callback: (newName: string) => void = null) {
     return this._ui.renameDialog(this.state.metadata != null ? this.state.metadata.name : undefined, (newName: any) => {
       return this.rename(this.state.metadata, newName, callback)
     })
   }
 
-  revertToLastOpened(callback?: (err: string | null) => void) {
+  revertToLastOpened(callback: (err: string | null) => void = null) {
     this._event('willOpenFile', {op: "revertToLastOpened"})
     if ((this.state.openedContent != null) && this.state.metadata) {
       return this._fileOpened(this.state.openedContent, this.state.metadata, {openedContent: this.state.openedContent.clone()})
     }
   }
 
-  revertToLastOpenedDialog(callback?: (err: string | null) => void) {
+  revertToLastOpenedDialog(callback: (err: string | null) => void = null) {
     if ((this.state.openedContent != null) && this.state.metadata) {
       return this.confirm(tr('~CONFIRM.REVERT_TO_LAST_OPENED'), () => this.revertToLastOpened(callback))
     } else {
@@ -1009,7 +1009,7 @@ class CloudFileManagerClient {
 
   // Saves a file to backend, but does not update current metadata.
   // Used e.g. when exporting .csv files from CODAP
-  saveSecondaryFile(stringContent: any, metadata: CloudMetadata, callback?: OpenSaveCallback) {
+  saveSecondaryFile(stringContent: any, metadata: CloudMetadata, callback: OpenSaveCallback = null) {
     if (metadata?.provider?.can(ECapabilities["export"], metadata)) {
       return metadata.provider.saveAsExport(stringContent, metadata, (err: string | null, statusCode?: number) => {
         return err ? this.alert(err) : callback?.(stringContent, metadata)
@@ -1197,7 +1197,7 @@ class CloudFileManagerClient {
     return this._setState(state)
   }
 
-  _event(type: string, data?: any, eventCallback?: ClientEventCallback) {
+  _event(type: string, data?: any, eventCallback: ClientEventCallback = null) {
     if (data == null) { data = {} }
     const event = new CloudFileManagerClientEvent(type, data, eventCallback, this.state)
     for (let listener of this._listeners) {
@@ -1238,7 +1238,7 @@ class CloudFileManagerClient {
     }
   }
 
-  _createOrUpdateCurrentContent(stringContent: any, metadata?: CloudMetadata) {
+  _createOrUpdateCurrentContent(stringContent: any, metadata: CloudMetadata = null) {
     let currentContent
     if (this.state.currentContent != null) {
       ({ currentContent } = this.state)
