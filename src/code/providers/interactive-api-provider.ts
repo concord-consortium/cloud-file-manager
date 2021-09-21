@@ -143,7 +143,7 @@ class InteractiveApiProvider extends ProviderInterface {
   async processRawInteractiveState(interactiveState: any) {
     return isInteractiveStateAttachment(interactiveState)
             ? await this.readAttachmentContent(interactiveState)
-            : interactiveState
+            : cloneDeep(interactiveState)
   }
 
   async handleInitialInteractiveState(initInteractiveMessage: IRuntimeInitInteractive) {
