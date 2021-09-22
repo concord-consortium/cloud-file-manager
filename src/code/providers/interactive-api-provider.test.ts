@@ -247,7 +247,7 @@ describe('InteractiveApiProvider', () => {
     mockApi.getInitInteractiveMessage
       .mockImplementation(() => Promise.resolve(mockInitInteractiveMessage))
 
-    // fetch response is intial interactive state
+    // fetch response is initial interactive state
     setQueryParams("documentId=https://initial/state")
     mockFetch.mockImplementation(() => ({ ok: true }))
 
@@ -308,7 +308,7 @@ describe('InteractiveApiProvider', () => {
     mockApi.getInitInteractiveMessage
       .mockImplementation(() => Promise.resolve(mockInitInteractiveMessage))
 
-    // fetch response is intial interactive state
+    // fetch response is initial interactive state
     setQueryParams("documentId=https://initial/state")
     mockFetch.mockImplementation(() => ({ ok: false }))
 
