@@ -1309,7 +1309,7 @@ class CloudFileManagerClient {
         case 'cfm::setDirty':
           return this.dirty(data.isDirty)
         case 'cfm::iframedClientConnected':
-          this.connectedPromiseResolver?.resolve();
+          this.connectedPromiseResolver?.resolve()
           return this.processUrlParams()
       }
     })
