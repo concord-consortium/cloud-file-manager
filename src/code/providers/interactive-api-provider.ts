@@ -146,12 +146,20 @@ class InteractiveApiProvider extends ProviderInterface {
             : cloneDeep(interactiveState)
   }
 
+  getInitialInteractiveState(initInteractiveMessage: IRuntimeInitInteractive) {
+    let interactiveState = initInteractiveMessage.interactiveState
+
+    if (!interactiveState && (initInteractiveMessage.hasLinkedInteractive && initInteractiveMessage.linkedState)) {
+      interactiveState = initInteractiveMessage.linkedState
+    }
+
+    return interactiveState
+  }
+
   async handleInitialInteractiveState(initInteractiveMessage: IRuntimeInitInteractive) {
     let interactiveState: any
 
-    const initialInteractiveState = initInteractiveMessage.hasLinkedInteractive && initInteractiveMessage.linkedState
-      ? initInteractiveMessage.linkedState
-      : initInteractiveMessage.interactiveState
+    const initialInteractiveState = this.getInitialInteractiveState(initInteractiveMessage)
 
     try {
       interactiveState = await this.processRawInteractiveState(initialInteractiveState)
