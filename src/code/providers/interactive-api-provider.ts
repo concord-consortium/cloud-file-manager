@@ -148,8 +148,13 @@ class InteractiveApiProvider extends ProviderInterface {
 
   async handleInitialInteractiveState(initInteractiveMessage: IRuntimeInitInteractive) {
     let interactiveState: any
+
+    const initialInteractiveState = initInteractiveMessage.hasLinkedInteractive && initInteractiveMessage.linkedState
+      ? initInteractiveMessage.linkedState
+      : initInteractiveMessage.interactiveState
+
     try {
-      interactiveState = await this.processRawInteractiveState(initInteractiveMessage.interactiveState)
+      interactiveState = await this.processRawInteractiveState(initialInteractiveState)
     }
     catch(e) {
       // on initial interactive state there's not much we can do on error besides ignore it
