@@ -45,6 +45,12 @@ describe('InteractiveApiProvider', () => {
     return fn.mock.calls.some(args => args[0].type === type)
   }
 
+  const getMockedCall = (fn: jest.Mock, type: string) => {
+    return fn.mock.calls
+      .find((c: any) => c[0].type === type)
+      .map((c: any) => c)[0]
+  }
+
   it('should prevent calling client api functions until initInteractiveMessage has been received', done => {
     // getInitInteractiveMessage returns a promise that never resolves
     mockApi.getInitInteractiveMessage.mockImplementation(() => new Promise(() => {}))
@@ -262,6 +268,75 @@ describe('InteractiveApiProvider', () => {
     expect(mockApi.getInitInteractiveMessage).toHaveBeenCalledTimes(1)
     expect(wasCalledWithEventOfType(clientListener, 'willOpenFile')).toBe(true)
     expect(wasCalledWithEventOfType(clientListener, 'openedFile')).toBe(true)
+    expect(getMockedCall(clientListener, "openedFile").data.content).toEqual("foo")
+    expect(mockFetch).not.toHaveBeenCalled()
+    expect(mockApi.getInteractiveState).not.toHaveBeenCalled()
+    expect(mockApi.setInteractiveState).not.toHaveBeenCalled()
+  })
+
+  it("uses linked state if provided and there is no interactive state", async () => {
+    // getInitInteractiveMessage returns a promise that resolves to a mock initInteractiveMessage
+    const mockInitInteractiveMessage: Partial<IRuntimeInitInteractive> = {
+      version: 1,
+      mode: "runtime",
+      interactiveState: null,
+      hasLinkedInteractive: true,
+      linkedState: {foo: "test"},
+      classInfoUrl: 'https://concord.org/classInfo'
+    }
+    mockApi.getInitInteractiveMessage
+      .mockImplementation(() => Promise.resolve(mockInitInteractiveMessage))
+
+    // fetch response is initial interactive state
+    setQueryParams("documentId=https://initial/state")
+    mockFetch.mockImplementation(() => ({ ok: true }))
+
+    const client = new CloudFileManagerClient()
+    client.setAppOptions({ providers: ['interactiveApi'] })
+    client.connect()
+    const clientListener = jest.fn()
+    client.listen(clientListener)
+    const provider = client.providers[InteractiveApiProvider.Name] as InteractiveApiProvider
+    await provider.isReady()
+    expect(provider.name).toBe(InteractiveApiProvider.Name)
+    expect(mockApi.getInitInteractiveMessage).toHaveBeenCalledTimes(1)
+    expect(wasCalledWithEventOfType(clientListener, 'willOpenFile')).toBe(true)
+    expect(wasCalledWithEventOfType(clientListener, 'openedFile')).toBe(true)
+    expect(getMockedCall(clientListener, "openedFile").data.content).toEqual({foo: "test"})
+    expect(mockFetch).not.toHaveBeenCalled()
+    expect(mockApi.getInteractiveState).not.toHaveBeenCalled()
+    expect(mockApi.setInteractiveState).not.toHaveBeenCalled()
+  })
+
+  it("uses interactive state if interactive state and linked state is provided", async () => {
+    // getInitInteractiveMessage returns a promise that resolves to a mock initInteractiveMessage
+    const mockInitInteractiveMessage: Partial<IRuntimeInitInteractive> = {
+      version: 1,
+      mode: "runtime",
+      interactiveState: {bar: "test"},
+      hasLinkedInteractive: true,
+      linkedState: {foo: "test"},
+      classInfoUrl: 'https://concord.org/classInfo'
+    }
+    mockApi.getInitInteractiveMessage
+      .mockImplementation(() => Promise.resolve(mockInitInteractiveMessage))
+
+    // fetch response is initial interactive state
+    setQueryParams("documentId=https://initial/state")
+    mockFetch.mockImplementation(() => ({ ok: true }))
+
+    const client = new CloudFileManagerClient()
+    client.setAppOptions({ providers: ['interactiveApi'] })
+    client.connect()
+    const clientListener = jest.fn()
+    client.listen(clientListener)
+    const provider = client.providers[InteractiveApiProvider.Name] as InteractiveApiProvider
+    await provider.isReady()
+    expect(provider.name).toBe(InteractiveApiProvider.Name)
+    expect(mockApi.getInitInteractiveMessage).toHaveBeenCalledTimes(1)
+    expect(wasCalledWithEventOfType(clientListener, 'willOpenFile')).toBe(true)
+    expect(wasCalledWithEventOfType(clientListener, 'openedFile')).toBe(true)
+    expect(getMockedCall(clientListener, "openedFile").data.content).toEqual({bar: "test"})
     expect(mockFetch).not.toHaveBeenCalled()
     expect(mockApi.getInteractiveState).not.toHaveBeenCalled()
     expect(mockApi.setInteractiveState).not.toHaveBeenCalled()
