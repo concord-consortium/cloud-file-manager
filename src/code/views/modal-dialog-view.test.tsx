@@ -10,11 +10,8 @@ describe('ModalDialogView', () => {
     )
     expect(screen.getByTestId('modal-dialog')).toBeInTheDocument()
 
-    // clicking close icon has no effect if close callback not specified
-    act(() => {
-      userEvent.click(screen.getByTestId('modal-dialog-close'))
-    })
-    expect(screen.getByTestId('modal-dialog')).toBeInTheDocument()
+    // the close icon is not present if close callback not specified
+    expect(screen.queryByTestId(/modal-dialog-close/)).toBeNull()
 
     // escape key has no effect if close callback not specified
     act(() => {

@@ -12,8 +12,8 @@ const ModalDialogView: React.FC<IProps> = ({ title, zIndex = 10, close, children
       <div className='modal-dialog' data-testid='modal-dialog'>
         <div className='modal-dialog-wrapper'>
           <div className='modal-dialog-title' data-testid='modal-dialog-title'>
-            <i className='modal-dialog-title-close icon-ex' data-testid='modal-dialog-close'
-                onClick={() => close?.()}/>
+            {close ? <i className='modal-dialog-title-close icon-ex' data-testid='modal-dialog-close'
+                onClick={() => close?.()}/> : undefined}
             {title || 'Untitled Dialog'}
           </div>
           <div className='modal-dialog-workspace' data-testid='modal-dialog-workspace'>

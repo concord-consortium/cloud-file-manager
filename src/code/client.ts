@@ -31,6 +31,7 @@ import {
   CloudContent, cloudContentFactory, CloudMetadata, ECapabilities, ProviderInterface
 }  from './providers/provider-interface'
 import { reportError } from "./utils/report-error"
+import { SelectInteractiveStateCallback, SelectInteractiveStateDialogProps } from './views/select-interactive-state-dialog-view'
 
 let CLOUDFILEMANAGER_EVENT_ID = 0
 const CLOUDFILEMANAGER_EVENTS: Record<number, CloudFileManagerClientEvent> = {}
@@ -1129,6 +1130,10 @@ class CloudFileManagerClient {
       titleOrCallback = null
     }
     return this._ui.alertDialog(message, ((titleOrCallback as string) || tr("~CLIENT_ERROR.TITLE")), callback)
+  }
+
+  selectInteractiveStateDialog(props: SelectInteractiveStateDialogProps, callback: SelectInteractiveStateCallback): void {
+    this._ui.selectInteractiveStateDialog({...props, onSelect: callback})
   }
 
   _dialogSave(stringContent: any, metadata: CloudMetadata, callback: OpenSaveCallback) {

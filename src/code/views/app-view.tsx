@@ -19,7 +19,8 @@ import ShareDialogView from './share-dialog-view'
 import blockingModalView from './blocking-modal-view'
 import alterDialogView from './alert-dialog-view'
 import confirmDialogView from './confirm-dialog-view'
-import importTabbedDialgView from './import-tabbed-dialog-view'
+import importTabbedDialogView from './import-tabbed-dialog-view'
+import selectInteractiveStateDialog from './select-interactive-state-dialog-view'
 
 const MenuBar = createReactFactory(menuBarView)
 const ProviderTabbedDialog = createReactFactory(providerTabbedDialogView)
@@ -28,7 +29,8 @@ const RenameDialog = createReactFactory(renameDialogView)
 const BlockingModal = createReactFactory(blockingModalView)
 const AlertDialog = createReactFactory(alterDialogView)
 const ConfirmDialog = createReactFactory(confirmDialogView)
-const ImportTabbedDialog = createReactFactory(importTabbedDialgView)
+const ImportTabbedDialog = createReactFactory(importTabbedDialogView)
+const SelectInteractiveStateDialog = createReactFactory(selectInteractiveStateDialog)
 
 import tr from '../utils/translate'
 import isString from '../utils/is-string'
@@ -36,6 +38,7 @@ import { CloudMetadata } from "../providers/provider-interface"
 import { CFMMenuBarOptions, CFMMenuItem, CFMShareDialogSettings, CFMUIOptions } from "../app-options"
 import { CloudFileManagerClient, CloudFileManagerClientEvent } from "../client"
 import { CloudFileManagerUIEvent } from "../ui"
+import { SelectInteractiveStateDialogProps } from "./select-interactive-state-dialog-view"
 
 const {div, iframe} = ReactDOMFactories
 
@@ -77,6 +80,7 @@ interface IAppViewState {
   alertDialog: null | Record<string, any>;
   confirmDialog: null | Record<string, any>;
   importDialog: null | Record<string, any>;
+  selectInteractiveStateDialog: null | SelectInteractiveStateDialogProps
   fileStatus?: { message: string, type: string };
   dirty: boolean;
 }
@@ -101,6 +105,7 @@ class AppView extends React.Component<IAppViewProps, IAppViewState> {
       alertDialog: null,
       confirmDialog: null,
       importDialog: null,
+      selectInteractiveStateDialog: null,
       dirty: false
     }
   }
@@ -162,6 +167,8 @@ class AppView extends React.Component<IAppViewProps, IAppViewState> {
           return this.setState({alertDialog: event.data})
         case 'showConfirmDialog':
           return this.setState({confirmDialog: event.data})
+        case 'showSelectInteractiveStateDialog':
+          return this.setState({selectInteractiveStateDialog: event.data})
         case 'appendMenuItem':
           this.state.menuItems.push(event.data)
           return this.setState({menuItems: this.state.menuItems})
@@ -235,7 +242,8 @@ class AppView extends React.Component<IAppViewProps, IAppViewState> {
       downloadDialog: null,
       renameDialog: null,
       shareDialog: null,
-      importDialog: null
+      importDialog: null,
+      selectInteractiveStateDialog: null
     })
   }
 
@@ -273,6 +281,8 @@ class AppView extends React.Component<IAppViewProps, IAppViewState> {
             onUpdateShare={() => client.shareUpdate()}
             close={this.closeDialogs} />
         )
+      } else if (this.state.selectInteractiveStateDialog) {
+        return <SelectInteractiveStateDialog {...this.state.selectInteractiveStateDialog} close={this.closeDialogs} />
       }
     })(),
 

@@ -281,7 +281,10 @@ describe('InteractiveApiProvider', () => {
       mode: "runtime",
       interactiveState: null,
       hasLinkedInteractive: true,
-      linkedState: {foo: "test"},
+      allLinkedStates: [{
+        interactiveState: {foo: "test"},
+        interactive: null
+      }],
       classInfoUrl: 'https://concord.org/classInfo'
     }
     mockApi.getInitInteractiveMessage
@@ -315,7 +318,10 @@ describe('InteractiveApiProvider', () => {
       mode: "runtime",
       interactiveState: {bar: "test"},
       hasLinkedInteractive: true,
-      linkedState: {foo: "test"},
+      allLinkedStates: [{
+        interactiveState: {foo: "test"},
+        interactive: null
+      }],
       classInfoUrl: 'https://concord.org/classInfo'
     }
     mockApi.getInitInteractiveMessage
