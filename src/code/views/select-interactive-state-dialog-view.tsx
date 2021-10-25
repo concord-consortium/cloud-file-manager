@@ -35,11 +35,6 @@ class SelectInteractiveStateVersion extends React.Component<IProps, IState> {
     })
   }
 
-  getPreviewUrl(interactiveState: any) {
-    // TODO: get preview url from external_report_url
-    return "https://example.com/"
-  }
-
   UNSAFE_componentWillReceiveProps(props: IProps) {
     // hide the preview if the overlay text is clicked in the parent
     if (!props.showingOverlay && this.state.preview) {
@@ -60,7 +55,7 @@ class SelectInteractiveStateVersion extends React.Component<IProps, IState> {
         </div>
         <div className={previewClassName} onClick={this.handleTogglePreview}>
           <div className='iframe-wrapper'>
-            <iframe className='preview-iframe' src={this.getPreviewUrl(version)}></iframe>
+            <iframe className='preview-iframe' src={version.externalReportUrl}></iframe>
           </div>
         </div>
         <div className='center preview-label' onClick={this.handleTogglePreview}>
