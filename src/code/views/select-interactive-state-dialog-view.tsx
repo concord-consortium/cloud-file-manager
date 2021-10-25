@@ -4,7 +4,7 @@ import tr  from '../utils/translate'
 import ModalDialogView from './modal-dialog-view'
 import { IInteractiveStateProps } from '@concord-consortium/lara-interactive-api'
 
-interface SelectInteractiveStateVersionProps {
+interface IProps {
   version: IInteractiveStateProps<{}>
   showingOverlay: boolean
   onSelect?: SelectInteractiveStateCallback
@@ -12,27 +12,22 @@ interface SelectInteractiveStateVersionProps {
   close?: () => void
 }
 
-interface SelectInteractiveStateVersionState {
+interface IState {
   preview: boolean
 }
 
-class SelectInteractiveStateVersion extends React.Component<SelectInteractiveStateVersionProps, SelectInteractiveStateVersionState> {
+class SelectInteractiveStateVersion extends React.Component<IProps, IState> {
 
-  constructor(props: SelectInteractiveStateVersionProps) {
-    super(props)
-    this.handleSelect = this.handleSelect.bind(this)
-    this.handleTogglePreview = this.handleTogglePreview.bind(this)
-    this.state = {
-      preview: false
-    }
+  state = {
+    preview: false
   }
 
-  handleSelect() {
+  handleSelect = () => {
     this.props.onSelect(this.props.version.interactiveState)
     this.props.close?.()
   }
 
-  handleTogglePreview() {
+  handleTogglePreview = () => {
     this.setState((prev) => {
       const preview = !prev.preview
       this.props.onPreview(preview)
@@ -45,7 +40,7 @@ class SelectInteractiveStateVersion extends React.Component<SelectInteractiveSta
     return "https://example.com/"
   }
 
-  UNSAFE_componentWillReceiveProps(props: SelectInteractiveStateVersionProps) {
+  UNSAFE_componentWillReceiveProps(props: IProps) {
     // hide the preview if the overlay text is clicked in the parent
     if (!props.showingOverlay && this.state.preview) {
       this.setState({preview: false})
@@ -110,15 +105,8 @@ interface SelectInteractiveStateDialogState {
 
 export default class SelectInteractiveStateDialog extends React.Component<SelectInteractiveStateDialogProps, SelectInteractiveStateDialogState> {
 
-  constructor(props: SelectInteractiveStateDialogProps) {
-    super(props)
-
-    this.handleOnPreview = this.handleOnPreview.bind(this)
-    this.handleHideOverlay = this.handleHideOverlay.bind(this)
-
-    this.state = {
-      showOverlay: false
-    }
+  state = {
+    showOverlay: false
   }
 
   handleOnPreview = (showOverlay: boolean) => {

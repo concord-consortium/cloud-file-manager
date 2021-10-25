@@ -174,7 +174,7 @@ class InteractiveApiProvider extends ProviderInterface {
     const {allLinkedStates} = initInteractiveMessage
 
     // this is adapted from the existing autolaunch.ts file
-    if (allLinkedStates && allLinkedStates.length > 0) {
+    if (allLinkedStates?.length > 0) {
       // find linked state which is directly linked to this one along with the most recent linked state.
       const directlyLinkedState = allLinkedStates[0]
 
@@ -192,7 +192,7 @@ class InteractiveApiProvider extends ProviderInterface {
       const mostRecentLinkedStateTimestamp = new Date(mostRecentLinkedState.updatedAt || Date.now())
       const directlyLinkedStateTimestamp = new Date(directlyLinkedState.updatedAt ||  Date.now())
 
-      // current state is available, but there's most recent data in one of the linked states. Ask user.
+      // current state is available, but there's more recent data in one of the linked states. Ask user.
       if (interactiveStateAvailable && mostRecentLinkedStateTimestamp && mostRecentLinkedStateTimestamp > currentDataTimestamp) {
         interactiveState = await this.selectFromInteractiveStates({
           state1: mostRecentLinkedState,
