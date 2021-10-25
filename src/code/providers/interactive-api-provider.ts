@@ -200,10 +200,12 @@ class InteractiveApiProvider extends ProviderInterface {
           interactiveStateAvailable
         })
 
-        // remove existing interactive state, so the interactive will be initialized from the linked state next time (if it is not saved).
-        if (interactiveState === mostRecentLinkedState) {
-          // TODO: figure out why this isn't working (and doesn't work with setTimeout(...) either)
+        if (interactiveState === mostRecentLinkedState.interactiveState) {
+          // remove existing interactive state, so the interactive will be initialized from the linked state next time (if it is not saved).
           setInteractiveState(null)
+        } else {
+          // TODO: add support in AP for "touch" to update
+          // setInteractiveState("touch")
         }
 
         return interactiveState
