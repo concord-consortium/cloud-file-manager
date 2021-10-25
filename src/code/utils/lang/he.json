@@ -134,5 +134,5 @@
     "~DIALOG.SELECT_INTERACTIVE_STATE.CURRENT_VS_LINKED": "Another page contains more recent data. Which would you like to use?",
     "~DIALOG.SELECT_INTERACTIVE_STATE.LINKED_VS_LINKED": "There are two possibilities for continuing your work. Which version would you like to use?",
     "~DIALOG.SELECT_INTERACTIVE_STATE.TITLE": "What would you like to do?",
-    "~DIALOG.SELECT_INTERACTIVE_STATE.PREVIEW_INFO": "This is read-only preview of your data. Click anywhere to close it."
+    "~DIALOG.SELECT_INTERACTIVE_STATE.PREVIEW_INFO": "This is a read-only preview of your data. Click anywhere to close it."
 }
