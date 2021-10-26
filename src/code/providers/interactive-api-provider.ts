@@ -204,8 +204,8 @@ class InteractiveApiProvider extends ProviderInterface {
           // remove existing interactive state, so the interactive will be initialized from the linked state next time (if it is not saved).
           setInteractiveState(null)
         } else {
-          // TODO: add support in AP for "touch" to update
-          // setInteractiveState("touch")
+          // update the current interactive state timestamp so the next reload doesn't trigger this picker UI
+          setInteractiveState("touch")
         }
 
         return interactiveState
