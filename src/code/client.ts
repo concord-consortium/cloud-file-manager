@@ -1066,7 +1066,7 @@ class CloudFileManagerClient {
       interval = Math.round(interval / 1000)
     }
     if (interval > 0) {
-      return this._autoSaveInterval = window.setInterval((() => { if (this.shouldAutoSave()) { return this.save() } }), interval * 1000)
+      return this._autoSaveInterval = window.setInterval((() => { if (this.shouldAutoSave()) { console.log('autosaving'); return this.save() } }), interval * 1000)
     }
   }
 

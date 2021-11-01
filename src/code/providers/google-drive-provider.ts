@@ -296,7 +296,9 @@ class GoogleDriveProvider extends ProviderInterface {
     })
   }
 
-  close(metadata: CloudMetadata, callback: ProviderCloseCallback) {}
+  close(metadata: CloudMetadata, callback: ProviderCloseCallback) {
+    console.log('Closing GD File');
+  }
     // nothing to do now that the realtime library was removed
 
   canOpenSaved() { return true }
