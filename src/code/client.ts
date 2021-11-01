@@ -497,20 +497,28 @@ class CloudFileManagerClient {
     }
   }
 
+  closeCurrentFile() {
+    console.log('Closing file (rejected reauth)');
+    this.closeFile();
+  }
+
   confirmAuthorizeAndOpen(provider: ProviderInterface, providerParams: any) {
+    let rejectCallback = function () {this.closeCurrentFile();}.bind(this);
     // trigger authorize() from confirmation dialog to avoid popup blockers
     return this.confirm(tr("~CONFIRM.AUTHORIZE_OPEN"), () => {
-      return provider.authorize(() => {
-        this._event('willOpenFile', {op: "confirmAuthorizeAndOpen"})
-        return provider.openSaved(providerParams, (err: string | null, content: any, metadata: CloudMetadata) => {
-          if (err) {
-            return this.alert(err)
-          }
-          this._fileOpened(content, metadata, {openedContent: content.clone()}, this._getHashParams(metadata))
-          return provider.fileOpened(content, metadata)
+        return provider.authorize(() => {
+          this._event('willOpenFile', {op: "confirmAuthorizeAndOpen"})
+          return provider.openSaved(providerParams, (err: string | null, content: any, metadata: CloudMetadata) => {
+            if (err) {
+              return this.alert(err)
+            }
+            this._fileOpened(content, metadata, {openedContent: content.clone()}, this._getHashParams(metadata))
+            return provider.fileOpened(content, metadata)
+          })
         })
-      })
-    })
+      },
+      rejectCallback
+    );
   }
 
   openProviderFileWhenConnected(providerName: string, providerParams?: any) {
@@ -584,12 +592,14 @@ class CloudFileManagerClient {
   }
 
   confirmAuthorizeAndSave(stringContent: any, callback?: OpenSaveCallback) {
+    let rejectCallback = function () {this.closeCurrentFile();}.bind(this);
     // trigger authorize() from confirmation dialog to avoid popup blockers
     return this.confirm(tr("~CONFIRM.AUTHORIZE_SAVE"), () => {
       return this.state.metadata.provider.authorize(() => {
         return this.saveFile(stringContent, this.state.metadata, callback)
       })
-    })
+    },
+    rejectCallback)
   }
 
   save(callback: OpenSaveCallback = null) {
@@ -631,7 +641,7 @@ class CloudFileManagerClient {
       let failures
       if (err) {
         this._setState({ metadata, saving: null })
-        if (statusCode === 403) {
+        if (statusCode === 403 || statusCode === 401) {
           return this.confirmAuthorizeAndSave(stringContent, callback)
         } else {
           failures = this.state.failures
@@ -1116,8 +1126,8 @@ class CloudFileManagerClient {
     }
   }
 
-  confirm(message: any, callback: any) {
-    return this.confirmDialog({ message, callback })
+  confirm(message: any, callback: any, rejectCallback?: any) {
+    return this.confirmDialog({ message, callback, rejectCallback })
   }
 
   confirmDialog(params: any) {
