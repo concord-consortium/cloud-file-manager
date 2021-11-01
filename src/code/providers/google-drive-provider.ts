@@ -134,20 +134,23 @@ class GoogleDriveProvider extends ProviderInterface {
       .catch(() => this.gapiLoadState = ELoadState.errored)  // eslint-disable-line @typescript-eslint/dot-notation
   }
 
-  authorized(authCallback: (authorized: boolean) => void) {
+  /**
+   * Invokes the provided callback with whether there is an authenticated user.
+   */
+  authorized(authCallback: ((authorized: boolean) => void)) {
     if (!(authCallback == null)) { this.authCallback = authCallback }
     if (authCallback) {
       if (this.authToken) {
         return authCallback(true)
       } else {
-        return this.authorize(GoogleDriveProvider.IMMEDIATE)
+        return this.doAuthorize(GoogleDriveProvider.IMMEDIATE)
       }
     } else {
       return this.authToken !== null
     }
   }
 
-  authorize(immediate: boolean) {
+  doAuthorize(immediate: boolean) {
     return this._waitForGAPILoad().then(() => {
       const auth = gapi.auth2.getAuthInstance()
       const finishAuthorization = () => {
@@ -174,6 +177,12 @@ class GoogleDriveProvider extends ProviderInterface {
         }
       }
     })
+  }
+
+  authorize(callback:any) {
+    this.doAuthorize(!GoogleDriveProvider.IMMEDIATE).then((result) => {
+      if (callback) { callback (result);}
+    });
   }
 
   autoRenewToken(authToken: any) {

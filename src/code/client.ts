@@ -528,9 +528,9 @@ class CloudFileManagerClient {
   openProviderFile(providerName: string, providerParams?: any) {
     const provider = this.providers[providerName]
     if (provider) {
-      return provider.authorized((authorized: boolean) => {
+      return provider.authorized((isAuthorized: boolean) => {
         // we can open the document without authorization in some cases
-        if (authorized || !provider.isAuthorizationRequired()) {
+        if (isAuthorized || !provider.isAuthorizationRequired()) {
           this._event('willOpenFile', {op: "openProviderFile"})
           return provider.openSaved(providerParams, (err: string | null, content: any, metadata: CloudMetadata) => {
             if (err) {
