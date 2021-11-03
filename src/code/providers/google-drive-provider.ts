@@ -139,6 +139,12 @@ class GoogleDriveProvider extends ProviderInterface {
    */
   authorized(authCallback: ((authorized: boolean) => void)) {
     if (!(authCallback == null)) { this.authCallback = authCallback }
+    if (this.gapiLoadState === ELoadState.loaded && !authCallback) {
+      return gapi.auth2.getAuthInstance().isSignedIn.get();
+    }
+    if (this.gapiLoadState === ELoadState.loaded && authCallback) {
+      return authCallback(gapi.auth2.getAuthInstance().isSignedIn.get());
+    }
     if (authCallback) {
       if (this.authToken) {
         return authCallback(true)
