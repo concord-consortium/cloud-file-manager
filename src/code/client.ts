@@ -646,8 +646,7 @@ class CloudFileManagerClient {
     return metadata.provider.save(currentContent, metadata, (err: string | null, statusCode: number) => {
       let failures
       if (err) {
-        this._setState({ metadata, saving: null })
-        if (statusCode === 403 || statusCode === 401) {
+        if (statusCode === 401 || statusCode === 403 || statusCode === 404) {
           return this.confirmAuthorizeAndSave(stringContent, callback)
         } else {
           failures = this.state.failures
@@ -661,6 +660,8 @@ class CloudFileManagerClient {
             return this.alert(err)
           }
         }
+        metadata.autoSaveDisabled = true;
+        this._setState({ metadata, saving: null })
       } else {
         this._setState({ failures: 0 })
         if (this.state.metadata !== metadata) {
