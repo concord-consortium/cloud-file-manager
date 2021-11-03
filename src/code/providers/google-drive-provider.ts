@@ -46,7 +46,9 @@ const GoogleDriveAuthorizationDialog = createReactClassFactory({
   },
 
   authenticate() {
-    return this.props.provider.authorize(GoogleDriveProvider.SHOW_POPUP)
+    // we rely on the fact that the prior call to authorized has set the callback
+    // we need here
+    return this.props.provider.authorize(this.props.provider.authCallback)
   },
 
   render() {
