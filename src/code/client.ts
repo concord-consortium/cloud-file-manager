@@ -497,13 +497,19 @@ class CloudFileManagerClient {
     }
   }
 
-  closeCurrentFile() {
+  /**
+   * Disassociates the current document from its provider.
+   *
+   * This is important specifically for autosaving providers. When authenticated
+   * state is lost we must not continue to autosave.
+   */
+  disconnectCurrentFile() {
     console.log('Closing file (rejected reauth)');
     this.closeFile();
   }
 
   confirmAuthorizeAndOpen(provider: ProviderInterface, providerParams: any) {
-    let rejectCallback = function () {this.closeCurrentFile();}.bind(this);
+    let rejectCallback = function () {this.disconnectCurrentFile();}.bind(this);
     // trigger authorize() from confirmation dialog to avoid popup blockers
     return this.confirm(tr("~CONFIRM.AUTHORIZE_OPEN"), () => {
         return provider.authorize(() => {
@@ -592,7 +598,7 @@ class CloudFileManagerClient {
   }
 
   confirmAuthorizeAndSave(stringContent: any, callback?: OpenSaveCallback) {
-    let rejectCallback = function () {this.closeCurrentFile();}.bind(this);
+    let rejectCallback = function () {this.disconnectCurrentFile();}.bind(this);
     // trigger authorize() from confirmation dialog to avoid popup blockers
     return this.confirm(tr("~CONFIRM.AUTHORIZE_SAVE"), () => {
       return this.state.metadata.provider.authorize(() => {
