@@ -505,7 +505,10 @@ class CloudFileManagerClient {
    */
   disconnectCurrentFile() {
     console.log('Closing file (rejected reauth)');
-    this.closeFile();
+    if (this.state.metadata) { this.state.metadata.provider = null; }
+    this._setState({saving: null, saved: null});
+    window.location.hash = "";
+    this._event('ready');
   }
 
   confirmAuthorizeAndOpen(provider: ProviderInterface, providerParams: any) {
