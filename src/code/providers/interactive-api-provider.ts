@@ -134,8 +134,8 @@ class InteractiveApiProvider extends ProviderInterface {
     }
   }
 
-  async readAttachmentContent(interactiveState: InteractiveStateAttachment) {
-    const response = await readAttachment(interactiveState.__attachment__)
+  async readAttachmentContent(interactiveState: InteractiveStateAttachment, questionId?: string) {
+    const response = await readAttachment({name: interactiveState.__attachment__, questionId})
     if (response.ok) {
       // TODO: Scott suggests reading contentType from response rather than from interactiveState
       return interactiveState.contentType === "application/json" ? response.json() : response.text()
@@ -145,9 +145,9 @@ class InteractiveApiProvider extends ProviderInterface {
     }
   }
 
-  async processRawInteractiveState(interactiveState: any) {
+  async processRawInteractiveState(interactiveState: any, questionId?: string) {
     return isInteractiveStateAttachment(interactiveState)
-            ? await this.readAttachmentContent(interactiveState)
+            ? await this.readAttachmentContent(interactiveState, questionId)
             : cloneDeep(interactiveState)
   }
 
@@ -160,15 +160,16 @@ class InteractiveApiProvider extends ProviderInterface {
     })
   }
 
-  async getInitialInteractiveState(initInteractiveMessage: IInitInteractive) {
+  async getInitialInteractiveStateAndQuestionId(initInteractiveMessage: IInitInteractive): Promise<{interactiveState: {}, questionId?: string}> {
     if (initInteractiveMessage.mode === "authoring") {
       return null
     }
     if (initInteractiveMessage.mode === "report") {
-      return initInteractiveMessage.interactiveState
+      return {interactiveState: initInteractiveMessage.interactiveState}
     }
 
     let interactiveState = initInteractiveMessage.interactiveState
+    let questionId = initInteractiveMessage.interactive.questionId
 
     const interactiveStateAvailable = !!interactiveState
     const {allLinkedStates} = initInteractiveMessage
@@ -200,6 +201,10 @@ class InteractiveApiProvider extends ProviderInterface {
           interactiveStateAvailable
         })
 
+        questionId = interactiveState === mostRecentLinkedState.interactiveState
+          ? mostRecentLinkedState.interactive.questionId
+          : initInteractiveMessage.interactive.questionId
+
         if (interactiveState === mostRecentLinkedState.interactiveState) {
           // remove existing interactive state, so the interactive will be initialized from the linked state next time (if it is not saved).
           setInteractiveState(null)
@@ -208,7 +213,7 @@ class InteractiveApiProvider extends ProviderInterface {
           setInteractiveState("touch")
         }
 
-        return interactiveState
+        return {interactiveState, questionId}
       }
 
       // there's no current state and directly linked interactive isn't the most recent one. Ask user.
@@ -216,29 +221,40 @@ class InteractiveApiProvider extends ProviderInterface {
           directlyLinkedState !== mostRecentLinkedState &&
           directlyLinkedStateTimestamp && mostRecentLinkedStateTimestamp &&
           mostRecentLinkedStateTimestamp > directlyLinkedStateTimestamp) {
-        return this.selectFromInteractiveStates({
+        interactiveState = await this.selectFromInteractiveStates({
           state1: mostRecentLinkedState,
           state2: directlyLinkedState,
           interactiveStateAvailable
         })
+
+        questionId = interactiveState === mostRecentLinkedState.interactiveState
+          ? mostRecentLinkedState.interactive.questionId
+          : directlyLinkedState.interactive.questionId
+
+          return {interactiveState, questionId}
       }
 
       // there's no current state, but the directly linked state is the most recent one.
       if (!interactiveStateAvailable && directlyLinkedState) {
         interactiveState = directlyLinkedState.interactiveState
+        questionId = directlyLinkedState.interactive.questionId
       }
     }
 
-    return interactiveState
+    return {interactiveState, questionId}
+  }
+
+  getQuestionId(initInteractiveMessage: IInitInteractive) {
+    return initInteractiveMessage.mode === "runtime" ? initInteractiveMessage.interactive.questionId : undefined
   }
 
   async handleInitialInteractiveState(initInteractiveMessage: IInitInteractive) {
     let interactiveState: any
 
-    const initialInteractiveState = await this.getInitialInteractiveState(initInteractiveMessage)
+    const {interactiveState: initialInteractiveState, questionId} = await this.getInitialInteractiveStateAndQuestionId(initInteractiveMessage)
 
     try {
-      interactiveState = await this.processRawInteractiveState(initialInteractiveState)
+      interactiveState = await this.processRawInteractiveState(initialInteractiveState, questionId)
     }
     catch(e) {
       // on initial interactive state there's not much we can do on error besides ignore it
@@ -277,9 +293,10 @@ class InteractiveApiProvider extends ProviderInterface {
   }
 
   async load(metadata: CloudMetadata, callback: ProviderLoadCallback) {
-    await this.getInitInteractiveMessage()
+    const initInteractiveMessage = await this.getInitInteractiveMessage()
     try {
-      const interactiveState = await this.processRawInteractiveState(await getInteractiveState())
+      const questionId = this.getQuestionId(initInteractiveMessage)
+      const interactiveState = await this.processRawInteractiveState(await getInteractiveState(), questionId)
       // following the example of the LaraProvider, wrap the content in a CFM envelope
       const content = cloudContentFactory.createEnvelopedCloudContent(interactiveState)
       callback(null, content, metadata)

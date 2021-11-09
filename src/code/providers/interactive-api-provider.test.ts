@@ -107,7 +107,12 @@ describe('InteractiveApiProvider', () => {
       version: 1,
       mode: "runtime",
       interactiveStateUrl: mockInteractiveStateUrl,
-      classInfoUrl: 'https://concord.org/classInfo'
+      classInfoUrl: 'https://concord.org/classInfo',
+      interactive: {
+        id: 1,
+        name: "",
+        questionId: "mw_interactive_100"
+      }
     }
     mockApi.getInitInteractiveMessage
       .mockImplementation(() => Promise.resolve(mockInitInteractiveMessage))
@@ -163,7 +168,12 @@ describe('InteractiveApiProvider', () => {
       // initInteractiveMessage contains runRemoteEndpoint
       runRemoteEndpoint: mockRemoteEndpoint,
       interactiveStateUrl: mockInteractiveStateUrl,
-      classInfoUrl: 'https://concord.org/classInfo'
+      classInfoUrl: 'https://concord.org/classInfo',
+      interactive: {
+        id: 1,
+        name: "",
+        questionId: "mw_interactive_100"
+      }
     }
     mockApi.getInitInteractiveMessage
       .mockImplementation(() => Promise.resolve(mockInitInteractiveMessage))
@@ -193,7 +203,12 @@ describe('InteractiveApiProvider', () => {
       version: 1,
       mode: "runtime",
       interactiveStateUrl: mockInteractiveStateUrl,
-      classInfoUrl: 'https://concord.org/classInfo'
+      classInfoUrl: 'https://concord.org/classInfo',
+      interactive: {
+        id: 1,
+        name: "",
+        questionId: "mw_interactive_100"
+      }
     }
     mockApi.getInitInteractiveMessage
       .mockImplementation(() => Promise.resolve(mockInitInteractiveMessage))
@@ -219,7 +234,12 @@ describe('InteractiveApiProvider', () => {
     const mockInitInteractiveMessage: Partial<IRuntimeInitInteractive> = {
       version: 1,
       mode: "runtime",
-      classInfoUrl: 'https://concord.org/classInfo'
+      classInfoUrl: 'https://concord.org/classInfo',
+      interactive: {
+        id: 1,
+        name: "",
+        questionId: "mw_interactive_100"
+      }
     }
     mockApi.getInitInteractiveMessage
       .mockImplementation(() => Promise.resolve(mockInitInteractiveMessage))
@@ -248,7 +268,12 @@ describe('InteractiveApiProvider', () => {
       version: 1,
       mode: "runtime",
       interactiveState: "foo",
-      classInfoUrl: 'https://concord.org/classInfo'
+      classInfoUrl: 'https://concord.org/classInfo',
+      interactive: {
+        id: 1,
+        name: "",
+        questionId: "mw_interactive_100"
+      }
     }
     mockApi.getInitInteractiveMessage
       .mockImplementation(() => Promise.resolve(mockInitInteractiveMessage))
@@ -283,9 +308,18 @@ describe('InteractiveApiProvider', () => {
       hasLinkedInteractive: true,
       allLinkedStates: [{
         interactiveState: {foo: "test"},
-        interactive: null
+        interactive: {
+          id: 1,
+          name: "",
+          questionId: "mw_interactive_100"
+        }
       }],
-      classInfoUrl: 'https://concord.org/classInfo'
+      classInfoUrl: 'https://concord.org/classInfo',
+      interactive: {
+        id: 1,
+        name: "",
+        questionId: "mw_interactive_100"
+      }
     }
     mockApi.getInitInteractiveMessage
       .mockImplementation(() => Promise.resolve(mockInitInteractiveMessage))
@@ -320,9 +354,18 @@ describe('InteractiveApiProvider', () => {
       hasLinkedInteractive: true,
       allLinkedStates: [{
         interactiveState: {foo: "test"},
-        interactive: null
+        interactive: {
+          id: 1,
+          name: "",
+          questionId: "mw_interactive_100"
+        }
       }],
-      classInfoUrl: 'https://concord.org/classInfo'
+      classInfoUrl: 'https://concord.org/classInfo',
+      interactive: {
+        id: 1,
+        name: "",
+        questionId: "mw_interactive_100"
+      }
     }
     mockApi.getInitInteractiveMessage
       .mockImplementation(() => Promise.resolve(mockInitInteractiveMessage))
@@ -353,7 +396,12 @@ describe('InteractiveApiProvider', () => {
     const mockInitInteractiveMessage: Partial<IRuntimeInitInteractive> = {
       version: 1,
       mode: "runtime",
-      classInfoUrl: 'https://concord.org/classInfo'
+      classInfoUrl: 'https://concord.org/classInfo',
+      interactive: {
+        id: 1,
+        name: "",
+        questionId: "mw_interactive_100"
+      }
     }
     mockApi.getInitInteractiveMessage
       .mockImplementation(() => Promise.resolve(mockInitInteractiveMessage))
@@ -384,7 +432,12 @@ describe('InteractiveApiProvider', () => {
     const mockInitInteractiveMessage: Partial<IRuntimeInitInteractive> = {
       version: 1,
       mode: "runtime",
-      classInfoUrl: 'https://concord.org/classInfo'
+      classInfoUrl: 'https://concord.org/classInfo',
+      interactive: {
+        id: 1,
+        name: "",
+        questionId: "mw_interactive_100"
+      }
     }
     mockApi.getInitInteractiveMessage
       .mockImplementation(() => Promise.resolve(mockInitInteractiveMessage))
@@ -410,7 +463,12 @@ describe('InteractiveApiProvider', () => {
     const mockInitInteractiveMessage: Partial<IRuntimeInitInteractive> = {
       version: 1,
       mode: "runtime",
-      classInfoUrl: 'https://concord.org/classInfo'
+      classInfoUrl: 'https://concord.org/classInfo',
+      interactive: {
+        id: 1,
+        name: "",
+        questionId: "mw_interactive_100"
+      }
     }
     mockApi.getInitInteractiveMessage
       .mockImplementation(() => Promise.resolve(mockInitInteractiveMessage))
@@ -478,7 +536,12 @@ describe('InteractiveApiProvider', () => {
     const mockInitInteractiveMessage: Partial<IRuntimeInitInteractive> = {
       version: 1,
       mode: "runtime",
-      classInfoUrl: 'https://concord.org/classInfo'
+      classInfoUrl: 'https://concord.org/classInfo',
+      interactive: {
+        id: 1,
+        name: "",
+        questionId: "mw_interactive_100"
+      }
     }
     mockApi.getInitInteractiveMessage
       .mockImplementation(() => Promise.resolve(mockInitInteractiveMessage))
@@ -526,4 +589,4 @@ describe('InteractiveApiProvider', () => {
     expect(loadCallback.mock.calls[0][0]).toBeNull()
   })
 
-})
+});
