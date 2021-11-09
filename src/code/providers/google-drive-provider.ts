@@ -138,6 +138,8 @@ class GoogleDriveProvider extends ProviderInterface {
 
   /**
    * Invokes the provided callback with whether there is an authenticated user.
+   * If authCallback is not defined, return the best result that can be had
+   * synchronously.
    */
   authorized(authCallback: ((authorized: boolean) => void)) {
     if (!(authCallback == null)) { this.authCallback = authCallback }
@@ -226,44 +228,55 @@ class GoogleDriveProvider extends ProviderInterface {
   }
 
   list(metadata: CloudMetadata, callback: ProviderListCallback) {
-    return this._waitForGAPILoad().then(() => {
-      const mimeTypesQuery = (this.readableMimetypes || []).map((mimeType: any) => `mimeType = '${mimeType}'`).join(" or ")
-      const request = gapi.client.drive.files.list({
-        fields: "files(id, mimeType, name, capabilities(canEdit))",
-        q: `trashed = false and (${mimeTypesQuery} or mimeType = 'application/vnd.google-apps.folder') and '${metadata?.providerData.id || 'root'}' in parents`
-      })
-      return request.execute((result: any) => {
-        if (!result || result.error) { return callback(this._apiError(result, 'Unable to list files')) }
-        const list = []
-        const files = result.files
-        if (files?.length > 0) {
-          for (let i = 0; i < files.length; i++) {
-            const item = files[i]
-            const type = item.mimeType === 'application/vnd.google-apps.folder' ? CloudMetadata.Folder : CloudMetadata.File
-            if ((type === CloudMetadata.Folder) || this.matchesExtension(item.name)) {
-              list.push(new CloudMetadata({
-                name: item.name,
-                type,
-                parent: metadata,
-                overwritable: item.capabilities.canEdit,
-                provider: this,
-                providerData: {
-                  id: item.id
-                }
-              })
-              )
+    this.authorized((isAuthorized) => {
+      if (isAuthorized) {
+        const mimeTypesQuery = (this.readableMimetypes || []).map((mimeType: any) => `mimeType = '${mimeType}'`).join(" or ")
+        const request = gapi.client.drive.files.list({
+          fields: "files(id, mimeType, name, capabilities(canEdit))",
+          q: `trashed = false and (${mimeTypesQuery} or mimeType = 'application/vnd.google-apps.folder') and '${metadata?.providerData.id || 'root'}' in parents`
+        })
+        return request.execute((result: any) => {
+          if (!result || result.error) {
+            return callback(this._apiError(result, 'Unable to list files'))
+          }
+          const list = []
+          const files = result.files
+          if (files?.length > 0) {
+            for (let i = 0; i < files.length; i++) {
+              const item = files[i]
+              const type = item.mimeType === 'application/vnd.google-apps.folder' ? CloudMetadata.Folder : CloudMetadata.File
+              if ((type === CloudMetadata.Folder) || this.matchesExtension(item.name)) {
+                list.push(new CloudMetadata({
+                      name: item.name,
+                      type,
+                      parent: metadata,
+                      overwritable: item.capabilities.canEdit,
+                      provider: this,
+                      providerData: {
+                        id: item.id
+                      }
+                    })
+                )
+              }
             }
           }
-        }
-        list.sort((a, b) => {
-          const lowerA = a.name.toLowerCase()
-          const lowerB = b.name.toLowerCase()
-          if (lowerA < lowerB) { return -1 }
-          if (lowerA > lowerB) { return 1 }
-          return 0
+          list.sort((a, b) => {
+            const lowerA = a.name.toLowerCase()
+            const lowerB = b.name.toLowerCase()
+            if (lowerA < lowerB) {
+              return -1
+            }
+            if (lowerA > lowerB) {
+              return 1
+            }
+            return 0
+          })
+          return callback(null, list)
         })
-        return callback(null, list)
-      })
+      }
+      else {
+        return callback(null, [])
+      }
     })
   }
 

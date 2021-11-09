@@ -12,10 +12,10 @@
 import _ from 'lodash'
 import createReactClass from 'create-react-class'
 import ReactDOMFactories from 'react-dom-factories'
-import { createReactClassFactory } from '../create-react-factory'
-import { CloudMetadata }  from '../providers/provider-interface'
+import {createReactClassFactory} from '../create-react-factory'
+import {CloudMetadata} from '../providers/provider-interface'
 
-import tr  from '../utils/translate'
+import tr from '../utils/translate'
 
 const {div, i, input, button} = ReactDOMFactories
 const italic = i
@@ -175,7 +175,7 @@ const FileDialogTab = createReactClass({
 
   // NP 2020-04-23 Copied from authorize-mixin.js
   render() {
-    if (this._isAuthorized || this.state.authorized) {
+    if (!this.props.provider.isAuthorizationRequired() || this.props.provider.authorized()) {
       return this.renderWhenAuthorized()
     } else {
       return this.props.provider.renderAuthorizationDialog()
