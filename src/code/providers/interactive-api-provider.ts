@@ -134,8 +134,8 @@ class InteractiveApiProvider extends ProviderInterface {
     }
   }
 
-  async readAttachmentContent(interactiveState: InteractiveStateAttachment, questionId?: string) {
-    const response = await readAttachment({name: interactiveState.__attachment__, questionId})
+  async readAttachmentContent(interactiveState: InteractiveStateAttachment, interactiveId?: string) {
+    const response = await readAttachment({name: interactiveState.__attachment__, interactiveId})
     if (response.ok) {
       // TODO: Scott suggests reading contentType from response rather than from interactiveState
       return interactiveState.contentType === "application/json" ? response.json() : response.text()
@@ -145,9 +145,9 @@ class InteractiveApiProvider extends ProviderInterface {
     }
   }
 
-  async processRawInteractiveState(interactiveState: any, questionId?: string) {
+  async processRawInteractiveState(interactiveState: any, interactiveId?: string) {
     return isInteractiveStateAttachment(interactiveState)
-            ? await this.readAttachmentContent(interactiveState, questionId)
+            ? await this.readAttachmentContent(interactiveState, interactiveId)
             : cloneDeep(interactiveState)
   }
 
@@ -160,7 +160,7 @@ class InteractiveApiProvider extends ProviderInterface {
     })
   }
 
-  async getInitialInteractiveStateAndQuestionId(initInteractiveMessage: IInitInteractive): Promise<{interactiveState: {}, questionId?: string}> {
+  async getInitialInteractiveStateAndinteractiveId(initInteractiveMessage: IInitInteractive): Promise<{interactiveState: {}, interactiveId?: string}> {
     if (initInteractiveMessage.mode === "authoring") {
       return null
     }
@@ -169,7 +169,7 @@ class InteractiveApiProvider extends ProviderInterface {
     }
 
     let interactiveState = initInteractiveMessage.interactiveState
-    let questionId = initInteractiveMessage.interactive.questionId
+    let interactiveId = initInteractiveMessage.interactive.id
 
     const interactiveStateAvailable = !!interactiveState
     const {allLinkedStates} = initInteractiveMessage
@@ -201,9 +201,9 @@ class InteractiveApiProvider extends ProviderInterface {
           interactiveStateAvailable
         })
 
-        questionId = interactiveState === mostRecentLinkedState.interactiveState
-          ? mostRecentLinkedState.interactive.questionId
-          : initInteractiveMessage.interactive.questionId
+        interactiveId = interactiveState === mostRecentLinkedState.interactiveState
+          ? mostRecentLinkedState.interactive.id
+          : initInteractiveMessage.interactive.id
 
         if (interactiveState === mostRecentLinkedState.interactiveState) {
           // remove existing interactive state, so the interactive will be initialized from the linked state next time (if it is not saved).
@@ -213,7 +213,7 @@ class InteractiveApiProvider extends ProviderInterface {
           setInteractiveState("touch")
         }
 
-        return {interactiveState, questionId}
+        return {interactiveState, interactiveId}
       }
 
       // there's no current state and directly linked interactive isn't the most recent one. Ask user.
@@ -227,34 +227,34 @@ class InteractiveApiProvider extends ProviderInterface {
           interactiveStateAvailable
         })
 
-        questionId = interactiveState === mostRecentLinkedState.interactiveState
-          ? mostRecentLinkedState.interactive.questionId
-          : directlyLinkedState.interactive.questionId
+        interactiveId = interactiveState === mostRecentLinkedState.interactiveState
+          ? mostRecentLinkedState.interactive.id
+          : directlyLinkedState.interactive.id
 
-          return {interactiveState, questionId}
+          return {interactiveState, interactiveId}
       }
 
       // there's no current state, but the directly linked state is the most recent one.
       if (!interactiveStateAvailable && directlyLinkedState) {
         interactiveState = directlyLinkedState.interactiveState
-        questionId = directlyLinkedState.interactive.questionId
+        interactiveId = directlyLinkedState.interactive.id
       }
     }
 
-    return {interactiveState, questionId}
+    return {interactiveState, interactiveId}
   }
 
-  getQuestionId(initInteractiveMessage: IInitInteractive) {
-    return initInteractiveMessage.mode === "runtime" ? initInteractiveMessage.interactive.questionId : undefined
+  getinteractiveId(initInteractiveMessage: IInitInteractive) {
+    return initInteractiveMessage.mode === "runtime" ? initInteractiveMessage.interactive.id : undefined
   }
 
   async handleInitialInteractiveState(initInteractiveMessage: IInitInteractive) {
     let interactiveState: any
 
-    const {interactiveState: initialInteractiveState, questionId} = await this.getInitialInteractiveStateAndQuestionId(initInteractiveMessage)
+    const {interactiveState: initialInteractiveState, interactiveId} = await this.getInitialInteractiveStateAndinteractiveId(initInteractiveMessage)
 
     try {
-      interactiveState = await this.processRawInteractiveState(initialInteractiveState, questionId)
+      interactiveState = await this.processRawInteractiveState(initialInteractiveState, interactiveId)
     }
     catch(e) {
       // on initial interactive state there's not much we can do on error besides ignore it
@@ -295,8 +295,8 @@ class InteractiveApiProvider extends ProviderInterface {
   async load(metadata: CloudMetadata, callback: ProviderLoadCallback) {
     const initInteractiveMessage = await this.getInitInteractiveMessage()
     try {
-      const questionId = this.getQuestionId(initInteractiveMessage)
-      const interactiveState = await this.processRawInteractiveState(await getInteractiveState(), questionId)
+      const interactiveId = this.getinteractiveId(initInteractiveMessage)
+      const interactiveState = await this.processRawInteractiveState(await getInteractiveState(), interactiveId)
       // following the example of the LaraProvider, wrap the content in a CFM envelope
       const content = cloudContentFactory.createEnvelopedCloudContent(interactiveState)
       callback(null, content, metadata)

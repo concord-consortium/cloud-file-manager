@@ -109,9 +109,8 @@ describe('InteractiveApiProvider', () => {
       interactiveStateUrl: mockInteractiveStateUrl,
       classInfoUrl: 'https://concord.org/classInfo',
       interactive: {
-        id: 1,
-        name: "",
-        questionId: "mw_interactive_100"
+        id: "mw_interactive_100",
+        name: ""
       }
     }
     mockApi.getInitInteractiveMessage
@@ -170,9 +169,8 @@ describe('InteractiveApiProvider', () => {
       interactiveStateUrl: mockInteractiveStateUrl,
       classInfoUrl: 'https://concord.org/classInfo',
       interactive: {
-        id: 1,
-        name: "",
-        questionId: "mw_interactive_100"
+        id: "mw_interactive_100",
+        name: ""
       }
     }
     mockApi.getInitInteractiveMessage
@@ -205,9 +203,8 @@ describe('InteractiveApiProvider', () => {
       interactiveStateUrl: mockInteractiveStateUrl,
       classInfoUrl: 'https://concord.org/classInfo',
       interactive: {
-        id: 1,
-        name: "",
-        questionId: "mw_interactive_100"
+        id: "mw_interactive_100",
+        name: ""
       }
     }
     mockApi.getInitInteractiveMessage
@@ -236,9 +233,8 @@ describe('InteractiveApiProvider', () => {
       mode: "runtime",
       classInfoUrl: 'https://concord.org/classInfo',
       interactive: {
-        id: 1,
-        name: "",
-        questionId: "mw_interactive_100"
+        id: "mw_interactive_100",
+        name: ""
       }
     }
     mockApi.getInitInteractiveMessage
@@ -270,9 +266,8 @@ describe('InteractiveApiProvider', () => {
       interactiveState: "foo",
       classInfoUrl: 'https://concord.org/classInfo',
       interactive: {
-        id: 1,
-        name: "",
-        questionId: "mw_interactive_100"
+        id: "mw_interactive_100",
+        name: ""
       }
     }
     mockApi.getInitInteractiveMessage
@@ -309,16 +304,14 @@ describe('InteractiveApiProvider', () => {
       allLinkedStates: [{
         interactiveState: {foo: "test"},
         interactive: {
-          id: 1,
-          name: "",
-          questionId: "mw_interactive_100"
+          id: "mw_interactive_101",
+          name: ""
         }
       }],
       classInfoUrl: 'https://concord.org/classInfo',
       interactive: {
-        id: 1,
-        name: "",
-        questionId: "mw_interactive_100"
+        id: "mw_interactive_100",
+        name: ""
       }
     }
     mockApi.getInitInteractiveMessage
@@ -355,16 +348,14 @@ describe('InteractiveApiProvider', () => {
       allLinkedStates: [{
         interactiveState: {foo: "test"},
         interactive: {
-          id: 1,
-          name: "",
-          questionId: "mw_interactive_100"
+          id: "mw_interactive_101",
+          name: ""
         }
       }],
       classInfoUrl: 'https://concord.org/classInfo',
       interactive: {
-        id: 1,
-        name: "",
-        questionId: "mw_interactive_100"
+        id: "mw_interactive_100",
+        name: ""
       }
     }
     mockApi.getInitInteractiveMessage
@@ -398,9 +389,8 @@ describe('InteractiveApiProvider', () => {
       mode: "runtime",
       classInfoUrl: 'https://concord.org/classInfo',
       interactive: {
-        id: 1,
-        name: "",
-        questionId: "mw_interactive_100"
+        id: "mw_interactive_100",
+        name: ""
       }
     }
     mockApi.getInitInteractiveMessage
@@ -434,9 +424,8 @@ describe('InteractiveApiProvider', () => {
       mode: "runtime",
       classInfoUrl: 'https://concord.org/classInfo',
       interactive: {
-        id: 1,
-        name: "",
-        questionId: "mw_interactive_100"
+        id: "mw_interactive_100",
+        name: ""
       }
     }
     mockApi.getInitInteractiveMessage
@@ -465,9 +454,8 @@ describe('InteractiveApiProvider', () => {
       mode: "runtime",
       classInfoUrl: 'https://concord.org/classInfo',
       interactive: {
-        id: 1,
-        name: "",
-        questionId: "mw_interactive_100"
+        id: "mw_interactive_100",
+        name: ""
       }
     }
     mockApi.getInitInteractiveMessage
@@ -538,9 +526,8 @@ describe('InteractiveApiProvider', () => {
       mode: "runtime",
       classInfoUrl: 'https://concord.org/classInfo',
       interactive: {
-        id: 1,
-        name: "",
-        questionId: "mw_interactive_100"
+        id: "mw_interactive_100",
+        name: ""
       }
     }
     mockApi.getInitInteractiveMessage
@@ -589,4 +576,4 @@ describe('InteractiveApiProvider', () => {
     expect(loadCallback.mock.calls[0][0]).toBeNull()
   })
 
-});
+})
