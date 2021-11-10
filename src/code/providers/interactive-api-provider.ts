@@ -8,9 +8,10 @@ import {
   ProviderLoadCallback, ProviderOpenCallback, ProviderSaveCallback
 }  from './provider-interface'
 import {
-  getInitInteractiveMessage, getInteractiveState as _getInteractiveState, IRuntimeInitInteractive,
+  getInitInteractiveMessage, getInteractiveState as _getInteractiveState, IInitInteractive, IInteractiveStateProps,
   readAttachment, setInteractiveState as _setInteractiveState, writeAttachment
 } from '@concord-consortium/lara-interactive-api'
+import { SelectInteractiveStateDialogProps } from '../views/select-interactive-state-dialog-view'
 const getInteractiveState = () => cloneDeep(_getInteractiveState())
 const setInteractiveState = <InteractiveState>(newState: InteractiveState | null) =>
         _setInteractiveState(cloneDeep(newState))
@@ -50,7 +51,7 @@ class InteractiveApiProvider extends ProviderInterface {
   static Name = 'interactiveApi'
   client: CloudFileManagerClient
   options: CFMLaraProviderOptions
-  initInteractivePromise: Promise<IRuntimeInitInteractive>
+  initInteractivePromise: Promise<IInitInteractive>
   readyPromise: Promise<boolean>
 
   constructor(options: CFMLaraProviderOptions, client: CloudFileManagerClient) {
@@ -75,7 +76,7 @@ class InteractiveApiProvider extends ProviderInterface {
 
   getInitInteractiveMessage() {
     return this.initInteractivePromise ??
-            (this.initInteractivePromise = getInitInteractiveMessage() as Promise<IRuntimeInitInteractive>)
+            (this.initInteractivePromise = getInitInteractiveMessage() as Promise<IInitInteractive>)
   }
 
   isReady() {
@@ -105,7 +106,11 @@ class InteractiveApiProvider extends ProviderInterface {
     }
   }
 
-  async handleRunRemoteEndpoint(initInteractiveMessage: IRuntimeInitInteractive) {
+  async handleRunRemoteEndpoint(initInteractiveMessage: IInitInteractive) {
+    if (initInteractiveMessage.mode !== "runtime") {
+      return
+    }
+
     // no point in tracking down the run_remote_endpoint if we can't notify the client
     if (!initInteractiveMessage || !this.options?.logLaraData) return
 
@@ -129,8 +134,8 @@ class InteractiveApiProvider extends ProviderInterface {
     }
   }
 
-  async readAttachmentContent(interactiveState: InteractiveStateAttachment) {
-    const response = await readAttachment(interactiveState.__attachment__)
+  async readAttachmentContent(interactiveState: InteractiveStateAttachment, interactiveId?: string) {
+    const response = await readAttachment({name: interactiveState.__attachment__, interactiveId})
     if (response.ok) {
       // TODO: Scott suggests reading contentType from response rather than from interactiveState
       return interactiveState.contentType === "application/json" ? response.json() : response.text()
@@ -140,29 +145,116 @@ class InteractiveApiProvider extends ProviderInterface {
     }
   }
 
-  async processRawInteractiveState(interactiveState: any) {
+  async processRawInteractiveState(interactiveState: any, interactiveId?: string) {
     return isInteractiveStateAttachment(interactiveState)
-            ? await this.readAttachmentContent(interactiveState)
+            ? await this.readAttachmentContent(interactiveState, interactiveId)
             : cloneDeep(interactiveState)
   }
 
-  getInitialInteractiveState(initInteractiveMessage: IRuntimeInitInteractive) {
-    let interactiveState = initInteractiveMessage.interactiveState
-
-    if (!interactiveState && (initInteractiveMessage.hasLinkedInteractive && initInteractiveMessage.linkedState)) {
-      interactiveState = initInteractiveMessage.linkedState
-    }
-
-    return interactiveState
+  // the client uses a callback pattern, so wrap it in an async wrapper
+  async selectFromInteractiveStates(props: SelectInteractiveStateDialogProps) {
+    return new Promise<{}>((resolve, _reject) => {
+      this.client.selectInteractiveStateDialog(props, (selected) => {
+        resolve(selected)
+      })
+    })
   }
 
-  async handleInitialInteractiveState(initInteractiveMessage: IRuntimeInitInteractive) {
+  async getInitialInteractiveStateAndinteractiveId(initInteractiveMessage: IInitInteractive): Promise<{interactiveState: {}, interactiveId?: string}> {
+    if (initInteractiveMessage.mode === "authoring") {
+      return null
+    }
+    if (initInteractiveMessage.mode === "report") {
+      return {interactiveState: initInteractiveMessage.interactiveState}
+    }
+
+    let interactiveState = initInteractiveMessage.interactiveState
+    let interactiveId = initInteractiveMessage.interactive.id
+
+    const interactiveStateAvailable = !!interactiveState
+    const {allLinkedStates} = initInteractiveMessage
+
+    // this is adapted from the existing autolaunch.ts file
+    if (allLinkedStates?.length > 0) {
+      // find linked state which is directly linked to this one along with the most recent linked state.
+      const directlyLinkedState = allLinkedStates[0]
+
+      let mostRecentLinkedState: IInteractiveStateProps<{}>
+      if (directlyLinkedState.updatedAt) {
+        mostRecentLinkedState = allLinkedStates.slice().sort((a, b) => {
+          return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+        })[0]
+      } else {
+        // currently the AP doesn't make the updatedAt attribute available so just pick the directly linked state
+        mostRecentLinkedState = directlyLinkedState
+      }
+
+      const currentDataTimestamp = new Date(initInteractiveMessage.updatedAt || Date.now())
+      const mostRecentLinkedStateTimestamp = new Date(mostRecentLinkedState.updatedAt || Date.now())
+      const directlyLinkedStateTimestamp = new Date(directlyLinkedState.updatedAt ||  Date.now())
+
+      // current state is available, but there's more recent data in one of the linked states. Ask user.
+      if (interactiveStateAvailable && mostRecentLinkedStateTimestamp && mostRecentLinkedStateTimestamp > currentDataTimestamp) {
+        interactiveState = await this.selectFromInteractiveStates({
+          state1: mostRecentLinkedState,
+          state2: initInteractiveMessage,
+          interactiveStateAvailable
+        })
+
+        interactiveId = interactiveState === mostRecentLinkedState.interactiveState
+          ? mostRecentLinkedState.interactive.id
+          : initInteractiveMessage.interactive.id
+
+        if (interactiveState === mostRecentLinkedState.interactiveState) {
+          // remove existing interactive state, so the interactive will be initialized from the linked state next time (if it is not saved).
+          setInteractiveState(null)
+        } else {
+          // update the current interactive state timestamp so the next reload doesn't trigger this picker UI
+          setInteractiveState("touch")
+        }
+
+        return {interactiveState, interactiveId}
+      }
+
+      // there's no current state and directly linked interactive isn't the most recent one. Ask user.
+      if (!interactiveStateAvailable &&
+          directlyLinkedState !== mostRecentLinkedState &&
+          directlyLinkedStateTimestamp && mostRecentLinkedStateTimestamp &&
+          mostRecentLinkedStateTimestamp > directlyLinkedStateTimestamp) {
+        interactiveState = await this.selectFromInteractiveStates({
+          state1: mostRecentLinkedState,
+          state2: directlyLinkedState,
+          interactiveStateAvailable
+        })
+
+        interactiveId = interactiveState === mostRecentLinkedState.interactiveState
+          ? mostRecentLinkedState.interactive.id
+          : directlyLinkedState.interactive.id
+
+          return {interactiveState, interactiveId}
+      }
+
+      // there's no current state, but the directly linked state is the most recent one.
+      if (!interactiveStateAvailable && directlyLinkedState) {
+        interactiveState = directlyLinkedState.interactiveState
+        interactiveId = directlyLinkedState.interactive.id
+      }
+    }
+
+    return {interactiveState, interactiveId}
+  }
+
+  getinteractiveId(initInteractiveMessage: IInitInteractive) {
+    return initInteractiveMessage.mode === "runtime" ? initInteractiveMessage.interactive.id : undefined
+  }
+
+  async handleInitialInteractiveState(initInteractiveMessage: IInitInteractive) {
     let interactiveState: any
 
-    const initialInteractiveState = this.getInitialInteractiveState(initInteractiveMessage)
+    const {interactiveState: initialInteractiveState, interactiveId} = await this.getInitialInteractiveStateAndinteractiveId(initInteractiveMessage)
 
     try {
-      interactiveState = await this.processRawInteractiveState(initialInteractiveState)
+      interactiveState = await this.processRawInteractiveState(initialInteractiveState, interactiveId)
     }
     catch(e) {
       // on initial interactive state there's not much we can do on error besides ignore it
@@ -201,9 +293,10 @@ class InteractiveApiProvider extends ProviderInterface {
   }
 
   async load(metadata: CloudMetadata, callback: ProviderLoadCallback) {
-    await this.getInitInteractiveMessage()
+    const initInteractiveMessage = await this.getInitInteractiveMessage()
     try {
-      const interactiveState = await this.processRawInteractiveState(await getInteractiveState())
+      const interactiveId = this.getinteractiveId(initInteractiveMessage)
+      const interactiveState = await this.processRawInteractiveState(await getInteractiveState(), interactiveId)
       // following the example of the LaraProvider, wrap the content in a CFM envelope
       const content = cloudContentFactory.createEnvelopedCloudContent(interactiveState)
       callback(null, content, metadata)

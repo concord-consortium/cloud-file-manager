@@ -12,6 +12,7 @@ import { CloudFileManagerClient } from './client'
 import { CFMMenu, CFMMenuItem, CFMUIOptions } from './app-options'
 import tr  from './utils/translate'
 import isString  from './utils/is-string'
+import { SelectInteractiveStateDialogProps } from './views/select-interactive-state-dialog-view'
 
 class CloudFileManagerUIEvent {
   data: any;
@@ -233,6 +234,10 @@ class CloudFileManagerUI {
 
   confirmDialog(params: any) {
     return this.listenerCallback(new CloudFileManagerUIEvent('showConfirmDialog', params))
+  }
+
+  selectInteractiveStateDialog(props: SelectInteractiveStateDialogProps) {
+    return this.listenerCallback(new CloudFileManagerUIEvent('showSelectInteractiveStateDialog', props))
   }
 
   _showProviderDialog(action: string, title: string, callback: UIEventCallback, data?: any) {

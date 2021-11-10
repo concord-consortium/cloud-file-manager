@@ -125,5 +125,14 @@
     "~GOOGLE_DRIVE.ERROR_MISSING_APIKEY": "Missing required apiKey in googleDrive provider options",
     "~GOOGLE_DRIVE.UNABLE_TO_UPLOAD": "Unable to upload file",
     "~GOOGLE_DRIVE.UNABLE_TO_UPLOAD_MSG": "Unable to upload file: %{message}",
-    "~SHARE_DIALOG.INTERACTIVE_API_MESSAGE": "Use this link when creating an activity for the Activity Player"
+    "~SHARE_DIALOG.INTERACTIVE_API_MESSAGE": "Use this link when creating an activity for the Activity Player",
+    "~DIALOG.SELECT_INTERACTIVE_STATE.USE_THIS_VERSION": "Use this version",
+    "~DIALOG.SELECT_INTERACTIVE_STATE.CLICK_TO_PREVIEW": "Click to preview",
+    "~DIALOG.SELECT_INTERACTIVE_STATE.UPDATED_AT": "Updated at",
+    "~DIALOG.SELECT_INTERACTIVE_STATE.PAGE": "Page",
+    "~DIALOG.SELECT_INTERACTIVE_STATE.ACTIVITY": "Activity",
+    "~DIALOG.SELECT_INTERACTIVE_STATE.CURRENT_VS_LINKED": "Another page contains more recent data. Which would you like to use?",
+    "~DIALOG.SELECT_INTERACTIVE_STATE.LINKED_VS_LINKED": "There are two possibilities for continuing your work. Which version would you like to use?",
+    "~DIALOG.SELECT_INTERACTIVE_STATE.TITLE": "What would you like to do?",
+    "~DIALOG.SELECT_INTERACTIVE_STATE.PREVIEW_INFO": "This is a read-only preview of your data. Click anywhere to close it."
 }

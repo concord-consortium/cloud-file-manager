@@ -2,7 +2,13 @@ import {CloudFileManagerClient, CloudFileManagerClientEvent} from "./client"
 
 jest.mock('@concord-consortium/lara-interactive-api')
 const mockApi = require('@concord-consortium/lara-interactive-api')
-mockApi.getInitInteractiveMessage.mockImplementation(() => Promise.resolve({}))
+mockApi.getInitInteractiveMessage.mockImplementation(() => Promise.resolve({
+  interactive: {
+    id: 1,
+    name: "",
+    questionId: "mw_interactive_100"
+  }
+}))
 
 describe("CloudFileManagerClientEvent", () => {
 

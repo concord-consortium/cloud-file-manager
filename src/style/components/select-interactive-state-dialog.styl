@@ -1,0 +1,129 @@
+.select-interactive-state-dialog
+  .header
+    background: #214d5a
+    width: 100%
+    color: white
+    font-size: 1.5em
+    padding: 5px
+    text-align: center
+
+  .content
+    background: white
+    margin-top: 8px
+    padding: 0
+    font-size: 18px
+    color: #666
+    overflow: auto
+
+  #question
+    padding: 5px 25px
+    text-align: center
+
+  .versions
+    text-align: center
+
+  .version-info
+    display: inline-block
+    width: 45%
+    margin: 2% 10px
+
+  table.version-desc
+    width: 100%
+    border: none
+
+  table.version-desc td
+    padding: 5px
+    font-size: 14px
+
+  table.version-desc th
+    width: 100px
+    font-weight: normal
+
+  .prop
+    font-weight: bold
+
+  .dialog-button
+    background: #82bec8
+    border-radius: 5px
+    text-align: center
+    padding: 6px 10px
+    margin: 10px
+    width: auto
+    display: inline-block
+    color: white
+    cursor: pointer
+
+  .dialog-button:hover
+    background: #679aa1
+
+  .iframe-wrapper
+    width: 100%
+    height: 100%
+    pointer-events: none
+
+  .preview
+    width: 100%
+    height: 250px
+    cursor: pointer
+
+  .preview:hover
+    box-shadow: 2px 2px 4px #aaa
+
+  .preview-label
+    font-size: 14px
+    padding: 5px
+    cursor: pointer
+
+  .preview-label:hover
+    color: #333
+
+  .preview-active
+    position: fixed
+    top: 40px
+    left: 3%
+    width: 94%
+    height: 90%
+    z-index: 100
+    cursor: pointer
+
+  @media (max-width: 1200px)
+    .preview-active iframe
+      width: 150%
+      height: 150%
+      transform: scale3d(0.666666, 0.666666, 1)
+
+
+  @media (min-width: 1200px)
+    .preview-active iframe
+      width: 100%
+      height: 100%
+      transform: scale3d(1, 1, 1)
+
+  .overlay
+    display: none
+    position: fixed
+    top: 0
+    left: 0
+    width: 100%
+    height: 100%
+    z-index: 90
+    background: #6ca0a9
+    padding-top: 10px
+    font-size: 20px
+    color: white
+    text-align: center
+    cursor: pointer
+
+  .show-overlay
+    display: block
+
+  iframe.preview-iframe
+    width: 300% !important
+    height: 300% !important
+    transform: scale3d(0.333333, 0.333333, 1)
+    transform-origin: left top
+    border: solid 1px
+
+  .scroll-wrapper
+    overflow: hidden
+
