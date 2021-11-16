@@ -601,7 +601,7 @@ class CloudFileManagerClient {
   }
 
   confirmAuthorizeAndSave(stringContent: any, callback?: OpenSaveCallback) {
-    let rejectCallback = function () {this.disconnectCurrentFile();}.bind(this);
+    let rejectCallback = function () {this.disconnectCurrentFile();}.bind(this)
     // trigger authorize() from confirmation dialog to avoid popup blockers
     return this.confirm(tr("~CONFIRM.AUTHORIZE_SAVE"), () => {
       return this.state.metadata.provider.authorize(() => {
