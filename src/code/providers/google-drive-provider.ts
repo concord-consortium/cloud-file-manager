@@ -191,6 +191,8 @@ class GoogleDriveProvider extends ProviderInterface {
 
   authorize(callback:any) {
     this.authCallback = callback;
+    // Calling doAuthorize with immediate set to false permits an authorization
+    // dialog, if necessary
     this.doAuthorize(!GoogleDriveProvider.IMMEDIATE);
   }
 
@@ -307,9 +309,7 @@ class GoogleDriveProvider extends ProviderInterface {
     })
   }
 
-  close(metadata: CloudMetadata, callback: ProviderCloseCallback) {
-    console.log('Closing GD File');
-  }
+  close(metadata: CloudMetadata, callback: ProviderCloseCallback) {}
     // nothing to do now that the realtime library was removed
 
   canOpenSaved() { return true }

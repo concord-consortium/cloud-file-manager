@@ -504,15 +504,15 @@ class CloudFileManagerClient {
    * state is lost we must not continue to autosave.
    */
   disconnectCurrentFile() {
-    console.log('Closing file (rejected reauth)');
-    if (this.state.metadata) { this.state.metadata.provider = null; }
-    this._setState({saving: null, saved: null});
-    window.location.hash = "";
-    this._event('ready');
+    console.warn('Closing file (rejected reauth)')
+    if (this.state.metadata) { this.state.metadata.provider = null }
+    this._setState({saving: null, saved: null})
+    window.location.hash = ""
+    this._event('ready')
   }
 
   confirmAuthorizeAndOpen(provider: ProviderInterface, providerParams: any) {
-    let rejectCallback = function () {this.disconnectCurrentFile();}.bind(this);
+    const rejectCallback = () => this.disconnectCurrentFile()
     // trigger authorize() from confirmation dialog to avoid popup blockers
     return this.confirm(tr("~CONFIRM.AUTHORIZE_OPEN"), () => {
         return provider.authorize(() => {
@@ -649,6 +649,10 @@ class CloudFileManagerClient {
     return metadata.provider.save(currentContent, metadata, (err: string | null, statusCode: number) => {
       let failures
       if (err) {
+        // If we fail to save, disable autosave (in case we are in a login dialog),
+        // null the 'saving' property (to remove the 'saving ...' indicator in the cfm tag)
+        metadata.autoSaveDisabled = true
+        this._setState({ metadata, saving: null })
         if (statusCode === 401 || statusCode === 403 || statusCode === 404) {
           return this.confirmAuthorizeAndSave(stringContent, callback)
         } else {
@@ -663,8 +667,6 @@ class CloudFileManagerClient {
             return this.alert(err)
           }
         }
-        metadata.autoSaveDisabled = true;
-        this._setState({ metadata, saving: null })
       } else {
         this._setState({ failures: 0 })
         if (this.state.metadata !== metadata) {
@@ -1069,7 +1071,10 @@ class CloudFileManagerClient {
       interval = Math.round(interval / 1000)
     }
     if (interval > 0) {
-      return this._autoSaveInterval = window.setInterval((() => { if (this.shouldAutoSave()) { console.log('autosaving'); return this.save() } }), interval * 1000)
+      return this._autoSaveInterval = window.setInterval(
+          () => { if (this.shouldAutoSave()) { return this.save() } },
+          interval * 1000
+      )
     }
   }
 
