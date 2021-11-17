@@ -47,6 +47,7 @@ class SelectInteractiveStateVersion extends React.Component<IProps, IState> {
     const {version} = this.props
     const updatedAt = (new Date(version.updatedAt)).toLocaleString()
     const previewClassName = `preview${preview ? ' preview-active' : ''}`
+    const previewIframeClassName = preview ? 'preview-iframe-fullsize' : 'preview-iframe'
 
     return (
       <div className='version-info'>
@@ -55,7 +56,7 @@ class SelectInteractiveStateVersion extends React.Component<IProps, IState> {
         </div>
         <div className={previewClassName} onClick={this.handleTogglePreview}>
           <div className='iframe-wrapper'>
-            <iframe className='preview-iframe' src={version.externalReportUrl}></iframe>
+            <iframe className={previewIframeClassName} src={version.externalReportUrl}></iframe>
           </div>
         </div>
         <div className='center preview-label' onClick={this.handleTogglePreview}>
