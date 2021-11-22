@@ -46,7 +46,9 @@ const GoogleDriveAuthorizationDialog = createReactClassFactory({
   },
 
   authenticate() {
-    return this.props.provider.authorize(GoogleDriveProvider.SHOW_POPUP)
+    // we rely on the fact that the prior call to authorized has set the callback
+    // we need here
+    return this.props.provider.authorize(this.props.provider.authCallback)
   },
 
   render() {
@@ -134,20 +136,28 @@ class GoogleDriveProvider extends ProviderInterface {
       .catch(() => this.gapiLoadState = ELoadState.errored)  // eslint-disable-line @typescript-eslint/dot-notation
   }
 
-  authorized(authCallback: (authorized: boolean) => void) {
+  /**
+   * Invokes the provided callback with whether there is an authenticated user.
+   * If authCallback is not defined, return the best result that can be had
+   * synchronously.
+   */
+  authorized(authCallback: ((authorized: boolean) => void)) {
     if (!(authCallback == null)) { this.authCallback = authCallback }
+    if (this.gapiLoadState === ELoadState.loaded && !authCallback) {
+      return gapi.auth2.getAuthInstance().isSignedIn.get();
+    }
     if (authCallback) {
       if (this.authToken) {
         return authCallback(true)
       } else {
-        return this.authorize(GoogleDriveProvider.IMMEDIATE)
+        return this.doAuthorize(GoogleDriveProvider.IMMEDIATE)
       }
     } else {
       return this.authToken !== null
     }
   }
 
-  authorize(immediate: boolean) {
+  doAuthorize(immediate: boolean) {
     return this._waitForGAPILoad().then(() => {
       const auth = gapi.auth2.getAuthInstance()
       const finishAuthorization = () => {
@@ -164,16 +174,26 @@ class GoogleDriveProvider extends ProviderInterface {
       if (auth.isSignedIn.get()) {
         finishAuthorization()
       } else {
-        auth.isSignedIn.listen(() => {
-          finishAuthorization()
-        })
         if (!immediate) {
+          auth.isSignedIn.listen((isAuth: boolean) => {
+            if (isAuth) {
+              finishAuthorization()
+            }
+            auth.isSignedIn.listen(() => {});
+          })
           auth.signIn()
         } else {
           finishAuthorization()
         }
       }
     })
+  }
+
+  authorize(callback:any) {
+    this.authCallback = callback;
+    // Calling doAuthorize with immediate set to false permits an authorization
+    // dialog, if necessary
+    this.doAuthorize(!GoogleDriveProvider.IMMEDIATE);
   }
 
   autoRenewToken(authToken: any) {
@@ -210,44 +230,55 @@ class GoogleDriveProvider extends ProviderInterface {
   }
 
   list(metadata: CloudMetadata, callback: ProviderListCallback) {
-    return this._waitForGAPILoad().then(() => {
-      const mimeTypesQuery = (this.readableMimetypes || []).map((mimeType: any) => `mimeType = '${mimeType}'`).join(" or ")
-      const request = gapi.client.drive.files.list({
-        fields: "files(id, mimeType, name, capabilities(canEdit))",
-        q: `trashed = false and (${mimeTypesQuery} or mimeType = 'application/vnd.google-apps.folder') and '${metadata?.providerData.id || 'root'}' in parents`
-      })
-      return request.execute((result: any) => {
-        if (!result || result.error) { return callback(this._apiError(result, 'Unable to list files')) }
-        const list = []
-        const files = result.files
-        if (files?.length > 0) {
-          for (let i = 0; i < files.length; i++) {
-            const item = files[i]
-            const type = item.mimeType === 'application/vnd.google-apps.folder' ? CloudMetadata.Folder : CloudMetadata.File
-            if ((type === CloudMetadata.Folder) || this.matchesExtension(item.name)) {
-              list.push(new CloudMetadata({
-                name: item.name,
-                type,
-                parent: metadata,
-                overwritable: item.capabilities.canEdit,
-                provider: this,
-                providerData: {
-                  id: item.id
-                }
-              })
-              )
+    this.authorized((isAuthorized) => {
+      if (isAuthorized) {
+        const mimeTypesQuery = (this.readableMimetypes || []).map((mimeType: any) => `mimeType = '${mimeType}'`).join(" or ")
+        const request = gapi.client.drive.files.list({
+          fields: "files(id, mimeType, name, capabilities(canEdit))",
+          q: `trashed = false and (${mimeTypesQuery} or mimeType = 'application/vnd.google-apps.folder') and '${metadata?.providerData.id || 'root'}' in parents`
+        })
+        return request.execute((result: any) => {
+          if (!result || result.error) {
+            return callback(this._apiError(result, 'Unable to list files'))
+          }
+          const list = []
+          const files = result.files
+          if (files?.length > 0) {
+            for (let i = 0; i < files.length; i++) {
+              const item = files[i]
+              const type = item.mimeType === 'application/vnd.google-apps.folder' ? CloudMetadata.Folder : CloudMetadata.File
+              if ((type === CloudMetadata.Folder) || this.matchesExtension(item.name)) {
+                list.push(new CloudMetadata({
+                      name: item.name,
+                      type,
+                      parent: metadata,
+                      overwritable: item.capabilities.canEdit,
+                      provider: this,
+                      providerData: {
+                        id: item.id
+                      }
+                    })
+                )
+              }
             }
           }
-        }
-        list.sort((a, b) => {
-          const lowerA = a.name.toLowerCase()
-          const lowerB = b.name.toLowerCase()
-          if (lowerA < lowerB) { return -1 }
-          if (lowerA > lowerB) { return 1 }
-          return 0
+          list.sort((a, b) => {
+            const lowerA = a.name.toLowerCase()
+            const lowerB = b.name.toLowerCase()
+            if (lowerA < lowerB) {
+              return -1
+            }
+            if (lowerA > lowerB) {
+              return 1
+            }
+            return 0
+          })
+          return callback(null, list)
         })
-        return callback(null, list)
-      })
+      }
+      else {
+        return callback(null, [])
+      }
     })
   }
 
@@ -388,7 +419,7 @@ class GoogleDriveProvider extends ProviderInterface {
     return request.execute((file: any) => {
       if (callback) {
         if (file != null ? file.error : undefined) {
-          return callback(tr("~GOOGLE_DRIVE.UNABLE_TO_UPLOAD_MSG", {message: file.error.message}))
+          return callback(tr("~GOOGLE_DRIVE.UNABLE_TO_UPLOAD_MSG", {message: file.error.message}), file.error.code)
         } else if (file) {
           metadata.providerData = {id: file.id}
           return callback(null, file)
