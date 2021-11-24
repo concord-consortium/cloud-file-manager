@@ -244,7 +244,7 @@ class InteractiveApiProvider extends ProviderInterface {
     return {interactiveState, interactiveId}
   }
 
-  getinteractiveId(initInteractiveMessage: IInitInteractive) {
+  getInteractiveId(initInteractiveMessage: IInitInteractive) {
     return initInteractiveMessage.mode === "runtime" ? initInteractiveMessage.interactive.id : undefined
   }
 
@@ -295,7 +295,7 @@ class InteractiveApiProvider extends ProviderInterface {
   async load(metadata: CloudMetadata, callback: ProviderLoadCallback) {
     const initInteractiveMessage = await this.getInitInteractiveMessage()
     try {
-      const interactiveId = this.getinteractiveId(initInteractiveMessage)
+      const interactiveId = this.getInteractiveId(initInteractiveMessage)
       const interactiveState = await this.processRawInteractiveState(await getInteractiveState(), interactiveId)
       // following the example of the LaraProvider, wrap the content in a CFM envelope
       const content = cloudContentFactory.createEnvelopedCloudContent(interactiveState)
