@@ -1158,6 +1158,7 @@ class CloudFileManagerClient {
   }
 
   selectInteractiveStateDialog(props: SelectInteractiveStateDialogProps, callback: SelectInteractiveStateCallback): void {
+    this._event("requiresUserInteraction")
     this._ui.selectInteractiveStateDialog({...props, onSelect: callback})
   }
 
