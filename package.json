@@ -5,7 +5,7 @@
   "version": "1.4.1",
   "repository": {
     "type": "git",
-    "url": "https://github.com/concord-consortium/cloud-file-manger"
+    "url": "https://github.com/concord-consortium/cloud-file-manager"
   },
   "license": "MIT",
   "dependencies": {
