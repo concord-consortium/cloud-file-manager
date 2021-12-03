@@ -8,10 +8,11 @@ OUTPUT_DIR=src/code/utils/lang
 # ja: Japanese
 # nb: Norwegian Bokmal
 # nn: Norwegian Nynorsk
+# pt-BR: Brazilian Portuguese
 # tr: Turkish
 # zh-Hans: Simplified Chinese
 # zh-TW: Traditional Chinese (Taiwan)
-LANGUAGES=("de" "el" "es" "he" "ja" "nb" "nn" "th" "tr" "zh-Hans" "zh-TW")
+LANGUAGES=("de" "el" "es" "he" "ja" "nb" "nn" "pt-BR" "th" "tr" "zh-Hans" "zh-TW")
 
 # argument processing from https://stackoverflow.com/a/14203146
 while [[ $# -gt 1 ]]
