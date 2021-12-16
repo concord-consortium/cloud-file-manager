@@ -1,4 +1,5 @@
 import {CloudFileManagerClient, CloudFileManagerClientEvent} from "./client"
+import { CloudContent } from "./providers/provider-interface"
 
 jest.mock('@concord-consortium/lara-interactive-api')
 const mockApi = require('@concord-consortium/lara-interactive-api')
@@ -77,4 +78,60 @@ describe("CloudFileManagerClient", () => {
     expect(availableProvidersAreUnique(client)).toBe(true)
   })
 
+  describe('Test Provider', () => {
+    let client: CloudFileManagerClient
+    beforeEach(() => {
+      client = new CloudFileManagerClient()
+      const options = {
+        providers: [
+          "testProvider"
+        ]
+      }
+      client.setAppOptions(options)
+    })
+
+    test('loading provider', () => {
+      expect(Object.keys(client.providers).length).toBe(1)
+      expect(client.providers.testProvider.name).toBe('testProvider')
+    })
+
+    test('skipping saves if content does not change', (done) => {
+      const testProvider = client.providers.testProvider
+
+      // instead of adding or changing client functions to allow for metadata sets call into this "private" function
+      // to set the current metadata in order to fake the file already having been loaded
+      client._setState({metadata: {
+        name: "foo.txt",
+        provider: testProvider
+      } as any})
+
+      // initial save works
+      client.saveContent("foo", (content: CloudContent, metadata) => {
+        expect(content.getClientContent()).toEqual("foo")
+
+        const savedConsoleLog = console.log
+        console.log = jest.fn()
+
+        // updated save works
+        client.saveContent("bar", (content: CloudContent, metadata) => {
+          expect(content.getClientContent()).toEqual("bar")
+          expect(console.log).not.toHaveBeenCalled()
+
+          const savedSave = testProvider.save
+          testProvider.save = jest.fn()
+
+          // save of same content is skipped
+          client.saveContent("bar", (content: CloudContent, metadata) => {
+            expect(content.getClientContent()).toEqual("bar")
+            expect(testProvider.save).not.toHaveBeenCalled()
+            expect(console.log).toHaveBeenCalledWith("CFM: File content not changed, skipping sending save to provider!")
+
+            console.log = savedConsoleLog
+            testProvider.save = savedSave
+            done()
+          })
+        })
+      })
+    })
+  })
 })
