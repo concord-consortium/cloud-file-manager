@@ -37,7 +37,7 @@ const languageFiles: LanguageFileEntry[] = [
   {key: 'ja' ,   contents: ja},     // Japanese
   {key: 'nb',    contents: nb},     // Norwegian Bokmål
   {key: 'nn',    contents: nn},     // Norwegian Nynorsk
-  {key: 'pt-BR',    contents: ptBR},     // Brazilian Portuguese
+  {key: 'pt-BR', contents: ptBR},   // Brazilian Portuguese
   {key: 'th',    contents: th},     // Thai
   {key: 'tr',    contents: tr},     // Turkish
   {key: 'zh',    contents: zhHans}, // Simplified Chinese
