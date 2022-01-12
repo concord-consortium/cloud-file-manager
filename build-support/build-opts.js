@@ -34,7 +34,7 @@ const replacementStrings = {
 if (codap) {
   replacementStrings.css.push(
     {
-      search: /url\(/g,
+      search: /url\(..\/..\//g,
       replace: 'static_url('
     },
     {
