@@ -990,8 +990,7 @@ class CloudFileManagerClient {
         })
       } else {
         if (metadata) {
-          metadata.name = newName
-          metadata.filename = newName
+          metadata.rename(newName)
         } else {
           metadata = new CloudMetadata({
             name: newName,
