@@ -134,4 +134,52 @@ describe("CloudFileManagerClient", () => {
       })
     })
   })
+
+  describe("getCurrentUrl", () => {
+    let location: Location
+    let client: CloudFileManagerClient
+
+    beforeAll(() => {
+      location = window.location
+      delete window.location
+    })
+    beforeEach(() => {
+      client = new CloudFileManagerClient()
+    })
+    afterAll(() => {
+      window.location = location
+    })
+    test("without query or hash string", () => {
+      window.location = {
+        origin: "https://example.com",
+        pathname: "/foo",
+        search: ""
+      } as any
+      expect(client.getCurrentUrl()).toEqual("https://example.com/foo")
+    })
+    test("with query but no hash string", () => {
+      window.location = {
+        origin: "https://example.com",
+        pathname: "/foo",
+        search: "?bar=baz"
+      } as any
+      expect(client.getCurrentUrl()).toEqual("https://example.com/foo?bar=baz")
+    })
+    test("without query but with hash string", () => {
+      window.location = {
+        origin: "https://example.com",
+        pathname: "/foo",
+        search: ""
+      } as any
+      expect(client.getCurrentUrl("#bang=boom")).toEqual("https://example.com/foo#bang=boom")
+    })
+    test("with query and hash string", () => {
+      window.location = {
+        origin: "https://example.com",
+        pathname: "/foo",
+        search: "?bar=baz"
+      } as any
+      expect(client.getCurrentUrl("#bang=boom")).toEqual("https://example.com/foo?bar=baz#bang=boom")
+    })
+  })
 })

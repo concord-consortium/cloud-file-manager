@@ -1126,10 +1126,8 @@ class CloudFileManagerClient {
     return this._ui.hideBlockingModal()
   }
 
-  getCurrentUrl(queryString?: string) {
-    const suffix = (queryString != null) ? `?${queryString}` : ""
-    // Check browser support for document.location.origin (& window.location.origin)
-    return `${document.location.origin}${document.location.pathname}${suffix}`
+  getCurrentUrl(hashString?: string) {
+    return `${window.location.origin}${window.location.pathname}${window.location.search}${hashString || ""}`
   }
 
   // Takes an array of strings representing url parameters to be removed from the URL.
