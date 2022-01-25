@@ -1098,22 +1098,18 @@ class CloudFileManagerClient {
 
   changeLanguage(newLangCode: string, callback: (newLangCode?: string) => void) {
     if (callback) {
-      if (!this.state.dirty) {
-        return callback(newLangCode)
-      } else {
-        const postSave = (err: string | null) => {
-          if (err) {
-            this.alert(err)
-            return this.confirm(tr('~CONFIRM.CHANGE_LANGUAGE'), () => callback(newLangCode))
-          } else {
-            return callback(newLangCode)
-          }
-        }
-        if (this.state.metadata?.provider || this.autoProvider(ECapabilities.save)) {
-          return this.save((err: string | null) => postSave(err))
+      const postSave = (err: string | null) => {
+        if (err) {
+          this.alert(err)
+          return this.confirm(tr('~CONFIRM.CHANGE_LANGUAGE'), () => callback(newLangCode))
         } else {
-          return this.saveTempFile(postSave)
+          return callback(newLangCode)
         }
+      }
+      if (this.state.metadata?.provider || this.autoProvider(ECapabilities.save)) {
+        return this.save((err: string | null) => postSave(err))
+      } else {
+        return this.saveTempFile(postSave)
       }
     }
   }
