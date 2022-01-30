@@ -144,7 +144,7 @@ class GoogleDriveProvider extends ProviderInterface {
   authorized(authCallback: ((authorized: boolean) => void)) {
     if (!(authCallback == null)) { this.authCallback = authCallback }
     if (this.gapiLoadState === ELoadState.loaded && !authCallback) {
-      return gapi.auth2.getAuthInstance().isSignedIn.get();
+      return gapi.auth2.getAuthInstance().isSignedIn.get()
     }
     if (authCallback) {
       if (this.authToken) {
@@ -179,7 +179,7 @@ class GoogleDriveProvider extends ProviderInterface {
             if (isAuth) {
               finishAuthorization()
             }
-            auth.isSignedIn.listen(() => {});
+            auth.isSignedIn.listen(() => {})
           })
           auth.signIn()
         } else {
@@ -190,10 +190,10 @@ class GoogleDriveProvider extends ProviderInterface {
   }
 
   authorize(callback:any) {
-    this.authCallback = callback;
+    this.authCallback = callback
     // Calling doAuthorize with immediate set to false permits an authorization
     // dialog, if necessary
-    this.doAuthorize(!GoogleDriveProvider.IMMEDIATE);
+    this.doAuthorize(!GoogleDriveProvider.IMMEDIATE)
   }
 
   autoRenewToken(authToken: any) {
