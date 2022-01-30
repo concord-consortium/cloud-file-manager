@@ -532,7 +532,7 @@ class CloudFileManagerClient {
         })
       },
       rejectCallback
-    );
+    )
   }
 
   openProviderFileWhenConnected(providerName: string, providerParams?: any) {
@@ -859,7 +859,7 @@ class CloudFileManagerClient {
         sharedContent.set('docName', currentContent.get('docName'))
         // save the current name at the top level so it is displayed when the shared file is loaded
         if (this.state.metadata) {
-          sharedContent.getClientContent().name = this.state.metadata.name;
+          sharedContent.getClientContent().name = this.state.metadata.name
         }
         if (shared) {
           currentContent.remove('isUnshared')
