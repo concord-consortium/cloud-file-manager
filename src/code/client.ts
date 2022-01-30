@@ -1110,7 +1110,7 @@ class CloudFileManagerClient {
           return callback(newLangCode)
         }
       }
-      if (this.state.metadata?.provider || this.autoProvider(ECapabilities.save)) {
+      if (this.state.metadata?.provider.can(ECapabilities.save)) {
         return this.save((err: string | null) => postSave(err))
       } else {
         return this.saveTempFile(postSave)
