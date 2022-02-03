@@ -12,6 +12,8 @@ import {
   readAttachment, setInteractiveState as _setInteractiveState, writeAttachment
 } from '@concord-consortium/lara-interactive-api'
 import { SelectInteractiveStateDialogProps } from '../views/select-interactive-state-dialog-view'
+import { ensureDecodedParameter } from '../utils/ensure-decoded-parameter'
+
 const getInteractiveState = () => cloneDeep(_getInteractiveState())
 const setInteractiveState = <InteractiveState>(newState: InteractiveState | null) =>
         _setInteractiveState(cloneDeep(newState))
@@ -354,8 +356,10 @@ class InteractiveApiProvider extends ProviderInterface {
     }
     // otherwise, load the initial state from its document id (url)
     else if (openSavedParams.documentId) {
+      // documentId may be doubly (or more) encoded in the parameters
+      const documentId = ensureDecodedParameter(openSavedParams.documentId)
       try {
-        const response = await fetch(openSavedParams.documentId)
+        const response = await fetch(documentId)
         const interactiveState = response.ok ? await response.json() : undefined
         if (interactiveState) {
           // initialize our interactive state from the shared document contents
@@ -368,7 +372,7 @@ class InteractiveApiProvider extends ProviderInterface {
       catch(e) {
         // ignore errors
       }
-      callback(`Unable to open saved document: ${openSavedParams.documentId}!`)
+      callback(`Unable to open saved document: ${documentId}!`)
     }
     else {
       // in the absence of any provided content, initialize with an empty string
