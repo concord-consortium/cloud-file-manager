@@ -12,6 +12,8 @@ const CFM_PRODUCTION_URL = "https://cloud-file-manager.concord.org"
 const CFM_PRODUCTION_AUTOLAUNCH_URL = `${CFM_PRODUCTION_URL}/autolaunch/autolaunch.html`
 const CODAP_PRODUCTION_URL = "https://codap.concord.org/releases/latest/"
 
+const FULLSCREEN_INTERACTIVE_URL = "https://models-resources.concord.org/question-interactives/version/v1.6.0/full-screen/?wrappedInteractive="
+
 interface IShareDialogPropsSettings {
   serverUrl?: string;
   serverUrlLabel?: string;
@@ -130,7 +132,11 @@ export default class ShareDialogView extends React.Component<IShareDialogProps, 
     const documentId = encodeURIComponent(this.getShareUrl())
     const separator = this.state.interactiveApiServerUrl.includes('?') ? '&' : '?'
     const togglesParam = this.state.graphVisToggles ? 'app=is&' : ''
-    return `${this.state.interactiveApiServerUrl}${separator}${togglesParam}interactiveApi&documentId=${documentId}`
+    let url = `${this.state.interactiveApiServerUrl}${separator}${togglesParam}interactiveApi&documentId=${documentId}`
+    if (this.state.fullscreenScaling) {
+      url = FULLSCREEN_INTERACTIVE_URL + encodeURIComponent(url)
+    }
+    return url
   }
 
   // adapted from https://github.com/sudodoki/copy-to-clipboard/blob/master/index.js

@@ -67,7 +67,6 @@ export interface ILaraApiTabProps {
   linkUrl: string;
   serverUrlLabel: string;
   serverUrl: string;
-  disableScaling?: boolean;
   fullscreenScaling?: boolean;
   visibilityToggles?: boolean;
   onCopyClick: (e: React.MouseEvent) => void;
@@ -76,7 +75,7 @@ export interface ILaraApiTabProps {
   onChangeVisibilityToggles?: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }
 export const LaraApiTabContents: React.FC<ILaraApiTabProps> = ({
-        mode, linkUrl, serverUrlLabel, serverUrl, disableScaling, fullscreenScaling, visibilityToggles,
+        mode, linkUrl, serverUrlLabel, serverUrl, fullscreenScaling, visibilityToggles,
         onCopyClick, onChangeServerUrl, onChangeFullscreenScaling, onChangeVisibilityToggles
 }) => {
   return (
@@ -94,11 +93,9 @@ export const LaraApiTabContents: React.FC<ILaraApiTabProps> = ({
           </div>
         </div>
         <div className='fullscreen-scaling'>
-          <input type='checkbox' data-testid='fullscreen-scaling-checkbox' disabled={disableScaling}
+          <input type='checkbox' data-testid='fullscreen-scaling-checkbox'
             checked={fullscreenScaling} onChange={onChangeFullscreenScaling} />
-          <span className={disableScaling ? 'disabled' : ''}>
-            {translate("~SHARE_DIALOG.LARA_FULLSCREEN_BUTTON_AND_SCALING")}
-          </span>
+          {translate("~SHARE_DIALOG.LARA_FULLSCREEN_BUTTON_AND_SCALING")}
         </div>
         <div className='visibility-toggles'>
           <input type='checkbox' data-testid='visibility-toggles-checkbox'
@@ -193,10 +190,8 @@ export const ShareDialogTabsView: React.FC<IShareDialogTabsProps> = ({
             }
             case 'api': {
               const { linkUrl: url, ...apiOthers } = interactiveApi
-              // disable scaling until scaling interactive is ready
-              others.fullscreenScaling = false
               return <LaraApiTabContents mode='api' linkUrl={url} onCopyClick={onCopyClick}
-                                        disableScaling={true} {...others} {...apiOthers} />
+                                        {...others} {...apiOthers} />
             }
             default:
               return null
