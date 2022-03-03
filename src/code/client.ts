@@ -35,6 +35,7 @@ import {
 }  from './providers/provider-interface'
 import { reportError } from "./utils/report-error"
 import { SelectInteractiveStateCallback, SelectInteractiveStateDialogProps } from './views/select-interactive-state-dialog-view'
+import { IGetInteractiveState, setOnUnload } from '@concord-consortium/lara-interactive-api'
 
 let CLOUDFILEMANAGER_EVENT_ID = 0
 const CLOUDFILEMANAGER_EVENTS: Record<number, CloudFileManagerClientEvent> = {}
@@ -54,6 +55,10 @@ interface IClientState {
 }
 
 export type ClientEventCallback = (...args: any) => void;
+
+export interface SaveOptions {
+  skipContentHashCheck?: boolean;
+}
 
 class CloudFileManagerClientEvent {
   callback: ClientEventCallback;
@@ -86,7 +91,7 @@ class CloudFileManagerClientEvent {
 }
 
 export type ClientEventListener = (event: CloudFileManagerClientEvent) => void;
-export type OpenSaveCallback = (content: any, metadata: CloudMetadata) => void;
+export type OpenSaveCallback = (content: any, metadata: CloudMetadata, savedContent?: any) => void;
 
 class CloudFileManagerClient {
   _autoSaveInterval: number;
@@ -110,6 +115,9 @@ class CloudFileManagerClient {
     this._ui = new CloudFileManagerUI(this)
     this.providers = {}
     this.urlProvider = new URLProvider()
+
+    this.onUnload = this.onUnload.bind(this);
+    setOnUnload(this.onUnload);
 
     this.connectedPromise = new Promise((resolve, reject) => {
       this.connectedPromiseResolver = {
@@ -606,47 +614,49 @@ class CloudFileManagerClient {
     return (this.state.saving != null)
   }
 
-  confirmAuthorizeAndSave(stringContent: any, callback?: OpenSaveCallback) {
+  confirmAuthorizeAndSave(stringContent: any, callback?: OpenSaveCallback, options?: SaveOptions) {
     let rejectCallback = () => {this.disconnectCurrentFile()}
     // trigger authorize() from confirmation dialog to avoid popup blockers
     return this.confirm(tr("~CONFIRM.AUTHORIZE_SAVE"), () => {
       return this.state.metadata.provider.authorize(() => {
-        return this.saveFile(stringContent, this.state.metadata, callback)
+        return this.saveFile(stringContent, this.state.metadata, callback, options)
       })
     },
     rejectCallback)
   }
 
-  save(callback: OpenSaveCallback = null) {
+  save(callback: OpenSaveCallback = null, options?: SaveOptions) {
     return this._event('getContent', { shared: this._sharedMetadata() }, (stringContent: any) => {
-      return this.saveContent(stringContent, callback)
+      return this.saveContent(stringContent, callback, options)
     })
   }
 
-  saveContent(stringContent: any, callback: OpenSaveCallback = null) {
+  saveContent(stringContent: any, callback: OpenSaveCallback = null, options?: SaveOptions) {
     const provider = this.state.metadata?.provider || this.autoProvider(ECapabilities.save)
     if (provider != null) {
       return provider.authorized((isAuthorized: boolean) => {
         // we can save the document without authorization in some cases
         if (isAuthorized || !provider.isAuthorizationRequired()) {
-          return this.saveFile(stringContent, this.state.metadata, callback)
+          return this.saveFile(stringContent, this.state.metadata, callback, options)
         } else {
-          return this.confirmAuthorizeAndSave(stringContent, callback)
+          return this.confirmAuthorizeAndSave(stringContent, callback, options)
         }
       })
     } else {
-      return this.saveFileDialog(stringContent, callback)
+      return this.saveFileDialog(stringContent, callback, options)
     }
   }
 
-  saveFile(stringContent: any, metadata: CloudMetadata, callback: OpenSaveCallback = null) {
+  saveFile(stringContent: any, metadata: CloudMetadata, callback: OpenSaveCallback = null, options?: SaveOptions) {
     // if the content didn't change skip the save (but fake it for the client)
-    const savedContentHash = this._computeContentHash(stringContent)
-    if (this.state.contentHash === savedContentHash) {
-      console.log("CFM: File content not changed, skipping sending save to provider!")
-      const currentContent = this._createOrUpdateCurrentContent(stringContent, metadata)
-      this._fileChanged('savedFile', currentContent, metadata, {saved: true}, this._getHashParams(metadata))
-      return (typeof callback === 'function' ? callback(currentContent, metadata) : undefined)
+    if (!options?.skipContentHashCheck) {
+      const savedContentHash = this._computeContentHash(stringContent)
+      if (this.state.contentHash === savedContentHash) {
+        console.log("CFM: File content not changed, skipping sending save to provider!")
+        const currentContent = this._createOrUpdateCurrentContent(stringContent, metadata)
+        this._fileChanged('savedFile', currentContent, metadata, {saved: true}, this._getHashParams(metadata))
+        return (typeof callback === 'function' ? callback(currentContent, metadata) : undefined)
+      }
     }
 
     // must be able to 'resave' to save silently, i.e. without save dialog
@@ -657,11 +667,11 @@ class CloudFileManagerClient {
     }
   }
 
-  saveFileNoDialog(stringContent: any, metadata: CloudMetadata, callback: OpenSaveCallback = null) {
+  saveFileNoDialog(stringContent: any, metadata: CloudMetadata, callback: OpenSaveCallback = null, options?: SaveOptions) {
     this._setState({
       saving: metadata})
     const currentContent = this._createOrUpdateCurrentContent(stringContent, metadata)
-    return metadata.provider.save(currentContent, metadata, (err: string | null, statusCode: number) => {
+    return metadata.provider.save(currentContent, metadata, (err, statusCode, savedContent) => {
       let failures
       if (err) {
         // If we fail to save, disable autosave (in case we are in a login dialog),
@@ -692,18 +702,18 @@ class CloudFileManagerClient {
           delete metadata.autoSaveDisabled
         }
         this._fileChanged('savedFile', currentContent, metadata, {saved: true}, this._getHashParams(metadata))
-        return (typeof callback === 'function' ? callback(currentContent, metadata) : undefined)
+        return (typeof callback === 'function' ? callback(currentContent, metadata, savedContent) : undefined)
       }
     })
   }
 
-  saveFileDialog(stringContent: any = null, callback: OpenSaveCallback = null) {
+  saveFileDialog(stringContent: any = null, callback: OpenSaveCallback = null, options?: SaveOptions) {
     return this._ui.saveFileDialog((metadata: CloudMetadata) => {
       return this._dialogSave(stringContent, metadata, callback)
     })
   }
 
-  saveFileAsDialog(stringContent: any = null, callback: OpenSaveCallback = null) {
+  saveFileAsDialog(stringContent: any = null, callback: OpenSaveCallback = null, options?: SaveOptions) {
     return this._ui.saveFileAsDialog((metadata: CloudMetadata) => {
       return this._dialogSave(stringContent, metadata, callback)
     })
@@ -1174,12 +1184,28 @@ class CloudFileManagerClient {
     this._ui.selectInteractiveStateDialog({...props, onSelect: callback})
   }
 
-  _dialogSave(stringContent: any, metadata: CloudMetadata, callback: OpenSaveCallback) {
+  async onUnload(options: IGetInteractiveState) {
+    if (options.unloading) {
+      return new Promise<{}>(resolve => {
+        this.save((content, metadata, savedContent) => {
+          // providers can save a different format for the content
+          // for example the interactiveApi provider can save attachments in which case the savedContent
+          // will be an object pointing at the attachment
+          resolve(savedContent || content);
+        }, {
+          skipContentHashCheck: true
+        });
+      })
+    }
+    return Promise.resolve({});
+  }
+
+  _dialogSave(stringContent: any, metadata: CloudMetadata, callback: OpenSaveCallback, options?: SaveOptions) {
     if (stringContent != null) {
-      return this.saveFileNoDialog(stringContent, metadata, callback)
+      return this.saveFileNoDialog(stringContent, metadata, callback, options)
     } else {
       return this._event('getContent', { shared: this._sharedMetadata() }, (stringContent: any) => {
-        return this.saveFileNoDialog(stringContent, metadata, callback)
+        return this.saveFileNoDialog(stringContent, metadata, callback, options)
       })
     }
   }

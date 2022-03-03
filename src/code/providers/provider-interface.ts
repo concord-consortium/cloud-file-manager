@@ -4,7 +4,7 @@ import _ from 'lodash'
 
 const FILE_EXTENSION_DELIMETER = "."
 
-export type ProviderSaveCallback = (err: string | null, statusCode?: number) => void;
+export type ProviderSaveCallback = (err: string | null, statusCode?: number, savedContent?: any) => void;
 
 export type ProviderOpenCallback = (err: string | null, content?: CloudContent, metadata?: CloudMetadata) => void
 export type ProviderLoadCallback = ProviderOpenCallback
