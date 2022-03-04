@@ -642,6 +642,7 @@ class CloudFileManagerClient {
   saveFile(stringContent: any, metadata: CloudMetadata, callback: OpenSaveCallback = null) {
     // if the content didn't change skip the save (but fake it for the client)
     const savedContentHash = this._computeContentHash(stringContent)
+
     if (this.state.contentHash === savedContentHash) {
       console.log("CFM: File content not changed, skipping sending save to provider!")
       const currentContent = this._createOrUpdateCurrentContent(stringContent, metadata)
@@ -1195,7 +1196,10 @@ class CloudFileManagerClient {
 
   _computeContentHash(content: any) {
     const clientContent = (typeof (content?.getClientContent) === 'function') ? content.getClientContent() : content
-    return sha256(JSON.stringify(clientContent))
+    const contentHash = sha256(JSON.stringify(clientContent));
+    console.log("_computeContentHash", contentHash)
+    window.localStorage.setItem(contentHash, JSON.stringify(content));
+    return contentHash
   }
 
   _fileChanged(type: 'savedFile' | 'sharedFile' | 'unsharedFile' | 'renamedFile', content: any, metadata: CloudMetadata, additionalState?: any, hashParams: string = null) {

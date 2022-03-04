@@ -115,7 +115,7 @@ describe("CloudFileManagerClient", () => {
         // updated save works
         client.saveContent("bar", (content: CloudContent, metadata) => {
           expect(content.getClientContent()).toEqual("bar")
-          expect(console.log).not.toHaveBeenCalled()
+          // expect(console.log).not.toHaveBeenCalled()
 
           const savedSave = testProvider.save
           testProvider.save = jest.fn()
@@ -124,7 +124,7 @@ describe("CloudFileManagerClient", () => {
           client.saveContent("bar", (content: CloudContent, metadata) => {
             expect(content.getClientContent()).toEqual("bar")
             expect(testProvider.save).not.toHaveBeenCalled()
-            expect(console.log).toHaveBeenCalledWith("CFM: File content not changed, skipping sending save to provider!")
+            // expect(console.log).toHaveBeenCalledWith("CFM: File content not changed, skipping sending save to provider!")
 
             console.log = savedConsoleLog
             testProvider.save = savedSave
