@@ -24,10 +24,8 @@ interface InteractiveApiProviderParams {
 // pass `interactiveApi=attachment` as url parameter to always save state as an attachment
 export const kAttachmentUrlParameter = "attachment"
 
-// pass `interactiveApi=dynamic` to save large documents as attachments
-export const kDynamicAttachmentUrlParameter = "dynamic"
 // can save it twice with room to spare in 1MB Firestore limit
-const kDynamicAttachmentSizeThreshold = 480 * 1024
+export const kDynamicAttachmentSizeThreshold = 480 * 1024
 
 // in solidarity with legacy DocumentStore implementation and S3 sharing implementation
 export const kAttachmentFilename = "file.json"
@@ -85,12 +83,15 @@ class InteractiveApiProvider extends ProviderInterface {
 
   shouldSaveAsAttachment(content: any) {
     const interactiveApi = queryString.parse(location.search).interactiveApi
-    switch (interactiveApi) {
-      case kAttachmentUrlParameter:
-        return true
-      case kDynamicAttachmentUrlParameter:
-        return JSON.stringify(content).length >= kDynamicAttachmentSizeThreshold
+    if (interactiveApi === kAttachmentUrlParameter) {
+      return true
     }
+
+    const aboveDynamicThreshold = JSON.stringify(content).length >= kDynamicAttachmentSizeThreshold
+    if (aboveDynamicThreshold) {
+      return true
+    }
+
     return false
   }
 
