@@ -12,6 +12,7 @@ import {
   readAttachment, setInteractiveState as _setInteractiveState, writeAttachment
 } from '@concord-consortium/lara-interactive-api'
 import { SelectInteractiveStateDialogProps } from '../views/select-interactive-state-dialog-view'
+
 const getInteractiveState = () => cloneDeep(_getInteractiveState())
 const setInteractiveState = <InteractiveState>(newState: InteractiveState | null) =>
         _setInteractiveState(cloneDeep(newState))
@@ -162,7 +163,7 @@ class InteractiveApiProvider extends ProviderInterface {
   }
 
   async getInitialInteractiveStateAndinteractiveId(initInteractiveMessage: IInitInteractive): Promise<{interactiveState: {}, interactiveId?: string}> {
-    if (initInteractiveMessage.mode === "authoring") {
+    if ((initInteractiveMessage.mode === "authoring") || (initInteractiveMessage.mode === "reportItem")) {
       return null
     }
     if (initInteractiveMessage.mode === "report") {
@@ -310,23 +311,23 @@ class InteractiveApiProvider extends ProviderInterface {
   async save(cloudContent: any, metadata: CloudMetadata, callback?: ProviderSaveCallback, disablePatch?: boolean) {
     await this.getInitInteractiveMessage()
 
+    let savedContent: any
     const clientContent = cloudContent.getContent()
     const contentType = typeof clientContent === 'string' ? 'text/plain' : 'application/json'
     if (this.shouldSaveAsAttachment(clientContent)) {
       const content = contentType === 'application/json' ? JSON.stringify(clientContent) : clientContent
       const response = await writeAttachment({ name: kAttachmentFilename, content, contentType })
-      if (response.ok) {
-        setInteractiveState(interactiveStateAttachment(contentType))
-      }
-      else {
+      if (!response.ok) {
         // if write failed, pass error to callback
         return callback(response.statusText)
       }
+      savedContent = interactiveStateAttachment(contentType)
     }
     else {
-      setInteractiveState(clientContent)
+      savedContent = clientContent
     }
-    callback?.(null)
+    setInteractiveState(clientContent)
+    callback?.(null, 200, savedContent)
   }
 
   canOpenSaved() { return true }
