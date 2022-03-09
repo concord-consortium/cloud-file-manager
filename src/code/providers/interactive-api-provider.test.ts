@@ -1,6 +1,6 @@
 import { IRuntimeInitInteractive } from "@concord-consortium/lara-interactive-api"
 import { CloudFileManagerClient } from "../client"
-import InteractiveApiProvider, { kAttachmentFilename, kAttachmentUrlParameter, kDynamicAttachmentUrlParameter } from "./interactive-api-provider"
+import InteractiveApiProvider, { kAttachmentFilename, kAttachmentUrlParameter, kDynamicAttachmentSizeThreshold } from "./interactive-api-provider"
 import { CloudContent, CloudMetadata, ECapabilities } from "./provider-interface"
 
 jest.mock('@concord-consortium/lara-interactive-api')
@@ -533,8 +533,6 @@ describe('InteractiveApiProvider', () => {
     mockApi.getInitInteractiveMessage
       .mockImplementation(() => Promise.resolve(mockInitInteractiveMessage))
 
-    setQueryParams(`interactiveApi=${kDynamicAttachmentUrlParameter}`)
-
     const client = new CloudFileManagerClient()
     const content = new CloudContent('fooContent', { isCfmWrapped: false, isPreCfmFormat: false })
     const metadata = new CloudMetadata({ name: 'foo' })
@@ -574,6 +572,41 @@ describe('InteractiveApiProvider', () => {
     expect(mockApi.readAttachment).not.toHaveBeenCalled()
     expect(loadCallback).toHaveBeenCalledTimes(1)
     expect(loadCallback.mock.calls[0][0]).toBeNull()
+  })
+
+  it('should correctly determine when to use attachments', async () => {
+    // getInitInteractiveMessage returns a promise that resolves to a mock initInteractiveMessage
+    const mockInitInteractiveMessage: Partial<IRuntimeInitInteractive> = {
+      version: 1,
+      mode: "runtime",
+      classInfoUrl: 'https://concord.org/classInfo',
+      interactive: {
+        id: "mw_interactive_100",
+        name: ""
+      }
+    }
+    mockApi.getInitInteractiveMessage
+      .mockImplementation(() => Promise.resolve(mockInitInteractiveMessage))
+
+    const client = new CloudFileManagerClient()
+    const provider = new InteractiveApiProvider({}, client)
+    await provider.isReady()
+
+    const enclosingStringifiedQuoteLength = 2  // to account for "" enclosing the buffer when shouldSaveAsAttachment uses JSON.stringify
+    const contentBelowThreshhold = Buffer.alloc(kDynamicAttachmentSizeThreshold - 1 - enclosingStringifiedQuoteLength, "x").toString()
+    const contentAtThreshhold = Buffer.alloc(kDynamicAttachmentSizeThreshold - enclosingStringifiedQuoteLength, "x").toString()
+    const contentAboveThreshhold = Buffer.alloc(kDynamicAttachmentSizeThreshold + 1 - enclosingStringifiedQuoteLength, "x").toString()
+
+    // without an interactiveApi url param attachment use is determined by the length of the content
+    expect(provider.shouldSaveAsAttachment(contentBelowThreshhold)).toBe(false)
+    expect(provider.shouldSaveAsAttachment(contentAtThreshhold)).toBe(true)
+    expect(provider.shouldSaveAsAttachment(contentAboveThreshhold)).toBe(true)
+
+    // with an explicit kAttachmentUrlParameter value attachments are always used
+    setQueryParams(`interactiveApi=${kAttachmentUrlParameter}`)
+    expect(provider.shouldSaveAsAttachment(contentBelowThreshhold)).toBe(true)
+    expect(provider.shouldSaveAsAttachment(contentAtThreshhold)).toBe(true)
+    expect(provider.shouldSaveAsAttachment(contentAboveThreshhold)).toBe(true)
   })
 
 })
