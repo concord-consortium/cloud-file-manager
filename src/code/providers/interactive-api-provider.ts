@@ -170,16 +170,13 @@ class InteractiveApiProvider extends ProviderInterface {
     }
 
     let interactiveState = initInteractiveMessage.interactiveState
-
-    // some interactives, like the full-screen wrapper always report they are in runtime
-    // mode, even when loaded in a report which does not define the interactive member
-    let interactiveId = initInteractiveMessage.interactive?.id
+    let interactiveId = initInteractiveMessage.interactive.id
 
     const interactiveStateAvailable = !!interactiveState
     const {allLinkedStates} = initInteractiveMessage
 
     // this is adapted from the existing autolaunch.ts file
-    if (interactiveId && allLinkedStates?.length > 0) {
+    if (allLinkedStates?.length > 0) {
       // find linked state which is directly linked to this one along with the most recent linked state.
       const directlyLinkedState = allLinkedStates[0]
 
