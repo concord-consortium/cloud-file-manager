@@ -650,7 +650,7 @@ class CloudFileManagerClient {
   saveFile(stringContent: any, metadata: CloudMetadata, callback: OpenSaveCallback = null, options?: SaveOptions) {
     // if the content didn't change skip the save (but fake it for the client)
     if (!options?.skipContentHashCheck) {
-      const savedContentHash = this._computeContentHash(stringContent)
+      const savedContentHash = this._computeContentHash(stringContent, "saveFile")
       if (this.state.contentHash === savedContentHash) {
         console.log("CFM: File content not changed, skipping sending save to provider!")
         const currentContent = this._createOrUpdateCurrentContent(stringContent, metadata)
@@ -1219,16 +1219,26 @@ class CloudFileManagerClient {
     }
   }
 
-  _computeContentHash(content: any) {
+  _computeContentHash(content: any, label: string) {
     const clientContent = (typeof (content?.getClientContent) === 'function') ? content.getClientContent() : content
-    return sha256(JSON.stringify(clientContent))
+    const stringifiedContent = JSON.stringify(clientContent);
+    const hashedContent = sha256(stringifiedContent);
+    console.log("****", label, {
+      "content": content,
+      "typeof content": typeof content,
+      "clientContent": clientContent,
+      "typeof clientContent": typeof clientContent,
+      "stringifiedContent": stringifiedContent,
+      "hashedContent": hashedContent,
+    });
+    return hashedContent
   }
 
   _fileChanged(type: 'savedFile' | 'sharedFile' | 'unsharedFile' | 'renamedFile', content: any, metadata: CloudMetadata, additionalState?: any, hashParams: string = null) {
     if (additionalState == null) { additionalState = {} }
     if (type === 'savedFile') {
       // update the hash after saving to check on future saves
-      additionalState.contentHash = this._computeContentHash(content)
+      additionalState.contentHash = this._computeContentHash(content, "_fileChanged")
     }
     this._updateMetaDataOverwritable(metadata)
     this._updateState(content, metadata, additionalState, hashParams)
@@ -1238,7 +1248,7 @@ class CloudFileManagerClient {
   _fileOpened(content: any, metadata: CloudMetadata, additionalState?: any, hashParams: string = null) {
     if (additionalState == null) { additionalState = {} }
     // save a hash of the incoming content to check in future saves
-    additionalState.contentHash = this._computeContentHash(content)
+    additionalState.contentHash = this._computeContentHash(content, "_fileOpened")
 
     const eventData = { content: content?.getClientContent?.() ?? content }
     // update state before sending 'openedFile' events so that 'openedFile' listeners that
