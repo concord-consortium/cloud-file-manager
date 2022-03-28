@@ -1,3 +1,5 @@
+import { CloudContent } from "./providers/provider-interface";
+
 export interface CFMMenuItemObject {
   name?: string;
   key?: string;
@@ -92,6 +94,8 @@ export type CFMProviderOptions = CFMBaseProviderOptions | CFMReadOnlyProviderOpt
                                 CFMDocumentStoreProviderOptions | CFMGoogleDriveProviderOptions |
                                 CFMCustomClientProviderOptions;
 
+export type ContentSaveFilterFn = (clientContent: CloudContent) => any;
+
 export interface CFMHashParams {
   sharedContentId?: string;
   fileParams?: string;
@@ -121,4 +125,5 @@ export interface CFMAppOptions {
   sendPostMessageClientEvents?: boolean;
   usingIframe?: boolean;
   app?: string;   // required when iframing - relative path to the app to wrap
+  contentSaveFilter?: ContentSaveFilterFn;
 }

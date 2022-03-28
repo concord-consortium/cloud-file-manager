@@ -329,7 +329,7 @@ class InteractiveApiProvider extends ProviderInterface {
     else {
       savedContent = clientContent
     }
-    setInteractiveState(clientContent)
+    setInteractiveState(savedContent)
     callback?.(null, 200, savedContent)
   }
 
