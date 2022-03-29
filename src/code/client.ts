@@ -51,14 +51,10 @@ interface IClientState {
   sharing?: boolean;
   dirty?: boolean;
   failures?: number;
-  contentHash?: string;
 }
 
 export type ClientEventCallback = (...args: any) => void;
 
-export interface SaveOptions {
-  skipContentHashCheck?: boolean;
-}
 
 class CloudFileManagerClientEvent {
   callback: ClientEventCallback;
@@ -116,8 +112,8 @@ class CloudFileManagerClient {
     this.providers = {}
     this.urlProvider = new URLProvider()
 
-    this.onUnload = this.onUnload.bind(this);
-    setOnUnload(this.onUnload);
+    this.onUnload = this.onUnload.bind(this)
+    setOnUnload(this.onUnload)
 
     this.connectedPromise = new Promise((resolve, reject) => {
       this.connectedPromiseResolver = {
@@ -614,51 +610,40 @@ class CloudFileManagerClient {
     return (this.state.saving != null)
   }
 
-  confirmAuthorizeAndSave(stringContent: any, callback?: OpenSaveCallback, options?: SaveOptions) {
+  confirmAuthorizeAndSave(stringContent: any, callback?: OpenSaveCallback) {
     let rejectCallback = () => {this.disconnectCurrentFile()}
     // trigger authorize() from confirmation dialog to avoid popup blockers
     return this.confirm(tr("~CONFIRM.AUTHORIZE_SAVE"), () => {
       return this.state.metadata.provider.authorize(() => {
-        return this.saveFile(stringContent, this.state.metadata, callback, options)
+        return this.saveFile(stringContent, this.state.metadata, callback)
       })
     },
     rejectCallback)
   }
 
-  save(callback: OpenSaveCallback = null, options?: SaveOptions) {
+  save(callback: OpenSaveCallback = null) {
     return this._event('getContent', { shared: this._sharedMetadata() }, (stringContent: any) => {
-      return this.saveContent(stringContent, callback, options)
+      return this.saveContent(stringContent, callback)
     })
   }
 
-  saveContent(stringContent: any, callback: OpenSaveCallback = null, options?: SaveOptions) {
+  saveContent(stringContent: any, callback: OpenSaveCallback = null) {
     const provider = this.state.metadata?.provider || this.autoProvider(ECapabilities.save)
     if (provider != null) {
       return provider.authorized((isAuthorized: boolean) => {
         // we can save the document without authorization in some cases
         if (isAuthorized || !provider.isAuthorizationRequired()) {
-          return this.saveFile(stringContent, this.state.metadata, callback, options)
+          return this.saveFile(stringContent, this.state.metadata, callback)
         } else {
-          return this.confirmAuthorizeAndSave(stringContent, callback, options)
+          return this.confirmAuthorizeAndSave(stringContent, callback)
         }
       })
     } else {
-      return this.saveFileDialog(stringContent, callback, options)
+      return this.saveFileDialog(stringContent, callback)
     }
   }
 
-  saveFile(stringContent: any, metadata: CloudMetadata, callback: OpenSaveCallback = null, options?: SaveOptions) {
-    // if the content didn't change skip the save (but fake it for the client)
-    if (!options?.skipContentHashCheck) {
-      const savedContentHash = this._computeContentHash(stringContent)
-      if (this.state.contentHash === savedContentHash) {
-        console.log("CFM: File content not changed, skipping sending save to provider!")
-        const currentContent = this._createOrUpdateCurrentContent(stringContent, metadata)
-        this._fileChanged('savedFile', currentContent, metadata, {saved: true}, this._getHashParams(metadata))
-        return (typeof callback === 'function' ? callback(currentContent, metadata) : undefined)
-      }
-    }
-
+  saveFile(stringContent: any, metadata: CloudMetadata, callback: OpenSaveCallback = null) {
     // must be able to 'resave' to save silently, i.e. without save dialog
     if (metadata?.provider?.can(ECapabilities.resave, metadata)) {
       return this.saveFileNoDialog(stringContent, metadata, callback)
@@ -667,10 +652,12 @@ class CloudFileManagerClient {
     }
   }
 
-  saveFileNoDialog(stringContent: any, metadata: CloudMetadata, callback: OpenSaveCallback = null, options?: SaveOptions) {
+  saveFileNoDialog(stringContent: any, metadata: CloudMetadata, callback: OpenSaveCallback = null) {
     this._setState({
       saving: metadata})
-    const currentContent = this._createOrUpdateCurrentContent(stringContent, metadata)
+    let currentContent = this._createOrUpdateCurrentContent(stringContent, metadata)
+    currentContent = this.appOptions.contentSaveFilter?.(currentContent) || currentContent
+
     return metadata.provider.save(currentContent, metadata, (err, statusCode, savedContent) => {
       let failures
       if (err) {
@@ -707,13 +694,13 @@ class CloudFileManagerClient {
     })
   }
 
-  saveFileDialog(stringContent: any = null, callback: OpenSaveCallback = null, options?: SaveOptions) {
+  saveFileDialog(stringContent: any = null, callback: OpenSaveCallback = null) {
     return this._ui.saveFileDialog((metadata: CloudMetadata) => {
       return this._dialogSave(stringContent, metadata, callback)
     })
   }
 
-  saveFileAsDialog(stringContent: any = null, callback: OpenSaveCallback = null, options?: SaveOptions) {
+  saveFileAsDialog(stringContent: any = null, callback: OpenSaveCallback = null) {
     return this._ui.saveFileAsDialog((metadata: CloudMetadata) => {
       return this._dialogSave(stringContent, metadata, callback)
     })
@@ -788,10 +775,11 @@ class CloudFileManagerClient {
       const currentContent = this._createOrUpdateCurrentContent(stringContent)
       try {
         const key = "cfm-tempfile"
-        const value = JSON.stringify({ stringContent })
+        const name = this.state.metadata?.name
+        const value = JSON.stringify({ name, stringContent })
         window.localStorage.setItem(key, value)
         const metadata = new CloudMetadata({
-          name: currentContent.name,
+          name,
           type: CloudMetadata.File
         })
         this._fileChanged('savedFile', currentContent, metadata, {saved: true}, "")
@@ -806,10 +794,10 @@ class CloudFileManagerClient {
     this._event('willOpenFile', {op: "openAndClearTempFile"})
     try {
       const key = "cfm-tempfile"
-      const tempFile = JSON.parse(window.localStorage.getItem(key))
-      const content = cloudContentFactory.createEnvelopedCloudContent(tempFile.stringContent)
+      const { name, stringContent } = JSON.parse(window.localStorage.getItem(key))
+      const content = cloudContentFactory.createEnvelopedCloudContent(stringContent)
       const metadata = new CloudMetadata({
-        name: tempFile.name,
+        name,
         type: CloudMetadata.File
       })
       this._fileOpened(content, metadata, {dirty: true, openedContent: content.clone()})
@@ -1120,7 +1108,7 @@ class CloudFileManagerClient {
           return callback(newLangCode)
         }
       }
-      if (this.state.metadata?.provider.can(ECapabilities.save)) {
+      if (this.state.metadata?.provider?.can(ECapabilities.save)) {
         return this.save((err: string | null) => postSave(err))
       } else {
         return this.saveTempFile(postSave)
@@ -1191,21 +1179,19 @@ class CloudFileManagerClient {
           // providers can save a different format for the content
           // for example the interactiveApi provider can save attachments in which case the savedContent
           // will be an object pointing at the attachment
-          resolve(savedContent || content);
-        }, {
-          skipContentHashCheck: true
-        });
+          resolve(savedContent || content)
+        })
       })
     }
-    return Promise.resolve({});
+    return Promise.resolve({})
   }
 
-  _dialogSave(stringContent: any, metadata: CloudMetadata, callback: OpenSaveCallback, options?: SaveOptions) {
+  _dialogSave(stringContent: any, metadata: CloudMetadata, callback: OpenSaveCallback) {
     if (stringContent != null) {
-      return this.saveFileNoDialog(stringContent, metadata, callback, options)
+      return this.saveFileNoDialog(stringContent, metadata, callback)
     } else {
       return this._event('getContent', { shared: this._sharedMetadata() }, (stringContent: any) => {
-        return this.saveFileNoDialog(stringContent, metadata, callback, options)
+        return this.saveFileNoDialog(stringContent, metadata, callback)
       })
     }
   }
@@ -1219,17 +1205,9 @@ class CloudFileManagerClient {
     }
   }
 
-  _computeContentHash(content: any) {
-    const clientContent = (typeof (content?.getClientContent) === 'function') ? content.getClientContent() : content
-    return sha256(JSON.stringify(clientContent))
-  }
-
   _fileChanged(type: 'savedFile' | 'sharedFile' | 'unsharedFile' | 'renamedFile', content: any, metadata: CloudMetadata, additionalState?: any, hashParams: string = null) {
     if (additionalState == null) { additionalState = {} }
-    if (type === 'savedFile') {
-      // update the hash after saving to check on future saves
-      additionalState.contentHash = this._computeContentHash(content)
-    }
+
     this._updateMetaDataOverwritable(metadata)
     this._updateState(content, metadata, additionalState, hashParams)
     return this._event(type, { content: (content != null ? content.getClientContent() : undefined), shared: this._sharedMetadata() })
@@ -1237,8 +1215,6 @@ class CloudFileManagerClient {
 
   _fileOpened(content: any, metadata: CloudMetadata, additionalState?: any, hashParams: string = null) {
     if (additionalState == null) { additionalState = {} }
-    // save a hash of the incoming content to check in future saves
-    additionalState.contentHash = this._computeContentHash(content)
 
     const eventData = { content: content?.getClientContent?.() ?? content }
     // update state before sending 'openedFile' events so that 'openedFile' listeners that
@@ -1308,8 +1284,7 @@ class CloudFileManagerClient {
       dirty: false,
       saving: null,
       saved: false,
-      failures: 0,
-      contentHash: null
+      failures: 0
     })
   }
 
@@ -1321,7 +1296,7 @@ class CloudFileManagerClient {
   }
 
   _createOrUpdateCurrentContent(stringContent: any, metadata: CloudMetadata = null) {
-    let currentContent
+    let currentContent: CloudContent;
     if (this.state.currentContent != null) {
       ({ currentContent } = this.state)
       currentContent.setText(stringContent)

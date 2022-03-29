@@ -95,7 +95,7 @@ describe("CloudFileManagerClient", () => {
       expect(client.providers.testProvider.name).toBe('testProvider')
     })
 
-    test('skipping saves if content does not change', (done) => {
+    test('filtering content saves', (done) => {
       const testProvider = client.providers.testProvider
 
       // instead of adding or changing client functions to allow for metadata sets call into this "private" function
@@ -105,31 +105,20 @@ describe("CloudFileManagerClient", () => {
         provider: testProvider
       } as any})
 
-      // initial save works
+      // initial save works without filtering
       client.saveContent("foo", (content: CloudContent, metadata) => {
         expect(content.getClientContent()).toEqual("foo")
 
-        const savedConsoleLog = console.log
-        console.log = jest.fn()
+        client.appOptions.contentSaveFilter = (content: CloudContent) => {
+          // beetlejuice, beetlejuice, beetlejuice
+          content.content.content = "bar"
+          return content;
+        }
 
-        // updated save works
-        client.saveContent("bar", (content: CloudContent, metadata) => {
+        client.saveContent("foo", (content: CloudContent, metadata) => {
           expect(content.getClientContent()).toEqual("bar")
-          expect(console.log).not.toHaveBeenCalled()
 
-          const savedSave = testProvider.save
-          testProvider.save = jest.fn()
-
-          // save of same content is skipped
-          client.saveContent("bar", (content: CloudContent, metadata) => {
-            expect(content.getClientContent()).toEqual("bar")
-            expect(testProvider.save).not.toHaveBeenCalled()
-            expect(console.log).toHaveBeenCalledWith("CFM: File content not changed, skipping sending save to provider!")
-
-            console.log = savedConsoleLog
-            testProvider.save = savedSave
-            done()
-          })
+          done()
         })
       })
     })
