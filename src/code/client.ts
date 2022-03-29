@@ -775,9 +775,11 @@ class CloudFileManagerClient {
       const currentContent = this._createOrUpdateCurrentContent(stringContent)
       try {
         const key = "cfm-tempfile"
-        const value = JSON.stringify({ stringContent })
+        const name = this.state.metadata?.name
+        const value = JSON.stringify({ name, stringContent })
         window.localStorage.setItem(key, value)
         const metadata = new CloudMetadata({
+          name,
           type: CloudMetadata.File
         })
         this._fileChanged('savedFile', currentContent, metadata, {saved: true}, "")
@@ -792,10 +794,10 @@ class CloudFileManagerClient {
     this._event('willOpenFile', {op: "openAndClearTempFile"})
     try {
       const key = "cfm-tempfile"
-      const tempFile = JSON.parse(window.localStorage.getItem(key))
-      const content = cloudContentFactory.createEnvelopedCloudContent(tempFile.stringContent)
+      const { name, stringContent } = JSON.parse(window.localStorage.getItem(key))
+      const content = cloudContentFactory.createEnvelopedCloudContent(stringContent)
       const metadata = new CloudMetadata({
-        name: tempFile.name,
+        name,
         type: CloudMetadata.File
       })
       this._fileOpened(content, metadata, {dirty: true, openedContent: content.clone()})
@@ -1106,7 +1108,7 @@ class CloudFileManagerClient {
           return callback(newLangCode)
         }
       }
-      if (this.state.metadata?.provider.can(ECapabilities.save)) {
+      if (this.state.metadata?.provider?.can(ECapabilities.save)) {
         return this.save((err: string | null) => postSave(err))
       } else {
         return this.saveTempFile(postSave)
