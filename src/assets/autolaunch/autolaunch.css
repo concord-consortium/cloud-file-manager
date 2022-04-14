@@ -35,7 +35,7 @@
   padding: 0;
   font-size: 18px;
   color: #666;
-  overflow: auto;
+  overflow: hidden;
 }
 .data-select-dialog #question {
   padding: 5px 25px;
