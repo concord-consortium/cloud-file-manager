@@ -1175,15 +1175,22 @@ class CloudFileManagerClient {
   async onUnload(options: IGetInteractiveState) {
     if (options.unloading) {
       return new Promise<{}>(resolve => {
-        this.save((content, metadata, savedContent) => {
-          // providers can save a different format for the content
-          // for example the interactiveApi provider can save attachments in which case the savedContent
-          // will be an object pointing at the attachment
-          resolve(savedContent || content)
-        })
+        // only save if the provider is set - when using linked interactives the provider is not set when
+        // the linked interactive changed and the version choice dialog is showing
+        if (this.state.metadata?.provider) {
+          this.save((content, metadata, savedContent) => {
+            // providers can save a different format for the content
+            // for example the interactiveApi provider can save attachments in which case the savedContent
+            // will be an object pointing at the attachment
+            resolve(savedContent || content)
+          })
+        } else {
+          // signal that nothing needs to be saved
+          resolve(undefined)
+        }
       })
     }
-    return Promise.resolve({})
+    return Promise.resolve(undefined)
   }
 
   _dialogSave(stringContent: any, metadata: CloudMetadata, callback: OpenSaveCallback) {
