@@ -41,7 +41,7 @@ const interactiveStateAttachment =
   return { __attachment__: kAttachmentFilename, contentType }
 }
 const isInteractiveStateAttachment = (content: any) =>
-        (typeof content === "object") && (content.__attachment__ === kAttachmentFilename)
+        !!content && (typeof content === "object") && (content.__attachment__ === kAttachmentFilename)
 
 // This provider supports LARA interactives that save/restore state via the LARA interactive API.
 // To signal to the CFM that this provider should handle save/restore operations, add
@@ -162,7 +162,7 @@ class InteractiveApiProvider extends ProviderInterface {
     })
   }
 
-  async getInitialInteractiveStateAndinteractiveId(initInteractiveMessage: IInitInteractive): Promise<{interactiveState: {}, interactiveId?: string}> {
+  async getInitialInteractiveStateAndInteractiveId(initInteractiveMessage: IInitInteractive): Promise<{interactiveState: {}, interactiveId?: string}> {
     if ((initInteractiveMessage.mode === "authoring") || (initInteractiveMessage.mode === "reportItem")) {
       return null
     }
@@ -256,7 +256,7 @@ class InteractiveApiProvider extends ProviderInterface {
   async handleInitialInteractiveState(initInteractiveMessage: IInitInteractive) {
     let interactiveState: any
 
-    const {interactiveState: initialInteractiveState, interactiveId} = await this.getInitialInteractiveStateAndinteractiveId(initInteractiveMessage)
+    const {interactiveState: initialInteractiveState, interactiveId} = await this.getInitialInteractiveStateAndInteractiveId(initInteractiveMessage)
 
     try {
       interactiveState = await this.processRawInteractiveState(initialInteractiveState, interactiveId)
