@@ -9,13 +9,16 @@ import {
 }  from './provider-interface'
 import {
   getInitInteractiveMessage, getInteractiveState as _getInteractiveState, IInitInteractive, IInteractiveStateProps,
-  readAttachment, setInteractiveState as _setInteractiveState, writeAttachment
+  readAttachment, setInteractiveState as _setInteractiveState, writeAttachment, flushStateUpdates
 } from '@concord-consortium/lara-interactive-api'
 import { SelectInteractiveStateDialogProps } from '../views/select-interactive-state-dialog-view'
 
 const getInteractiveState = () => cloneDeep(_getInteractiveState())
-const setInteractiveState = <InteractiveState>(newState: InteractiveState | null) =>
-        _setInteractiveState(cloneDeep(newState))
+const setInteractiveState = <InteractiveState>(newState: InteractiveState | null) => {
+  _setInteractiveState(cloneDeep(newState))
+  // don't wait for the 2000ms timeout to save
+  flushStateUpdates()
+};
 
 interface InteractiveApiProviderParams {
   documentId?: string;
