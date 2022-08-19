@@ -417,6 +417,61 @@ describe('InteractiveApiProvider', () => {
     expect(mockApi.setInteractiveState.mock.calls[0][0]).toBe("foo")
   })
 
+  it('rewrites initial state after loads from documentId url parameter', async () => {
+    // getInitInteractiveMessage returns a promise that resolves to a mock initInteractiveMessage
+    const mockInitInteractiveMessage: Partial<IRuntimeInitInteractive> = {
+      version: 1,
+      mode: "runtime",
+      classInfoUrl: 'https://concord.org/classInfo',
+      interactive: {
+        id: "mw_interactive_100",
+        name: ""
+      },
+      hostFeatures: {
+        domain: "rewritten.domain" as any,
+      }
+    }
+    mockApi.getInitInteractiveMessage
+      .mockImplementation(() => Promise.resolve(mockInitInteractiveMessage))
+
+    const initialInteractiveState = {
+      some: {
+        deep: {
+          set: {
+            of: {
+              keys: {
+                bool: true,
+                num: 1,
+                url: "https://codap.concord.org/sensor-interactive/"
+              }
+            }
+          }
+        }
+      }
+    }
+    const replacedInitialInteractiveState = JSON.parse(JSON.stringify(initialInteractiveState).replace(/codap\.concord\.org/g, "rewritten.domain"))
+
+    // fetch response is intial interactive state
+    setQueryParams("documentId=https://initial/state")
+    mockFetch.mockImplementation(() => ({ ok: true, json: () => Promise.resolve(initialInteractiveState)}))
+
+    const client = new CloudFileManagerClient()
+    client.setAppOptions({ providers: ['interactiveApi'] })
+    client.connect()
+    const clientListener = jest.fn()
+    client.listen(clientListener)
+    const provider = client.providers[InteractiveApiProvider.Name] as InteractiveApiProvider
+    await provider.isReady()
+    expect(provider.name).toBe(InteractiveApiProvider.Name)
+    expect(mockApi.getInitInteractiveMessage).toHaveBeenCalledTimes(1)
+    expect(mockFetch).toHaveBeenCalledTimes(1)
+    expect(wasCalledWithEventOfType(clientListener, 'willOpenFile')).toBe(true)
+    expect(wasCalledWithEventOfType(clientListener, 'openedFile')).toBe(true)
+    expect(mockApi.getInteractiveState).not.toHaveBeenCalled()
+    expect(mockApi.setInteractiveState).toHaveBeenCalledTimes(1)
+    expect(mockApi.setInteractiveState.mock.calls[0][0]).toStrictEqual(replacedInitialInteractiveState)
+  })
+
   it("doesn't load initial state from documentId url parameter on failure", async () => {
     // getInitInteractiveMessage returns a promise that resolves to a mock initInteractiveMessage
     const mockInitInteractiveMessage: Partial<IRuntimeInitInteractive> = {
