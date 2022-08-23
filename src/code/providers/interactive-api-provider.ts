@@ -393,6 +393,9 @@ class InteractiveApiProvider extends ProviderInterface {
   }
 
   private rewriteInteractiveState(interactiveState?: any) {
+    /*
+    DISABLED FOR TESTING IF STILL NEEDED
+
     if (interactiveState && this.isObject(interactiveState)) {
       const hostDomain = this.initInteractiveMessage?.hostFeatures?.domain
       if (hostDomain) {
@@ -400,6 +403,7 @@ class InteractiveApiProvider extends ProviderInterface {
         this.rewriteSensorInteractiveUrls(interactiveState, hostDomain)
       }
     }
+    */
     return interactiveState
   }
 
