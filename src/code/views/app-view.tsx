@@ -52,7 +52,7 @@ const InnerApp = createReactClassFactory({
 
   render() {
     return (div({className: 'innerApp'},
-      (iframe({src: this.props.app}))
+      (iframe({src: this.props.app, allow: this.props.iframeAllow}))
     ))
   }
 })
@@ -65,6 +65,7 @@ interface IAppViewProps {
   enableLaraSharing?: boolean;
   usingIframe?: boolean;
   app?: string;   // src url for <iframe>
+  iframeAllow?: string;
 }
 
 interface IAppViewState {
@@ -302,7 +303,7 @@ class AppView extends React.Component<IAppViewProps, IAppViewState> {
         (MenuBar({client: this.props.client, filename: this.state.filename, provider: this.state.provider, fileStatus: this.state.fileStatus, items: menuItems, options: this.state.menuOptions})),
         // only render the wrapped client app in app (iframe) mode
         this.props.usingIframe ?
-          (InnerApp({app: this.props.app})) : undefined,
+          (InnerApp({app: this.props.app, iframeAllow: this.props.iframeAllow})) : undefined,
         this.renderDialogs()
       ))
     } else if (this.state.providerDialog || this.state.downloadDialog) {

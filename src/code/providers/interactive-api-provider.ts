@@ -55,6 +55,7 @@ class InteractiveApiProvider extends ProviderInterface {
   options: CFMLaraProviderOptions
   initInteractivePromise: Promise<IInitInteractive>
   readyPromise: Promise<boolean>
+  initInteractiveMessage: IInitInteractive
 
   constructor(options: CFMLaraProviderOptions, client: CloudFileManagerClient) {
     super({
@@ -279,6 +280,11 @@ class InteractiveApiProvider extends ProviderInterface {
   handleInitInteractive() {
     this.readyPromise = new Promise(resolve => {
       this.getInitInteractiveMessage().then(initInteractiveMessage => {
+        // save it to the client internal state to avoid having to wait again during initial load
+        // the second wait caused the tests to fail and this is needed when loading the provider
+        // file to get the host domain
+        this.initInteractiveMessage = initInteractiveMessage
+
         Promise.all([
           this.handleRunRemoteEndpoint(initInteractiveMessage),
           this.handleInitialInteractiveState(initInteractiveMessage)
@@ -304,7 +310,7 @@ class InteractiveApiProvider extends ProviderInterface {
     const initInteractiveMessage = await this.getInitInteractiveMessage()
     try {
       const interactiveId = this.getInteractiveId(initInteractiveMessage)
-      const interactiveState = await this.processRawInteractiveState(await getInteractiveState(), interactiveId)
+      const interactiveState = this.rewriteInteractiveState(await this.processRawInteractiveState(await getInteractiveState(), interactiveId))
       // following the example of the LaraProvider, wrap the content in a CFM envelope
       const content = cloudContentFactory.createEnvelopedCloudContent(interactiveState)
       callback(null, content, metadata)
@@ -358,13 +364,13 @@ class InteractiveApiProvider extends ProviderInterface {
 
     // if we have an initial state, then use it
     if (initialInteractiveState != null) {
-      successCallback(initialInteractiveState)
+      successCallback(this.rewriteInteractiveState(initialInteractiveState))
     }
     // otherwise, load the initial state from its document id (url)
     else if (openSavedParams.documentId) {
       try {
         const response = await fetch(openSavedParams.documentId)
-        const interactiveState = response.ok ? await response.json() : undefined
+        const interactiveState = this.rewriteInteractiveState(response.ok ? await response.json() : undefined)
         if (interactiveState) {
           // initialize our interactive state from the shared document contents
           setInteractiveState(interactiveState)
@@ -383,6 +389,41 @@ class InteractiveApiProvider extends ProviderInterface {
       setInteractiveState("")
       // notify that we have new state
       successCallback("")
+    }
+  }
+
+  private rewriteInteractiveState(interactiveState?: any) {
+    if (interactiveState && this.isObject(interactiveState)) {
+      const hostDomain = this.initInteractiveMessage?.hostFeatures?.domain
+      if (hostDomain) {
+        // rewrite any sensor-interactive urls to the host domain
+        this.rewriteSensorInteractiveUrls(interactiveState, hostDomain)
+      }
+    }
+    return interactiveState
+  }
+
+  private isObject(value: any) {
+    return !!(value && typeof value === "object")
+  }
+
+  private rewriteSensorInteractiveUrls(obj: any, hostDomain: string) {
+    if (Array.isArray(obj)) {
+      for (const item of obj) {
+        this.rewriteSensorInteractiveUrls(item, hostDomain)
+      }
+    } else if (this.isObject(obj)) {
+      for (const key in obj) {
+        const value = obj[key]
+        if (typeof value === "string") {
+          const matches = value.trim().match(/^(https?:\/\/)([^\/]+)(\/sensor-interactive\/.*)$/)
+          if (matches) {
+            obj[key] = `${matches[1]}${hostDomain}${matches[3]}`
+          }
+        } else if (this.isObject(value) || Array.isArray(value)) {
+          this.rewriteSensorInteractiveUrls(value, hostDomain)
+        }
+      }
     }
   }
 }
