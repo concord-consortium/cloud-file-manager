@@ -126,4 +126,5 @@ export interface CFMAppOptions {
   usingIframe?: boolean;
   app?: string;   // required when iframing - relative path to the app to wrap
   contentSaveFilter?: ContentSaveFilterFn;
+  iframeAllow?: string;
 }
