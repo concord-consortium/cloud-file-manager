@@ -12,6 +12,7 @@ import de from './lang/de.json'
 import el from './lang/el.json'
 import enUS from './lang/en-US.json'
 import es from './lang/es.json'
+import fa from './lang/fa.json'
 import he from './lang/he.json'
 import ja from './lang/ja.json'
 import nb from './lang/nb.json'
@@ -33,6 +34,7 @@ const languageFiles: LanguageFileEntry[] = [
   {key: 'el',    contents: el},     // Greek
   {key: 'en-US', contents: enUS},   // US English
   {key: 'es',    contents: es},     // Spanish
+  {key: 'fa',    contents: fa},     // Farsi (Persian)
   {key: 'he',    contents: he},     // Hebrew
   {key: 'ja' ,   contents: ja},     // Japanese
   {key: 'nb',    contents: nb},     // Norwegian Bokmål
