@@ -13,12 +13,43 @@ import {
 } from '@concord-consortium/lara-interactive-api'
 import { SelectInteractiveStateDialogProps } from '../views/select-interactive-state-dialog-view'
 
+export const shouldSaveAsAttachment = (content: any) => {
+  const interactiveApi = queryString.parse(location.search).interactiveApi
+  if (interactiveApi === kAttachmentUrlParameter) {
+    return true
+  }
+
+  const aboveDynamicThreshold = JSON.stringify(content).length >= kDynamicAttachmentSizeThreshold
+  if (aboveDynamicThreshold) {
+    return true
+  }
+
+  return false
+}
+
 const getInteractiveState = () => cloneDeep(_getInteractiveState())
-const setInteractiveState = <InteractiveState>(newState: InteractiveState | null) => {
-  _setInteractiveState(cloneDeep(newState))
+export const setInteractiveState = async (_newState: any): Promise<{error: string}> => {
+  let savedInteractiveState: any
+  const newState = cloneDeep(_newState)
+  if (shouldSaveAsAttachment(newState)) {
+    const contentType = newState === 'string' ? 'text/plain' : 'application/json'
+    const content = contentType === 'application/json' ? JSON.stringify(newState) : newState
+    const response = await writeAttachment({ name: kAttachmentFilename, content, contentType })
+    if (!response.ok) {
+      return {error: response.statusText}
+    }
+    savedInteractiveState = interactiveStateAttachment(contentType)
+  }
+  else {
+    savedInteractiveState = newState
+  }
+
+  _setInteractiveState(savedInteractiveState)
   // don't wait for the 2000ms timeout to save
   flushStateUpdates()
-};
+
+  return {error: null}
+}
 
 interface InteractiveApiProviderParams {
   documentId?: string;
@@ -84,20 +115,6 @@ class InteractiveApiProvider extends ProviderInterface {
 
   isReady() {
     return this.readyPromise
-  }
-
-  shouldSaveAsAttachment(content: any) {
-    const interactiveApi = queryString.parse(location.search).interactiveApi
-    if (interactiveApi === kAttachmentUrlParameter) {
-      return true
-    }
-
-    const aboveDynamicThreshold = JSON.stringify(content).length >= kDynamicAttachmentSizeThreshold
-    if (aboveDynamicThreshold) {
-      return true
-    }
-
-    return false
   }
 
   logLaraData(interactiveStateUrl?: string, runRemoteEndpoint?: string) {
@@ -216,10 +233,10 @@ class InteractiveApiProvider extends ProviderInterface {
 
         if (interactiveState === mostRecentLinkedState.interactiveState) {
           // remove existing interactive state, so the interactive will be initialized from the linked state next time (if it is not saved).
-          setInteractiveState(null)
+          await setInteractiveState(null)
         } else {
           // update the current interactive state timestamp so the next reload doesn't trigger this picker UI
-          setInteractiveState("touch")
+          await setInteractiveState("touch")
         }
 
         return {interactiveState, interactiveId}
@@ -322,24 +339,13 @@ class InteractiveApiProvider extends ProviderInterface {
 
   async save(cloudContent: any, metadata: CloudMetadata, callback?: ProviderSaveCallback, disablePatch?: boolean) {
     await this.getInitInteractiveMessage()
-
-    let savedContent: any
-    const clientContent = cloudContent.getContent()
-    const contentType = typeof clientContent === 'string' ? 'text/plain' : 'application/json'
-    if (this.shouldSaveAsAttachment(clientContent)) {
-      const content = contentType === 'application/json' ? JSON.stringify(clientContent) : clientContent
-      const response = await writeAttachment({ name: kAttachmentFilename, content, contentType })
-      if (!response.ok) {
-        // if write failed, pass error to callback
-        return callback(response.statusText)
-      }
-      savedContent = interactiveStateAttachment(contentType)
+    const newState = cloudContent.getContent()
+    const result = await setInteractiveState(newState)
+    if (result.error) {
+      callback?.(result.error)
+    } else {
+      callback?.(null, 200, newState)
     }
-    else {
-      savedContent = clientContent
-    }
-    setInteractiveState(savedContent)
-    callback?.(null, 200, savedContent)
   }
 
   canOpenSaved() { return true }
@@ -373,9 +379,12 @@ class InteractiveApiProvider extends ProviderInterface {
         const interactiveState = this.rewriteInteractiveState(response.ok ? await response.json() : undefined)
         if (interactiveState) {
           // initialize our interactive state from the shared document contents
-          setInteractiveState(interactiveState)
-          // notify that we have new state
-          successCallback(interactiveState)
+          const result = await setInteractiveState(interactiveState)
+          if (result.error) {
+            callback(result.error)
+          } else {
+            successCallback(interactiveState)
+          }
         }
         return
       }
@@ -386,7 +395,7 @@ class InteractiveApiProvider extends ProviderInterface {
     }
     else {
       // in the absence of any provided content, initialize with an empty string
-      setInteractiveState("")
+      await setInteractiveState("")
       // notify that we have new state
       successCallback("")
     }
