@@ -335,7 +335,9 @@ describe('InteractiveApiProvider', () => {
     expect(getMockedCall(clientListener, "openedFile").data.content).toEqual({foo: "test"})
     expect(mockFetch).not.toHaveBeenCalled()
     expect(mockApi.getInteractiveState).not.toHaveBeenCalled()
-    expect(mockApi.setInteractiveState).not.toHaveBeenCalled()
+
+    // check that the linked state is autosaved
+    expect(mockApi.setInteractiveState).toHaveBeenCalled()
   })
 
   it("uses interactive state if interactive state and linked state is provided", async () => {
