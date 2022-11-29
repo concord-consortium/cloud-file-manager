@@ -264,6 +264,9 @@ class InteractiveApiProvider extends ProviderInterface {
       if (!interactiveStateAvailable && directlyLinkedState) {
         interactiveState = directlyLinkedState.interactiveState
         interactiveId = directlyLinkedState.interactive.id
+
+        // save the directly linked state so that it is available with the sharing plugin
+        await setInteractiveState(interactiveState)
       }
     }
 
