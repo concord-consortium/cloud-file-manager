@@ -372,6 +372,7 @@ class InteractiveApiProvider extends ProviderInterface {
     }
 
     // if we have an initial state, then use it
+    debugger  // eslint-disable-line no-debugger
     if (initialInteractiveState != null) {
       successCallback(this.rewriteInteractiveState(initialInteractiveState))
     }
