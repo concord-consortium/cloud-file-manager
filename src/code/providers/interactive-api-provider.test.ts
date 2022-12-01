@@ -398,7 +398,45 @@ describe('InteractiveApiProvider', () => {
     mockApi.getInitInteractiveMessage
       .mockImplementation(() => Promise.resolve(mockInitInteractiveMessage))
 
-    // fetch response is intial interactive state
+    // fetch response is initial interactive state
+    setQueryParams("documentId=https://initial/state")
+    mockFetch.mockImplementation(() => ({ ok: true, json: () => Promise.resolve("foo") }))
+
+    const client = new CloudFileManagerClient()
+    client.setAppOptions({ providers: ['interactiveApi'] })
+    client.connect()
+    const clientListener = jest.fn()
+    client.listen(clientListener)
+    const provider = client.providers[InteractiveApiProvider.Name] as InteractiveApiProvider
+    await provider.isReady()
+    expect(provider.name).toBe(InteractiveApiProvider.Name)
+    expect(mockApi.getInitInteractiveMessage).toHaveBeenCalledTimes(1)
+    expect(mockFetch).toHaveBeenCalledTimes(1)
+    expect(wasCalledWithEventOfType(clientListener, 'willOpenFile')).toBe(true)
+    // the next line is now difficult to test because setInteractiveState returns a promise
+    // expect(wasCalledWithEventOfType(clientListener, 'openedFile')).toBe(true)
+    expect(mockApi.getInteractiveState).not.toHaveBeenCalled()
+    expect(mockApi.setInteractiveState).toHaveBeenCalledTimes(1)
+    expect(mockApi.setInteractiveState.mock.calls[0][0]).toBe("foo")
+  })
+
+  // after a save failure, interactive state can be reported as an empty object ({})
+  it('loads initial state from documentId when also passed an empty object for interactive state', async () => {
+    // getInitInteractiveMessage returns a promise that resolves to a mock initInteractiveMessage
+    const mockInitInteractiveMessage: Partial<IRuntimeInitInteractive> = {
+      version: 1,
+      mode: "runtime",
+      interactiveState: {},
+      classInfoUrl: 'https://concord.org/classInfo',
+      interactive: {
+        id: "mw_interactive_100",
+        name: ""
+      }
+    }
+    mockApi.getInitInteractiveMessage
+      .mockImplementation(() => Promise.resolve(mockInitInteractiveMessage))
+
+    // fetch response is initial interactive state
     setQueryParams("documentId=https://initial/state")
     mockFetch.mockImplementation(() => ({ ok: true, json: () => Promise.resolve("foo") }))
 
@@ -454,7 +492,7 @@ describe('InteractiveApiProvider', () => {
     }
     const replacedInitialInteractiveState = JSON.parse(JSON.stringify(initialInteractiveState).replace(/codap\.concord\.org/g, "rewritten.domain"))
 
-    // fetch response is intial interactive state
+    // fetch response is initial interactive state
     setQueryParams("documentId=https://initial/state")
     mockFetch.mockImplementation(() => ({ ok: true, json: () => Promise.resolve(initialInteractiveState)}))
 
@@ -652,20 +690,20 @@ describe('InteractiveApiProvider', () => {
     await provider.isReady()
 
     const enclosingStringifiedQuoteLength = 2  // to account for "" enclosing the buffer when shouldSaveAsAttachment uses JSON.stringify
-    const contentBelowThreshhold = Buffer.alloc(kDynamicAttachmentSizeThreshold - 1 - enclosingStringifiedQuoteLength, "x").toString()
-    const contentAtThreshhold = Buffer.alloc(kDynamicAttachmentSizeThreshold - enclosingStringifiedQuoteLength, "x").toString()
-    const contentAboveThreshhold = Buffer.alloc(kDynamicAttachmentSizeThreshold + 1 - enclosingStringifiedQuoteLength, "x").toString()
+    const contentBelowThreshold = Buffer.alloc(kDynamicAttachmentSizeThreshold - 1 - enclosingStringifiedQuoteLength, "x").toString()
+    const contentAtThreshold = Buffer.alloc(kDynamicAttachmentSizeThreshold - enclosingStringifiedQuoteLength, "x").toString()
+    const contentAboveThreshold = Buffer.alloc(kDynamicAttachmentSizeThreshold + 1 - enclosingStringifiedQuoteLength, "x").toString()
 
     // without an interactiveApi url param attachment use is determined by the length of the content
-    expect(shouldSaveAsAttachment(contentBelowThreshhold)).toBe(false)
-    expect(shouldSaveAsAttachment(contentAtThreshhold)).toBe(true)
-    expect(shouldSaveAsAttachment(contentAboveThreshhold)).toBe(true)
+    expect(shouldSaveAsAttachment(contentBelowThreshold)).toBe(false)
+    expect(shouldSaveAsAttachment(contentAtThreshold)).toBe(true)
+    expect(shouldSaveAsAttachment(contentAboveThreshold)).toBe(true)
 
     // with an explicit kAttachmentUrlParameter value attachments are always used
     setQueryParams(`interactiveApi=${kAttachmentUrlParameter}`)
-    expect(shouldSaveAsAttachment(contentBelowThreshhold)).toBe(true)
-    expect(shouldSaveAsAttachment(contentAtThreshhold)).toBe(true)
-    expect(shouldSaveAsAttachment(contentAboveThreshhold)).toBe(true)
+    expect(shouldSaveAsAttachment(contentBelowThreshold)).toBe(true)
+    expect(shouldSaveAsAttachment(contentAtThreshold)).toBe(true)
+    expect(shouldSaveAsAttachment(contentAboveThreshold)).toBe(true)
   })
 
 })
