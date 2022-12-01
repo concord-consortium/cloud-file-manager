@@ -12,6 +12,7 @@ import {
   readAttachment, setInteractiveState as _setInteractiveState, writeAttachment, flushStateUpdates
 } from '@concord-consortium/lara-interactive-api'
 import { SelectInteractiveStateDialogProps } from '../views/select-interactive-state-dialog-view'
+import { isEmptyObject } from '../utils/is-empty-object'
 
 export const shouldSaveAsAttachment = (content: any) => {
   const interactiveApi = queryString.parse(location.search).interactiveApi
@@ -372,7 +373,10 @@ class InteractiveApiProvider extends ProviderInterface {
     }
 
     // if we have an initial state, then use it
-    if (initialInteractiveState != null) {
+    // under some circumstances (e.g. prior failure to save an attachment?), the
+    // initialInteractiveState is reported as an empty object, which is not considered
+    // valid for these purposes
+    if (initialInteractiveState != null && !isEmptyObject(initialInteractiveState)) {
       successCallback(this.rewriteInteractiveState(initialInteractiveState))
     }
     // otherwise, load the initial state from its document id (url)
