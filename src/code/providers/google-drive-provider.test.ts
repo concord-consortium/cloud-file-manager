@@ -8,10 +8,6 @@ describe('GoogleDriveProvider', () => {
 
   const client = new CloudFileManagerClient()
 
-  beforeEach(() => {
-    GoogleDriveProvider.loadPromise = null
-  })
-
   it('should throw exception without credentials', () => {
     expect(() => new GoogleDriveProvider({} as any, client)).toThrow()
     expect(() => new GoogleDriveProvider({ clientId } as any, client)).toThrow()
@@ -20,17 +16,13 @@ describe('GoogleDriveProvider', () => {
   })
 
   it('should load the google API only once', () => {
-    const createElementSpy = jest.spyOn(document, 'createElement')
-    const appendChildSpy = jest.spyOn(document.head, 'appendChild').mockImplementation(() => null)
     const provider = new GoogleDriveProvider({ clientId, apiKey }, client)
-    expect(createElementSpy).toHaveBeenCalledTimes(1)
-    expect(createElementSpy.mock.results[0].value.src).toBe('https://apis.google.com/js/api.js')
-    expect(appendChildSpy).toHaveBeenCalledTimes(1)
-    const promise1 = GoogleDriveProvider.loadPromise
-    const promise2 = provider._waitForGAPILoad()
-    expect(createElementSpy).toHaveBeenCalledTimes(1)
-    expect(appendChildSpy).toHaveBeenCalledTimes(1)
+    const promise1 = GoogleDriveProvider.apiLoadPromise
+    const promise2 = provider.waitForAPILoad()
     expect(promise1).toBe(promise2)
+    const promise3 = provider.waitForAPILoad()
+    expect(promise1).toBe(promise3)
+    expect(promise2).toBe(promise3)
   })
 
 })

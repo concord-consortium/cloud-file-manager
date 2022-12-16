@@ -139,6 +139,7 @@
   "~GOOGLE_DRIVE.ERROR_MISSING_CLIENTID": "Missing required clientId in googleDrive provider options",
   "~GOOGLE_DRIVE.UNABLE_TO_UPLOAD": "Unable to upload file",
   "~GOOGLE_DRIVE.UNABLE_TO_UPLOAD_MSG": "Unable to upload file: %{message}",
+  "~GOOGLE_DRIVE.MISSING_SCOPES_MESSAGE": "Please try logging in again and check all the boxes when prompted in the popup",
 
   "~DOCSTORE.LOAD_403_ERROR": "You don't have permission to load %{filename}.<br><br>If you are using some else's shared document it may have been unshared.",
   "~DOCSTORE.LOAD_SHARED_404_ERROR": "Unable to load the requested shared document.<br><br>Perhaps the file was not shared?",
