@@ -234,37 +234,61 @@ class GoogleDriveProvider extends ProviderInterface {
     })
   }
 
+  getAllFiles(metadata: CloudMetadata, callback: (err: any, files: any[]) => void) {
+    let files: any[] = []
+
+    const mimeTypesQuery = (this.readableMimetypes || []).map((mimeType: any) => `mimeType = '${mimeType}'`).join(" or ")
+    const listParams: any = {
+      pageSize: 1000, // 1000 is max
+      fields: "files(id, mimeType, name, capabilities(canEdit)),nextPageToken",
+      q: `trashed = false and (${mimeTypesQuery} or mimeType = 'application/vnd.google-apps.folder') and '${metadata?.providerData.id || 'root'}' in parents`
+    }
+
+    const listLoop = () => {
+      gapi.client.drive.files.list(listParams).execute((result: any) => {
+        if (!result || result.error) {
+          return callback(result, [])
+        }
+        if (result.files) {
+          files = files.concat(result.files)
+        }
+        if (result.nextPageToken) {
+          // get the next page of results
+          listParams.pageToken = result.nextPageToken
+          listLoop()
+        } else {
+          callback(null, files)
+        }
+      })
+    }
+
+    listLoop()
+  }
+
   list(metadata: CloudMetadata, callback: ProviderListCallback) {
     this.authorized((isAuthorized) => {
       if (isAuthorized) {
-        const mimeTypesQuery = (this.readableMimetypes || []).map((mimeType: any) => `mimeType = '${mimeType}'`).join(" or ")
-        const request = gapi.client.drive.files.list({
-          fields: "files(id, mimeType, name, capabilities(canEdit))",
-          q: `trashed = false and (${mimeTypesQuery} or mimeType = 'application/vnd.google-apps.folder') and '${metadata?.providerData.id || 'root'}' in parents`
-        })
-        return request.execute((result: any) => {
-          if (!result || result.error) {
-            return callback(this.apiError(result, 'Unable to list files'))
+        this.getAllFiles(metadata, (err: any, files: any[]) => {
+          if (err) {
+            return callback(this.apiError(err, 'Unable to list files'))
           }
+
           const list = []
-          const files = result.files
-          if (files?.length > 0) {
-            for (let i = 0; i < files.length; i++) {
-              const item = files[i]
-              const type = item.mimeType === 'application/vnd.google-apps.folder' ? CloudMetadata.Folder : CloudMetadata.File
-              if ((type === CloudMetadata.Folder) || this.matchesExtension(item.name)) {
-                list.push(new CloudMetadata({
-                      name: item.name,
-                      type,
-                      parent: metadata,
-                      overwritable: item.capabilities.canEdit,
-                      provider: this,
-                      providerData: {
-                        id: item.id
-                      }
-                    })
-                )
-              }
+          for (let i = 0; i < files.length; i++) {
+            const item = files[i]
+            const type = item.mimeType === 'application/vnd.google-apps.folder' ? CloudMetadata.Folder : CloudMetadata.File
+            if ((type === CloudMetadata.Folder) || this.matchesExtension(item.name)) {
+              list.push(new CloudMetadata({
+                    name: item.name,
+                    type,
+                    parent: metadata,
+                    overwritable: item.capabilities.canEdit,
+                    provider: this,
+                    providerData: {
+                      id: item.id
+                    }
+                  })
+              )
             }
           }
           list.sort((a, b) => {
@@ -278,11 +302,11 @@ class GoogleDriveProvider extends ProviderInterface {
             }
             return 0
           })
-          return callback(null, list)
+          callback(null, list)
         })
       }
       else {
-        return callback(null, [])
+        callback(null, [])
       }
     })
   }
