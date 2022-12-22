@@ -321,10 +321,10 @@ class GoogleDriveProvider extends ProviderInterface {
 
   rename(metadata: CloudMetadata, newName: string, callback?: (err: string | null, metadata?: CloudMetadata) => void) {
     return this.waitForAPILoad().then(() => {
-      const request = gapi.client.drive.files.patch({
+      const request = gapi.client.drive.files.update({
         fileId: metadata.providerData.id,
         resource: {
-          title: CloudMetadata.withExtension(newName)
+          name: CloudMetadata.withExtension(newName)
         }
       })
       return request.execute((result: any) => {
