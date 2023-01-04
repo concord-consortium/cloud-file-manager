@@ -352,7 +352,7 @@ const FileDialogTab = createReactClass({
       ? div({}, `No files found matching "${this.state.filename}" in current folder`)
       : null
 
-    return (div({className: 'dialogTab'},
+    return (div({className: 'dialogTab fileDialog'},
       (input({type: 'text', value: this.state.filename, placeholder: (tr("~FILE_DIALOG.FILENAME")), onChange: this.filenameChanged, onKeyDown: this.watchForEnter, ref: (elt: any) => { return this.inputRef = elt }})),
       (listFiltered && div({className: 'dialogClearFilter', onClick: this.clearListFilter}, "X")),
       (FileList({provider: this.props.provider, folder: this.state.folder, selectedFile: this.state.metadata, fileSelected: this.fileSelected, fileConfirmed: this.confirm, list, listLoaded: this.listLoaded, client: this.props.client, overrideMessage})),
