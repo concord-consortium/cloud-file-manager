@@ -980,7 +980,14 @@ class CloudFileManagerClient {
         this.state.currentContent.addMetadata({docName: metadata.name})
       }
       this._fileChanged('renamedFile', this.state.currentContent, metadata, {dirty}, this._getHashParams(metadata))
-      return (typeof callback === 'function' ? callback(newName) : undefined)
+
+      const done = () => typeof callback === 'function' ? callback(newName) : undefined
+      if (metadata?.provider || this.autoProvider(ECapabilities.save)) {
+        // autosave renamed file if it has already been saved or can be autosaved
+        this.save(done)
+      } else {
+        done()
+      }
     }
     if (newName !== (this.state.metadata != null ? this.state.metadata.name : undefined)) {
       if (metadata?.provider?.can(ECapabilities.rename, metadata)) {
