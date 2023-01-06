@@ -134,5 +134,6 @@
     "~DIALOG.SELECT_INTERACTIVE_STATE.CURRENT_VS_LINKED": "صفحه‌ی دیگر شامل داده‌های جدیدتری است. مایل هستید کدام را به کار ببرید؟",
     "~DIALOG.SELECT_INTERACTIVE_STATE.LINKED_VS_LINKED": "دو امکان برای ادامه دادن کار شما وجود دارد. مایل هستید کدام یک را به کار ببرید؟",
     "~DIALOG.SELECT_INTERACTIVE_STATE.TITLE": "مایل هستید چه کار کنید؟",
-    "~DIALOG.SELECT_INTERACTIVE_STATE.PREVIEW_INFO": "این یک پیش نمایش فقط خواندنی از داده‌هایتان هست.  برای بستن آن روی هر جایی کلیک کنید."
+    "~DIALOG.SELECT_INTERACTIVE_STATE.PREVIEW_INFO": "این یک پیش نمایش فقط خواندنی از داده‌هایتان هست.  برای بستن آن روی هر جایی کلیک کنید.",
+    "~GOOGLE_DRIVE.MISSING_SCOPES_MESSAGE": "Sorry, you did not provide the access needed. Please try logging in again and check all the boxes when prompted in the popup."
 }
