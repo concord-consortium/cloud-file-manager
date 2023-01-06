@@ -147,6 +147,25 @@ const FileDialogTab = createReactClass({
   // authorization status, and re-render when authorization status changes.
 
   UNSAFE_componentWillMount() {
+    const setAuthorization = (authorized: any) => {
+      // always set the instance variable
+      this._isAuthorized = authorized
+      // set the state if we can
+      if (this._isMounted) {
+        return this.setState({authorized})
+      }
+    }
+
+    // listen for logouts (Google Drive provider)
+    this.props.provider.onAuthorizationChange?.((authorized: any) => {
+      // reset rendering when de-authorized
+      if (this._isAuthorized && !authorized) {
+        this.setState(this.getInitialState())
+      }
+
+      setAuthorization(authorized)
+    })
+
     // Check for authorization before the first render. Providers that
     // don't require authorization or are already authorized will respond
     // immediately, but since the component isn't mounted yet we can't
@@ -154,14 +173,7 @@ const FileDialogTab = createReactClass({
     // in componentDidMount(). Providers that require asynchronous checks
     // for authorization may return before or after the first render, so
     // code should be prepared for either eventuality.
-    return this.props.provider.authorized((authorized: any) => {
-      // always set the instance variable
-      this._isAuthorized = authorized
-      // set the state if we can
-      if (this._isMounted) {
-        return this.setState({authorized})
-      }
-    })
+    return this.props.provider.authorized(setAuthorization)
   },
 
   // NP 2020-04-23  Copied from authorize-mixin.js
@@ -175,6 +187,7 @@ const FileDialogTab = createReactClass({
 
   // NP 2020-04-23  Copied from authorize-mixin.js
   componentWillUnmount() {
+    this.props.provider.onAuthorizationChange?.(null)
     return this._isMounted = false
   },
 
@@ -370,6 +383,7 @@ const FileDialogTab = createReactClass({
       (input({type: 'text', value: this.state.search, placeholder: (tr(isOpen ? "~FILE_DIALOG.FILTER" : "~FILE_DIALOG.FILENAME")), autoFocus: true, onChange: this.searchChanged, onKeyDown: this.watchForEnter, ref: (elt: any) => { return this.inputRef = elt }})),
       (listFiltered && div({className: 'dialogClearFilter', onClick: this.clearListFilter}, "X")),
       (FileList({provider: this.props.provider, folder: this.state.folder, selectedFile: this.state.metadata, fileSelected: this.fileSelected, fileConfirmed: this.confirm, list, listLoaded: this.listLoaded, client: this.props.client, overrideMessage})),
+      (this.props.provider.getFileDialogMessage && this.props.provider.getFileDialogMessage()),
       (div({className: 'buttons'},
         (button({onClick: this.confirm, disabled: confirmDisabled, className: confirmDisabled ? 'disabled' : ''}, this.isOpen() ? (tr("~FILE_DIALOG.OPEN")) : (tr("~FILE_DIALOG.SAVE")))),
         this.props.provider.can('remove') ?

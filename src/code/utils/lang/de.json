@@ -136,5 +136,7 @@
     "~DIALOG.SELECT_INTERACTIVE_STATE.TITLE": "Was soll getan werden?",
     "~DIALOG.SELECT_INTERACTIVE_STATE.PREVIEW_INFO": "Es gibt eine schreibgeschützte Vorschau der Daten. Irgendwohin klicken, um sie zu schließen.",
     "~GOOGLE_DRIVE.MISSING_SCOPES_MESSAGE": "Please try logging in again and check all the boxes when prompted in the popup",
-    "~FILE_DIALOG.FILTER": "Filter results..."
+    "~FILE_DIALOG.FILTER": "Filter results...",
+    "~GOOGLE_DRIVE.USERNAME_LABEL": "Username:",
+    "~GOOGLE_DRIVE.SELECT_DIFFERENT_ACCOUNT": "Select Different Google Account"
 }
