@@ -244,7 +244,7 @@ const FileDialogTab = createReactClass({
     if (metadata?.type === CloudMetadata.Folder) {
       return this.setState(this.getStateForFolder(metadata))
     } else if (metadata?.type === CloudMetadata.File) {
-      return this.setState({ filename: metadata.name, search: "", metadata })
+      return this.setState({ filename: metadata.name, metadata })
     } else {
       return this.setState(this.getStateForFolder(null))
     }
@@ -349,8 +349,9 @@ const FileDialogTab = createReactClass({
     const confirmDisabled = this.confirmDisabled()
     const removeDisabled = (this.state.metadata === null) || (this.state.metadata.type === CloudMetadata.Folder)
 
+    const isOpen = this.isOpen()
     const lowerSearch = this.state.search.toLowerCase()
-    const filtering = this.state.search.length > 0
+    const filtering = isOpen && this.state.search.length > 0
     const list = filtering
       ? this.state.list.filter((item: any) => (item.type === CloudMetadata.Folder) || (item.name.toLowerCase().indexOf(lowerSearch) !== -1))
       : this.state.list
@@ -361,7 +362,7 @@ const FileDialogTab = createReactClass({
       : null
 
     return (div({className: 'dialogTab'},
-      (input({type: 'text', value: this.state.search || this.state.filename, placeholder: (tr("~FILE_DIALOG.FILENAME")), onChange: this.searchChanged, onKeyDown: this.watchForEnter, ref: (elt: any) => { return this.inputRef = elt }})),
+      (input({type: 'text', value: this.state.search, placeholder: (tr(isOpen ? "~FILE_DIALOG.FILTER" : "~FILE_DIALOG.FILENAME")), autoFocus: true, onChange: this.searchChanged, onKeyDown: this.watchForEnter, ref: (elt: any) => { return this.inputRef = elt }})),
       (listFiltered && div({className: 'dialogClearFilter', onClick: this.clearListFilter}, "X")),
       (FileList({provider: this.props.provider, folder: this.state.folder, selectedFile: this.state.metadata, fileSelected: this.fileSelected, fileConfirmed: this.confirm, list, listLoaded: this.listLoaded, client: this.props.client, overrideMessage})),
       (div({className: 'buttons'},
