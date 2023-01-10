@@ -135,5 +135,6 @@
     "~DIALOG.SELECT_INTERACTIVE_STATE.LINKED_VS_LINKED": "Hay dos posibilidades de continuar con su trabajo. ¿Cuál versión prefiere?",
     "~DIALOG.SELECT_INTERACTIVE_STATE.TITLE": "¿Qué le gustaría hacer?",
     "~DIALOG.SELECT_INTERACTIVE_STATE.PREVIEW_INFO": "Esta es una vista previa de sus datos sin edición. Clic en cualquier lado para cerrarla.",
-    "~GOOGLE_DRIVE.MISSING_SCOPES_MESSAGE": "Sorry, you did not provide the access needed. Please try logging in again and check all the boxes when prompted in the popup."
+    "~GOOGLE_DRIVE.MISSING_SCOPES_MESSAGE": "Please try logging in again and check all the boxes when prompted in the popup",
+    "~FILE_DIALOG.FILTER": "Filter results..."
 }
