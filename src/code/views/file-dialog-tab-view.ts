@@ -353,7 +353,7 @@ const FileDialogTab = createReactClass({
     const lowerSearch = this.state.search.toLowerCase()
     const filtering = isOpen && this.state.search.length > 0
     const list = filtering
-      ? this.state.list.filter((item: any) => (item.type === CloudMetadata.Folder) || (item.name.toLowerCase().indexOf(lowerSearch) !== -1))
+      ? this.state.list.filter((item: any) => item.name.toLowerCase().indexOf(lowerSearch) !== -1)
       : this.state.list
     const listFiltered = list.length !== this.state.list.length
 
