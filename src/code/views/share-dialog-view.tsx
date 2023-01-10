@@ -257,14 +257,6 @@ export default class ShareDialogView extends React.Component<IShareDialogProps, 
               tabSelected={this.state.tabSelected}
               linkUrl={this.state.link}
               embedUrl={this.state.embed}
-              lara={this.props.enableLaraSharing
-                ? {
-                    linkUrl: this.getLara(),
-                    serverUrlLabel: this.state.laraServerUrlLabel,
-                    serverUrl: this.state.laraServerUrl,
-                    onChangeServerUrl: this.changedLaraServerUrl
-                  }
-                : undefined}
               interactiveApi={this.props.enableLaraSharing
                 ? {
                     linkUrl: this.getInteractiveApiLink(),

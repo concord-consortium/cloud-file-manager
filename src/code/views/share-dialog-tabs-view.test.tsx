@@ -22,7 +22,6 @@ describe('ShareDialogTabsView', () => {
     expect(screen.getByTestId('share-dialog-tabs-view')).toBeInTheDocument()
     expect(screen.getByTestId('sharing-tab-link')).toBeInTheDocument()
     expect(screen.getByTestId('sharing-tab-embed')).toBeInTheDocument()
-    expect(screen.queryByTestId('sharing-tab-lara')).toBeNull()
     expect(screen.queryByTestId('sharing-tab-api')).toBeNull()
     expect(screen.getByTestId('link-tab-contents')).toBeInTheDocument()
     expect(screen.queryByTestId('embed-tab-contents')).toBeNull()
@@ -45,7 +44,6 @@ describe('ShareDialogTabsView', () => {
     expect(screen.getByTestId('share-dialog-tabs-view')).toBeInTheDocument()
     expect(screen.getByTestId('sharing-tab-link')).toBeInTheDocument()
     expect(screen.getByTestId('sharing-tab-embed')).toBeInTheDocument()
-    expect(screen.queryByTestId('sharing-tab-lara')).toBeNull()
     expect(screen.queryByTestId('link-tab-contents')).toBeNull()
     expect(screen.getByTestId('embed-tab-contents')).toBeInTheDocument()
     expect(screen.queryByTestId('lara-api-tab-contents')).toBeNull()
@@ -67,56 +65,10 @@ describe('ShareDialogTabsView', () => {
     expect(screen.getByTestId('share-dialog-tabs-view')).toBeInTheDocument()
     expect(screen.getByTestId('sharing-tab-link')).toBeInTheDocument()
     expect(screen.getByTestId('sharing-tab-embed')).toBeInTheDocument()
-    expect(screen.queryByTestId('sharing-tab-lara')).toBeNull()
     expect(screen.queryByTestId('link-tab-contents')).toBeNull()
     expect(screen.queryByTestId('embed-tab-contents')).toBeNull()
     expect(screen.queryByTestId('lara-api-tab-contents')).toBeNull()
     expect(screen.queryByTestId('copy-anchor-link')).toBeNull()
-  })
-
-  it('renders with LARA sharing', async () => {
-    const mockSelectTab = jest.fn()
-    const mockCopy = jest.fn()
-    const mockChangeServerUrl = jest.fn()
-    const mockChangeFullscreenScaling = jest.fn()
-    const mockChangeVisibilityToggles = jest.fn()
-
-    // renders with the lara tab active
-    const laraTabProps: IShareDialogLaraApiTabProps = {
-      linkUrl: 'https:/concord.org/url',
-      serverUrlLabel: 'ServerUrl',
-      serverUrl: 'https://concord.org/server',
-      onChangeServerUrl: mockChangeServerUrl
-    }
-    render(
-      <ShareDialogTabsView tabSelected='lara' linkUrl='https://concord.org/link' embedUrl='https://concord.org/embed'
-        onSelectTab={mockSelectTab} onCopyClick={mockCopy} lara={laraTabProps}
-        fullscreenScaling={true} onChangeFullscreenScaling={mockChangeFullscreenScaling}
-        visibilityToggles={false} onChangeVisibilityToggles={mockChangeVisibilityToggles} />
-    )
-    expect(screen.getByTestId('share-dialog-tabs-view')).toBeInTheDocument()
-    expect(screen.getByTestId('sharing-tab-link')).toBeInTheDocument()
-    expect(screen.getByTestId('sharing-tab-embed')).toBeInTheDocument()
-    expect(screen.getByTestId('sharing-tab-lara')).toBeInTheDocument()
-    expect(screen.queryByTestId('link-tab-contents')).toBeNull()
-    expect(screen.queryByTestId('embed-tab-contents')).toBeNull()
-    expect(screen.getByTestId('lara-api-tab-contents')).toHaveClass('lara')
-
-    act(() => {
-      userEvent.click(screen.getByTestId('sharing-tab-lara'))
-    })
-    expect(mockSelectTab).toHaveBeenCalledTimes(1)
-    expect(mockSelectTab.mock.calls[0][0]).toBe('lara')
-
-    act(() => {
-      // trigger change handlers
-      fireEvent.change(screen.getByTestId('server-url-input'), { target: { value: 'https://concord.org/newServerUrl' } })
-      userEvent.click(screen.getByTestId('fullscreen-scaling-checkbox'))
-      userEvent.click(screen.getByTestId('visibility-toggles-checkbox'))
-    })
-    expect(mockChangeServerUrl).toHaveBeenCalled()
-    expect(mockChangeFullscreenScaling).toHaveBeenCalled()
-    expect(mockChangeVisibilityToggles).toHaveBeenCalled()
   })
 
   it('renders with interactive api sharing', async () => {
@@ -138,7 +90,6 @@ describe('ShareDialogTabsView', () => {
     expect(screen.getByTestId('share-dialog-tabs-view')).toBeInTheDocument()
     expect(screen.getByTestId('sharing-tab-link')).toBeInTheDocument()
     expect(screen.getByTestId('sharing-tab-embed')).toBeInTheDocument()
-    expect(screen.queryByTestId('sharing-tab-lara')).toBeNull()
     expect(screen.getByTestId('sharing-tab-api')).toBeInTheDocument()
     expect(screen.queryByTestId('link-tab-contents')).toBeNull()
     expect(screen.queryByTestId('embed-tab-contents')).toBeNull()
