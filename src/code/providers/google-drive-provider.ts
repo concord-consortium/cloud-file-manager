@@ -12,15 +12,18 @@ import {
 enum ELoadState {
   notLoaded = "not-loaded",
   loaded = "loaded",
-  errored = "errored"
+  errored = "errored",
+  missingScopes = "missing-scopes"
 }
+
+let setGoogleDriveAuthorizationDialogState: undefined | ((newState: any) => void) = undefined
 
 const {div, button, span} = ReactDOMFactories
 const GoogleDriveAuthorizationDialog = createReactClassFactory({
   displayName: 'GoogleDriveAuthorizationDialog',
 
   getInitialState() {
-    return {gapiLoadState: this.props.provider.gapiLoadState}
+    return {apiLoadState: this.props.provider.apiLoadState}
   },
 
   // See comments in AuthorizeMixin for detailed description of the issues here.
@@ -29,19 +32,23 @@ const GoogleDriveAuthorizationDialog = createReactClassFactory({
   // unmounted components, which doesn't work and triggers a React warning.
 
   UNSAFE_componentWillMount() {
-    return this.props.provider._waitForGAPILoad().then(() => {
+    return this.props.provider.waitForAPILoad().then(() => {
       if (this._isMounted) {
-        return this.setState({gapiLoadState: this.props.provider.gapiLoadState})
+        return this.setState({apiLoadState: this.props.provider.apiLoadState})
       }
     })
   },
 
   componentDidMount() {
     this._isMounted = true
-    this.setState({gapiLoadState: this.props.provider.gapiLoadState})
+    this.setState({apiLoadState: this.props.provider.apiLoadState})
+    setGoogleDriveAuthorizationDialogState = (newState: any) => {
+      this.setState(newState)
+    }
   },
 
   componentWillUnmount() {
+    // setGoogleDriveAuthorizationDialogState = undefined
     return this._isMounted = false
   },
 
@@ -55,9 +62,13 @@ const GoogleDriveAuthorizationDialog = createReactClassFactory({
     const messageMap: Record<ELoadState, React.ReactChild> = {
       [ELoadState.notLoaded]: tr("~GOOGLE_DRIVE.CONNECTING_MESSAGE"),
       [ELoadState.loaded]: button({onClick: this.authenticate}, (tr("~GOOGLE_DRIVE.LOGIN_BUTTON_LABEL"))),
-      [ELoadState.errored]: tr("~GOOGLE_DRIVE.ERROR_CONNECTING_MESSAGE")
+      [ELoadState.errored]: tr("~GOOGLE_DRIVE.ERROR_CONNECTING_MESSAGE"),
+      [ELoadState.missingScopes]: div({className: 'google-drive-missing-scopes'},
+        div({}, tr("~GOOGLE_DRIVE.MISSING_SCOPES_MESSAGE")),
+        div({}, button({onClick: this.authenticate}, (tr("~GOOGLE_DRIVE.LOGIN_BUTTON_LABEL"))))
+      ),
     }
-    const contents = messageMap[this.state.gapiLoadState as ELoadState] || "An unknown error occurred!"
+    const contents = messageMap[this.state.apiLoadState as ELoadState] || "An unknown error occurred!"
     return (div({className: 'google-drive-auth'},
       (div({className: 'google-drive-concord-logo'}, '')),
       (div({className: 'google-drive-footer'},
@@ -68,8 +79,10 @@ const GoogleDriveAuthorizationDialog = createReactClassFactory({
 })
 
 declare global {
-  // loaded dynamically in _waitForGAPILoad
+  // loaded dynamically in waitForGAPILoad
   var gapi: any
+  // loaded dynamically in waitForGISLoad
+  var google: any
 }
 
 class GoogleDriveProvider extends ProviderInterface {
@@ -78,14 +91,17 @@ class GoogleDriveProvider extends ProviderInterface {
                                               (typeof options?.apiKey === 'string')
   static IMMEDIATE = true
   static SHOW_POPUP = false
-  static loadPromise: Promise<unknown> = null
+  static gisLoadPromise: Promise<unknown> = null
+  static gapiLoadPromise: Promise<unknown> = null
+  static apiLoadPromise: Promise<unknown> = null
   _autoRenewTimeout: number
   apiKey: string
   authCallback: (authorized: boolean) => void
   authToken: any
+  tokenClient: any
   client: CloudFileManagerClient
   clientId: string
-  gapiLoadState: ELoadState
+  apiLoadState: ELoadState
   mimeType: string
   options: CFMGoogleDriveProviderOptions
   readableMimetypes: string[]
@@ -130,10 +146,10 @@ class GoogleDriveProvider extends ProviderInterface {
     this.mimeType = this.options.mimeType || "text/plain"
     this.readableMimetypes = this.options.readableMimetypes
 
-    this.gapiLoadState = ELoadState.notLoaded
-    this._waitForGAPILoad()
-      .then(() => this.gapiLoadState = ELoadState.loaded)
-      .catch(() => this.gapiLoadState = ELoadState.errored)  // eslint-disable-line @typescript-eslint/dot-notation
+    this.apiLoadState = ELoadState.notLoaded
+    this.waitForAPILoad()
+      .then(() => this.apiLoadState = ELoadState.loaded)
+      .catch(() => this.apiLoadState = ELoadState.errored)  // eslint-disable-line @typescript-eslint/dot-notation
   }
 
   /**
@@ -143,8 +159,8 @@ class GoogleDriveProvider extends ProviderInterface {
    */
   authorized(authCallback: ((authorized: boolean) => void)) {
     if (!(authCallback == null)) { this.authCallback = authCallback }
-    if (this.gapiLoadState === ELoadState.loaded && !authCallback) {
-      return gapi.auth2.getAuthInstance().isSignedIn.get()
+    if (this.apiLoadState === ELoadState.loaded && !authCallback) {
+      return gapi.client.getToken() !== null
     }
     if (authCallback) {
       if (this.authToken) {
@@ -158,33 +174,31 @@ class GoogleDriveProvider extends ProviderInterface {
   }
 
   doAuthorize(immediate: boolean) {
-    return this._waitForGAPILoad().then(() => {
-      const auth = gapi.auth2.getAuthInstance()
-      const finishAuthorization = () => {
-        const authorized = auth.isSignedIn.get()
-        const currentUser = authorized ? auth.currentUser.get() : null
-        this.authToken = currentUser ? currentUser.getAuthResponse(true) : null
-        this.user = currentUser ? {name: currentUser.getBasicProfile().getName()} : null
-        this.autoRenewToken(this.authToken)
-        if (typeof this.authCallback === 'function') {
-          this.authCallback(authorized)
+    return this.waitForAPILoad().then(() => {
+
+      this.tokenClient.callback = (tokenResponse: any) => {
+        if (tokenResponse?.error) {
+          // TODO: show error (future story #183842099)
+          return
+        }
+
+        const params = [tokenResponse, ...this.scopes.split(" ")]
+        const hasGrantedAllScopes = google.accounts.oauth2.hasGrantedAllScopes.apply(null, params)
+        if (hasGrantedAllScopes) {
+          gapi.client.oauth2.userinfo.get().then(({result}: any) => {
+            this.user = result
+            this.authToken = tokenResponse
+            if (typeof this.authCallback === 'function') {
+              this.authCallback(true)
+            }
+          })
+        } else {
+          setGoogleDriveAuthorizationDialogState?.({apiLoadState: ELoadState.missingScopes})
         }
       }
 
-      if (auth.isSignedIn.get()) {
-        finishAuthorization()
-      } else {
-        if (!immediate) {
-          auth.isSignedIn.listen((isAuth: boolean) => {
-            if (isAuth) {
-              finishAuthorization()
-            }
-            auth.isSignedIn.listen(() => {})
-          })
-          auth.signIn()
-        } else {
-          finishAuthorization()
-        }
+      if (!immediate) {
+        this.tokenClient.requestAccessToken({prompt: ''})
       }
     })
   }
@@ -194,15 +208,6 @@ class GoogleDriveProvider extends ProviderInterface {
     // Calling doAuthorize with immediate set to false permits an authorization
     // dialog, if necessary
     this.doAuthorize(!GoogleDriveProvider.IMMEDIATE)
-  }
-
-  autoRenewToken(authToken: any) {
-    if (this._autoRenewTimeout) {
-      clearTimeout(this._autoRenewTimeout)
-    }
-    if (authToken && !authToken.error) {
-      return this._autoRenewTimeout = window.setTimeout((() => this.authorize(GoogleDriveProvider.IMMEDIATE)), (parseInt(authToken.expires_in, 10) * 0.75) * 1000)
-    }
   }
 
   renderAuthorizationDialog() {
@@ -218,48 +223,72 @@ class GoogleDriveProvider extends ProviderInterface {
   }
 
   save(content: any, metadata: CloudMetadata, callback: ProviderSaveCallback) {
-    return this._waitForGAPILoad().then(() => {
-      return this._saveFile(content, metadata, callback)
+    return this.waitForAPILoad().then(() => {
+      return this.saveFile(content, metadata, callback)
     })
   }
 
   load(metadata: CloudMetadata, callback: ProviderLoadCallback) {
-    return this._waitForGAPILoad().then(() => {
-      return this._loadFile(metadata, callback)
+    return this.waitForAPILoad().then(() => {
+      return this.loadFile(metadata, callback)
     })
+  }
+
+  getAllFiles(metadata: CloudMetadata, callback: (err: any, files: any[]) => void) {
+    let files: any[] = []
+
+    const mimeTypesQuery = (this.readableMimetypes || []).map((mimeType: any) => `mimeType = '${mimeType}'`).join(" or ")
+    const listParams: any = {
+      pageSize: 1000, // 1000 is max
+      fields: "files(id, mimeType, name, capabilities(canEdit)),nextPageToken",
+      q: `trashed = false and (${mimeTypesQuery} or mimeType = 'application/vnd.google-apps.folder') and '${metadata?.providerData.id || 'root'}' in parents`
+    }
+
+    const listLoop = () => {
+      gapi.client.drive.files.list(listParams).execute((result: any) => {
+        if (!result || result.error) {
+          return callback(result, [])
+        }
+        if (result.files) {
+          files = files.concat(result.files)
+        }
+        if (result.nextPageToken) {
+          // get the next page of results
+          listParams.pageToken = result.nextPageToken
+          listLoop()
+        } else {
+          callback(null, files)
+        }
+      })
+    }
+
+    listLoop()
   }
 
   list(metadata: CloudMetadata, callback: ProviderListCallback) {
     this.authorized((isAuthorized) => {
       if (isAuthorized) {
-        const mimeTypesQuery = (this.readableMimetypes || []).map((mimeType: any) => `mimeType = '${mimeType}'`).join(" or ")
-        const request = gapi.client.drive.files.list({
-          fields: "files(id, mimeType, name, capabilities(canEdit))",
-          q: `trashed = false and (${mimeTypesQuery} or mimeType = 'application/vnd.google-apps.folder') and '${metadata?.providerData.id || 'root'}' in parents`
-        })
-        return request.execute((result: any) => {
-          if (!result || result.error) {
-            return callback(this._apiError(result, 'Unable to list files'))
+        this.getAllFiles(metadata, (err: any, files: any[]) => {
+          if (err) {
+            return callback(this.apiError(err, 'Unable to list files'))
           }
+
           const list = []
-          const files = result.files
-          if (files?.length > 0) {
-            for (let i = 0; i < files.length; i++) {
-              const item = files[i]
-              const type = item.mimeType === 'application/vnd.google-apps.folder' ? CloudMetadata.Folder : CloudMetadata.File
-              if ((type === CloudMetadata.Folder) || this.matchesExtension(item.name)) {
-                list.push(new CloudMetadata({
-                      name: item.name,
-                      type,
-                      parent: metadata,
-                      overwritable: item.capabilities.canEdit,
-                      provider: this,
-                      providerData: {
-                        id: item.id
-                      }
-                    })
-                )
-              }
+          for (let i = 0; i < files.length; i++) {
+            const item = files[i]
+            const type = item.mimeType === 'application/vnd.google-apps.folder' ? CloudMetadata.Folder : CloudMetadata.File
+            if ((type === CloudMetadata.Folder) || this.matchesExtension(item.name)) {
+              list.push(new CloudMetadata({
+                    name: item.name,
+                    type,
+                    parent: metadata,
+                    overwritable: item.capabilities.canEdit,
+                    provider: this,
+                    providerData: {
+                      id: item.id
+                    }
+                  })
+              )
             }
           }
           list.sort((a, b) => {
@@ -273,17 +302,17 @@ class GoogleDriveProvider extends ProviderInterface {
             }
             return 0
           })
-          return callback(null, list)
+          callback(null, list)
         })
       }
       else {
-        return callback(null, [])
+        callback(null, [])
       }
     })
   }
 
   remove(metadata: CloudMetadata, callback?: ProviderRemoveCallback) {
-    return this._waitForGAPILoad().then(() => {
+    return this.waitForAPILoad().then(() => {
       const request = gapi.client.drive.files["delete"]({
         fileId: metadata.providerData.id})
       return request.execute((result: any) => callback?.(result?.error))
@@ -291,11 +320,11 @@ class GoogleDriveProvider extends ProviderInterface {
   }
 
   rename(metadata: CloudMetadata, newName: string, callback?: (err: string | null, metadata?: CloudMetadata) => void) {
-    return this._waitForGAPILoad().then(() => {
-      const request = gapi.client.drive.files.patch({
+    return this.waitForAPILoad().then(() => {
+      const request = gapi.client.drive.files.update({
         fileId: metadata.providerData.id,
         resource: {
-          title: CloudMetadata.withExtension(newName)
+          name: CloudMetadata.withExtension(newName)
         }
       })
       return request.execute((result: any) => {
@@ -333,19 +362,22 @@ class GoogleDriveProvider extends ProviderInterface {
     return true
   }
 
-  _waitForGAPILoad() {
-    return GoogleDriveProvider.loadPromise || (GoogleDriveProvider.loadPromise = new Promise((resolve, reject) => {
+  waitForAPILoad() {
+    return GoogleDriveProvider.apiLoadPromise || (GoogleDriveProvider.apiLoadPromise = Promise.all([this.waitForGISLoad(), this.waitForGAPILoad()]))
+  }
+
+  private waitForGAPILoad() {
+    return GoogleDriveProvider.gapiLoadPromise || (GoogleDriveProvider.gapiLoadPromise = new Promise<void>((resolve, reject) => {
       const script = document.createElement('script')
       script.src = "https://apis.google.com/js/api.js"
       script.onload = () => {
-        gapi.load("client:auth2", () => {
-          gapi.client.init({
-            apiKey: this.apiKey,
-            clientId: this.clientId,
-            discoveryDocs: ["https://www.googleapis.com/discovery/v1/apis/drive/v3/rest"],
-            scope: this.scopes
+        gapi.load("client", () => {
+          gapi.client.init({})
+          .then(() => {
+            gapi.client.load("https://www.googleapis.com/discovery/v1/apis/drive/v3/rest")
+            gapi.client.load('https://www.googleapis.com/discovery/v1/apis/oauth2/v1/rest')
+            resolve()
           })
-          .then(resolve)
           .catch(reject)  // eslint-disable-line @typescript-eslint/dot-notation
         })
       }
@@ -353,7 +385,22 @@ class GoogleDriveProvider extends ProviderInterface {
     }))
   }
 
-  _loadFile(metadata: CloudMetadata, callback: ProviderLoadCallback) {
+  private waitForGISLoad() {
+    return GoogleDriveProvider.gisLoadPromise || (GoogleDriveProvider.gisLoadPromise = new Promise<void>((resolve) => {
+      const script = document.createElement('script')
+      script.src = "https://accounts.google.com/gsi/client"
+      script.onload = () => {
+        this.tokenClient = google.accounts.oauth2.initTokenClient({
+          client_id: this.clientId,
+          scope: this.scopes
+        })
+        resolve()
+      }
+      document.head.appendChild(script)
+    }))
+  }
+
+  private loadFile(metadata: CloudMetadata, callback: ProviderLoadCallback) {
     const request = gapi.client.drive.files.get({
       fileId: metadata.providerData.id,
       fields: "id, mimeType, name, parents, capabilities(canEdit)",
@@ -383,7 +430,7 @@ class GoogleDriveProvider extends ProviderInterface {
     })
   }
 
-  _saveFile(content: any, metadata: CloudMetadata, callback: ProviderSaveCallback) {
+  private saveFile(content: any, metadata: CloudMetadata, callback: ProviderSaveCallback) {
     const boundary = '-------314159265358979323846'
     const mimeType = metadata.mimeType || this.mimeType
     const header = JSON.stringify({
@@ -424,13 +471,13 @@ class GoogleDriveProvider extends ProviderInterface {
           metadata.providerData = {id: file.id}
           return callback(null, file)
         } else {
-          return callback(this._apiError(file, tr("~GOOGLE_DRIVE.UNABLE_TO_UPLOAD")))
+          return callback(this.apiError(file, tr("~GOOGLE_DRIVE.UNABLE_TO_UPLOAD")))
         }
       }
     })
   }
 
-  _apiError(result: any, prefix: string) {
+  private apiError(result: any, prefix: string) {
     if (result?.message) {
       return `${prefix}: ${result.message}`
     } else {

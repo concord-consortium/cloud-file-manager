@@ -21,7 +21,8 @@
     "ReactDOM":false,
     "createReactClass": false,
     "_": false,
-    "gapi": false
+    "gapi": false,
+    "google": false
   },
   "plugins": ["react", "@typescript-eslint", "babel", "jest"],
   "extends": [ "eslint:recommended", "plugin:react/recommended" ],

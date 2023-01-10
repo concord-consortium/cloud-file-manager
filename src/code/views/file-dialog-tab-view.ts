@@ -104,7 +104,7 @@ const FileList = createReactClassFactory({
     return (div({className: 'filelist'},
       this.state.loading
         ? tr("~FILE_DIALOG.LOADING")
-        : list
+        : (this.props.overrideMessage || list)
     ))
   }
 })
@@ -233,6 +233,7 @@ const FileDialogTab = createReactClass({
     return {
       folder,
       metadata,
+      filename: "",
       list: [] as CloudMetadata[]
     }
   },
@@ -331,13 +332,30 @@ const FileDialogTab = createReactClass({
     return (this.state.filename.length === 0) || (this.isOpen() && !this.state.metadata)
   },
 
+  clearListFilter() {
+    this.setState({filename: ""})
+    this.inputRef?.focus()
+  },
+
   renderWhenAuthorized() {
     const confirmDisabled = this.confirmDisabled()
     const removeDisabled = (this.state.metadata === null) || (this.state.metadata.type === CloudMetadata.Folder)
 
+    const lowerFilename = this.state.filename.toLowerCase()
+    const filtering = this.state.filename.length > 0
+    const list = filtering
+      ? this.state.list.filter((item: any) => item.name.toLowerCase().indexOf(lowerFilename) !== -1)
+      : this.state.list
+    const listFiltered = list.length !== this.state.list.length
+
+    const overrideMessage = filtering && listFiltered && list.length === 0
+      ? div({}, `No files found matching "${this.state.filename}" in current folder`)
+      : null
+
     return (div({className: 'dialogTab'},
-      (input({type: 'text', value: this.state.filename, placeholder: (tr("~FILE_DIALOG.FILENAME")), onChange: this.filenameChanged, onKeyDown: this.watchForEnter})),
-      (FileList({provider: this.props.provider, folder: this.state.folder, selectedFile: this.state.metadata, fileSelected: this.fileSelected, fileConfirmed: this.confirm, list: this.state.list, listLoaded: this.listLoaded, client: this.props.client})),
+      (input({type: 'text', value: this.state.filename, placeholder: (tr("~FILE_DIALOG.FILENAME")), onChange: this.filenameChanged, onKeyDown: this.watchForEnter, ref: (elt: any) => { return this.inputRef = elt }})),
+      (listFiltered && div({className: 'dialogClearFilter', onClick: this.clearListFilter}, "X")),
+      (FileList({provider: this.props.provider, folder: this.state.folder, selectedFile: this.state.metadata, fileSelected: this.fileSelected, fileConfirmed: this.confirm, list, listLoaded: this.listLoaded, client: this.props.client, overrideMessage})),
       (div({className: 'buttons'},
         (button({onClick: this.confirm, disabled: confirmDisabled, className: confirmDisabled ? 'disabled' : ''}, this.isOpen() ? (tr("~FILE_DIALOG.OPEN")) : (tr("~FILE_DIALOG.SAVE")))),
         this.props.provider.can('remove') ?
