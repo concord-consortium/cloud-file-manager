@@ -117,6 +117,11 @@ const FileDialogTab = createReactClass({
     const initialState = this.getStateForFolder(this.props.client.state.metadata?.parent, true) || null
     initialState.filename = initialState.metadata?.name || ''
 
+    // on saves default the search to the filename - on saves the search is the final filename
+    if (!this.isOpen()) {
+      initialState.search = initialState.filename || ""
+    }
+
     // NP 2020-04-23 Copied from authorize-mixin.js
     this._isAuthorized = false
     initialState.authorized = false
@@ -186,11 +191,12 @@ const FileDialogTab = createReactClass({
     return this.props.dialog.action === 'openFile'
   },
 
-  filenameChanged(e: any) {
-    const filename = e.target.value
+  searchChanged(e: any) {
+    const search = e.target.value
     return this.setState({
-      filename,
-      metadata: this.findMetadata(filename, this.state.list)
+      search,
+      filename: '',
+      metadata: null
     })
   },
 
@@ -234,6 +240,7 @@ const FileDialogTab = createReactClass({
       folder,
       metadata,
       filename: "",
+      search: "",
       list: [] as CloudMetadata[]
     }
   },
@@ -264,7 +271,7 @@ const FileDialogTab = createReactClass({
       return this.props.close()
     }
 
-    const filename = $.trim(this.state.filename)
+    const filename = $.trim(this.finalConfirmedFilename())
     const existingMetadata = this.findMetadata(filename, this.state.list)
     const metadata = this.state.metadata || existingMetadata
 
@@ -301,7 +308,8 @@ const FileDialogTab = createReactClass({
             return this.setState({
               list,
               metadata: null,
-              filename: ''
+              filename: '',
+              search: ''
             })
           }
         })
@@ -328,12 +336,17 @@ const FileDialogTab = createReactClass({
     }
   },
 
+  finalConfirmedFilename() {
+    // use filename for open and filename or search for saves
+    return this.isOpen() ? this.state.filename : (this.state.filename || this.state.search || "")
+  },
+
   confirmDisabled() {
-    return (this.state.filename.length === 0) || (this.isOpen() && !this.state.metadata)
+    return (this.finalConfirmedFilename().length === 0) || (this.isOpen() && !this.state.metadata)
   },
 
   clearListFilter() {
-    this.setState({filename: ""})
+    this.setState({search: ""})
     this.inputRef?.focus()
   },
 
@@ -341,19 +354,20 @@ const FileDialogTab = createReactClass({
     const confirmDisabled = this.confirmDisabled()
     const removeDisabled = (this.state.metadata === null) || (this.state.metadata.type === CloudMetadata.Folder)
 
-    const lowerFilename = this.state.filename.toLowerCase()
-    const filtering = this.state.filename.length > 0
+    const isOpen = this.isOpen()
+    const lowerSearch = this.state.search.toLowerCase()
+    const filtering = isOpen && this.state.search.length > 0
     const list = filtering
-      ? this.state.list.filter((item: any) => item.name.toLowerCase().indexOf(lowerFilename) !== -1)
+      ? this.state.list.filter((item: any) => item.name.toLowerCase().indexOf(lowerSearch) !== -1)
       : this.state.list
     const listFiltered = list.length !== this.state.list.length
 
     const overrideMessage = filtering && listFiltered && list.length === 0
-      ? div({}, `No files found matching "${this.state.filename}" in current folder`)
+      ? div({}, `No files found matching "${this.state.search}"`)
       : null
 
     return (div({className: 'dialogTab'},
-      (input({type: 'text', value: this.state.filename, placeholder: (tr("~FILE_DIALOG.FILENAME")), onChange: this.filenameChanged, onKeyDown: this.watchForEnter, ref: (elt: any) => { return this.inputRef = elt }})),
+      (input({type: 'text', value: this.state.search, placeholder: (tr(isOpen ? "~FILE_DIALOG.FILTER" : "~FILE_DIALOG.FILENAME")), autoFocus: true, onChange: this.searchChanged, onKeyDown: this.watchForEnter, ref: (elt: any) => { return this.inputRef = elt }})),
       (listFiltered && div({className: 'dialogClearFilter', onClick: this.clearListFilter}, "X")),
       (FileList({provider: this.props.provider, folder: this.state.folder, selectedFile: this.state.metadata, fileSelected: this.fileSelected, fileConfirmed: this.confirm, list, listLoaded: this.listLoaded, client: this.props.client, overrideMessage})),
       (div({className: 'buttons'},

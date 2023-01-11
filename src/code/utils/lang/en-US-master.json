@@ -61,6 +61,7 @@
   "~FILE_DIALOG.LOADING": "Loading...",
   "~FILE_DIALOG.LOAD_FOLDER_ERROR": "*** Error loading folder contents ***",
   "~FILE_DIALOG.DOWNLOAD": "Download",
+  "~FILE_DIALOG.FILTER": "Filter results...",
 
   "~DOWNLOAD_DIALOG.DOWNLOAD": "Download",
   "~DOWNLOAD_DIALOG.CANCEL": "Cancel",
