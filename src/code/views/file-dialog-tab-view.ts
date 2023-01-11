@@ -119,7 +119,7 @@ const FileDialogTab = createReactClass({
 
     // on saves default the search to the filename - on saves the search is the final filename
     if (!this.isOpen()) {
-      initialState.search = initialState.filename || ""
+      initialState.search = initialState.filename || tr("~MENUBAR.UNTITLED_DOCUMENT")
     }
 
     // NP 2020-04-23 Copied from authorize-mixin.js
