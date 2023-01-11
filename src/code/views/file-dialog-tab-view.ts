@@ -117,6 +117,11 @@ const FileDialogTab = createReactClass({
     const initialState = this.getStateForFolder(this.props.client.state.metadata?.parent, true) || null
     initialState.filename = initialState.metadata?.name || ''
 
+    // on saves default the search to the filename - on saves the search is the final filename
+    if (!this.isOpen()) {
+      initialState.search = initialState.filename || ""
+    }
+
     // NP 2020-04-23 Copied from authorize-mixin.js
     this._isAuthorized = false
     initialState.authorized = false
