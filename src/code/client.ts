@@ -563,7 +563,7 @@ class CloudFileManagerClient {
         } else {
           return this.confirmAuthorizeAndOpen(provider, providerParams)
         }
-      })
+      }, {forceAuthorization: true}) // force authorization for Google Drive
     } else {
       return this.alert(tr("~ALERT.NO_PROVIDER"), () => this.ready())
     }

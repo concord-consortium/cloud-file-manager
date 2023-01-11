@@ -5,6 +5,7 @@ import { CloudFileManagerClient } from '../client'
 import { createReactClassFactory } from '../create-react-factory'
 import tr  from '../utils/translate'
 import {
+  AuthorizedOptions,
   cloudContentFactory, CloudMetadata, ProviderCloseCallback, ProviderInterface,
   ProviderListCallback, ProviderLoadCallback, ProviderRemoveCallback, ProviderSaveCallback
 }  from './provider-interface'
@@ -157,7 +158,7 @@ class GoogleDriveProvider extends ProviderInterface {
    * If authCallback is not defined, return the best result that can be had
    * synchronously.
    */
-  authorized(authCallback: ((authorized: boolean) => void)) {
+  authorized(authCallback: ((authorized: boolean) => void), options?: AuthorizedOptions) {
     if (!(authCallback == null)) { this.authCallback = authCallback }
     if (this.apiLoadState === ELoadState.loaded && !authCallback) {
       return gapi.client.getToken() !== null
@@ -166,7 +167,7 @@ class GoogleDriveProvider extends ProviderInterface {
       if (this.authToken) {
         return authCallback(true)
       } else {
-        return this.doAuthorize(GoogleDriveProvider.IMMEDIATE)
+        return this.doAuthorize(options?.forceAuthorization ? GoogleDriveProvider.SHOW_POPUP : GoogleDriveProvider.IMMEDIATE)
       }
     } else {
       return this.authToken !== null

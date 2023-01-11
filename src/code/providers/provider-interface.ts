@@ -367,6 +367,8 @@ type IProviderCapabilities = {
   [c in ECapabilities]?: boolean | 'auto'
 }
 
+export type AuthorizedOptions = {forceAuthorization?: boolean}
+
 export interface IProviderInterfaceOpts {
   name: string;             // name by which it is referenced internally
   displayName?: string;     // name which is displayed to users
@@ -402,7 +404,7 @@ abstract class ProviderInterface implements IProviderInterfaceOpts {
     return false
   }
 
-  authorized(callback: (resp: boolean) => void) {
+  authorized(callback: (resp: boolean) => void, options?: AuthorizedOptions) {
     callback?.(true)
   }
 
