@@ -272,7 +272,7 @@ const FileDialogTab = createReactClass({
     }
 
     const filename = $.trim(this.finalConfirmedFilename())
-    const existingMetadata = this.findMetadata(filename, this.state.list)
+    const existingMetadata = this.findMetadata(filename, this.state.list, this.props.dialog.data?.extension)
     const metadata = this.state.metadata || existingMetadata
 
     if (metadata) {
@@ -321,9 +321,14 @@ const FileDialogTab = createReactClass({
     return this.props.close()
   },
 
-  findMetadata(filename: string, list: CloudMetadata[]) {
+  findMetadata(filename: string, list: CloudMetadata[], extension?: string) {
+    const checkExtension = typeof extension !== undefined
+    const filenameWithExtension = checkExtension && CloudMetadata.newExtension(filename, extension)
     for (let metadata of Array.from(list)) {
-      if (metadata.name === filename) {
+      const found = checkExtension
+        ? metadata.filename === filenameWithExtension
+        : metadata.name === filename
+      if (found) {
         return metadata
       }
     }
