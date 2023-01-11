@@ -504,6 +504,10 @@ abstract class ProviderInterface implements IProviderInterfaceOpts {
     // eslint-disable-next-line no-alert
     alert(`${methodName} not implemented for ${this.name} provider`)
   }
+
+  getFileDialogMessage(): any {
+    return null
+  }
 }
 
 const cloudContentFactory = new CloudContentFactory()

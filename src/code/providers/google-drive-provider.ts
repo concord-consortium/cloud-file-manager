@@ -17,9 +17,11 @@ enum ELoadState {
   missingScopes = "missing-scopes"
 }
 
+type OnAuthorizationChangeCallback = (authorized: boolean) => void
+
 let setGoogleDriveAuthorizationDialogState: undefined | ((newState: any) => void) = undefined
 
-const {div, button, span} = ReactDOMFactories
+const {div, button, span, strong} = ReactDOMFactories
 const GoogleDriveAuthorizationDialog = createReactClassFactory({
   displayName: 'GoogleDriveAuthorizationDialog',
 
@@ -108,6 +110,8 @@ class GoogleDriveProvider extends ProviderInterface {
   readableMimetypes: string[]
   scopes: string
   user: any
+  onAuthorizationChangeCallback: OnAuthorizationChangeCallback|undefined
+  promptForConsent: boolean
 
   constructor(options: CFMGoogleDriveProviderOptions | undefined, client: CloudFileManagerClient) {
     super({
@@ -199,7 +203,7 @@ class GoogleDriveProvider extends ProviderInterface {
       }
 
       if (!immediate) {
-        this.tokenClient.requestAccessToken({prompt: ''})
+        this.tokenClient.requestAccessToken({prompt: this.promptForConsent ? 'consent' : ''})
       }
     })
   }
@@ -357,6 +361,29 @@ class GoogleDriveProvider extends ProviderInterface {
 
   getOpenSavedParams(metadata: CloudMetadata) {
     return metadata.providerData.id
+  }
+
+  getFileDialogMessage() {
+    if (this.user) {
+      return (
+        div({className: "provider-message"},
+          div({}, span({style: {marginRight: 5}}, tr("~GOOGLE_DRIVE.USERNAME_LABEL")), strong({}, this.user.name)),
+          div({className: "provider-message-action", onClick: this.logout.bind(this)}, tr("~GOOGLE_DRIVE.SELECT_DIFFERENT_ACCOUNT"))
+        )
+      )
+    }
+  }
+
+  logout() {
+    this.user = null
+    this.authToken = null
+    this.promptForConsent = true
+    gapi.client.setToken(null)
+    this.onAuthorizationChangeCallback?.(false)
+  }
+
+  onAuthorizationChange(callback: OnAuthorizationChangeCallback) {
+    this.onAuthorizationChangeCallback = callback
   }
 
   isAuthorizationRequired() {

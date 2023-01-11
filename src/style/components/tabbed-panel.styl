@@ -78,6 +78,21 @@
           background-color: green-blue
         div.subfolder
           margin-left 10px
+      .provider-message
+        position absolute
+        bottom 10px
+        left 10px
+        right 190px /* for wrapping around buttons */
+        height 50px
+        display flex
+        flex-direction column
+        gap 5px
+        justify-content center
+        .provider-message-action
+          cursor pointer
+          color blue
+          &:hover
+            text-decoration underline
       .buttons
         position absolute
         bottom 10
