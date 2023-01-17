@@ -253,7 +253,6 @@ const FileDialogTab = createReactClass({
       folder,
       metadata,
       filename: "",
-      search: "",
       list: [] as CloudMetadata[]
     }
   },
@@ -262,7 +261,11 @@ const FileDialogTab = createReactClass({
     if (metadata?.type === CloudMetadata.Folder) {
       return this.setState(this.getStateForFolder(metadata))
     } else if (metadata?.type === CloudMetadata.File) {
-      return this.setState({ filename: metadata.name, metadata })
+      const newState: any = { filename: metadata.name, metadata }
+      if (!this.isOpen()) {
+        newState.search = newState.filename
+      }
+      return this.setState(newState)
     } else {
       return this.setState(this.getStateForFolder(null))
     }
@@ -335,7 +338,7 @@ const FileDialogTab = createReactClass({
   },
 
   findMetadata(filename: string, list: CloudMetadata[], extension?: string) {
-    const checkExtension = typeof extension !== undefined
+    const checkExtension = extension !== undefined
     const filenameWithExtension = checkExtension && CloudMetadata.newExtension(filename, extension)
     for (let metadata of Array.from(list)) {
       const found = checkExtension
@@ -373,19 +376,20 @@ const FileDialogTab = createReactClass({
     const removeDisabled = (this.state.metadata === null) || (this.state.metadata.type === CloudMetadata.Folder)
 
     const isOpen = this.isOpen()
-    const lowerSearch = this.state.search.toLowerCase()
-    const filtering = isOpen && this.state.search.length > 0
+    const search = this.state.search || ""
+    const lowerSearch = search.toLowerCase()
+    const filtering = isOpen && search.length > 0
     const list = filtering
       ? this.state.list.filter((item: any) => item.name.toLowerCase().indexOf(lowerSearch) !== -1)
       : this.state.list
     const listFiltered = list.length !== this.state.list.length
 
     const overrideMessage = filtering && listFiltered && list.length === 0
-      ? div({}, `No files found matching "${this.state.search}"`)
+      ? div({}, `No files found matching "${search}"`)
       : null
 
     return (div({className: 'dialogTab'},
-      (input({type: 'text', value: this.state.search, placeholder: (tr(isOpen ? "~FILE_DIALOG.FILTER" : "~FILE_DIALOG.FILENAME")), autoFocus: true, onChange: this.searchChanged, onKeyDown: this.watchForEnter, ref: (elt: any) => { return this.inputRef = elt }})),
+      (input({type: 'text', value: search, placeholder: (tr(isOpen ? "~FILE_DIALOG.FILTER" : "~FILE_DIALOG.FILENAME")), autoFocus: true, onChange: this.searchChanged, onKeyDown: this.watchForEnter, ref: (elt: any) => { return this.inputRef = elt }})),
       (listFiltered && div({className: 'dialogClearFilter', onClick: this.clearListFilter}, "X")),
       (FileList({provider: this.props.provider, folder: this.state.folder, selectedFile: this.state.metadata, fileSelected: this.fileSelected, fileConfirmed: this.confirm, list, listLoaded: this.listLoaded, client: this.props.client, overrideMessage})),
       (this.props.provider.getFileDialogMessage && this.props.provider.getFileDialogMessage()),
