@@ -250,12 +250,18 @@ const FileDialogTab = createReactClass({
       }
     }
 
-    return {
+    const newState: any = {
       folder,
       metadata,
       filename: "",
       list: [] as CloudMetadata[]
     }
+
+    if (this.isOpen()) {
+      newState.search = ""
+    }
+
+    return newState
   },
 
   fileSelected(metadata: CloudMetadata) {
