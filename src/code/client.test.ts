@@ -112,7 +112,7 @@ describe("CloudFileManagerClient", () => {
         client.appOptions.contentSaveFilter = (content: CloudContent) => {
           // beetlejuice, beetlejuice, beetlejuice
           content.content.content = "bar"
-          return content;
+          return content
         }
 
         client.saveContent("foo", (content: CloudContent, metadata) => {
