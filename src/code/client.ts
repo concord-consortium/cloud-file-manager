@@ -739,7 +739,25 @@ class CloudFileManagerClient {
       window.localStorage.setItem(`${prefix}${maxCopyNumber}`, value)
       return (typeof callback === 'function' ? callback(null, maxCopyNumber) : undefined)
     } catch (e) {
-      return callback("Unable to temporarily save copied file")
+      // CODAP style overrides
+      const divStyle = "text-align: left"
+      const paragraphStyle = "margin: 10px 0;"
+      const listStyle = "margin: 10px 10px 10px 30px; padding: 0;"
+
+      const message = `
+      <div style="${divStyle}">
+        <p style="${paragraphStyle}">The document is either too large to copy within the app, or your browser does not allow local storage.</p>
+
+        <p style="${paragraphStyle}">To copy this file you must duplicate it outside the app using these steps:</p>
+
+        <ol style="${listStyle}">
+          <li>Save the document.</li>
+          <li>Duplicate it using Google Drive or your local file system.</li>
+          <li>Open or import the newly duplicated document.</li>
+        </ol>
+      </div>
+      `
+      return this.alert(message, "Copy Error")
     }
   }
 
