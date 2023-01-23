@@ -7,7 +7,6 @@
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
  */
 import _ from 'lodash'
-import { sha256 } from 'js-sha256'
 
 import tr from './utils/translate'
 import isString from './utils/is-string'
@@ -1310,7 +1309,7 @@ class CloudFileManagerClient {
   }
 
   _createOrUpdateCurrentContent(stringContent: any, metadata: CloudMetadata = null) {
-    let currentContent: CloudContent;
+    let currentContent: CloudContent
     if (this.state.currentContent != null) {
       ({ currentContent } = this.state)
       currentContent.setText(stringContent)

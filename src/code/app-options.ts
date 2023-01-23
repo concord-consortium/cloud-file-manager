@@ -1,4 +1,4 @@
-import { CloudContent } from "./providers/provider-interface";
+import { CloudContent } from "./providers/provider-interface"
 
 export interface CFMMenuItemObject {
   name?: string;
