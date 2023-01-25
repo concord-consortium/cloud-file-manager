@@ -357,11 +357,7 @@ class GoogleDriveProvider extends ProviderInterface {
 
         // return the top level drives for the root
         if (metadata === null) {
-          return callback(null, [
-            new CloudMetadata({name: tr("~GOOGLE_DRIVE.MY_DRIVE"), type: CloudMetadata.Folder, provider: this, providerData: {driveType: EDriveType.myDrive}}),
-            new CloudMetadata({name: tr("~GOOGLE_DRIVE.SHARED_DRIVES"), type: CloudMetadata.Folder, provider: this, providerData: {driveType: EDriveType.sharedDrives}}),
-            new CloudMetadata({name: tr("~GOOGLE_DRIVE.SHARED_WITH_ME"), type: CloudMetadata.Folder, provider: this, providerData: {driveType: EDriveType.sharedWithMe}}),
-          ])
+          return callback(null, this.topLevelDrives())
         }
 
         this.getAllFilesOrDrives(metadata, (err: any, filesOrDrives: any[]) => {
@@ -622,6 +618,17 @@ class GoogleDriveProvider extends ProviderInterface {
     } else {
       return prefix
     }
+  }
+
+  private topLevelDrives() {
+    const drives = [
+      new CloudMetadata({name: tr("~GOOGLE_DRIVE.MY_DRIVE"), type: CloudMetadata.Folder, provider: this, providerData: {driveType: EDriveType.myDrive}}),
+      new CloudMetadata({name: tr("~GOOGLE_DRIVE.SHARED_WITH_ME"), type: CloudMetadata.Folder, provider: this, providerData: {driveType: EDriveType.sharedWithMe}}),
+    ]
+    if (!this.options.disableSharedDrives) {
+      drives.push(new CloudMetadata({name: tr("~GOOGLE_DRIVE.SHARED_DRIVES"), type: CloudMetadata.Folder, provider: this, providerData: {driveType: EDriveType.sharedDrives}}))
+    }
+    return drives
   }
 }
 
