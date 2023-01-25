@@ -13,7 +13,7 @@ import _ from 'lodash'
 import createReactClass from 'create-react-class'
 import ReactDOMFactories from 'react-dom-factories'
 import {createReactClassFactory} from '../create-react-factory'
-import {CloudMetadata} from '../providers/provider-interface'
+import {CloudMetadata, IListOptions} from '../providers/provider-interface'
 
 import tr from '../utils/translate'
 
@@ -83,7 +83,7 @@ const FileList = createReactClassFactory({
         this.setState({ loading: false })
       }
       return this.props.listLoaded(list)
-    })
+    }, this.props.listOptions)
   },
 
   parentSelected(e: any) {
@@ -120,6 +120,11 @@ const FileDialogTab = createReactClass({
     // on saves default the search to the filename - on saves the search is the final filename
     if (!this.isOpen()) {
       initialState.search = initialState.filename || tr("~MENUBAR.UNTITLED_DOCUMENT")
+
+      // add the file extension on export
+      if (this.isExport() && this.props.dialog.data?.extension) {
+        initialState.search = CloudMetadata.newExtension(initialState.search, this.props.dialog.data.extension)
+      }
     }
 
     // NP 2020-04-23 Copied from authorize-mixin.js
@@ -202,6 +207,10 @@ const FileDialogTab = createReactClass({
 
   isOpen() {
     return this.props.dialog.action === 'openFile'
+  },
+
+  isExport() {
+    return this.props.dialog.action === 'saveSecondaryFileAs'
   },
 
   searchChanged(e: any) {
@@ -297,6 +306,12 @@ const FileDialogTab = createReactClass({
     const filename = $.trim(this.finalConfirmedFilename())
     const existingMetadata = this.findMetadata(filename, this.state.list, this.props.dialog.data?.extension)
     const metadata = this.state.metadata || existingMetadata
+
+    // a bit of a hack - on export clear the provider data if there is no matching file found so we don't
+    // accidentally override the original saved file
+    if (this.isExport() && metadata && !existingMetadata) {
+      metadata.providerData = {}
+    }
 
     if (metadata) {
       if (this.isOpen()) {
@@ -395,10 +410,13 @@ const FileDialogTab = createReactClass({
       ? div({}, `No files found matching "${search}"`)
       : null
 
+    // when exporting only show folders as we can't filter based on mimetypes like text/csv or image/png to show only those files
+    const listOptions: IListOptions = this.isExport() && this.props.dialog.data?.extension ? {extension: this.props.dialog.data.extension} : undefined
+
     return (div({className: 'dialogTab'},
       (input({type: 'text', value: search, placeholder: (tr(isOpen ? "~FILE_DIALOG.FILTER" : "~FILE_DIALOG.FILENAME")), autoFocus: true, onChange: this.searchChanged, onKeyDown: this.watchForEnter, ref: (elt: any) => { return this.inputRef = elt }})),
       (listFiltered && div({className: 'dialogClearFilter', onClick: this.clearListFilter}, "X")),
-      (FileList({provider: this.props.provider, folder: this.state.folder, selectedFile: this.state.metadata, fileSelected: this.fileSelected, fileConfirmed: this.confirm, list, listLoaded: this.listLoaded, client: this.props.client, overrideMessage})),
+      (FileList({provider: this.props.provider, folder: this.state.folder, selectedFile: this.state.metadata, fileSelected: this.fileSelected, fileConfirmed: this.confirm, list, listLoaded: this.listLoaded, client: this.props.client, overrideMessage, listOptions})),
       (this.props.provider.getFileDialogMessage && this.props.provider.getFileDialogMessage()),
       (div({className: 'buttons'},
         (button({onClick: this.confirm, disabled: confirmDisabled, className: confirmDisabled ? 'disabled' : ''}, this.isOpen() ? (tr("~FILE_DIALOG.OPEN")) : (tr("~FILE_DIALOG.SAVE")))),

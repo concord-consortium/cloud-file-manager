@@ -11,7 +11,7 @@ import { CloudFileManagerClient } from '../client'
 import tr from '../utils/translate'
 
 import {
-  cloudContentFactory, CloudMetadata, ProviderInterface, ProviderListCallback, ProviderLoadCallback,
+  cloudContentFactory, CloudMetadata, IListOptions, ProviderInterface, ProviderListCallback, ProviderLoadCallback,
   ProviderOpenCallback, ProviderRemoveCallback, ProviderRenameCallback, ProviderSaveCallback
 }  from './provider-interface'
 
@@ -69,7 +69,10 @@ class LocalStorageProvider extends ProviderInterface {
     }
   }
 
-  list(metadata: CloudMetadata, callback: ProviderListCallback) {
+  list(metadata: CloudMetadata, callback: ProviderListCallback, options?: IListOptions) {
+    const extension = options?.extension
+    const readableExtensions = extension ? [extension] : CloudMetadata.ReadableExtensions
+
     const list = []
     const prefix = this._getKey((metadata?.path?.() || []).join('/'))
     for (let key of Object.keys(window.localStorage || {})) {
@@ -77,7 +80,7 @@ class LocalStorageProvider extends ProviderInterface {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const [filename, ...remainder] = key.substr(prefix.length).split('/')
         const name = key.substr(prefix.length)
-        if (this.matchesExtension(name)) {
+        if (this.matchesExtension(name, readableExtensions)) {
           list.push(new CloudMetadata({
             name,
             type: remainder.length > 0 ? CloudMetadata.Folder : CloudMetadata.File,

@@ -6,7 +6,7 @@ import { createReactClassFactory } from '../create-react-factory'
 import tr  from '../utils/translate'
 import {
   AuthorizedOptions,
-  cloudContentFactory, CloudMetadata, ProviderCloseCallback, ProviderInterface,
+  cloudContentFactory, CloudMetadata, IListOptions, ProviderCloseCallback, ProviderInterface,
   ProviderListCallback, ProviderLoadCallback, ProviderRemoveCallback, ProviderSaveCallback
 }  from './provider-interface'
 
@@ -248,22 +248,29 @@ class GoogleDriveProvider extends ProviderInterface {
     })
   }
 
-  getAllFilesOrDrives(metadata: CloudMetadata, callback: (err: any, files: any[]) => void) {
+  getAllFilesOrDrives(metadata: CloudMetadata, callback: (err: any, files: any[]) => void, options?: IListOptions) {
     let filesOrDrives: any[] = []
     let listParams: any = {}
     const listDrives = metadata.providerData.driveType === EDriveType.sharedDrives && !metadata.providerData.driveId
     const listApiMethod = listDrives ? gapi.client.drive.drives.list : gapi.client.drive.files.list
+
+    const extension = options?.extension
+    const readableExtensions = extension ? [extension] : CloudMetadata.ReadableExtensions
 
     if (listDrives) {
       listParams = {
         pageSize: 100, // 100 is max on drive list operations
       }
     } else {
-      const mimeTypesQuery = (this.readableMimetypes || []).map((mimeType: any) => `mimeType = '${mimeType}'`).join(" or ")
-      const queryParts = [
-        "trashed = false",
-        `${mimeTypesQuery} or mimeType = 'application/vnd.google-apps.folder'`
-      ]
+      const queryParts = ["trashed = false"]
+      // when an extension is passed show all files matching the extension, otherwise filter on mimeType
+      // this is needed as you can't filter on non-Google mimetypes like text/csv or image/png
+      if (!extension) {
+        const mimeTypes: string[] = ["application/vnd.google-apps.folder"].concat(this.readableMimetypes)
+        const mimeTypesQuery = mimeTypes.map(mimeType => `mimeType = '${mimeType}'`).join(" or ")
+        queryParts.push(mimeTypesQuery)
+      }
+
       listParams = {
         pageSize: 1000, // 1000 is max on file list operations
         fields: "files(id, mimeType, name, capabilities(canEdit)),nextPageToken",
@@ -327,7 +334,7 @@ class GoogleDriveProvider extends ProviderInterface {
               }))
             } else {
               const type = item.mimeType === 'application/vnd.google-apps.folder' ? CloudMetadata.Folder : CloudMetadata.File
-              if ((type === CloudMetadata.Folder) || this.matchesExtension(item.name)) {
+              if ((type === CloudMetadata.Folder) || this.matchesExtension(item.name, readableExtensions)) {
                 list.push(new CloudMetadata({
                   name: item.name,
                   type,
@@ -351,7 +358,7 @@ class GoogleDriveProvider extends ProviderInterface {
     listLoop()
   }
 
-  list(metadata: CloudMetadata, callback: ProviderListCallback) {
+  list(metadata: CloudMetadata, callback: ProviderListCallback, options: IListOptions) {
     this.authorized((isAuthorized) => {
       if (isAuthorized) {
 
@@ -377,7 +384,7 @@ class GoogleDriveProvider extends ProviderInterface {
             return 0
           })
           callback(null, filesOrDrives)
-        })
+        }, options)
       }
       else {
         callback(null, [])

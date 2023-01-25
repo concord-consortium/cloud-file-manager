@@ -27,9 +27,11 @@ export default createReactClass({
     // to leave the content alone.
 
     const hasPropsContent = ((this.props.dialog.data != null ? this.props.dialog.data.content : undefined) != null)
-    const filename = (this.props.client.state.metadata != null ? this.props.client.state.metadata.name : undefined) || (tr("~MENUBAR.UNTITLED_DOCUMENT"))
     const extension = hasPropsContent && this.props.dialog.data.extension
                   ? this.props.dialog.data.extension : 'json'
+    let filename = (this.props.client.state.metadata != null ? this.props.client.state.metadata.name : undefined) || (tr("~MENUBAR.UNTITLED_DOCUMENT"))
+    filename = CloudMetadata.newExtension(filename, extension)
+
     return {
       filename,
       supportsDownloadAttribute: document.createElement('a').download !== undefined,
