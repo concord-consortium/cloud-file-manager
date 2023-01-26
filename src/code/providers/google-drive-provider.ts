@@ -452,6 +452,14 @@ class GoogleDriveProvider extends ProviderInterface {
     }
   }
 
+  fileDialogDisabled(folder: CloudMetadata) {
+    // disable the open/save dialog until a folder or drive is selected
+    if (!folder || (folder.providerData.driveType === EDriveType.sharedDrives) && !folder.providerData.driveId) {
+      return true
+    }
+    return false
+  }
+
   logout() {
     this.user = null
     this.authToken = null

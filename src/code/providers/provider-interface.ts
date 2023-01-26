@@ -508,6 +508,11 @@ abstract class ProviderInterface implements IProviderInterfaceOpts {
   getFileDialogMessage(): any {
     return null
   }
+
+  fileDialogDisabled(folder: CloudMetadata): boolean {
+    // allow providers to disable the file dialog
+    return false
+  }
 }
 
 const cloudContentFactory = new CloudContentFactory()
