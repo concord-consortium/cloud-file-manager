@@ -370,7 +370,7 @@ const FileDialogTab = createReactClass({
   },
 
   confirmDisabled() {
-    return (this.finalConfirmedFilename().length === 0) || (this.isOpen() && !this.state.metadata)
+    return this.props.provider.fileDialogDisabled(this.state.folder) || (this.finalConfirmedFilename().length === 0) || (this.isOpen() && !this.state.metadata)
   },
 
   clearListFilter() {
