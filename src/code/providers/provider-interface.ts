@@ -91,7 +91,7 @@ class CloudMetadata {
     this.parent = parent
     providerData = options.providerData
     this.providerData = providerData != null ? providerData : {}
-    this.overwritable = options.overwritable
+    this.overwritable = options.hasOwnProperty("overwritable") ? options.overwritable : true // default to true for overwritable
     this.sharedContentId = options.sharedContentId
     this.sharedContentSecretKey = options.sharedContentSecretKey
     this.mimeType = options.mimeType
