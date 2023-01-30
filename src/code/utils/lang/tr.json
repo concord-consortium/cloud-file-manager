@@ -109,7 +109,7 @@
     "~SHARE_DIALOG.STOP_SHARING": "Paylaşımı durdur",
     "~SHARE_DIALOG.UPDATE_SHARING": "Paylaşılan görünümü güncelle",
     "~SHARE_DIALOG.PREVIEW_SHARING": "Preview shared view",
-    "~SHARE_DIALOG.ENABLE_SHARING_MESSAGE": "When sharing is enabled, a copy of the current view is created.  This copy can be shared.",
+    "~SHARE_DIALOG.ENABLE_SHARING_MESSAGE": "When sharing is enabled, a link to a copy of the current view is created. Opening this link provides each user with their own copy to interact with.",
     "~SHARE_DIALOG.LINK_TAB": "Bağlantı",
     "~SHARE_DIALOG.LINK_MESSAGE": "Bunu bir eposta ya da metin iletisine yapıştır ",
     "~SHARE_DIALOG.EMBED_TAB": "Embed",
