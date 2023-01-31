@@ -51,6 +51,7 @@ interface IClientState {
   sharing?: boolean;
   dirty?: boolean;
   failures?: number;
+  showingSaveAlert?: boolean;
 }
 
 export type ClientEventCallback = (...args: any) => void;
@@ -661,26 +662,37 @@ class CloudFileManagerClient {
     return metadata.provider.save(currentContent, metadata, (err, statusCode, savedContent) => {
       let failures
       if (err) {
-        // If we fail to save, disable autosave (in case we are in a login dialog),
-        // null the 'saving' property (to remove the 'saving ...' indicator in the cfm tag)
-        metadata.autoSaveDisabled = true
-        this._setState({ metadata, saving: null })
         if (statusCode === 401 || statusCode === 403 || statusCode === 404) {
+          // disable autosave while the confirmation dialog is showing
+          metadata.autoSaveDisabled = true
+          this._setState({ metadata, saving: null })
           return this.confirmAuthorizeAndSave(stringContent, callback)
         } else {
+          this._setState({ saving: null })
           failures = this.state.failures
           if (!failures) {
             failures = 1
           } else {
             failures++
           }
-          this._setState({ failures })
           if (failures === 1) {
-            return this.alert(err)
+            this._setState({ failures, showingSaveAlert: true })
+            let error = err.toString()
+            if (this.isAutoSaving()) {
+              error = `${error}<br><br>${tr("~FILE_STATUS.CONTINUE_SAVE")}`
+            }
+            return this.alert(error, () => {
+              this._setState({ showingSaveAlert: false })
+            })
+          } else {
+            this._setState({ failures })
           }
         }
       } else {
-        this._setState({ failures: 0 })
+        if (this.state.showingSaveAlert) {
+          this.hideAlert()
+        }
+        this._setState({ failures: 0, showingSaveAlert: false })
         if (this.state.metadata !== metadata) {
           this._closeCurrentFile()
         }
@@ -1196,6 +1208,10 @@ class CloudFileManagerClient {
       titleOrCallback = null
     }
     return this._ui.alertDialog(message, ((titleOrCallback as string) || tr("~CLIENT_ERROR.TITLE")), callback)
+  }
+
+  hideAlert() {
+    this._ui.hideAlertDialog()
   }
 
   selectInteractiveStateDialog(props: SelectInteractiveStateDialogProps, callback: SelectInteractiveStateCallback): void {

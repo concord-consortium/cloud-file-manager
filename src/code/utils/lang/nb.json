@@ -141,5 +141,6 @@
     "~GOOGLE_DRIVE.SELECT_DIFFERENT_ACCOUNT": "Select Different Google Account",
     "~GOOGLE_DRIVE.MY_DRIVE": "My Drive",
     "~GOOGLE_DRIVE.SHARED_DRIVES": "Shared Drives",
-    "~GOOGLE_DRIVE.SHARED_WITH_ME": "Shared With Me"
+    "~GOOGLE_DRIVE.SHARED_WITH_ME": "Shared With Me",
+    "~FILE_STATUS.CONTINUE_SAVE": "We will continue to try to save your changes."
 }

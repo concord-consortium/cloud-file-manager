@@ -166,6 +166,8 @@ class AppView extends React.Component<IAppViewProps, IAppViewState> {
           return this.setState({blockingModalProps: null})
         case 'showAlertDialog':
           return this.setState({alertDialog: event.data})
+        case 'hideAlertDialog':
+          return this.setState({alertDialog: null})
         case 'showConfirmDialog':
           return this.setState({confirmDialog: event.data})
         case 'showSelectInteractiveStateDialog':
