@@ -644,8 +644,11 @@ class CloudFileManagerClient {
   }
 
   saveFile(stringContent: any, metadata: CloudMetadata, callback: OpenSaveCallback = null) {
+    const readonly = metadata && !metadata.overwritable // only check if metadata exists
+    const resaveable = metadata?.provider?.can(ECapabilities.resave, metadata)
+
     // must be able to 'resave' to save silently, i.e. without save dialog
-    if (metadata?.provider?.can(ECapabilities.resave, metadata)) {
+    if (!readonly && resaveable) {
       return this.saveFileNoDialog(stringContent, metadata, callback)
     } else {
       return this.saveFileDialog(stringContent, callback)
