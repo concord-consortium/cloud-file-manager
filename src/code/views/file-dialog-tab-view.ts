@@ -76,12 +76,13 @@ const FileList = createReactClassFactory({
   },
 
   load(folder: any) {
+    this.setState({ loading: true })
     return this.props.provider.list(folder, (err: string | null, list: CloudMetadata[]) => {
-      if (err) { return this.props.client.alert(err) }
       // asynchronous callback may be called after dialog has been dismissed
       if (this._isMounted) {
         this.setState({ loading: false })
       }
+      if (err) { return this.props.client.alert(err) }
       return this.props.listLoaded(list)
     }, this.props.listOptions)
   },
@@ -90,15 +91,31 @@ const FileList = createReactClassFactory({
     return this.props.fileSelected(this.props.folder?.parent)
   },
 
+  fileSelected(metadata: any) {
+    if (!this.state.loading) {
+      this.props.fileSelected(metadata)
+    }
+  },
+
+  fileConfirmed() {
+    if (!this.state.loading) {
+      this.props.fileConfirmed()
+    }
+  },
+
   render() {
     const list = []
     const isSubFolder = (this.props.folder != null)
     if (isSubFolder) {
       list.push((div({key: 'parent', className: 'selectable', onClick: this.parentSelected}, (italic({className: 'icon-paletteArrow-collapse'})), this.props.folder.name)))
     }
-    for (let i = 0; i < this.props.list.length; i++) {
-      const metadata = this.props.list[i]
-      list.push((FileListFile({key: i, metadata, selected: this.props.selectedFile === metadata, fileSelected: this.props.fileSelected, fileConfirmed: this.props.fileConfirmed, isSubFolder})))
+    if (this.state.loading) {
+      list.push(div({key: 'loading'}, 'Loading...'))
+    } else {
+      for (let i = 0; i < this.props.list.length; i++) {
+        const metadata = this.props.list[i]
+        list.push((FileListFile({key: i, metadata, selected: this.props.selectedFile === metadata, fileSelected: this.fileSelected, fileConfirmed: this.fileConfirmed, isSubFolder})))
+      }
     }
 
     return (div({className: 'filelist'},
