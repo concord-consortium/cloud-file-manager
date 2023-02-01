@@ -6,7 +6,7 @@ import { createReactClassFactory } from '../create-react-factory'
 import tr  from '../utils/translate'
 import {
   AuthorizedOptions,
-  cloudContentFactory, CloudMetadata, IListOptions, ProviderCloseCallback, ProviderInterface,
+  cloudContentFactory, CloudMetadata, ECapabilities, IListOptions, ProviderCloseCallback, ProviderInterface,
   ProviderListCallback, ProviderLoadCallback, ProviderRemoveCallback, ProviderSaveCallback
 }  from './provider-interface'
 
@@ -246,6 +246,14 @@ class GoogleDriveProvider extends ProviderInterface {
     return this.waitForAPILoad().then(() => {
       return this.loadFile(metadata, callback)
     })
+  }
+
+  can(capability: ECapabilities, metadata?: CloudMetadata) {
+    // disable autosave for readonly files
+    if (capability === ECapabilities.resave && metadata && !metadata.overwritable) {
+      return false
+    }
+    return super.can(capability, metadata)
   }
 
   getAllFilesOrDrives(metadata: CloudMetadata, callback: (err: any, files: any[]) => void, options?: IListOptions) {
