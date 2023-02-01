@@ -232,6 +232,10 @@ class CloudFileManagerUI {
     return this.listenerCallback(new CloudFileManagerUIEvent('showAlertDialog', { title, message, callback }))
   }
 
+  hideAlertDialog() {
+    return this.listenerCallback(new CloudFileManagerUIEvent('hideAlertDialog'))
+  }
+
   confirmDialog(params: any) {
     return this.listenerCallback(new CloudFileManagerUIEvent('showConfirmDialog', params))
   }
