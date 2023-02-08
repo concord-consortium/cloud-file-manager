@@ -266,9 +266,8 @@ const FileDialogTab = createReactClass({
 
   getStateForFolder(folder: CloudMetadata, initialFolder: any) {
     const metadata = this.isOpen() ? this.state?.metadata || null : this.getSaveMetadata()
-    const clientProvider = this.props.client.state.metadata?.provider
 
-    if (initialFolder || (clientProvider && (clientProvider !== this.props.provider))) {
+    if (initialFolder) {
       folder = null
     } else {
       if (metadata != null) {
