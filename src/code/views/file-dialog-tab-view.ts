@@ -106,12 +106,10 @@ const FileList = createReactClassFactory({
   render() {
     const list = []
     const isSubFolder = (this.props.folder != null)
-    if (isSubFolder) {
-      list.push((div({key: 'parent', className: 'selectable', onClick: this.parentSelected}, (italic({className: 'icon-paletteArrow-collapse'})), this.props.folder.name)))
-    }
-    if (this.state.loading) {
-      list.push(div({key: 'loading'}, 'Loading...'))
-    } else {
+    if (!this.state.loading) {
+      if (isSubFolder) {
+        list.push((div({key: 'parent', className: 'selectable', onClick: this.parentSelected}, (italic({className: 'icon-paletteArrow-collapse'})), this.props.folder.name)))
+      }
       for (let i = 0; i < this.props.list.length; i++) {
         const metadata = this.props.list[i]
         list.push((FileListFile({key: i, metadata, selected: this.props.selectedFile === metadata, fileSelected: this.fileSelected, fileConfirmed: this.fileConfirmed, isSubFolder})))
@@ -120,7 +118,7 @@ const FileList = createReactClassFactory({
 
     return (div({className: 'filelist'},
       this.state.loading
-        ? tr("~FILE_DIALOG.LOADING")
+        ? div({key: 'loading'}, tr("~FILE_DIALOG.LOADING"))
         : (this.props.overrideMessage || list)
     ))
   }
