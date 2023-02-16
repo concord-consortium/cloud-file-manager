@@ -180,7 +180,20 @@ class GoogleDriveProvider extends ProviderInterface {
       if (this.authToken) {
         return authCallback(true)
       } else {
-        return this.doAuthorize(options?.forceAuthorization ? GoogleDriveProvider.SHOW_POPUP : GoogleDriveProvider.IMMEDIATE)
+        if (options?.forceAuthorization) {
+          return this.client.confirmDialog({
+            className: 'login-to-google-confirm-dialog',
+            title: tr('~PROVIDER.GOOGLE_DRIVE'),
+            yesTitle: tr('~GOOGLE_DRIVE.LOGIN_BUTTON_LABEL'),
+            hideNoButton: true,
+            hideTitleText: true,
+            callback: () => {
+              return this.doAuthorize(GoogleDriveProvider.SHOW_POPUP)
+            }
+          })
+        } else {
+          return this.doAuthorize(GoogleDriveProvider.IMMEDIATE)
+        }
       }
     } else {
       return this.authToken !== null
