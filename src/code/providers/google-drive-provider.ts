@@ -287,14 +287,21 @@ class GoogleDriveProvider extends ProviderInterface {
       // when an extension is passed show all files matching the extension, otherwise filter on mimeType
       // this is needed as you can't filter on non-Google mimetypes like text/csv or image/png
       if (!extension) {
+
+        // add the direct mimetypes
         const mimeTypes: string[] = ["application/vnd.google-apps.folder"].concat(this.readableMimetypes)
         const mimeTypesQuery = mimeTypes.map(mimeType => `mimeType = '${mimeType}'`).join(" or ")
-        queryParts.push(mimeTypesQuery)
+
+        // add shortcut to the mimetypes
+        const targetMimeTypesQuery = mimeTypes.map(mimeType => `shortcutDetails.targetMimeType = '${mimeType}'`).join(" or ")
+        const shortcutQuery = `mimeType = 'application/vnd.google-apps.shortcut' and (${targetMimeTypesQuery})`
+
+        queryParts.push(`${mimeTypesQuery} or (${shortcutQuery})`)
       }
 
       listParams = {
         pageSize: 1000, // 1000 is max on file list operations
-        fields: "files(id, mimeType, name, capabilities(canEdit)),nextPageToken",
+        fields: "files(id, mimeType, name, capabilities(canEdit), shortcutDetails), nextPageToken",
       }
 
       if (metadata.providerData.driveType === EDriveType.sharedWithMe) {
@@ -365,7 +372,8 @@ class GoogleDriveProvider extends ProviderInterface {
                   providerData: {
                     id: item.id,
                     driveType: metadata.providerData.driveType,
-                    driveId: metadata.providerData.driveId
+                    driveId: metadata.providerData.driveId,
+                    shortcutDetails: item.shortcutDetails,
                   }
                 }))
               }
@@ -543,8 +551,9 @@ class GoogleDriveProvider extends ProviderInterface {
   }
 
   private loadFile(metadata: CloudMetadata, callback: ProviderLoadCallback) {
+    const fileId = metadata.providerData.shortcutDetails?.targetId || metadata.providerData.id
     const params: any = {
-      fileId: metadata.providerData.id,
+      fileId,
       fields: "id, mimeType, name, parents, capabilities(canEdit)",
     }
     const driveId = metadata.providerData.driveId
@@ -573,7 +582,7 @@ class GoogleDriveProvider extends ProviderInterface {
 
       // v3 of the api removed the downloadUrl from the returned file data so we need to manually construct it
       const xhr = new XMLHttpRequest()
-      xhr.open('GET', `https://www.googleapis.com/drive/v3/files/${metadata.providerData.id}?alt=media`)
+      xhr.open('GET', `https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`)
       xhr.setRequestHeader("Authorization", `Bearer ${this.authToken.access_token}`)
       xhr.onload = () => callback(null, cloudContentFactory.createEnvelopedCloudContent(xhr.responseText))
       xhr.onerror = () => callback("Unable to download file content")
@@ -588,7 +597,8 @@ class GoogleDriveProvider extends ProviderInterface {
       name: metadata.filename,
       mimeType,
     }
-    const isUpdate = !!metadata.providerData.id
+    const fileId = metadata.providerData.shortcutDetails?.targetId || metadata.providerData.id
+    const isUpdate = !!fileId
     const driveId = metadata.parent?.providerData.driveId
 
     if (!isUpdate) {
@@ -604,7 +614,7 @@ class GoogleDriveProvider extends ProviderInterface {
     const header = JSON.stringify(headerContents)
 
     const [method, path] = Array.from(isUpdate ?
-      ['PATCH', `/upload/drive/v3/files/${metadata.providerData.id}`]
+      ['PATCH', `/upload/drive/v3/files/${fileId}`]
     :
       ['POST', '/upload/drive/v3/files'])
 
