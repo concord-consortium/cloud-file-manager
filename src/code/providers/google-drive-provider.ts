@@ -278,6 +278,8 @@ class GoogleDriveProvider extends ProviderInterface {
     const extension = options?.extension
     const readableExtensions = extension ? [extension] : CloudMetadata.ReadableExtensions
 
+    const parentId = metadata.providerData.shortcutDetails?.targetId ||  metadata.providerData.id
+
     if (listDrives) {
       listParams = {
         pageSize: 100, // 100 is max on drive list operations
@@ -306,13 +308,13 @@ class GoogleDriveProvider extends ProviderInterface {
 
       if (metadata.providerData.driveType === EDriveType.sharedWithMe) {
         listParams.corpora = "user"
-        if (metadata?.providerData.id) {
-          queryParts.push(`'${metadata?.providerData.id}' in parents`)
+        if (parentId) {
+          queryParts.push(`'${parentId}' in parents`)
         } else {
           queryParts.push("sharedWithMe = true")
         }
       } else {
-        queryParts.push(`'${metadata?.providerData.id || 'root'}' in parents`)
+        queryParts.push(`'${parentId || 'root'}' in parents`)
 
         if (metadata.providerData.driveId) {
           listParams.corpora = "drive"
@@ -361,7 +363,8 @@ class GoogleDriveProvider extends ProviderInterface {
                 }
               }))
             } else {
-              const type = item.mimeType === 'application/vnd.google-apps.folder' ? CloudMetadata.Folder : CloudMetadata.File
+              const mimeType = item.shortcutDetails?.targetMimeType || item.mimeType
+              const type = mimeType === 'application/vnd.google-apps.folder' ? CloudMetadata.Folder : CloudMetadata.File
               if ((type === CloudMetadata.Folder) || this.matchesExtension(item.name, readableExtensions)) {
                 list.push(new CloudMetadata({
                   name: item.name,
@@ -602,11 +605,8 @@ class GoogleDriveProvider extends ProviderInterface {
     const driveId = metadata.parent?.providerData.driveId
 
     if (!isUpdate) {
-      if (metadata.parent?.providerData?.id) {
-        headerContents.parents = [metadata.parent.providerData.id]
-      } else {
-        headerContents.parents = ["root"]
-      }
+      const parentId = metadata.parent.providerData.shortcutDetails?.targetId || metadata.parent.providerData.id
+      headerContents.parents = [parentId || "root"]
     }
     if (driveId) {
       headerContents.driveId = driveId
