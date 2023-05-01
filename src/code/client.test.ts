@@ -102,7 +102,8 @@ describe("CloudFileManagerClient", () => {
       // to set the current metadata in order to fake the file already having been loaded
       client._setState({metadata: {
         name: "foo.txt",
-        provider: testProvider
+        provider: testProvider,
+        overwritable: true
       } as any})
 
       // initial save works without filtering
@@ -112,7 +113,7 @@ describe("CloudFileManagerClient", () => {
         client.appOptions.contentSaveFilter = (content: CloudContent) => {
           // beetlejuice, beetlejuice, beetlejuice
           content.content.content = "bar"
-          return content;
+          return content
         }
 
         client.saveContent("foo", (content: CloudContent, metadata) => {

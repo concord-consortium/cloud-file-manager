@@ -1,4 +1,4 @@
-import { CloudContent } from "./providers/provider-interface";
+import { CloudContent } from "./providers/provider-interface"
 
 export interface CFMMenuItemObject {
   name?: string;
@@ -81,6 +81,7 @@ export interface CFMGoogleDriveProviderOptions extends CFMBaseProviderOptions {
   clientId: string;
   apiKey: string;
   scopes?: string[];
+  disableSharedDrives?: boolean;
 }
 
 export interface CFMCustomClientProviderOptions extends CFMBaseProviderOptions {

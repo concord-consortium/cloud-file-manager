@@ -13,7 +13,7 @@ import _ from 'lodash'
 import createReactClass from 'create-react-class'
 import ReactDOMFactories from 'react-dom-factories'
 import {createReactClassFactory} from '../create-react-factory'
-import {CloudMetadata} from '../providers/provider-interface'
+import {CloudMetadata, IListOptions} from '../providers/provider-interface'
 
 import tr from '../utils/translate'
 
@@ -76,34 +76,49 @@ const FileList = createReactClassFactory({
   },
 
   load(folder: any) {
+    this.setState({ loading: true })
     return this.props.provider.list(folder, (err: string | null, list: CloudMetadata[]) => {
-      if (err) { return this.props.client.alert(err) }
       // asynchronous callback may be called after dialog has been dismissed
       if (this._isMounted) {
         this.setState({ loading: false })
       }
+      if (err) { return this.props.client.alert(err) }
       return this.props.listLoaded(list)
-    })
+    }, this.props.listOptions)
   },
 
   parentSelected(e: any) {
     return this.props.fileSelected(this.props.folder?.parent)
   },
 
+  fileSelected(metadata: any) {
+    if (!this.state.loading) {
+      this.props.fileSelected(metadata)
+    }
+  },
+
+  fileConfirmed() {
+    if (!this.state.loading) {
+      this.props.fileConfirmed()
+    }
+  },
+
   render() {
     const list = []
     const isSubFolder = (this.props.folder != null)
-    if (isSubFolder) {
-      list.push((div({key: 'parent', className: 'selectable', onClick: this.parentSelected}, (italic({className: 'icon-paletteArrow-collapse'})), this.props.folder.name)))
-    }
-    for (let i = 0; i < this.props.list.length; i++) {
-      const metadata = this.props.list[i]
-      list.push((FileListFile({key: i, metadata, selected: this.props.selectedFile === metadata, fileSelected: this.props.fileSelected, fileConfirmed: this.props.fileConfirmed, isSubFolder})))
+    if (!this.state.loading) {
+      if (isSubFolder) {
+        list.push((div({key: 'parent', className: 'selectable', onClick: this.parentSelected}, (italic({className: 'icon-paletteArrow-collapse'})), this.props.folder.name)))
+      }
+      for (let i = 0; i < this.props.list.length; i++) {
+        const metadata = this.props.list[i]
+        list.push((FileListFile({key: i, metadata, selected: this.props.selectedFile === metadata, fileSelected: this.fileSelected, fileConfirmed: this.fileConfirmed, isSubFolder})))
+      }
     }
 
     return (div({className: 'filelist'},
       this.state.loading
-        ? tr("~FILE_DIALOG.LOADING")
+        ? div({key: 'loading'}, tr("~FILE_DIALOG.LOADING"))
         : (this.props.overrideMessage || list)
     ))
   }
@@ -116,6 +131,16 @@ const FileDialogTab = createReactClass({
     this._isMounted = true
     const initialState = this.getStateForFolder(this.props.client.state.metadata?.parent, true) || null
     initialState.filename = initialState.metadata?.name || ''
+
+    // on saves default the search to the filename - on saves the search is the final filename
+    if (!this.isOpen()) {
+      initialState.search = initialState.filename || tr("~MENUBAR.UNTITLED_DOCUMENT")
+
+      // add the file extension on export
+      if (this.isExport() && this.props.dialog.data?.extension) {
+        initialState.search = CloudMetadata.newExtension(initialState.search, this.props.dialog.data.extension)
+      }
+    }
 
     // NP 2020-04-23 Copied from authorize-mixin.js
     this._isAuthorized = false
@@ -142,6 +167,25 @@ const FileDialogTab = createReactClass({
   // authorization status, and re-render when authorization status changes.
 
   UNSAFE_componentWillMount() {
+    const setAuthorization = (authorized: any) => {
+      // always set the instance variable
+      this._isAuthorized = authorized
+      // set the state if we can
+      if (this._isMounted) {
+        return this.setState({authorized})
+      }
+    }
+
+    // listen for logouts (Google Drive provider)
+    this.props.provider.onAuthorizationChange?.((authorized: any) => {
+      // reset rendering when de-authorized
+      if (this._isAuthorized && !authorized) {
+        this.setState(this.getInitialState())
+      }
+
+      setAuthorization(authorized)
+    })
+
     // Check for authorization before the first render. Providers that
     // don't require authorization or are already authorized will respond
     // immediately, but since the component isn't mounted yet we can't
@@ -149,14 +193,7 @@ const FileDialogTab = createReactClass({
     // in componentDidMount(). Providers that require asynchronous checks
     // for authorization may return before or after the first render, so
     // code should be prepared for either eventuality.
-    return this.props.provider.authorized((authorized: any) => {
-      // always set the instance variable
-      this._isAuthorized = authorized
-      // set the state if we can
-      if (this._isMounted) {
-        return this.setState({authorized})
-      }
-    })
+    return this.props.provider.authorized(setAuthorization)
   },
 
   // NP 2020-04-23  Copied from authorize-mixin.js
@@ -170,6 +207,7 @@ const FileDialogTab = createReactClass({
 
   // NP 2020-04-23  Copied from authorize-mixin.js
   componentWillUnmount() {
+    this.props.provider.onAuthorizationChange?.(null)
     return this._isMounted = false
   },
 
@@ -186,11 +224,16 @@ const FileDialogTab = createReactClass({
     return this.props.dialog.action === 'openFile'
   },
 
-  filenameChanged(e: any) {
-    const filename = e.target.value
+  isExport() {
+    return this.props.dialog.action === 'saveSecondaryFileAs'
+  },
+
+  searchChanged(e: any) {
+    const search = e.target.value
     return this.setState({
-      filename,
-      metadata: this.findMetadata(filename, this.state.list)
+      search,
+      filename: '',
+      metadata: null
     })
   },
 
@@ -222,7 +265,7 @@ const FileDialogTab = createReactClass({
   getStateForFolder(folder: CloudMetadata, initialFolder: any) {
     const metadata = this.isOpen() ? this.state?.metadata || null : this.getSaveMetadata()
 
-    if (initialFolder && (this.props.client.state.metadata?.provider !== this.props.provider)) {
+    if (initialFolder) {
       folder = null
     } else {
       if (metadata != null) {
@@ -230,19 +273,29 @@ const FileDialogTab = createReactClass({
       }
     }
 
-    return {
+    const newState: any = {
       folder,
       metadata,
       filename: "",
       list: [] as CloudMetadata[]
     }
+
+    if (this.isOpen()) {
+      newState.search = ""
+    }
+
+    return newState
   },
 
   fileSelected(metadata: CloudMetadata) {
     if (metadata?.type === CloudMetadata.Folder) {
       return this.setState(this.getStateForFolder(metadata))
     } else if (metadata?.type === CloudMetadata.File) {
-      return this.setState({ filename: metadata.name, metadata })
+      const newState: any = { filename: metadata.name, metadata }
+      if (!this.isOpen()) {
+        newState.search = newState.filename
+      }
+      return this.setState(newState)
     } else {
       return this.setState(this.getStateForFolder(null))
     }
@@ -264,9 +317,15 @@ const FileDialogTab = createReactClass({
       return this.props.close()
     }
 
-    const filename = $.trim(this.state.filename)
-    const existingMetadata = this.findMetadata(filename, this.state.list)
+    const filename = $.trim(this.finalConfirmedFilename())
+    const existingMetadata = this.findMetadata(filename, this.state.list, this.props.dialog.data?.extension)
     const metadata = this.state.metadata || existingMetadata
+
+    // a bit of a hack - on export clear the provider data if there is no matching file found so we don't
+    // accidentally override the original saved file
+    if (this.isExport() && metadata && !existingMetadata) {
+      metadata.providerData = {}
+    }
 
     if (metadata) {
       if (this.isOpen()) {
@@ -301,7 +360,8 @@ const FileDialogTab = createReactClass({
             return this.setState({
               list,
               metadata: null,
-              filename: ''
+              filename: '',
+              search: ''
             })
           }
         })
@@ -313,9 +373,14 @@ const FileDialogTab = createReactClass({
     return this.props.close()
   },
 
-  findMetadata(filename: string, list: CloudMetadata[]) {
+  findMetadata(filename: string, list: CloudMetadata[], extension?: string) {
+    const checkExtension = extension !== undefined
+    const filenameWithExtension = checkExtension && CloudMetadata.newExtension(filename, extension)
     for (let metadata of Array.from(list)) {
-      if (metadata.name === filename) {
+      const found = checkExtension
+        ? metadata.filename === filenameWithExtension
+        : metadata.name === filename
+      if (found) {
         return metadata
       }
     }
@@ -328,12 +393,17 @@ const FileDialogTab = createReactClass({
     }
   },
 
+  finalConfirmedFilename() {
+    // use filename for open and filename or search for saves
+    return this.isOpen() ? this.state.filename : (this.state.filename || this.state.search || "")
+  },
+
   confirmDisabled() {
-    return (this.state.filename.length === 0) || (this.isOpen() && !this.state.metadata)
+    return this.props.provider.fileDialogDisabled(this.state.folder) || (this.finalConfirmedFilename().length === 0) || (this.isOpen() && !this.state.metadata)
   },
 
   clearListFilter() {
-    this.setState({filename: ""})
+    this.setState({search: ""})
     this.inputRef?.focus()
   },
 
@@ -341,21 +411,27 @@ const FileDialogTab = createReactClass({
     const confirmDisabled = this.confirmDisabled()
     const removeDisabled = (this.state.metadata === null) || (this.state.metadata.type === CloudMetadata.Folder)
 
-    const lowerFilename = this.state.filename.toLowerCase()
-    const filtering = this.state.filename.length > 0
+    const isOpen = this.isOpen()
+    const search = this.state.search || ""
+    const lowerSearch = search.toLowerCase()
+    const filtering = isOpen && search.length > 0
     const list = filtering
-      ? this.state.list.filter((item: any) => item.name.toLowerCase().indexOf(lowerFilename) !== -1)
+      ? this.state.list.filter((item: any) => item.name.toLowerCase().indexOf(lowerSearch) !== -1)
       : this.state.list
     const listFiltered = list.length !== this.state.list.length
 
     const overrideMessage = filtering && listFiltered && list.length === 0
-      ? div({}, `No files found matching "${this.state.filename}" in current folder`)
+      ? div({}, `No files found matching "${search}"`)
       : null
 
+    // when exporting only show folders as we can't filter based on mimetypes like text/csv or image/png to show only those files
+    const listOptions: IListOptions = this.isExport() && this.props.dialog.data?.extension ? {extension: this.props.dialog.data.extension} : undefined
+
     return (div({className: 'dialogTab'},
-      (input({type: 'text', value: this.state.filename, placeholder: (tr("~FILE_DIALOG.FILENAME")), onChange: this.filenameChanged, onKeyDown: this.watchForEnter, ref: (elt: any) => { return this.inputRef = elt }})),
+      (input({type: 'text', value: search, placeholder: (tr(isOpen ? "~FILE_DIALOG.FILTER" : "~FILE_DIALOG.FILENAME")), autoFocus: true, onChange: this.searchChanged, onKeyDown: this.watchForEnter, ref: (elt: any) => { return this.inputRef = elt }})),
       (listFiltered && div({className: 'dialogClearFilter', onClick: this.clearListFilter}, "X")),
-      (FileList({provider: this.props.provider, folder: this.state.folder, selectedFile: this.state.metadata, fileSelected: this.fileSelected, fileConfirmed: this.confirm, list, listLoaded: this.listLoaded, client: this.props.client, overrideMessage})),
+      (FileList({provider: this.props.provider, folder: this.state.folder, selectedFile: this.state.metadata, fileSelected: this.fileSelected, fileConfirmed: this.confirm, list, listLoaded: this.listLoaded, client: this.props.client, overrideMessage, listOptions})),
+      (this.props.provider.getFileDialogMessage && this.props.provider.getFileDialogMessage()),
       (div({className: 'buttons'},
         (button({onClick: this.confirm, disabled: confirmDisabled, className: confirmDisabled ? 'disabled' : ''}, this.isOpen() ? (tr("~FILE_DIALOG.OPEN")) : (tr("~FILE_DIALOG.SAVE")))),
         this.props.provider.can('remove') ?

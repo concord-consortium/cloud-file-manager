@@ -91,7 +91,7 @@ class CloudMetadata {
     this.parent = parent
     providerData = options.providerData
     this.providerData = providerData != null ? providerData : {}
-    this.overwritable = options.overwritable
+    this.overwritable = options.hasOwnProperty("overwritable") ? options.overwritable : true // default to true for overwritable
     this.sharedContentId = options.sharedContentId
     this.sharedContentSecretKey = options.sharedContentSecretKey
     this.mimeType = options.mimeType
@@ -120,9 +120,9 @@ class CloudMetadata {
   }
 
   static newExtension(name: string, extension: string) {
-    // drop last extension, if there is one
-    name = name.substr(0, name.lastIndexOf('.')) || name
-    return name + "." + extension
+    // replace the existing extension(s) with the passed extension
+    const parts = name.split(".")
+    return parts[0] + "." + extension
   }
 
   path() {
@@ -367,11 +367,17 @@ type IProviderCapabilities = {
   [c in ECapabilities]?: boolean | 'auto'
 }
 
+export type AuthorizedOptions = {forceAuthorization?: boolean}
+
 export interface IProviderInterfaceOpts {
   name: string;             // name by which it is referenced internally
   displayName?: string;     // name which is displayed to users
   urlDisplayName?: string;  // name that is used for url parameter matching
   capabilities: IProviderCapabilities;
+}
+
+export interface IListOptions {
+  extension?: string
 }
 
 abstract class ProviderInterface implements IProviderInterfaceOpts {
@@ -402,7 +408,7 @@ abstract class ProviderInterface implements IProviderInterfaceOpts {
     return false
   }
 
-  authorized(callback: (resp: boolean) => void) {
+  authorized(callback: (resp: boolean) => void, options?: AuthorizedOptions) {
     callback?.(true)
   }
 
@@ -422,10 +428,11 @@ abstract class ProviderInterface implements IProviderInterfaceOpts {
     return defaultComponent
   }
 
-  matchesExtension(name: string) {
+  matchesExtension(name: string, extensions?: string[]) {
     if (!name) { return false }
-    if (CloudMetadata.ReadableExtensions?.length) {
-      for (let extension of CloudMetadata.ReadableExtensions) {
+    extensions = extensions || CloudMetadata.ReadableExtensions
+    if (extensions?.length) {
+      for (let extension of extensions) {
         if (name.substr(-extension.length) === extension) { return true }
         if (extension === "") {
           if (name.indexOf(".") === -1) { return true }
@@ -464,7 +471,7 @@ abstract class ProviderInterface implements IProviderInterfaceOpts {
     return this._notImplemented('load')
   }
 
-  list(metadata: CloudMetadata, callback?: ProviderListCallback) {
+  list(metadata: CloudMetadata, callback?: ProviderListCallback, options?: IListOptions) {
     return this._notImplemented('list')
   }
 
@@ -501,6 +508,15 @@ abstract class ProviderInterface implements IProviderInterfaceOpts {
     // this uses a browser alert instead of client.alert because this is just here for debugging
     // eslint-disable-next-line no-alert
     alert(`${methodName} not implemented for ${this.name} provider`)
+  }
+
+  getFileDialogMessage(): any {
+    return null
+  }
+
+  fileDialogDisabled(folder: CloudMetadata): boolean {
+    // allow providers to disable the file dialog
+    return false
   }
 }
 

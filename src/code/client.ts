@@ -7,12 +7,12 @@
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
  */
 import _ from 'lodash'
-import { sha256 } from 'js-sha256'
 
 import tr from './utils/translate'
 import isString from './utils/is-string'
 import base64Array from 'base64-js' // https://github.com/beatgammit/base64-js
 import getQueryParam from './utils/get-query-param'
+import {lookup as getMimeType} from 'mime-types'
 
 import { CFMAppOptions, CFMMenuItem, isCustomClientProvider } from './app-options'
 import { CloudFileManagerUI, UIEventCallback }  from './ui'
@@ -51,6 +51,7 @@ interface IClientState {
   sharing?: boolean;
   dirty?: boolean;
   failures?: number;
+  showingSaveAlert?: boolean;
 }
 
 export type ClientEventCallback = (...args: any) => void;
@@ -563,7 +564,7 @@ class CloudFileManagerClient {
         } else {
           return this.confirmAuthorizeAndOpen(provider, providerParams)
         }
-      })
+      }, {forceAuthorization: true}) // force authorization for Google Drive
     } else {
       return this.alert(tr("~ALERT.NO_PROVIDER"), () => this.ready())
     }
@@ -644,8 +645,11 @@ class CloudFileManagerClient {
   }
 
   saveFile(stringContent: any, metadata: CloudMetadata, callback: OpenSaveCallback = null) {
+    const readonly = metadata && !metadata.overwritable // only check if metadata exists
+    const resaveable = metadata?.provider?.can(ECapabilities.resave, metadata)
+
     // must be able to 'resave' to save silently, i.e. without save dialog
-    if (metadata?.provider?.can(ECapabilities.resave, metadata)) {
+    if (!readonly && resaveable) {
       return this.saveFileNoDialog(stringContent, metadata, callback)
     } else {
       return this.saveFileDialog(stringContent, callback)
@@ -661,26 +665,37 @@ class CloudFileManagerClient {
     return metadata.provider.save(currentContent, metadata, (err, statusCode, savedContent) => {
       let failures
       if (err) {
-        // If we fail to save, disable autosave (in case we are in a login dialog),
-        // null the 'saving' property (to remove the 'saving ...' indicator in the cfm tag)
-        metadata.autoSaveDisabled = true
-        this._setState({ metadata, saving: null })
         if (statusCode === 401 || statusCode === 403 || statusCode === 404) {
+          // disable autosave while the confirmation dialog is showing
+          metadata.autoSaveDisabled = true
+          this._setState({ metadata, saving: null })
           return this.confirmAuthorizeAndSave(stringContent, callback)
         } else {
+          this._setState({ saving: null })
           failures = this.state.failures
           if (!failures) {
             failures = 1
           } else {
             failures++
           }
-          this._setState({ failures })
           if (failures === 1) {
-            return this.alert(err)
+            this._setState({ failures, showingSaveAlert: true })
+            let error = err.toString()
+            if (this.isAutoSaving()) {
+              error = `${error}<br><br>${tr("~FILE_STATUS.CONTINUE_SAVE")}`
+            }
+            return this.alert(error, () => {
+              this._setState({ showingSaveAlert: false })
+            })
+          } else {
+            this._setState({ failures })
           }
         }
       } else {
-        this._setState({ failures: 0 })
+        if (this.state.showingSaveAlert) {
+          this.hideAlert()
+        }
+        this._setState({ failures: 0, showingSaveAlert: false })
         if (this.state.metadata !== metadata) {
           this._closeCurrentFile()
         }
@@ -739,7 +754,25 @@ class CloudFileManagerClient {
       window.localStorage.setItem(`${prefix}${maxCopyNumber}`, value)
       return (typeof callback === 'function' ? callback(null, maxCopyNumber) : undefined)
     } catch (e) {
-      return callback("Unable to temporarily save copied file")
+      // CODAP style overrides
+      const divStyle = "text-align: left"
+      const paragraphStyle = "margin: 10px 0;"
+      const listStyle = "margin: 10px 10px 10px 30px; padding: 0;"
+
+      const message = `
+      <div style="${divStyle}">
+        <p style="${paragraphStyle}">The document is either too large to copy within the app, or your browser does not allow local storage.</p>
+
+        <p style="${paragraphStyle}">To copy this file you must duplicate it outside the app using these steps:</p>
+
+        <ol style="${listStyle}">
+          <li>Save the document.</li>
+          <li>Duplicate it using Google Drive or your local file system.</li>
+          <li>Open or import the newly duplicated document.</li>
+        </ol>
+      </div>
+      `
+      return this.alert(message, "Copy Error")
     }
   }
 
@@ -980,7 +1013,16 @@ class CloudFileManagerClient {
         this.state.currentContent.addMetadata({docName: metadata.name})
       }
       this._fileChanged('renamedFile', this.state.currentContent, metadata, {dirty}, this._getHashParams(metadata))
-      return (typeof callback === 'function' ? callback(newName) : undefined)
+
+      const done = () => typeof callback === 'function' ? callback(newName) : undefined
+
+      const readOnlyProvider = metadata?.provider?.name === ReadOnlyProvider.Name;
+      if (!readOnlyProvider && (metadata?.provider || this.autoProvider(ECapabilities.save))) {
+        // autosave renamed file if it has already been saved or can be autosaved
+        this.save(done)
+      } else {
+        done()
+      }
     }
     if (newName !== (this.state.metadata != null ? this.state.metadata.name : undefined)) {
       if (metadata?.provider?.can(ECapabilities.rename, metadata)) {
@@ -1026,6 +1068,12 @@ class CloudFileManagerClient {
   }
 
   saveSecondaryFileAsDialog(stringContent: any, extension: string, mimeType: string, callback: OpenSaveCallback) {
+    // set the mimeType if not given with the extension
+    const extensionMimeType = getMimeType(extension)
+    if (extension && !mimeType && extensionMimeType) {
+      mimeType = extensionMimeType
+    }
+
     const provider = this.autoProvider(ECapabilities['export'])
     if (provider) {
       const metadata = { provider, extension, mimeType } as unknown as CloudMetadata
@@ -1167,6 +1215,10 @@ class CloudFileManagerClient {
     return this._ui.alertDialog(message, ((titleOrCallback as string) || tr("~CLIENT_ERROR.TITLE")), callback)
   }
 
+  hideAlert() {
+    this._ui.hideAlertDialog()
+  }
+
   selectInteractiveStateDialog(props: SelectInteractiveStateDialogProps, callback: SelectInteractiveStateCallback): void {
     this._event("requiresUserInteraction")
     this._ui.selectInteractiveStateDialog({...props, onSelect: callback})
@@ -1303,7 +1355,7 @@ class CloudFileManagerClient {
   }
 
   _createOrUpdateCurrentContent(stringContent: any, metadata: CloudMetadata = null) {
-    let currentContent: CloudContent;
+    let currentContent: CloudContent
     if (this.state.currentContent != null) {
       ({ currentContent } = this.state)
       currentContent.setText(stringContent)

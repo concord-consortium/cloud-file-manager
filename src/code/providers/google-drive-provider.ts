@@ -5,7 +5,8 @@ import { CloudFileManagerClient } from '../client'
 import { createReactClassFactory } from '../create-react-factory'
 import tr  from '../utils/translate'
 import {
-  cloudContentFactory, CloudMetadata, ProviderCloseCallback, ProviderInterface,
+  AuthorizedOptions,
+  cloudContentFactory, CloudMetadata, ECapabilities, IListOptions, ProviderCloseCallback, ProviderInterface,
   ProviderListCallback, ProviderLoadCallback, ProviderRemoveCallback, ProviderSaveCallback
 }  from './provider-interface'
 
@@ -16,9 +17,20 @@ enum ELoadState {
   missingScopes = "missing-scopes"
 }
 
+enum EDriveType {
+  none = "none",
+  myDrive = "my-drive",
+  sharedWithMe = "shared-with-me",
+  sharedDrives = "shared-drives"
+}
+
+const OpenSavedParamDelimiter = ";"
+
+type OnAuthorizationChangeCallback = (authorized: boolean) => void
+
 let setGoogleDriveAuthorizationDialogState: undefined | ((newState: any) => void) = undefined
 
-const {div, button, span} = ReactDOMFactories
+const {div, button, span, strong} = ReactDOMFactories
 const GoogleDriveAuthorizationDialog = createReactClassFactory({
   displayName: 'GoogleDriveAuthorizationDialog',
 
@@ -107,6 +119,8 @@ class GoogleDriveProvider extends ProviderInterface {
   readableMimetypes: string[]
   scopes: string
   user: any
+  onAuthorizationChangeCallback: OnAuthorizationChangeCallback|undefined
+  promptForConsent: boolean
 
   constructor(options: CFMGoogleDriveProviderOptions | undefined, client: CloudFileManagerClient) {
     super({
@@ -157,7 +171,7 @@ class GoogleDriveProvider extends ProviderInterface {
    * If authCallback is not defined, return the best result that can be had
    * synchronously.
    */
-  authorized(authCallback: ((authorized: boolean) => void)) {
+  authorized(authCallback: ((authorized: boolean) => void), options?: AuthorizedOptions) {
     if (!(authCallback == null)) { this.authCallback = authCallback }
     if (this.apiLoadState === ELoadState.loaded && !authCallback) {
       return gapi.client.getToken() !== null
@@ -166,7 +180,20 @@ class GoogleDriveProvider extends ProviderInterface {
       if (this.authToken) {
         return authCallback(true)
       } else {
-        return this.doAuthorize(GoogleDriveProvider.IMMEDIATE)
+        if (options?.forceAuthorization) {
+          return this.client.confirmDialog({
+            className: 'login-to-google-confirm-dialog',
+            title: tr('~PROVIDER.GOOGLE_DRIVE'),
+            yesTitle: tr('~GOOGLE_DRIVE.LOGIN_BUTTON_LABEL'),
+            hideNoButton: true,
+            hideTitleText: true,
+            callback: () => {
+              return this.doAuthorize(GoogleDriveProvider.SHOW_POPUP)
+            }
+          })
+        } else {
+          return this.doAuthorize(GoogleDriveProvider.IMMEDIATE)
+        }
       }
     } else {
       return this.authToken !== null
@@ -198,7 +225,7 @@ class GoogleDriveProvider extends ProviderInterface {
       }
 
       if (!immediate) {
-        this.tokenClient.requestAccessToken({prompt: ''})
+        this.tokenClient.requestAccessToken({prompt: this.promptForConsent ? 'consent' : ''})
       }
     })
   }
@@ -234,30 +261,128 @@ class GoogleDriveProvider extends ProviderInterface {
     })
   }
 
-  getAllFiles(metadata: CloudMetadata, callback: (err: any, files: any[]) => void) {
-    let files: any[] = []
+  can(capability: ECapabilities, metadata?: CloudMetadata) {
+    // disable autosave for readonly files
+    if (capability === ECapabilities.resave && metadata && !metadata.overwritable) {
+      return false
+    }
+    return super.can(capability, metadata)
+  }
 
-    const mimeTypesQuery = (this.readableMimetypes || []).map((mimeType: any) => `mimeType = '${mimeType}'`).join(" or ")
-    const listParams: any = {
-      pageSize: 1000, // 1000 is max
-      fields: "files(id, mimeType, name, capabilities(canEdit)),nextPageToken",
-      q: `trashed = false and (${mimeTypesQuery} or mimeType = 'application/vnd.google-apps.folder') and '${metadata?.providerData.id || 'root'}' in parents`
+  getAllFilesOrDrives(metadata: CloudMetadata, callback: (err: any, files: any[]) => void, options?: IListOptions) {
+    let filesOrDrives: any[] = []
+    let listParams: any = {}
+    const listDrives = metadata.providerData.driveType === EDriveType.sharedDrives && !metadata.providerData.driveId
+    const listApiMethod = listDrives ? gapi.client.drive.drives.list : gapi.client.drive.files.list
+
+    const extension = options?.extension
+    const readableExtensions = extension ? [extension] : CloudMetadata.ReadableExtensions
+
+    const parentId = metadata.providerData.shortcutDetails?.targetId ||  metadata.providerData.id
+
+    if (listDrives) {
+      listParams = {
+        pageSize: 100, // 100 is max on drive list operations
+      }
+    } else {
+      const queryParts = ["trashed = false"]
+      // when an extension is passed show all files matching the extension, otherwise filter on mimeType
+      // this is needed as you can't filter on non-Google mimetypes like text/csv or image/png
+      if (!extension) {
+
+        // add the direct mimetypes
+        const mimeTypes: string[] = ["application/vnd.google-apps.folder"].concat(this.readableMimetypes)
+        const mimeTypesQuery = mimeTypes.map(mimeType => `mimeType = '${mimeType}'`).join(" or ")
+
+        // add shortcut to the mimetypes
+        const targetMimeTypesQuery = mimeTypes.map(mimeType => `shortcutDetails.targetMimeType = '${mimeType}'`).join(" or ")
+        const shortcutQuery = `mimeType = 'application/vnd.google-apps.shortcut' and (${targetMimeTypesQuery})`
+
+        queryParts.push(`${mimeTypesQuery} or (${shortcutQuery})`)
+      }
+
+      listParams = {
+        pageSize: 1000, // 1000 is max on file list operations
+        fields: "files(id, mimeType, name, capabilities(canEdit), shortcutDetails), nextPageToken",
+      }
+
+      if (metadata.providerData.driveType === EDriveType.sharedWithMe) {
+        listParams.corpora = "user"
+        if (parentId) {
+          queryParts.push(`'${parentId}' in parents`)
+        } else {
+          queryParts.push("sharedWithMe = true")
+        }
+      } else {
+        queryParts.push(`'${parentId || 'root'}' in parents`)
+
+        if (metadata.providerData.driveId) {
+          listParams.corpora = "drive"
+          listParams.driveId = metadata.providerData.driveId
+          listParams.includeItemsFromAllDrives = true
+          listParams.supportsAllDrives = true
+        }
+      }
+
+      listParams.q = queryParts.map(p => `(${p})`).join(" and ")
     }
 
     const listLoop = () => {
-      gapi.client.drive.files.list(listParams).execute((result: any) => {
+      listApiMethod(listParams).execute((result: any) => {
         if (!result || result.error) {
           return callback(result, [])
         }
-        if (result.files) {
-          files = files.concat(result.files)
+        if (listDrives) {
+          if (result.drives) {
+            filesOrDrives = filesOrDrives.concat(result.drives)
+          }
+        } else {
+          if (result.files) {
+            filesOrDrives = filesOrDrives.concat(result.files)
+          }
         }
         if (result.nextPageToken) {
           // get the next page of results
           listParams.pageToken = result.nextPageToken
           listLoop()
         } else {
-          callback(null, files)
+          const list = []
+          for (let i = 0; i < filesOrDrives.length; i++) {
+            const item = filesOrDrives[i]
+            if (listDrives) {
+              list.push(new CloudMetadata({
+                name: item.name,
+                type: CloudMetadata.Folder,
+                parent: metadata,
+                overwritable: false,
+                provider: this,
+                providerData: {
+                  id: item.id,
+                  driveType: EDriveType.sharedDrives,
+                  driveId: item.id
+                }
+              }))
+            } else {
+              const mimeType = item.shortcutDetails?.targetMimeType || item.mimeType
+              const type = mimeType === 'application/vnd.google-apps.folder' ? CloudMetadata.Folder : CloudMetadata.File
+              if ((type === CloudMetadata.Folder) || this.matchesExtension(item.name, readableExtensions)) {
+                list.push(new CloudMetadata({
+                  name: item.name,
+                  type,
+                  parent: metadata,
+                  overwritable: item.capabilities?.canEdit,
+                  provider: this,
+                  providerData: {
+                    id: item.id,
+                    driveType: metadata.providerData.driveType,
+                    driveId: metadata.providerData.driveId,
+                    shortcutDetails: item.shortcutDetails,
+                  }
+                }))
+              }
+            }
+          }
+          callback(null, list)
         }
       })
     }
@@ -265,33 +390,21 @@ class GoogleDriveProvider extends ProviderInterface {
     listLoop()
   }
 
-  list(metadata: CloudMetadata, callback: ProviderListCallback) {
+  list(metadata: CloudMetadata, callback: ProviderListCallback, options: IListOptions) {
     this.authorized((isAuthorized) => {
       if (isAuthorized) {
-        this.getAllFiles(metadata, (err: any, files: any[]) => {
+
+        // return the top level drives for the root
+        if (metadata === null) {
+          return callback(null, this.topLevelDrives())
+        }
+
+        this.getAllFilesOrDrives(metadata, (err: any, filesOrDrives: any[]) => {
           if (err) {
             return callback(this.apiError(err, 'Unable to list files'))
           }
 
-          const list = []
-          for (let i = 0; i < files.length; i++) {
-            const item = files[i]
-            const type = item.mimeType === 'application/vnd.google-apps.folder' ? CloudMetadata.Folder : CloudMetadata.File
-            if ((type === CloudMetadata.Folder) || this.matchesExtension(item.name)) {
-              list.push(new CloudMetadata({
-                    name: item.name,
-                    type,
-                    parent: metadata,
-                    overwritable: item.capabilities.canEdit,
-                    provider: this,
-                    providerData: {
-                      id: item.id
-                    }
-                  })
-              )
-            }
-          }
-          list.sort((a, b) => {
+          filesOrDrives.sort((a, b) => {
             const lowerA = a.name.toLowerCase()
             const lowerB = b.name.toLowerCase()
             if (lowerA < lowerB) {
@@ -302,8 +415,8 @@ class GoogleDriveProvider extends ProviderInterface {
             }
             return 0
           })
-          callback(null, list)
-        })
+          callback(null, filesOrDrives)
+        }, options)
       }
       else {
         callback(null, [])
@@ -344,18 +457,58 @@ class GoogleDriveProvider extends ProviderInterface {
   canOpenSaved() { return true }
 
   openSaved(openSavedParams: any, callback: ProviderLoadCallback) {
-    const metadata = new CloudMetadata({
+    const parts = openSavedParams.split(OpenSavedParamDelimiter)
+    const rawMetadata: any = {
       type: CloudMetadata.File,
       provider: this,
       providerData: {
-        id: openSavedParams
+        id: parts[0]
       }
-    })
+    }
+    if (parts.length > 1) {
+      rawMetadata.providerData.driveId = parts[1]
+    }
+    const metadata = new CloudMetadata(rawMetadata)
     return this.load(metadata, (err: string | null, content: any) => callback(err, content, metadata))
   }
 
   getOpenSavedParams(metadata: CloudMetadata) {
-    return metadata.providerData.id
+    const parts = [metadata.providerData.id]
+    if (metadata.providerData.driveId) {
+      parts.push(metadata.providerData.driveId)
+    }
+    return parts.join(OpenSavedParamDelimiter)
+  }
+
+  getFileDialogMessage() {
+    if (this.user) {
+      return (
+        div({className: "provider-message"},
+          div({}, span({style: {marginRight: 5}}, tr("~GOOGLE_DRIVE.USERNAME_LABEL")), strong({}, this.user.name)),
+          div({className: "provider-message-action", onClick: this.logout.bind(this)}, tr("~GOOGLE_DRIVE.SELECT_DIFFERENT_ACCOUNT"))
+        )
+      )
+    }
+  }
+
+  fileDialogDisabled(folder: CloudMetadata) {
+    // disable the open/save dialog until a folder or drive is selected
+    if (!folder || (folder.providerData.driveType === EDriveType.sharedDrives) && !folder.providerData.driveId) {
+      return true
+    }
+    return false
+  }
+
+  logout() {
+    this.user = null
+    this.authToken = null
+    this.promptForConsent = true
+    gapi.client.setToken(null)
+    this.onAuthorizationChangeCallback?.(false)
+  }
+
+  onAuthorizationChange(callback: OnAuthorizationChangeCallback) {
+    this.onAuthorizationChangeCallback = callback
   }
 
   isAuthorizationRequired() {
@@ -401,14 +554,24 @@ class GoogleDriveProvider extends ProviderInterface {
   }
 
   private loadFile(metadata: CloudMetadata, callback: ProviderLoadCallback) {
-    const request = gapi.client.drive.files.get({
-      fileId: metadata.providerData.id,
+    const fileId = metadata.providerData.shortcutDetails?.targetId || metadata.providerData.id
+    const params: any = {
+      fileId,
       fields: "id, mimeType, name, parents, capabilities(canEdit)",
-    })
+    }
+    const driveId = metadata.providerData.driveId
+    if (driveId) {
+      params.driveId = driveId
+      params.supportsAllDrives = true
+    }
+    const request = gapi.client.drive.files.get(params)
     return request.execute((file: any) => {
       metadata.rename(file.name)
       metadata.overwritable = file.capabilities.canEdit
       metadata.providerData = {id: file.id}
+      if (driveId) {
+        metadata.providerData.driveId = driveId
+      }
       metadata.mimeType = file.mimeType
       if ((metadata.parent == null) && file.parents?.length) {
         metadata.parent = new CloudMetadata({
@@ -422,7 +585,7 @@ class GoogleDriveProvider extends ProviderInterface {
 
       // v3 of the api removed the downloadUrl from the returned file data so we need to manually construct it
       const xhr = new XMLHttpRequest()
-      xhr.open('GET', `https://www.googleapis.com/drive/v3/files/${metadata.providerData.id}?alt=media`)
+      xhr.open('GET', `https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`)
       xhr.setRequestHeader("Authorization", `Bearer ${this.authToken.access_token}`)
       xhr.onload = () => callback(null, cloudContentFactory.createEnvelopedCloudContent(xhr.responseText))
       xhr.onerror = () => callback("Unable to download file content")
@@ -433,15 +596,27 @@ class GoogleDriveProvider extends ProviderInterface {
   private saveFile(content: any, metadata: CloudMetadata, callback: ProviderSaveCallback) {
     const boundary = '-------314159265358979323846'
     const mimeType = metadata.mimeType || this.mimeType
-    const header = JSON.stringify({
-      title: metadata.filename,
+    const headerContents: any = {
+      name: metadata.filename,
       mimeType,
-      parents: [{id: (__guard__(metadata.parent != null ? metadata.parent.providerData : undefined, (x: any) => x.id) != null) ? metadata.parent.providerData.id : 'root'}]})
+    }
+    const fileId = metadata.providerData.shortcutDetails?.targetId || metadata.providerData.id
+    const isUpdate = !!fileId
+    const driveId = metadata.parent?.providerData.driveId
 
-    const [method, path] = Array.from((metadata.providerData != null ? metadata.providerData.id : undefined) ?
-      ['PUT', `/upload/drive/v2/files/${metadata.providerData.id}`]
+    if (!isUpdate) {
+      const parentId = metadata.parent.providerData.shortcutDetails?.targetId || metadata.parent.providerData.id
+      headerContents.parents = [parentId || "root"]
+    }
+    if (driveId) {
+      headerContents.driveId = driveId
+    }
+    const header = JSON.stringify(headerContents)
+
+    const [method, path] = Array.from(isUpdate ?
+      ['PATCH', `/upload/drive/v3/files/${fileId}`]
     :
-      ['POST', '/upload/drive/v2/files'])
+      ['POST', '/upload/drive/v3/files'])
 
     let transferEncoding = ""
     if (mimeType.indexOf("image/") === 0) {
@@ -450,7 +625,7 @@ class GoogleDriveProvider extends ProviderInterface {
     }
 
     const body = [
-      `\r\n--${boundary}\r\nContent-Type: application/json\r\n\r\n${header}`,
+      `\r\n--${boundary}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${header}`,
       `\r\n--${boundary}\r\nContent-Type: ${mimeType}${transferEncoding}\r\n\r\n${(typeof content.getContentAsJSON === 'function' ? content.getContentAsJSON() : undefined) || content}`,
       `\r\n--${boundary}--`
     ].join('')
@@ -458,8 +633,11 @@ class GoogleDriveProvider extends ProviderInterface {
     const request = gapi.client.request({
       path,
       method,
-      params: {uploadType: 'multipart'},
-      headers: {'Content-Type': `multipart/related; boundary="${boundary}"`},
+      params: {uploadType: 'multipart', supportsAllDrives: true},
+      headers: {
+        'Content-Type': `multipart/related; boundary="${boundary}"`,
+        'Content-Length': body.length
+      },
       body
     })
 
@@ -469,6 +647,9 @@ class GoogleDriveProvider extends ProviderInterface {
           return callback(tr("~GOOGLE_DRIVE.UNABLE_TO_UPLOAD_MSG", {message: file.error.message}), file.error.code)
         } else if (file) {
           metadata.providerData = {id: file.id}
+          if (driveId) {
+            metadata.providerData.driveId = driveId
+          }
           return callback(null, file)
         } else {
           return callback(this.apiError(file, tr("~GOOGLE_DRIVE.UNABLE_TO_UPLOAD")))
@@ -484,10 +665,17 @@ class GoogleDriveProvider extends ProviderInterface {
       return prefix
     }
   }
+
+  private topLevelDrives() {
+    const drives = [
+      new CloudMetadata({name: tr("~GOOGLE_DRIVE.MY_DRIVE"), type: CloudMetadata.Folder, provider: this, providerData: {driveType: EDriveType.myDrive}}),
+      new CloudMetadata({name: tr("~GOOGLE_DRIVE.SHARED_WITH_ME"), type: CloudMetadata.Folder, provider: this, providerData: {driveType: EDriveType.sharedWithMe}}),
+    ]
+    if (!this.options.disableSharedDrives) {
+      drives.push(new CloudMetadata({name: tr("~GOOGLE_DRIVE.SHARED_DRIVES"), type: CloudMetadata.Folder, provider: this, providerData: {driveType: EDriveType.sharedDrives}}))
+    }
+    return drives
+  }
 }
 
 export default GoogleDriveProvider
-
-function __guard__(value: any, transform: any) {
-  return (typeof value !== 'undefined' && value !== null) ? transform(value) : undefined
-}

@@ -142,7 +142,6 @@ interface IShareDialogTabsProps {
   tabSelected: ShareDialogTab;
   linkUrl: string;
   embedUrl: string;
-  lara?: IShareDialogLaraApiTabProps;
   interactiveApi?: IShareDialogLaraApiTabProps;
   fullscreenScaling?: boolean;
   visibilityToggles?: boolean;
@@ -152,7 +151,7 @@ interface IShareDialogTabsProps {
   onCopyClick: (e: React.MouseEvent) => void;
 }
 export const ShareDialogTabsView: React.FC<IShareDialogTabsProps> = ({
-              tabSelected, embedUrl, linkUrl, lara, interactiveApi, onSelectTab, onCopyClick, ...others
+              tabSelected, embedUrl, linkUrl, interactiveApi, onSelectTab, onCopyClick, ...others
 }) => {
   return (
     <div data-testid='share-dialog-tabs-view'>
@@ -165,11 +164,6 @@ export const ShareDialogTabsView: React.FC<IShareDialogTabsProps> = ({
             onClick={() => onSelectTab('embed')} data-testid='sharing-tab-embed'>
           {translate("~SHARE_DIALOG.EMBED_TAB")}
         </li>
-        {lara &&
-          <li className={classNames('sharing-tab', 'sharing-tab-lara', { 'sharing-tab-selected': tabSelected === 'lara' })}
-              onClick={() => onSelectTab('lara')} data-testid='sharing-tab-lara'>
-            LARA
-          </li>}
         {interactiveApi &&
           <li className={classNames('sharing-tab', 'sharing-tab-api', { 'sharing-tab-selected': tabSelected === 'api' })}
               onClick={() => onSelectTab('api')} data-testid='sharing-tab-api'>
@@ -183,11 +177,6 @@ export const ShareDialogTabsView: React.FC<IShareDialogTabsProps> = ({
               return <LinkTabContents url={linkUrl} onCopyClick={onCopyClick} />
             case 'embed':
               return <EmbedTabContents url={embedUrl} onCopyClick={onCopyClick} />
-            case 'lara': {
-              const { linkUrl: url, ...laraOthers } = lara
-              return <LaraApiTabContents mode='lara' linkUrl={url} onCopyClick={onCopyClick}
-                                        {...others} {...laraOthers} />
-            }
             case 'api': {
               const { linkUrl: url, ...apiOthers } = interactiveApi
               return <LaraApiTabContents mode='api' linkUrl={url} onCopyClick={onCopyClick}

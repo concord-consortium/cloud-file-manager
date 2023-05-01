@@ -7,6 +7,8 @@
  */
 import createReactClass from 'create-react-class'
 import ReactDOMFactories from 'react-dom-factories'
+import classNames from 'classnames'
+
 import { createReactFactory } from '../create-react-factory'
 const {div, button} = ReactDOMFactories
 
@@ -34,8 +36,9 @@ export default createReactClass({
   },
 
   render() {
+    const className = classNames('confirm-dialog', this.props.className)
     return (ModalDialog({title: (this.props.title || tr('~CONFIRM_DIALOG.TITLE')), close: this.reject, zIndex: 500},
-      (div({className: 'confirm-dialog'},
+      (div({className},
         (div({className: 'confirm-dialog-message', dangerouslySetInnerHTML: {__html: this.props.message}})),
         (div({className: 'buttons'},
           (button({onClick: this.confirm}, this.props.yesTitle || tr('~CONFIRM_DIALOG.YES'))),

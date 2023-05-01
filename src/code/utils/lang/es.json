@@ -135,5 +135,12 @@
     "~DIALOG.SELECT_INTERACTIVE_STATE.LINKED_VS_LINKED": "Hay dos posibilidades de continuar con su trabajo. ¿Cuál versión prefiere?",
     "~DIALOG.SELECT_INTERACTIVE_STATE.TITLE": "¿Qué le gustaría hacer?",
     "~DIALOG.SELECT_INTERACTIVE_STATE.PREVIEW_INFO": "Esta es una vista previa de sus datos sin edición. Clic en cualquier lado para cerrarla.",
-    "~GOOGLE_DRIVE.MISSING_SCOPES_MESSAGE": "Sorry, you did not provide the access needed. Please try logging in again and check all the boxes when prompted in the popup."
+    "~GOOGLE_DRIVE.MISSING_SCOPES_MESSAGE": "Please try logging in again and check all the boxes when prompted in the popup",
+    "~FILE_DIALOG.FILTER": "Filter results...",
+    "~GOOGLE_DRIVE.USERNAME_LABEL": "Username:",
+    "~GOOGLE_DRIVE.SELECT_DIFFERENT_ACCOUNT": "Select Different Google Account",
+    "~GOOGLE_DRIVE.MY_DRIVE": "My Drive",
+    "~GOOGLE_DRIVE.SHARED_DRIVES": "Shared Drives",
+    "~GOOGLE_DRIVE.SHARED_WITH_ME": "Shared With Me",
+    "~FILE_STATUS.CONTINUE_SAVE": "We will continue to try to save your changes."
 }
