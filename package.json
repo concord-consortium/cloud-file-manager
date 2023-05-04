@@ -7,6 +7,11 @@
     "type": "git",
     "url": "https://github.com/concord-consortium/cloud-file-manager"
   },
+  "engines": {
+    "node": ">= 16",
+    "npm": ">= 8"
+  },
+  "engineStrict": true,
   "license": "MIT",
   "dependencies": {
     "@concord-consortium/lara-interactive-api": "^1.7.1",
