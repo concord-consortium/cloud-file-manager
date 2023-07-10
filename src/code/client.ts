@@ -795,15 +795,21 @@ class CloudFileManagerClient {
   }
 
   haveTempFile() {
+    return false
+
+    /*
     try {
       const key = "cfm-tempfile"
       return !!(JSON.parse(window.localStorage.getItem(key)))
     } catch (e) {
       return false
     }
+    */
   }
 
   saveTempFile(callback?: (err: string | null) => void) {
+    callback?.(null)
+    /*
     return this._event('getContent', { shared: this._sharedMetadata() }, (stringContent: any) => {
       const currentContent = this._createOrUpdateCurrentContent(stringContent)
       try {
@@ -821,9 +827,11 @@ class CloudFileManagerClient {
         return callback?.("Unable to temporarily save copied file")
       }
     })
+    */
   }
 
   openAndClearTempFile() {
+    /*
     this._event('willOpenFile', {op: "openAndClearTempFile"})
     try {
       const key = "cfm-tempfile"
@@ -838,6 +846,7 @@ class CloudFileManagerClient {
     } catch (e) {
       reportError("Unable to load temp file")
     }
+    */
   }
 
   _sharedMetadata() {
@@ -1147,6 +1156,8 @@ class CloudFileManagerClient {
   }
 
   changeLanguage(newLangCode: string, callback: (newLangCode?: string) => void) {
+    callback?.(newLangCode)
+    /*
     if (callback) {
       const postSave = (err: string | null) => {
         if (err) {
@@ -1162,6 +1173,7 @@ class CloudFileManagerClient {
         return this.saveTempFile(postSave)
       }
     }
+    */
   }
 
   showBlockingModal(modalProps: any) {
