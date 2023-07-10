@@ -1156,24 +1156,28 @@ class CloudFileManagerClient {
   }
 
   changeLanguage(newLangCode: string, callback: (newLangCode?: string) => void) {
-    callback?.(newLangCode)
-    /*
+    console.log("*** changeLanguage: 1 ***")
     if (callback) {
+      console.log("*** changeLanguage: 2 ***")
       const postSave = (err: string | null) => {
+        console.log("*** changeLanguage: 5 ***")
         if (err) {
+          console.log("*** changeLanguage: 6 ***")
           this.alert(err)
           return this.confirm(tr('~CONFIRM.CHANGE_LANGUAGE'), () => callback(newLangCode))
         } else {
+          console.log("*** changeLanguage: 7 ***")
           return callback(newLangCode)
         }
       }
       if (this.state.metadata?.provider?.can(ECapabilities.save)) {
+        console.log("*** changeLanguage: 3 ***")
         return this.save((err: string | null) => postSave(err))
       } else {
+        console.log("*** changeLanguage: 4 ***")
         return this.saveTempFile(postSave)
       }
     }
-    */
   }
 
   showBlockingModal(modalProps: any) {
