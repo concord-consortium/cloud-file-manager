@@ -831,22 +831,26 @@ class CloudFileManagerClient {
   }
 
   openAndClearTempFile() {
-    /*
+    console.log("*** openAndClearTempFile: 1")
     this._event('willOpenFile', {op: "openAndClearTempFile"})
     try {
+      console.log("*** openAndClearTempFile: 2")
       const key = "cfm-tempfile"
       const { name, stringContent } = JSON.parse(window.localStorage.getItem(key))
+      console.log("*** openAndClearTempFile: 3")
       const content = cloudContentFactory.createEnvelopedCloudContent(stringContent)
       const metadata = new CloudMetadata({
         name,
         type: CloudMetadata.File
       })
+      console.log("*** openAndClearTempFile: 4")
       this._fileOpened(content, metadata, {dirty: true, openedContent: content.clone()})
+      console.log("*** openAndClearTempFile: 5")
       return window.localStorage.removeItem(key)
     } catch (e) {
+      console.log("*** openAndClearTempFile: 6")
       reportError("Unable to load temp file")
     }
-    */
   }
 
   _sharedMetadata() {
