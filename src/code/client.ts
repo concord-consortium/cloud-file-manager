@@ -844,7 +844,9 @@ class CloudFileManagerClient {
         type: CloudMetadata.File
       })
       console.log("*** openAndClearTempFile: 4")
-      this._fileOpened(content, metadata, {dirty: true, openedContent: content.clone()})
+      const clonedContent = content.clone();
+      console.log(JSON.stringify({metadata, clonedContent}))
+      this._fileOpened(content, metadata, {dirty: true, openedContent: clonedContent})
       console.log("*** openAndClearTempFile: 5")
       return window.localStorage.removeItem(key)
     } catch (e) {
