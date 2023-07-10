@@ -795,24 +795,22 @@ class CloudFileManagerClient {
   }
 
   haveTempFile() {
-    return false
-
-    /*
+    console.log("*** haveTempFile")
     try {
       const key = "cfm-tempfile"
       return !!(JSON.parse(window.localStorage.getItem(key)))
     } catch (e) {
       return false
     }
-    */
   }
 
   saveTempFile(callback?: (err: string | null) => void) {
-    callback?.(null)
-    /*
+    console.log("*** saveTempFile: 1")
     return this._event('getContent', { shared: this._sharedMetadata() }, (stringContent: any) => {
+      console.log("*** saveTempFile: 2")
       const currentContent = this._createOrUpdateCurrentContent(stringContent)
       try {
+        console.log("*** saveTempFile: 3")
         const key = "cfm-tempfile"
         const name = this.state.metadata?.name
         const value = JSON.stringify({ name, stringContent })
@@ -821,13 +819,15 @@ class CloudFileManagerClient {
           name,
           type: CloudMetadata.File
         })
+        console.log("*** saveTempFile: 4")
         this._fileChanged('savedFile', currentContent, metadata, {saved: true}, "")
+        console.log("*** saveTempFile: 5")
         return callback?.(null)
       } catch (e) {
+        console.log("*** saveTempFile: 6")
         return callback?.("Unable to temporarily save copied file")
       }
     })
-    */
   }
 
   openAndClearTempFile() {
