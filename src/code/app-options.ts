@@ -95,6 +95,7 @@ export type CFMProviderOptions = CFMBaseProviderOptions | CFMReadOnlyProviderOpt
                                 CFMDocumentStoreProviderOptions | CFMGoogleDriveProviderOptions |
                                 CFMCustomClientProviderOptions;
 
+export type ContentLoadFilterFn = (clientContent: CloudContent) => any;
 export type ContentSaveFilterFn = (clientContent: CloudContent) => any;
 
 export interface CFMHashParams {
@@ -126,6 +127,7 @@ export interface CFMAppOptions {
   sendPostMessageClientEvents?: boolean;
   usingIframe?: boolean;
   app?: string;   // required when iframing - relative path to the app to wrap
+  contentLoadFilter?: ContentLoadFilterFn;
   contentSaveFilter?: ContentSaveFilterFn;
   iframeAllow?: string;
 }

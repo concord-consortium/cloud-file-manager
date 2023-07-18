@@ -403,6 +403,7 @@ class CloudFileManagerClient {
         }
         // should wait to close current file until client signals open is complete
         this._closeCurrentFile()
+        content = this._filterLoadedContent(content)
         this._fileOpened(content, metadata, {openedContent: content.clone()}, this._getHashParams(metadata))
         if (typeof callback === 'function') {
           callback(content, metadata)
@@ -463,7 +464,8 @@ class CloudFileManagerClient {
   openLocalFile(file: any, callback: OpenSaveCallback = null) {
     this._event('willOpenFile', {op: "openLocalFile"})
     return this.readLocalFile(file, (data: any) => {
-      const content = cloudContentFactory.createEnvelopedCloudContent(data.content)
+      let content = cloudContentFactory.createEnvelopedCloudContent(data.content)
+      content = this._filterLoadedContent(content)
       const metadata = new CloudMetadata({
         name: data.name,
         type: CloudMetadata.File
@@ -488,6 +490,7 @@ class CloudFileManagerClient {
           this.alert(err, () => this.ready())
         }
         else {
+          content = this._filterLoadedContent(content)
           this._fileOpened(content, metadata, {overwritable: false, openedContent: content.clone()})
         }
       })
@@ -531,6 +534,7 @@ class CloudFileManagerClient {
             if (err) {
               return this.alert(err)
             }
+            content = this._filterLoadedContent(content)
             this._fileOpened(content, metadata, {openedContent: content.clone()}, this._getHashParams(metadata))
             return provider.fileOpened(content, metadata)
           })
@@ -557,6 +561,7 @@ class CloudFileManagerClient {
             }
             // if we just opened the file, it doesn't need to be saved until the contents are changed unless
             // it requires conversion from an older version
+            content = this._filterLoadedContent(content)
             const additionalState = { openedContent: content.clone(), dirty: content.requiresConversion() }
             this._fileOpened(content, metadata, additionalState, this._getHashParams(metadata))
             return provider.fileOpened(content, metadata)
@@ -576,6 +581,7 @@ class CloudFileManagerClient {
       if (err) {
         return this.alert(err, () => this.ready())
       }
+      content = this._filterLoadedContent(content)
       return this._fileOpened(content, metadata, {openedContent: content.clone()}, this._getHashParams(metadata))
     })
   }
@@ -781,7 +787,8 @@ class CloudFileManagerClient {
     try {
       const key = `cfm-copy::${copyParams}`
       const copied = JSON.parse(window.localStorage.getItem(key))
-      const content = cloudContentFactory.createEnvelopedCloudContent(copied.stringContent)
+      let content = cloudContentFactory.createEnvelopedCloudContent(copied.stringContent)
+      content = this._filterLoadedContent(content)
       const metadata = new CloudMetadata({
         name: copied.name,
         type: CloudMetadata.File
@@ -828,7 +835,8 @@ class CloudFileManagerClient {
     try {
       const key = "cfm-tempfile"
       const { name, stringContent } = JSON.parse(window.localStorage.getItem(key))
-      const content = cloudContentFactory.createEnvelopedCloudContent(stringContent)
+      let content = cloudContentFactory.createEnvelopedCloudContent(stringContent)
+      content = this._filterLoadedContent(content)
       const metadata = new CloudMetadata({
         name,
         type: CloudMetadata.File
@@ -942,6 +950,7 @@ class CloudFileManagerClient {
         if (err) {
           return this.alert(err)
         }
+        content = this._filterLoadedContent(content)
         this.state.currentContent.copyMetadataTo(content)
         if (!metadata.name && (docName = content.get('docName'))) {
           metadata.name = docName
@@ -1439,6 +1448,10 @@ class CloudFileManagerClient {
         return (e as any).returnValue = true
       }
     })
+  }
+
+  _filterLoadedContent(content: any) {
+    return this.appOptions.contentLoadFilter?.(content) || content
   }
 }
 
