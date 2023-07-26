@@ -127,6 +127,9 @@ class InteractiveApiProvider extends ProviderInterface {
       }
       // pass the LARA info (notably the run_remote_endpoint) to the CFM client
       this.options?.logLaraData?.(laraData)
+
+      // broadcast the log event
+      this.client.log('logLaraData', laraData)
     }
   }
 
