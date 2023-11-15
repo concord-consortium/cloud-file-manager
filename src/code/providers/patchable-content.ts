@@ -12,8 +12,8 @@
 import jiff from 'jiff'
 
 class PatchableContent {
-  patchObjectHash?: (obj: any) => string;
-  savedContent: any;
+  patchObjectHash?: (obj: any) => string
+  savedContent: any
 
   constructor(patchObjectHash: (obj: any) => string, savedContent?: any) {
     this.patchObjectHash = patchObjectHash

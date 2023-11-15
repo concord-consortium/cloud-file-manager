@@ -14,10 +14,10 @@ import { createReactClassFactory } from "../create-react-factory"
 const {div, ul, li} = ReactDOMFactories
 
 class TabInfo {
-  capability: any;
-  component: any;
-  label: any;
-  onSelected: any;
+  capability: any
+  component: any
+  label: any
+  onSelected: any
 
   constructor(settings: any) {
     if (settings == null) { settings = {} }

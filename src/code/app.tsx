@@ -14,9 +14,9 @@ interface CFMAppRuntimeOptions extends CFMAppOptions {
 }
 
 class CloudFileManager {
-  DefaultMenu: CFMMenu;
-  appOptions: CFMAppRuntimeOptions;
-  client: CloudFileManagerClient;
+  DefaultMenu: CFMMenu
+  appOptions: CFMAppRuntimeOptions
+  client: CloudFileManagerClient
 
   constructor() {
     // since the module exports an instance of the class we need to fake a class variable as an instance variable

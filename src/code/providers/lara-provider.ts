@@ -63,15 +63,15 @@ interface LaraProviderDocStoreParams {
 
 class LaraProvider extends ProviderInterface {
   static Name = 'lara'
-  client: CloudFileManagerClient;
-  collaboratorUrls: string[];
-  docStoreUrl: DocumentStoreUrl;
-  laraParams: LaraProviderLaraParams;
-  openSavedParams: LaraProviderOpenSavedParams;
-  options: CFMLaraProviderOptions;
-  removableQueryParams: string[];
-  savedContent: any;
-  urlParams: LaraProviderUrlParams;
+  client: CloudFileManagerClient
+  collaboratorUrls: string[]
+  docStoreUrl: DocumentStoreUrl
+  laraParams: LaraProviderLaraParams
+  openSavedParams: LaraProviderOpenSavedParams
+  options: CFMLaraProviderOptions
+  removableQueryParams: string[]
+  savedContent: any
+  urlParams: LaraProviderUrlParams
 
   constructor(options: CFMLaraProviderOptions, client: CloudFileManagerClient) {
     super({

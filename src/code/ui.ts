@@ -15,8 +15,8 @@ import isString  from './utils/is-string'
 import { SelectInteractiveStateDialogProps } from './views/select-interactive-state-dialog-view'
 
 class CloudFileManagerUIEvent {
-  data: any;
-  type: string;
+  data: any
+  type: string
 
   constructor(type: string, data?: any) {
     this.type = type
@@ -26,10 +26,10 @@ class CloudFileManagerUIEvent {
 }
 
 class CloudFileManagerUIMenu {
-  static DefaultMenu: CFMMenu = ['newFileDialog', 'openFileDialog', 'revertSubMenu', 'separator', 'save', 'createCopy', 'shareSubMenu', 'renameDialog'];
+  static DefaultMenu: CFMMenu = ['newFileDialog', 'openFileDialog', 'revertSubMenu', 'separator', 'save', 'createCopy', 'shareSubMenu', 'renameDialog']
 
-  items: CFMMenuItem[];
-  options: CFMUIOptions;
+  items: CFMMenuItem[]
+  options: CFMUIOptions
 
   constructor(options: CFMUIOptions, client: CloudFileManagerClient) {
     this.options = options
@@ -130,9 +130,9 @@ export type UIEventCallback = (...args: any) => void;
 export type UIEventListenerCallback = (event: CloudFileManagerUIEvent) => void;
 
 class CloudFileManagerUI {
-  client: CloudFileManagerClient;
-  listenerCallbacks: UIEventListenerCallback[];
-  menu: CloudFileManagerUIMenu;
+  client: CloudFileManagerClient
+  listenerCallbacks: UIEventListenerCallback[]
+  menu: CloudFileManagerUIMenu
 
   constructor(client: CloudFileManagerClient) {
     this.client = client

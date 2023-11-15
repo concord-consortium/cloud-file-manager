@@ -58,11 +58,11 @@ export type ClientEventCallback = (...args: any) => void;
 
 
 class CloudFileManagerClientEvent {
-  callback: ClientEventCallback;
-  data: any;
-  id: number;
-  state: Partial<IClientState>;
-  type: string;
+  callback: ClientEventCallback
+  data: any
+  id: number
+  state: Partial<IClientState>
+  type: string
 
   constructor(type: string, data?: any, callback: ClientEventCallback = null, state?: Partial<IClientState>) {
     this.type = type
@@ -91,18 +91,18 @@ export type ClientEventListener = (event: CloudFileManagerClientEvent) => void;
 export type OpenSaveCallback = (content: any, metadata: CloudMetadata, savedContent?: any) => void;
 
 class CloudFileManagerClient {
-  _autoSaveInterval: number;
-  _listeners: ClientEventListener[];
-  _ui: CloudFileManagerUI;
-  appOptions: CFMAppOptions;
-  iframe: any;
-  newFileAddsNewToQuery: boolean;
-  newFileOpensInNewTab: boolean;
-  providers: Record<string, ProviderInterface>;
-  state: IClientState;
-  urlProvider: URLProvider;
-  connectedPromise: Promise<void>;
-  connectedPromiseResolver: { resolve: () => void; reject: () => void };
+  _autoSaveInterval: number
+  _listeners: ClientEventListener[]
+  _ui: CloudFileManagerUI
+  appOptions: CFMAppOptions
+  iframe: any
+  newFileAddsNewToQuery: boolean
+  newFileOpensInNewTab: boolean
+  providers: Record<string, ProviderInterface>
+  state: IClientState
+  urlProvider: URLProvider
+  connectedPromise: Promise<void>
+  connectedPromiseResolver: { resolve: () => void; reject: () => void }
 
   constructor(options?: any) {
     this.shouldAutoSave = this.shouldAutoSave.bind(this)
@@ -1025,7 +1025,7 @@ class CloudFileManagerClient {
 
       const done = () => typeof callback === 'function' ? callback(newName) : undefined
 
-      const readOnlyProvider = metadata?.provider?.name === ReadOnlyProvider.Name;
+      const readOnlyProvider = metadata?.provider?.name === ReadOnlyProvider.Name
       if (!readOnlyProvider && (metadata?.provider || this.autoProvider(ECapabilities.save))) {
         // autosave renamed file if it has already been saved or can be autosaved
         this.save(done)

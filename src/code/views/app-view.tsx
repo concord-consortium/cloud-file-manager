@@ -87,8 +87,8 @@ interface IAppViewState {
 }
 
 class AppView extends React.Component<IAppViewProps, IAppViewState> {
-  displayName: string;
-  state: IAppViewState;
+  displayName: string
+  state: IAppViewState
 
   constructor(props: any) {
     super(props)
