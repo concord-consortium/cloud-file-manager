@@ -1,4 +1,4 @@
-import { act, render, screen } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import React from "react"
 import { IShareDialogLaraApiTabProps, ShareDialogTabsView } from './share-dialog-tabs-view'
@@ -28,10 +28,9 @@ describe('ShareDialogTabsView', () => {
     expect(screen.queryByTestId('lara-api-tab-contents')).toBeNull()
     expect(screen.getByTestId('copy-anchor-link')).toBeInTheDocument()
 
-    act(() => {
-      userEvent.click(screen.getByTestId('copy-anchor-link'))
-      userEvent.click(screen.getByTestId('sharing-tab-embed'))
-    })
+    await userEvent.click(screen.getByTestId('copy-anchor-link'))
+    await userEvent.click(screen.getByTestId('sharing-tab-embed'))
+
     expect(mockCopy).toHaveBeenCalledTimes(1)
     expect(mockSelectTab).toHaveBeenCalledTimes(1)
     expect(mockSelectTab.mock.calls[0][0]).toBe('embed')
@@ -49,10 +48,9 @@ describe('ShareDialogTabsView', () => {
     expect(screen.queryByTestId('lara-api-tab-contents')).toBeNull()
     expect(screen.getByTestId('copy-anchor-link')).toBeInTheDocument()
 
-    act(() => {
-      userEvent.click(screen.getByTestId('copy-anchor-link'))
-      userEvent.click(screen.getByTestId('sharing-tab-link'))
-    })
+    await userEvent.click(screen.getByTestId('copy-anchor-link'))
+    await userEvent.click(screen.getByTestId('sharing-tab-link'))
+
     expect(mockCopy).toHaveBeenCalledTimes(2)
     expect(mockSelectTab).toHaveBeenCalledTimes(2)
     expect(mockSelectTab.mock.calls[1][0]).toBe('link')
@@ -95,9 +93,8 @@ describe('ShareDialogTabsView', () => {
     expect(screen.queryByTestId('embed-tab-contents')).toBeNull()
     expect(screen.getByTestId('lara-api-tab-contents')).toHaveClass('api')
 
-    act(() => {
-      userEvent.click(screen.getByTestId('sharing-tab-api'))
-    })
+    await userEvent.click(screen.getByTestId('sharing-tab-api'))
+
     expect(mockSelectTab).toHaveBeenCalledTimes(1)
     expect(mockSelectTab.mock.calls[0][0]).toBe('api')
   })
