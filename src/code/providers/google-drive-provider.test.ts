@@ -1,13 +1,22 @@
 import { CloudFileManagerClient } from "../client"
 import GoogleDriveProvider from "./google-drive-provider"
 
+function createClient() {
+  let client = {} as CloudFileManagerClient
+  jestSpyConsole("warn", spy => {
+    client = new CloudFileManagerClient()
+    expect(spy).toHaveBeenCalledTimes(1)
+  })
+  return client
+}
+
 describe('GoogleDriveProvider', () => {
 
   const clientId = 'mockClientId'
   const apiKey = 'mockApiKey'
   const appId = 'mockAppId'
 
-  const client = new CloudFileManagerClient()
+  const client = createClient()
 
   it('should throw exception without credentials', () => {
     expect(() => new GoogleDriveProvider({} as any, client)).toThrow()

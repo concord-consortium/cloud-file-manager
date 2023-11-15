@@ -18,7 +18,16 @@ jest.mock('../utils/s3-share-provider-token-service-helper', () => {
   }
 })
 
-const client = new CloudFileManagerClient()
+function createClient() {
+  let client = {} as CloudFileManagerClient
+  jestSpyConsole("warn", spy => {
+    client = new CloudFileManagerClient()
+    expect(spy).toHaveBeenCalledTimes(1)
+  })
+  return client
+}
+
+const client = createClient()
 const localstorageProvider = new LocalStorageProvider({}, client)
 const testContentFormat: CloudContentFormat = { isCfmWrapped: false, isPreCfmFormat: true }
 
