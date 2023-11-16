@@ -7,12 +7,12 @@
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
  */
 import _ from 'lodash'
+import mime from 'mime'
 
 import tr from './utils/translate'
 import isString from './utils/is-string'
 import base64Array from 'base64-js' // https://github.com/beatgammit/base64-js
 import getQueryParam from './utils/get-query-param'
-import {lookup as getMimeType} from 'mime-types'
 
 import { CFMAppOptions, CFMMenuItem, isCustomClientProvider } from './app-options'
 import { CloudFileManagerUI, UIEventCallback }  from './ui'
@@ -1078,7 +1078,7 @@ class CloudFileManagerClient {
 
   saveSecondaryFileAsDialog(stringContent: any, extension: string, mimeType: string, callback: OpenSaveCallback) {
     // set the mimeType if not given with the extension
-    const extensionMimeType = getMimeType(extension)
+    const extensionMimeType = mime.getType(extension)
     if (extension && !mimeType && extensionMimeType) {
       mimeType = extensionMimeType
     }
