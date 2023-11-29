@@ -201,7 +201,7 @@ class CloudFileManagerClient {
         if (allProviders[providerName]) {
           Provider = allProviders[providerName]
           // don't add providers that require configuration if no (or invalid) configuration provided
-          if (Provider.hasValidOptions(providerOptions)) {
+          if (!Provider.hasValidOptions || Provider.hasValidOptions(providerOptions)) {
             const provider = new Provider(providerOptions, this)
             this.providers[providerName] = provider
             shareProvider = this._getShareProvider()
