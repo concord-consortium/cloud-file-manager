@@ -1,18 +1,9 @@
 
 import S3Provider from "./s3-provider"
-import { CloudFileManagerClient } from "../client"
 import { CloudMetadata } from "./provider-interface"
+import { createCFMTestClient } from "../../test/test-utils"
 
-function createClient(): CloudFileManagerClient {
-  let client = {} as CloudFileManagerClient
-  jestSpyConsole("warn", spy => {
-    client = new CloudFileManagerClient()
-    expect(spy).toHaveBeenCalledTimes(1)
-  })
-  return client
-}
-
-const client = createClient()
+const client = createCFMTestClient()
 
 describe("S3ShareProvider", () => {
   const provider = new S3Provider(client)
