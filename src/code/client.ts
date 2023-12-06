@@ -1025,7 +1025,7 @@ class CloudFileManagerClient {
 
       const done = () => typeof callback === 'function' ? callback(newName) : undefined
 
-      const readOnlyProvider = metadata?.provider?.name === ReadOnlyProvider.Name;
+      const readOnlyProvider = metadata?.provider?.name === ReadOnlyProvider.Name
       if (!readOnlyProvider && (metadata?.provider || this.autoProvider(ECapabilities.save))) {
         // autosave renamed file if it has already been saved or can be autosaved
         this.save(done)

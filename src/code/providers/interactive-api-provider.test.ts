@@ -182,10 +182,12 @@ describe('InteractiveApiProvider', () => {
     const mockLogLaraData = jest.fn()
 
     const client = new CloudFileManagerClient()
+    // set the app options to null as the interactive api provider checks it for the logging setup
+    client.setAppOptions(null)
     const provider = new InteractiveApiProvider({ logLaraData: mockLogLaraData }, client)
     await provider.isReady()
     expect(provider.name).toBe(InteractiveApiProvider.Name)
-    expect(mockApi.getInitInteractiveMessage).toHaveBeenCalledTimes(1)
+    expect(mockApi.getInitInteractiveMessage).toHaveBeenCalledTimes(2)
     expect(mockFetch).not.toHaveBeenCalled()
     expect(mockLogLaraData).toHaveBeenCalledTimes(1)
     // client-provided logLaraData should be called with run_remote_endpoint
