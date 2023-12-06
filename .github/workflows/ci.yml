@@ -1,0 +1,41 @@
+name: Continuous Integration
+
+on: push
+
+jobs:
+  jest:
+    name: Build and Run Jest Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v2
+        with:
+          node-version: '16'
+      - name: Install Dependencies
+        run: npm ci
+      - name: Build Project
+        run: npm run build
+      - name: Run Jest Tests w/ Coverage
+        run: npm run test:coverage -- --runInBand
+  s3-deploy:
+    name: S3 Deploy
+    needs:
+      - jest
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v2
+        with:
+          node-version: '16'
+      - name: Install Depndencies
+        run: npm ci
+      - uses: concord-consortium/s3-deploy-action@v1
+        with:
+          bucket: models-resources
+          prefix: ${{ github.event.repository.name }} # cloud-file-manager
+          awsAccessKeyId: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          awsSecretAccessKey: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          # Parameters to GHActions have to be strings, so a regular yaml array cannot
+          # be used. Instead the `|` turns the following lines into a string
+          topBranches: |
+            ["${{ github.event.repository.default_branch }}"]
