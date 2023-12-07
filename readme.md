@@ -28,15 +28,19 @@ More info:
 
 ## Deployment
 
-This repository will automatically deploy to S3 using Travis build hooks.
-See `s3_deploy.sh` and `s3_website.yml`
+Deployments are based on the contents of the /dist folder and are built automatically by GitHub Actions for each branch and tag pushed to GitHub.
 
-By default this deploys to models-resources/cloud-file-manager/branch/<branch-name>/
-You can preview thse deployments from a web browser at:
-https://cloud-file-manager.concord.org/branch/<branch-name>/
+Branches are deployed to `https://cloud-file-manager.concord.org/branch/<name>/`.
 
-As of 2020-04-22 pushing the `production` branch will update the production
-version of the CFM app.
+Tags are deployed to `https://cloud-file-manager.concord.org/version/<name>/`
+
+You can view the status of all the branch and tag deploys [here](https://github.com/concord-consortium/cloud-file-manager/actions).
+
+The production release is available at `https://cloud-file-manager.concord.org`.
+
+Production releases are done using a manual GitHub Actions workflow. You specify which tag you want to release to production and the workflow copies that tag's `index-top.html` to `https://cloud-file-manager.concord.org/index.html`.
+
+See the CLUE [docs/deploy.md](https://github.com/concord-consortium/collaborative-learning/blob/master/docs/deploy.md) for more details (it uses the same process).
 
 ## Integrating Cloud File Manager
 
