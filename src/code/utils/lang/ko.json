@@ -142,5 +142,6 @@
     "~GOOGLE_DRIVE.MY_DRIVE": "내 드라이브",
     "~GOOGLE_DRIVE.SHARED_DRIVES": "공유 드라이브",
     "~GOOGLE_DRIVE.SHARED_WITH_ME": "공유 문서함",
-    "~FILE_STATUS.CONTINUE_SAVE": "변경 사항 저장 중..."
+    "~FILE_STATUS.CONTINUE_SAVE": "변경 사항 저장 중...",
+    "~GOOGLE_DRIVE.ERROR_MISSING_APPID": "Missing required appId in googleDrive provider options"
 }

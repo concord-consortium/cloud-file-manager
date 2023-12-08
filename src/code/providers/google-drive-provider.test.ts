@@ -5,6 +5,7 @@ describe('GoogleDriveProvider', () => {
 
   const clientId = 'mockClientId'
   const apiKey = 'mockApiKey'
+  const appId = 'mockAppId'
 
   const client = new CloudFileManagerClient()
 
@@ -12,11 +13,11 @@ describe('GoogleDriveProvider', () => {
     expect(() => new GoogleDriveProvider({} as any, client)).toThrow()
     expect(() => new GoogleDriveProvider({ clientId } as any, client)).toThrow()
     expect(() => new GoogleDriveProvider({ apiKey } as any, client)).toThrow()
-    expect(() => new GoogleDriveProvider({ clientId, apiKey }, client)).not.toThrow()
+    expect(() => new GoogleDriveProvider({ clientId, apiKey, appId }, client)).not.toThrow()
   })
 
   it('should load the google API only once', () => {
-    const provider = new GoogleDriveProvider({ clientId, apiKey }, client)
+    const provider = new GoogleDriveProvider({ clientId, apiKey, appId }, client)
     const promise1 = GoogleDriveProvider.apiLoadPromise
     const promise2 = provider.waitForAPILoad()
     expect(promise1).toBe(promise2)

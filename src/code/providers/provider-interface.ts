@@ -95,7 +95,7 @@ class CloudMetadata {
     this.sharedContentId = options.sharedContentId
     this.sharedContentSecretKey = options.sharedContentSecretKey
     this.mimeType = options.mimeType
-    this._updateFilename()
+    this.updateFilename()
   }
 
 
@@ -137,10 +137,10 @@ class CloudMetadata {
 
   rename(newName: string) {
     this.name = newName
-    return this._updateFilename()
+    return this.updateFilename()
   }
 
-  _updateFilename() {
+  updateFilename() {
     this.filename = this.name
     if (((this.name != null ? this.name.substr : undefined) != null) && (CloudMetadata.Extension != null) && (this.type === ICloudFileTypes.File)) {
       const extLen = CloudMetadata.Extension.length
@@ -508,10 +508,6 @@ abstract class ProviderInterface implements IProviderInterfaceOpts {
     // this uses a browser alert instead of client.alert because this is just here for debugging
     // eslint-disable-next-line no-alert
     alert(`${methodName} not implemented for ${this.name} provider`)
-  }
-
-  getFileDialogMessage(): any {
-    return null
   }
 
   fileDialogDisabled(folder: CloudMetadata): boolean {

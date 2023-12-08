@@ -1,6 +1,6 @@
 import React from 'react'
 import ReactDOMFactories from 'react-dom-factories'
-import { CFMGoogleDriveProviderOptions } from '../app-options'
+import { CFMGoogleDriveProviderOptions, CFMLegacyGoogleDriveProviderOptions } from '../app-options'
 import { CloudFileManagerClient } from '../client'
 import { createReactClassFactory } from '../create-react-factory'
 import tr  from '../utils/translate'
@@ -115,14 +115,14 @@ class LegacyGoogleDriveProvider extends ProviderInterface {
   clientId: string
   apiLoadState: ELoadState
   mimeType: string
-  options: CFMGoogleDriveProviderOptions
+  options: CFMLegacyGoogleDriveProviderOptions
   readableMimetypes: string[]
   scopes: string
   user: any
   onAuthorizationChangeCallback: OnAuthorizationChangeCallback|undefined
   promptForConsent: boolean
 
-  constructor(options: CFMGoogleDriveProviderOptions | undefined, client: CloudFileManagerClient) {
+  constructor(options: CFMLegacyGoogleDriveProviderOptions | undefined, client: CloudFileManagerClient) {
     super({
       name: LegacyGoogleDriveProvider.Name,
       displayName: options?.displayName || (tr('~PROVIDER.GOOGLE_DRIVE')),

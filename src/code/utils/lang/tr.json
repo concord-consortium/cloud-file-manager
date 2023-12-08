@@ -142,5 +142,6 @@
     "~GOOGLE_DRIVE.MY_DRIVE": "Drive'ım",
     "~GOOGLE_DRIVE.SHARED_DRIVES": "Paylaşılan Drive",
     "~GOOGLE_DRIVE.SHARED_WITH_ME": "Benimle Paylaşılanlar",
-    "~FILE_STATUS.CONTINUE_SAVE": "Değişikliklerinizi kaydetmeye çalışmaya devam edeceğiz."
+    "~FILE_STATUS.CONTINUE_SAVE": "Değişikliklerinizi kaydetmeye çalışmaya devam edeceğiz.",
+    "~GOOGLE_DRIVE.ERROR_MISSING_APPID": "Missing required appId in googleDrive provider options"
 }

@@ -214,6 +214,10 @@ const FileDialogTab = createReactClass({
   // NP 2020-04-23 Copied from authorize-mixin.js
   render() {
     if (!this.props.provider.isAuthorizationRequired() || this.props.provider.authorized()) {
+      // the google drive provider renders its own dialog tab views that need to load after authorization
+      if (this.props.provider.renderFileDialogTabView) {
+        return this.props.provider.renderFileDialogTabView({...this.props, onConfirm: this.confirmed, onCancel: this.cancel});
+      }
       return this.renderWhenAuthorized()
     } else {
       return this.props.provider.renderAuthorizationDialog()
@@ -301,22 +305,22 @@ const FileDialogTab = createReactClass({
     }
   },
 
-  confirm() {
-    const confirmed = (_metadata: CloudMetadata) => {
-      const metadata = _metadata
-      // ensure the metadata provider is the currently-showing tab
-      if (metadata.provider !== this.props.provider) {
-        metadata.provider = this.props.provider
-        // if switching provider, then clear providerData
-        metadata.providerData = {}
-      }
-      if (typeof this.props.dialog.callback === 'function') {
-        this.props.dialog.callback(metadata)
-      }
-      this.setState({metadata: metadata})
-      return this.props.close()
+  confirmed(_metadata: CloudMetadata) {
+    const metadata = _metadata
+    // ensure the metadata provider is the currently-showing tab
+    if (metadata.provider !== this.props.provider) {
+      metadata.provider = this.props.provider
+      // if switching provider, then clear providerData
+      metadata.providerData = {}
     }
+    if (typeof this.props.dialog.callback === 'function') {
+      this.props.dialog.callback(metadata)
+    }
+    this.setState({metadata: metadata})
+    return this.props.close()
+  },
 
+  confirm() {
     const filename = $.trim(this.finalConfirmedFilename())
     const existingMetadata = this.findMetadata(filename, this.state.list, this.props.dialog.data?.extension)
     const metadata = this.state.metadata || existingMetadata
@@ -329,16 +333,16 @@ const FileDialogTab = createReactClass({
 
     if (metadata) {
       if (this.isOpen()) {
-        return confirmed(metadata)
+        return this.confirmed(metadata)
       } else if (existingMetadata) {
-        return this.props.client.confirm(`Are you sure you want to overwrite ${existingMetadata.name}?`, () => confirmed(existingMetadata))
+        return this.props.client.confirm(`Are you sure you want to overwrite ${existingMetadata.name}?`, () => this.confirmed(existingMetadata))
       } else {
-        return confirmed(metadata)
+        return this.confirmed(metadata)
       }
     } else if (this.isOpen()) {
       return this.props.client.alert(`${filename} not found`)
     } else {
-      return confirmed(new CloudMetadata({
+      return this.confirmed(new CloudMetadata({
         name: filename,
         type: CloudMetadata.File,
         parent: this.state.folder || null,
@@ -431,7 +435,6 @@ const FileDialogTab = createReactClass({
       (input({type: 'text', value: search, placeholder: (tr(isOpen ? "~FILE_DIALOG.FILTER" : "~FILE_DIALOG.FILENAME")), autoFocus: true, onChange: this.searchChanged, onKeyDown: this.watchForEnter, ref: (elt: any) => { return this.inputRef = elt }})),
       (listFiltered && div({className: 'dialogClearFilter', onClick: this.clearListFilter}, "X")),
       (FileList({provider: this.props.provider, folder: this.state.folder, selectedFile: this.state.metadata, fileSelected: this.fileSelected, fileConfirmed: this.confirm, list, listLoaded: this.listLoaded, client: this.props.client, overrideMessage, listOptions})),
-      (this.props.provider.getFileDialogMessage && this.props.provider.getFileDialogMessage()),
       (div({className: 'buttons'},
         (button({onClick: this.confirm, disabled: confirmDisabled, className: confirmDisabled ? 'disabled' : ''}, this.isOpen() ? (tr("~FILE_DIALOG.OPEN")) : (tr("~FILE_DIALOG.SAVE")))),
         this.props.provider.can('remove') ?

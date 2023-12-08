@@ -142,5 +142,6 @@
     "~GOOGLE_DRIVE.MY_DRIVE": "Mój dysk",
     "~GOOGLE_DRIVE.SHARED_DRIVES": "Dyski udostępnione",
     "~GOOGLE_DRIVE.SHARED_WITH_ME": "Udostępnione mi",
-    "~FILE_STATUS.CONTINUE_SAVE": "Będziemy nadal próbować zapisać zmiany."
+    "~FILE_STATUS.CONTINUE_SAVE": "Będziemy nadal próbować zapisać zmiany.",
+    "~GOOGLE_DRIVE.ERROR_MISSING_APPID": "Missing required appId in googleDrive provider options"
 }

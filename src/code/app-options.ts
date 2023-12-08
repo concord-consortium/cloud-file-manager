@@ -77,9 +77,17 @@ export interface CFMDocumentStoreProviderOptions extends CFMPatchProviderOptions
   deprecationPhase: number;
 }
 
+export interface CFMLegacyGoogleDriveProviderOptions extends CFMBaseProviderOptions {
+  clientId: string;
+  apiKey: string;
+  scopes?: string[];
+  disableSharedDrives?: boolean;
+}
+
 export interface CFMGoogleDriveProviderOptions extends CFMBaseProviderOptions {
   clientId: string;
   apiKey: string;
+  appId: string;
   scopes?: string[];
   disableSharedDrives?: boolean;
 }

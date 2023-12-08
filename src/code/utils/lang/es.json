@@ -142,5 +142,6 @@
     "~GOOGLE_DRIVE.MY_DRIVE": "Mi Drive",
     "~GOOGLE_DRIVE.SHARED_DRIVES": "Drives compartidos",
     "~GOOGLE_DRIVE.SHARED_WITH_ME": "Compartido conmigo",
-    "~FILE_STATUS.CONTINUE_SAVE": "Seguiremos intentando guardar los cambios."
+    "~FILE_STATUS.CONTINUE_SAVE": "Seguiremos intentando guardar los cambios.",
+    "~GOOGLE_DRIVE.ERROR_MISSING_APPID": "Missing required appId in googleDrive provider options"
 }
