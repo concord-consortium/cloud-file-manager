@@ -3,7 +3,7 @@ import ReactDOMFactories from 'react-dom-factories'
 import { CFMGoogleDriveProviderOptions } from '../app-options'
 import { CloudFileManagerClient } from '../client'
 import { createReactClassFactory } from '../create-react-factory'
-import tr from '../utils/translate'
+import tr, { getDefaultLang } from '../utils/translate'
 import {
   AuthorizedOptions,
   cloudContentFactory, CloudMetadata, ECapabilities, ICloudFileTypes, ProviderCloseCallback, ProviderInterface,
@@ -108,16 +108,17 @@ const GoogleFileDialogTabView = createReactClassFactory({
     drivesView.setEnableDrives(true);
 
     // setLabel is in an internal api, so it may go away
-    myDriveView.setLabel?.("My Drive")
-    sharedView.setLabel?.("Shared with me")
-    drivesView.setLabel?.("Shared drives")
-    starredView.setLabel?.("★ Starred")
+    myDriveView.setLabel?.(tr("~GOOGLE_DRIVE.MY_DRIVE"))
+    sharedView.setLabel?.(tr("~GOOGLE_DRIVE.SHARED_WITH_ME"))
+    drivesView.setLabel?.(tr("~GOOGLE_DRIVE.SHARED_DRIVES"))
+    starredView.setLabel?.(`★ ${tr("~GOOGLE_DRIVE.STARRED")}`)
 
     this.picker = new google.picker.PickerBuilder()
+      .setLocale(getDefaultLang())
       .setDeveloperKey(apiKey)
       .setAppId(appId)
       .setOAuthToken(this.props.provider.authToken.access_token)
-      .setTitle(mode === "file" ? "Select a File" : "Select a Folder")
+      .setTitle(mode === "file" ? tr("~GOOGLE_DRIVE.SELECT_A_FILE") : tr("~GOOGLE_DRIVE.SELECT_A_FOLDER"))
       .addView(myDriveView)
       .addView(sharedView)
       .addView(drivesView)
@@ -172,7 +173,7 @@ const GoogleFileDialogTabView = createReactClassFactory({
 
         if (fileId) {
           // user picked a file so confirm if they want to overwrite it
-          const prompt = `Are you sure you want to overwrite ${pickedName}?`;  // TODO: add to translation
+          const prompt = tr("~FILE_DIALOG.OVERWRITE_CONFIRM", {filename: pickedName});
           this.props.client.confirm(prompt, finishSave);
         } else {
           finishSave();
@@ -224,11 +225,19 @@ const GoogleFileDialogTabView = createReactClassFactory({
     }
   },
 
+  /*
+
+
+
+
+
+  */
+
   renderOpen() {
     return (div({ className: 'dialogTab googleFileDialogTab openDialog', ref: ((elt: any) => { return this.ref = elt }) },
       this.renderLogo(),
       (div({ className: 'main-buttons' },
-        (button({ onClick: () => this.showPicker("file") }, 'Reopen Drive')),   // TODO: TRANSLATE!
+        (button({ onClick: () => this.showPicker("file") }, tr("~GOOGLE_DRIVE.REOPEN_DRIVE"))),
       )),
       this.renderUserInfo(),
       (div({ className: 'buttons' },
@@ -244,9 +253,9 @@ const GoogleFileDialogTabView = createReactClassFactory({
       (input({ type: 'text', ref: ((elt: any) => { return this.filenameRef = elt }), value: this.state.filename, placeholder: (tr("~FILE_DIALOG.FILENAME")), onChange: this.filenameChanged, onKeyDown: this.watchForEnter })),
       this.renderLogo(),
       (div({ className: 'main-buttons' },
-        (button({ onClick: this.save, className: saveClassName, disabled: !canSave }, 'Quick Save To My Drive')), // TODO: TRANSLATE!
-        (button({ onClick: () => this.showPicker("folder"), className: saveClassName, disabled: !canSave }, 'Save In Selected Folder')),  // TODO: TRANSLATE!
-        (button({ onClick: () => this.showPicker("file"), className: saveClassName, disabled: !canSave }, 'Save Over Existing File')),  // TODO: TRANSLATE!
+        (button({ onClick: this.save, className: saveClassName, disabled: !canSave }, tr("~GOOGLE_DRIVE.QUICK_SAVE"))),
+        (button({ onClick: () => this.showPicker("folder"), className: saveClassName, disabled: !canSave }, tr("~GOOGLE_DRIVE.PICK_FOLDER"))),
+        (button({ onClick: () => this.showPicker("file"), className: saveClassName, disabled: !canSave }, tr("~GOOGLE_DRIVE.PICK_FILE"))),
       )),
       this.renderUserInfo(),
       (div({ className: 'buttons' },

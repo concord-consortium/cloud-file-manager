@@ -63,6 +63,7 @@
   "~FILE_DIALOG.LOAD_FOLDER_ERROR": "*** Error loading folder contents ***",
   "~FILE_DIALOG.DOWNLOAD": "Download",
   "~FILE_DIALOG.FILTER": "Filter results...",
+  "~FILE_DIALOG.OVERWRITE_CONFIRM": "Are you sure you want to overwrite %{filename}?",
 
   "~DOWNLOAD_DIALOG.DOWNLOAD": "Download",
   "~DOWNLOAD_DIALOG.CANCEL": "Cancel",
@@ -148,6 +149,13 @@
   "~GOOGLE_DRIVE.MY_DRIVE": "My Drive",
   "~GOOGLE_DRIVE.SHARED_DRIVES": "Shared Drives",
   "~GOOGLE_DRIVE.SHARED_WITH_ME": "Shared With Me",
+  "~GOOGLE_DRIVE.REOPEN_DRIVE": "Reopen Drive",
+  "~GOOGLE_DRIVE.QUICK_SAVE": "Quick Save To My Drive",
+  "~GOOGLE_DRIVE.PICK_FOLDER": "Save In Selected Folder",
+  "~GOOGLE_DRIVE.PICK_FILE": "Save Over Existing File",
+  "~GOOGLE_DRIVE.SELECT_A_FILE": "Select a File",
+  "~GOOGLE_DRIVE.SELECT_A_FOLDER": "Select a Folder",
+  "~GOOGLE_DRIVE.STARRED": "Starred",
 
   "~DOCSTORE.LOAD_403_ERROR": "You don't have permission to load %{filename}.<br><br>If you are using some else's shared document it may have been unshared.",
   "~DOCSTORE.LOAD_SHARED_404_ERROR": "Unable to load the requested shared document.<br><br>Perhaps the file was not shared?",
