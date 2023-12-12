@@ -375,7 +375,7 @@ class GoogleDriveProvider extends ProviderInterface {
     this.user = null
     this.apiKey = this.options.apiKey
     this.clientId = this.options.clientId
-    this.appId = this.options.appId
+    this.appId = this.options.appId || "199509711640"  // TODO: remove this or - it is only here so we get this working without an updated CODAP branch
     if (!this.apiKey) {
       throw new Error((tr("~GOOGLE_DRIVE.ERROR_MISSING_APIKEY")))
     }
