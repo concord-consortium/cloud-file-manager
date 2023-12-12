@@ -39,3 +39,4 @@ jobs:
           # be used. Instead the `|` turns the following lines into a string
           topBranches: |
             ["${{ github.event.repository.default_branch }}"]
+          maxVersionAge: '600'
