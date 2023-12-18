@@ -38,9 +38,7 @@ You can view the status of all the branch and tag deploys [here](https://github.
 
 The production release is available at `https://cloud-file-manager.concord.org`.
 
-Production releases are done using a manual GitHub Actions workflow. You specify which tag you want to release to production and the workflow copies that tag's `index-top.html` to `https://cloud-file-manager.concord.org/index.html`.
-
-See the CLUE [docs/deploy.md](https://github.com/concord-consortium/collaborative-learning/blob/master/docs/deploy.md) for more details (it uses the same process).
+Production releases are done using a manual GitHub Actions workflow. You specify which tag you want to release to production and the workflow copies all of the files in that tag's version folder to the root folder.
 
 ## Integrating Cloud File Manager
 
