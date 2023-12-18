@@ -156,6 +156,7 @@
   "~GOOGLE_DRIVE.SELECT_A_FILE": "Select a File",
   "~GOOGLE_DRIVE.SELECT_A_FOLDER": "Select a Folder",
   "~GOOGLE_DRIVE.STARRED": "Starred",
+  "~GOOGLE_DRIVE.SELECT_VALID_FILE": "Please select a valid file for this application",
 
   "~DOCSTORE.LOAD_403_ERROR": "You don't have permission to load %{filename}.<br><br>If you are using some else's shared document it may have been unshared.",
   "~DOCSTORE.LOAD_SHARED_404_ERROR": "Unable to load the requested shared document.<br><br>Perhaps the file was not shared?",

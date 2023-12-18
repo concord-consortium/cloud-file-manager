@@ -143,13 +143,14 @@
   "~GOOGLE_DRIVE.SHARED_DRIVES": "Paylaşılan Drive",
   "~GOOGLE_DRIVE.SHARED_WITH_ME": "Benimle Paylaşılanlar",
   "~FILE_STATUS.CONTINUE_SAVE": "Değişikliklerinizi kaydetmeye çalışmaya devam edeceğiz.",
-  "~GOOGLE_DRIVE.ERROR_MISSING_APPID": "Missing required appId in googleDrive provider options",
-  "~FILE_DIALOG.OVERWRITE_CONFIRM": "Are you sure you want to overwrite %{filename}?",
-  "~GOOGLE_DRIVE.REOPEN_DRIVE": "Reopen Drive",
-  "~GOOGLE_DRIVE.QUICK_SAVE": "Quick Save To My Drive",
-  "~GOOGLE_DRIVE.PICK_FOLDER": "Save In Selected Folder",
-  "~GOOGLE_DRIVE.PICK_FILE": "Save Over Existing File",
-  "~GOOGLE_DRIVE.SELECT_A_FILE": "Select a File",
-  "~GOOGLE_DRIVE.SELECT_A_FOLDER": "Select a Folder",
-  "~GOOGLE_DRIVE.STARRED": "Starred"
+  "~GOOGLE_DRIVE.ERROR_MISSING_APPID": "GoogleDrive sağlayıcı seçeneklerinde gerekli uygulama kimliği eksik",
+  "~FILE_DIALOG.OVERWRITE_CONFIRM": "%{filename} dosyasının üstüne yazmaya emin misiniz?",
+  "~GOOGLE_DRIVE.REOPEN_DRIVE": "Drive'ı yeniden aç",
+  "~GOOGLE_DRIVE.QUICK_SAVE": "Drive'ıma hızlıca kaydet",
+  "~GOOGLE_DRIVE.PICK_FOLDER": "Seçili klasöre kaydet",
+  "~GOOGLE_DRIVE.PICK_FILE": "Varolan dosya üzerine kaydet",
+  "~GOOGLE_DRIVE.SELECT_A_FILE": "Dosya seç",
+  "~GOOGLE_DRIVE.SELECT_A_FOLDER": "Klasör seç",
+  "~GOOGLE_DRIVE.STARRED": "Yıldızlı",
+  "~GOOGLE_DRIVE.SELECT_VALID_FILE": "Please select a valid file for this application"
 }

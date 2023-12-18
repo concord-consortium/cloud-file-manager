@@ -160,8 +160,7 @@ const GoogleFileDialogTabView = createReactClassFactory({
             return result || pickedName.endsWith(`.${extension}`);
           }, false);
           if (!hasValidExtension) {
-            // TODO: add translation
-            this.props.client.alert("Please choose a valid file for this application", tr("~GOOGLE_DRIVE.SELECT_A_FILE"));
+            this.props.client.alert(tr("~GOOGLE_DRIVE.SELECT_VALID_FILE"), tr("~GOOGLE_DRIVE.SELECT_A_FILE"));
             return;
           }
         }

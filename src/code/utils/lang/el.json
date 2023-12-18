@@ -151,5 +151,6 @@
   "~GOOGLE_DRIVE.PICK_FILE": "Save Over Existing File",
   "~GOOGLE_DRIVE.SELECT_A_FILE": "Select a File",
   "~GOOGLE_DRIVE.SELECT_A_FOLDER": "Select a Folder",
-  "~GOOGLE_DRIVE.STARRED": "Starred"
+  "~GOOGLE_DRIVE.STARRED": "Starred",
+  "~GOOGLE_DRIVE.SELECT_VALID_FILE": "Please select a valid file for this application"
 }
