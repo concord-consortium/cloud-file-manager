@@ -74,7 +74,9 @@ const GoogleFileDialogTabView = createReactClassFactory({
   showPicker(mode: "file" | "folder") {
     const { options, readableMimetypes } = this.props.provider;
     const { apiKey, appId } = options;
+    const { extension } = this.props.client.appOptions;
     const mimeTypes = mode === "file" ? readableMimetypes.join(",") : "nonsense-mimetype-to-filter-out-files/kajhdflkajfhaslkdjfhasdlfkjhsdfkljh";
+    const query = mode === "file" && extension?.trim().length > 0 ? `*.${extension.trim()}` : "";
 
     const myDriveView = new google.picker.DocsView(google.picker.ViewId.DOCS);
     const starredView = new google.picker.DocsView(google.picker.ViewId.DOCS);
@@ -95,6 +97,13 @@ const GoogleFileDialogTabView = createReactClassFactory({
     starredView.setIncludeFolders(true);
     sharedView.setIncludeFolders(true);
     drivesView.setIncludeFolders(true);
+
+    if (query.length > 0) {
+      myDriveView.setQuery(query);
+      starredView.setQuery(query);
+      sharedView.setQuery(query);
+      drivesView.setQuery(query);
+    }
 
     if (mode === "folder") {
       myDriveView.setSelectFolderEnabled(true);
@@ -129,6 +138,8 @@ const GoogleFileDialogTabView = createReactClassFactory({
   },
 
   pickerCallback(data: any) {
+    const { readableExtensions } = this.props.client.appOptions;
+
     if (data.action === google.picker.Action.PICKED) {
       const document = data[google.picker.Response.DOCUMENTS][0];
       const type = document[google.picker.Document.TYPE];
@@ -142,9 +153,24 @@ const GoogleFileDialogTabView = createReactClassFactory({
         name = this.state.filename
         parentId = fileId;
         fileId = null;
-      } else if (this.isSave() && (this.state.filename !== tr("~MENUBAR.UNTITLED_DOCUMENT"))) {
-        // change the picked filename on saves if the user has customized the name in the save dialog
-        name = this.state.filename
+      } else {
+        // if there are extensions defined ensure the file ends with one of them
+        if (readableExtensions?.length > 0) {
+          const hasValidExtension = readableExtensions.reduce((result: boolean, extension: string) => {
+            return result || pickedName.endsWith(`.${extension}`);
+          }, false);
+          if (!hasValidExtension) {
+            // TODO: add translation
+            this.props.client.alert("Please choose a valid file for this application", tr("~GOOGLE_DRIVE.SELECT_A_FILE"));
+            return;
+          }
+        }
+        const extensions = readableExtensions || [];
+
+        if (this.isSave() && (this.state.filename !== tr("~MENUBAR.UNTITLED_DOCUMENT"))) {
+          // change the picked filename on saves if the user has customized the name in the save dialog
+          name = this.state.filename
+        }
       }
 
       const parent = parentId ? new CloudMetadata({
@@ -224,14 +250,6 @@ const GoogleFileDialogTabView = createReactClassFactory({
       )
     }
   },
-
-  /*
-
-
-
-
-
-  */
 
   renderOpen() {
     return (div({ className: 'dialogTab googleFileDialogTab openDialog', ref: ((elt: any) => { return this.ref = elt }) },
@@ -356,6 +374,8 @@ class GoogleDriveProvider extends ProviderInterface {
   mimeType: string
   options: CFMGoogleDriveProviderOptions
   readableMimetypes: string[]
+  extension: string
+  readableExtensions: string[]
   scopes: string
   user: any
   onAuthorizationChangeCallback: OnAuthorizationChangeCallback | undefined
