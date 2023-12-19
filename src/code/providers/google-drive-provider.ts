@@ -74,9 +74,7 @@ const GoogleFileDialogTabView = createReactClassFactory({
   showPicker(mode: "file" | "folder") {
     const { options, readableMimetypes } = this.props.provider;
     const { apiKey, appId } = options;
-    const { extension } = this.props.client.appOptions;
     const mimeTypes = mode === "file" ? readableMimetypes.join(",") : "nonsense-mimetype-to-filter-out-files/kajhdflkajfhaslkdjfhasdlfkjhsdfkljh";
-    const query = mode === "file" && extension?.trim().length > 0 ? `*.${extension.trim()}` : "";
 
     const myDriveView = new google.picker.DocsView(google.picker.ViewId.DOCS);
     const starredView = new google.picker.DocsView(google.picker.ViewId.DOCS);
@@ -97,13 +95,6 @@ const GoogleFileDialogTabView = createReactClassFactory({
     starredView.setIncludeFolders(true);
     sharedView.setIncludeFolders(true);
     drivesView.setIncludeFolders(true);
-
-    if (query.length > 0) {
-      myDriveView.setQuery(query);
-      starredView.setQuery(query);
-      sharedView.setQuery(query);
-      drivesView.setQuery(query);
-    }
 
     if (mode === "folder") {
       myDriveView.setSelectFolderEnabled(true);
