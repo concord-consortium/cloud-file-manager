@@ -82,3 +82,29 @@
     margin 10px 0
     font-style italic
     font-size 0.9em
+
+.googleFileDialogTab
+  .google-drive-concord-logo
+    background url("../../img/google-drive-logo.png") no-repeat top left
+    width 351px
+    height 113px
+    padding 0
+    margin 50px 35px 0 35px
+
+  .main-buttons
+    text-align center
+    margin-top 20px
+    button
+      modal-button()
+      &.disabled
+        background-color #777
+
+  &.saveDialog
+    .google-drive-concord-logo
+      margin 0 35px
+    .main-buttons
+      display flex
+      flex-direction column
+      margin 0 10px
+      button
+        margin-bottom 10px
