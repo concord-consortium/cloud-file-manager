@@ -156,15 +156,15 @@ const GoogleFileDialogTabView = createReactClassFactory({
       } else {
         // if there are extensions defined ensure the file ends with one of them
         if (readableExtensions?.length > 0) {
-          const hasValidExtension = readableExtensions.reduce((result: boolean, extension: string) => {
-            return result || pickedName.endsWith(`.${extension}`);
+          const hasValidExtension = readableExtensions.map((ex: string) => ex.trim()).reduce((result: boolean, extension: string) => {
+            // CODAP accepts an empty string as a valid extension which should match any file
+            return result || pickedName.endsWith(`.${extension}`) || extension.length === 0;
           }, false);
           if (!hasValidExtension) {
             this.props.client.alert(tr("~GOOGLE_DRIVE.SELECT_VALID_FILE"), tr("~GOOGLE_DRIVE.SELECT_A_FILE"));
             return;
           }
         }
-        const extensions = readableExtensions || [];
 
         if (this.isSave() && (this.state.filename !== tr("~MENUBAR.UNTITLED_DOCUMENT"))) {
           // change the picked filename on saves if the user has customized the name in the save dialog
