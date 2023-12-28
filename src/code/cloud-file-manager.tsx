@@ -7,7 +7,7 @@ import { ClientEventCallback, CloudFileManagerClient } from './client'
 
 import getHashParam from './utils/get-hash-param'
 
-interface CFMAppRuntimeOptions extends CFMAppOptions {
+export interface CFMAppRuntimeOptions extends CFMAppOptions {
   client?: CloudFileManagerClient;
 }
 

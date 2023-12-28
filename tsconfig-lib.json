@@ -1,0 +1,16 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "declaration": true,
+    "target": "ES2018"
+  },
+  "include": [
+    "src/code"
+  ],
+  "exclude": [
+    "src/code/app.tsx",
+    "src/code/autolaunch",
+    "src/code/globals.ts",
+    "**/*.test.*"
+  ]
+}
