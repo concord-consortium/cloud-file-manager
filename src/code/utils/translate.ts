@@ -104,6 +104,6 @@ const translate = function(key: string, vars?: Record<string ,string>, lang?: st
   })
 }
 
-export const getDefaultLang = () => defaultLang;
+export const getDefaultLang = () => defaultLang
 
 export default translate

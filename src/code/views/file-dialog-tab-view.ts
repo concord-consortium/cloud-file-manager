@@ -216,7 +216,7 @@ const FileDialogTab = createReactClass({
     if (!this.props.provider.isAuthorizationRequired() || this.props.provider.authorized()) {
       // the google drive provider renders its own dialog tab views that need to load after authorization
       if (this.props.provider.renderFileDialogTabView) {
-        return this.props.provider.renderFileDialogTabView({...this.props, onConfirm: this.confirmed, onCancel: this.cancel});
+        return this.props.provider.renderFileDialogTabView({...this.props, onConfirm: this.confirmed, onCancel: this.cancel})
       }
       return this.renderWhenAuthorized()
     } else {
