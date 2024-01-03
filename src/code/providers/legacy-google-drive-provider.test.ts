@@ -1,4 +1,4 @@
-import { CloudFileManagerClient } from "../client"
+import { createCFMTestClient } from "../../test/test-utils"
 import LegacyGoogleDriveProvider from "./legacy-google-drive-provider"
 
 describe('LegacyGoogleDriveProvider', () => {
@@ -6,7 +6,7 @@ describe('LegacyGoogleDriveProvider', () => {
   const clientId = 'mockClientId'
   const apiKey = 'mockApiKey'
 
-  const client = new CloudFileManagerClient()
+  const client = createCFMTestClient()
 
   it('should throw exception without credentials', () => {
     expect(() => new LegacyGoogleDriveProvider({} as any, client)).toThrow()

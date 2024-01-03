@@ -7,12 +7,12 @@
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
  */
 import _ from 'lodash'
+import mime from 'mime'
 
 import tr from './utils/translate'
 import isString from './utils/is-string'
 import base64Array from 'base64-js' // https://github.com/beatgammit/base64-js
 import getQueryParam from './utils/get-query-param'
-import {lookup as getMimeType} from 'mime-types'
 
 import { CFMAppOptions, CFMMenuItem, isCustomClientProvider } from './app-options'
 import { CloudFileManagerUI, UIEventCallback }  from './ui'
@@ -58,11 +58,11 @@ export type ClientEventCallback = (...args: any) => void;
 
 
 class CloudFileManagerClientEvent {
-  callback: ClientEventCallback;
-  data: any;
-  id: number;
-  state: Partial<IClientState>;
-  type: string;
+  callback: ClientEventCallback
+  data: any
+  id: number
+  state: Partial<IClientState>
+  type: string
 
   constructor(type: string, data?: any, callback: ClientEventCallback = null, state?: Partial<IClientState>) {
     this.type = type
@@ -91,18 +91,18 @@ export type ClientEventListener = (event: CloudFileManagerClientEvent) => void;
 export type OpenSaveCallback = (content: any, metadata: CloudMetadata, savedContent?: any) => void;
 
 class CloudFileManagerClient {
-  _autoSaveInterval: number;
-  _listeners: ClientEventListener[];
-  _ui: CloudFileManagerUI;
-  appOptions: CFMAppOptions;
-  iframe: any;
-  newFileAddsNewToQuery: boolean;
-  newFileOpensInNewTab: boolean;
-  providers: Record<string, ProviderInterface>;
-  state: IClientState;
-  urlProvider: URLProvider;
-  connectedPromise: Promise<void>;
-  connectedPromiseResolver: { resolve: () => void; reject: () => void };
+  _autoSaveInterval: number
+  _listeners: ClientEventListener[]
+  _ui: CloudFileManagerUI
+  appOptions: CFMAppOptions
+  iframe: any
+  newFileAddsNewToQuery: boolean
+  newFileOpensInNewTab: boolean
+  providers: Record<string, ProviderInterface>
+  state: IClientState
+  urlProvider: URLProvider
+  connectedPromise: Promise<void>
+  connectedPromiseResolver: { resolve: () => void; reject: () => void }
 
   constructor(options?: any) {
     this.shouldAutoSave = this.shouldAutoSave.bind(this)
@@ -201,7 +201,7 @@ class CloudFileManagerClient {
         if (allProviders[providerName]) {
           Provider = allProviders[providerName]
           // don't add providers that require configuration if no (or invalid) configuration provided
-          if (Provider.hasValidOptions(providerOptions)) {
+          if (!Provider.hasValidOptions || Provider.hasValidOptions(providerOptions)) {
             const provider = new Provider(providerOptions, this)
             this.providers[providerName] = provider
             shareProvider = this._getShareProvider()
@@ -1025,7 +1025,7 @@ class CloudFileManagerClient {
 
       const done = () => typeof callback === 'function' ? callback(newName) : undefined
 
-      const readOnlyProvider = metadata?.provider?.name === ReadOnlyProvider.Name;
+      const readOnlyProvider = metadata?.provider?.name === ReadOnlyProvider.Name
       if (!readOnlyProvider && (metadata?.provider || this.autoProvider(ECapabilities.save))) {
         // autosave renamed file if it has already been saved or can be autosaved
         this.save(done)
@@ -1078,7 +1078,7 @@ class CloudFileManagerClient {
 
   saveSecondaryFileAsDialog(stringContent: any, extension: string, mimeType: string, callback: OpenSaveCallback) {
     // set the mimeType if not given with the extension
-    const extensionMimeType = getMimeType(extension)
+    const extensionMimeType = mime.getType(extension)
     if (extension && !mimeType && extensionMimeType) {
       mimeType = extensionMimeType
     }

@@ -101,5 +101,28 @@
     "react/display-name": "off",
     "react/prop-types": "off", // TODO: FIX THIS
     "react/no-find-dom-node": "off" // TODO: Fix this!!!
-  }
+  },
+  "overrides": [
+    { // rules specific to Jest tests
+      "files": ["src/**/*.test.*", "src/test/**"],
+      "env": {
+        "node": true,
+        "jest": true
+      },
+      "globals": {
+        "jestSpyConsole": "readonly"
+      },
+      "plugins": ["jest"],
+      "extends": ["plugin:jest/recommended"],
+      "rules": {
+        "@typescript-eslint/no-non-null-assertion": "off",
+        // require() can be useful in mocking
+        "@typescript-eslint/no-require-imports": "off",
+        "@typescript-eslint/no-var-requires": "off",
+        "jest/no-disabled-tests": "off",
+        "jest/no-done-callback": "off",
+        "jest/no-focused-tests": "off"
+      }
+    }
+  ]
 }

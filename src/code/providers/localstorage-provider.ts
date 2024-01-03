@@ -16,9 +16,9 @@ import {
 }  from './provider-interface'
 
 class LocalStorageProvider extends ProviderInterface {
-  static Name = 'localStorage';
-  client: CloudFileManagerClient;
-  options: CFMBaseProviderOptions;
+  static Name = 'localStorage'
+  client: CloudFileManagerClient
+  options: CFMBaseProviderOptions
 
   constructor(options: CFMBaseProviderOptions | undefined, client: CloudFileManagerClient) {
     super({

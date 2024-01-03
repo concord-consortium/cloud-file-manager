@@ -8,7 +8,7 @@ const defaultDocStoreUrl = "//document-store.concord.org"
 export type DocumentStoreUrlParams = Record<string, string | number | boolean>
 
 class DocumentStoreUrl {
-  docStoreUrl: string;
+  docStoreUrl: string
 
   constructor(docStoreUrl: string) {
     this.docStoreUrl = docStoreUrl || defaultDocStoreUrl

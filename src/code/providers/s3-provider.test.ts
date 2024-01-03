@@ -1,9 +1,9 @@
 
 import S3Provider from "./s3-provider"
-import { CloudFileManagerClient } from "../client"
 import { CloudMetadata } from "./provider-interface"
+import { createCFMTestClient } from "../../test/test-utils"
 
-const client = new CloudFileManagerClient()
+const client = createCFMTestClient()
 
 describe("S3ShareProvider", () => {
   const provider = new S3Provider(client)

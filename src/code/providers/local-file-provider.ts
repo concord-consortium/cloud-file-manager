@@ -15,8 +15,8 @@ const LocalFileSaveTab = createReactFactory(localFileTabSaveView)
 
 class LocalFileProvider extends ProviderInterface {
   public static Name = 'localFile'
-  private options: CFMBaseProviderOptions;
-  private client: CloudFileManagerClient;
+  private options: CFMBaseProviderOptions
+  private client: CloudFileManagerClient
   constructor(options: CFMBaseProviderOptions, client: CloudFileManagerClient) {
     super({
       name: LocalFileProvider.Name,

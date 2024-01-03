@@ -57,7 +57,7 @@ class CloudMetadata {
   sharedContentSecretKey: string
   mimeType: string
   filename: string|null
-  extension?: string;
+  extension?: string
   _permissions?: number
   shareEditKey?: string
   sharedDocumentId?: string
@@ -66,7 +66,7 @@ class CloudMetadata {
     readOnly?: string
     readWrite?: string
   }
-  autoSaveDisabled?: boolean;
+  autoSaveDisabled?: boolean
 
   static Folder = ICloudFileTypes.Folder
   static File = ICloudFileTypes.File
@@ -79,19 +79,16 @@ class CloudMetadata {
   static ReadableExtensions: string[]
 
   constructor(options: Partial<CloudMetadata>) {
-    let provider, parent, providerData
     this.name = options.name
     this.type = options.type
     this.description = options.description
     this.content = options.content
     this.url = options.url
-    provider = options.provider
-    this.provider = provider != null ? provider : null
-    parent = options.parent
-    this.parent = parent
-    providerData = options.providerData
-    this.providerData = providerData != null ? providerData : {}
-    this.overwritable = options.hasOwnProperty("overwritable") ? options.overwritable : true // default to true for overwritable
+    this.provider = options.provider ?? null
+    this.parent = options.parent
+    this.providerData = options.providerData ?? {}
+    // default to true for overwritable
+    this.overwritable = options.overwritable ?? true
     this.sharedContentId = options.sharedContentId
     this.sharedContentSecretKey = options.sharedContentSecretKey
     this.mimeType = options.mimeType

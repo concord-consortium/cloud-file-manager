@@ -1,4 +1,4 @@
-import { CloudFileManagerClient } from "../client"
+import { createCFMTestClient } from "../../test/test-utils"
 import GoogleDriveProvider from "./google-drive-provider"
 
 describe('GoogleDriveProvider', () => {
@@ -7,7 +7,7 @@ describe('GoogleDriveProvider', () => {
   const apiKey = 'mockApiKey'
   const appId = 'mockAppId'
 
-  const client = new CloudFileManagerClient()
+  const client = createCFMTestClient()
 
   it('should throw exception without credentials', () => {
     expect(() => new GoogleDriveProvider({} as any, client)).toThrow()

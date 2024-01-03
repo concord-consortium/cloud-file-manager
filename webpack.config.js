@@ -55,8 +55,8 @@ const baseConfig = (env) => ({
   },
   plugins: [
     new MiniCssExtractPlugin({
-      moduleFilename: ({ name }) =>
-        `${name.replace(/js\//, 'css/').replace(/\.js$/, '.css')}`
+      filename: (pathData) =>
+        `${pathData.chunk.name.replace(/js\//, 'css/').replace(/\.js$/, '.css')}`
     }),
     new CopyPlugin({
       patterns: assets.map(name => ({

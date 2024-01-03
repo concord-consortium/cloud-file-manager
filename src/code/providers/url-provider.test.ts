@@ -1,4 +1,4 @@
-import { CloudFileManagerClient } from '../client'
+import { createCFMTestClient } from '../../test/test-utils'
 import { CloudContent, CloudMetadata } from './provider-interface'
 import URLProvider from './url-provider'
 
@@ -13,7 +13,7 @@ describe('URLProvider', () => {
   const errorUrl = 'https://concord.org/errorUrl'
 
   it('should accept urlDisplayName option', () => {
-    const client = new CloudFileManagerClient()
+    const client = createCFMTestClient()
     const provider = new URLProvider({ urlDisplayName: 'foo' }, client)
     expect(provider.urlDisplayName).toBe('foo')
   })
@@ -23,7 +23,8 @@ describe('URLProvider', () => {
       options.success(successResponse)
     }) as any
     const callback = jest.fn()
-    const client = new CloudFileManagerClient()
+    // multiple tests with console spies conflict with each other leading to failures
+    const client = createCFMTestClient({ skipCallTest: true })
     const provider = new URLProvider(undefined, client)
     expect(provider.canOpenSaved()).toBe(false)
     provider.openFileFromUrl(successUrl, callback)
@@ -39,7 +40,8 @@ describe('URLProvider', () => {
       options.error()
     }) as any
     const callback = jest.fn()
-    const client = new CloudFileManagerClient()
+    // multiple tests with console spies conflict with each other leading to failures
+    const client = createCFMTestClient({ skipCallTest: true })
     const provider = new URLProvider(undefined, client)
     expect(provider.canOpenSaved()).toBe(false)
     provider.openFileFromUrl(errorUrl, callback)

@@ -1,6 +1,6 @@
 module.exports = {
   "setupFilesAfterEnv": [
-    "<rootDir>/src/setupTests.ts"
+    "<rootDir>/src/test/setupTests.ts"
   ],
   "roots": [
     "<rootDir>/src"

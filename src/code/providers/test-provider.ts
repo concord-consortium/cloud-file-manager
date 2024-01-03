@@ -8,11 +8,11 @@ import {
 }  from './provider-interface'
 
 class TestProvider extends ProviderInterface {
-  static Name = 'testProvider';
-  client: CloudFileManagerClient;
-  options: CFMBaseProviderOptions;
+  static Name = 'testProvider'
+  client: CloudFileManagerClient
+  options: CFMBaseProviderOptions
 
-  content: any;
+  content: any
   files: Record<string, {content: CloudContent, metadata: CloudMetadata}>
 
   constructor(options: CFMBaseProviderOptions | undefined, client: CloudFileManagerClient) {

@@ -1,6 +1,6 @@
 import React from 'react'
 import ReactDOMFactories from 'react-dom-factories'
-import { CFMGoogleDriveProviderOptions, CFMLegacyGoogleDriveProviderOptions } from '../app-options'
+import { CFMLegacyGoogleDriveProviderOptions } from '../app-options'
 import { CloudFileManagerClient } from '../client'
 import { createReactClassFactory } from '../create-react-factory'
 import tr  from '../utils/translate'

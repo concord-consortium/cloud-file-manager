@@ -42,11 +42,11 @@ const GoogleFileDialogTabView = createReactClassFactory({
   },
 
   save() {
-    let { filename } = this.state;
+    let { filename } = this.state
 
-    filename = filename.trim();
+    filename = filename.trim()
     if (filename.length === 0) {
-      return;
+      return
     }
 
     const metadata = new CloudMetadata({
@@ -60,11 +60,11 @@ const GoogleFileDialogTabView = createReactClassFactory({
       }
     })
 
-    this.props.onConfirm(metadata);
+    this.props.onConfirm(metadata)
   },
 
   cancel() {
-    this.props.onCancel();
+    this.props.onCancel()
   },
 
   isOpen() { return this.props.dialog.action === "openFile" },
@@ -72,40 +72,40 @@ const GoogleFileDialogTabView = createReactClassFactory({
   isSave() { return !this.isOpen() },
 
   showPicker(mode: "file" | "folder") {
-    const { options, readableMimetypes } = this.props.provider;
-    const { apiKey, appId } = options;
-    const mimeTypes = mode === "file" ? readableMimetypes.join(",") : "nonsense-mimetype-to-filter-out-files/kajhdflkajfhaslkdjfhasdlfkjhsdfkljh";
+    const { options, readableMimetypes } = this.props.provider
+    const { apiKey, appId } = options
+    const mimeTypes = mode === "file" ? readableMimetypes.join(",") : "nonsense-mimetype-to-filter-out-files/kajhdflkajfhaslkdjfhasdlfkjhsdfkljh"
 
-    const myDriveView = new google.picker.DocsView(google.picker.ViewId.DOCS);
-    const starredView = new google.picker.DocsView(google.picker.ViewId.DOCS);
-    const sharedView = new google.picker.DocsView(google.picker.ViewId.DOCS);
-    const drivesView = new google.picker.DocsView(google.picker.ViewId.DOCS);
+    const myDriveView = new google.picker.DocsView(google.picker.ViewId.DOCS)
+    const starredView = new google.picker.DocsView(google.picker.ViewId.DOCS)
+    const sharedView = new google.picker.DocsView(google.picker.ViewId.DOCS)
+    const drivesView = new google.picker.DocsView(google.picker.ViewId.DOCS)
 
-    myDriveView.setMimeTypes(mimeTypes);
-    starredView.setMimeTypes(mimeTypes);
-    sharedView.setMimeTypes(mimeTypes);
-    drivesView.setMimeTypes(mimeTypes);
+    myDriveView.setMimeTypes(mimeTypes)
+    starredView.setMimeTypes(mimeTypes)
+    sharedView.setMimeTypes(mimeTypes)
+    drivesView.setMimeTypes(mimeTypes)
 
-    myDriveView.setMode(google.picker.DocsViewMode.LIST);
-    starredView.setMode(google.picker.DocsViewMode.LIST);
-    sharedView.setMode(google.picker.DocsViewMode.LIST);
-    drivesView.setMode(google.picker.DocsViewMode.LIST);
+    myDriveView.setMode(google.picker.DocsViewMode.LIST)
+    starredView.setMode(google.picker.DocsViewMode.LIST)
+    sharedView.setMode(google.picker.DocsViewMode.LIST)
+    drivesView.setMode(google.picker.DocsViewMode.LIST)
 
-    myDriveView.setIncludeFolders(true);
-    starredView.setIncludeFolders(true);
-    sharedView.setIncludeFolders(true);
-    drivesView.setIncludeFolders(true);
+    myDriveView.setIncludeFolders(true)
+    starredView.setIncludeFolders(true)
+    sharedView.setIncludeFolders(true)
+    drivesView.setIncludeFolders(true)
 
     if (mode === "folder") {
-      myDriveView.setSelectFolderEnabled(true);
-      starredView.setSelectFolderEnabled(true);
-      sharedView.setSelectFolderEnabled(true);
-      drivesView.setSelectFolderEnabled(true);
+      myDriveView.setSelectFolderEnabled(true)
+      starredView.setSelectFolderEnabled(true)
+      sharedView.setSelectFolderEnabled(true)
+      drivesView.setSelectFolderEnabled(true)
     }
 
-    myDriveView.setOwnedByMe(true);
-    starredView.setStarred(true);
-    drivesView.setEnableDrives(true);
+    myDriveView.setOwnedByMe(true)
+    starredView.setStarred(true)
+    drivesView.setEnableDrives(true)
 
     // setLabel is in an internal api, so it may go away
     myDriveView.setLabel?.(tr("~GOOGLE_DRIVE.MY_DRIVE"))
@@ -124,36 +124,36 @@ const GoogleFileDialogTabView = createReactClassFactory({
       .addView(drivesView)
       .addView(starredView)
       .setCallback(this.pickerCallback)
-      .build();
-    this.picker.setVisible(true);
+      .build()
+    this.picker.setVisible(true)
   },
 
   pickerCallback(data: any) {
-    const { readableExtensions } = this.props.client.appOptions;
+    const { readableExtensions } = this.props.client.appOptions
 
     if (data.action === google.picker.Action.PICKED) {
-      const document = data[google.picker.Response.DOCUMENTS][0];
-      const type = document[google.picker.Document.TYPE];
-      const pickedName = document[google.picker.Document.NAME];
-      let name = pickedName;
-      let fileId = document[google.picker.Document.ID];
-      let parentId = document[google.picker.Document.PARENT_ID];
+      const document = data[google.picker.Response.DOCUMENTS][0]
+      const type = document[google.picker.Document.TYPE]
+      const pickedName = document[google.picker.Document.NAME]
+      let name = pickedName
+      let fileId = document[google.picker.Document.ID]
+      let parentId = document[google.picker.Document.PARENT_ID]
 
       if (type === "folder") {
         // saves allow folders to be selected so we set the parent to the folder selected and fileId to null to create a new file
         name = this.state.filename
-        parentId = fileId;
-        fileId = null;
+        parentId = fileId
+        fileId = null
       } else {
         // if there are extensions defined ensure the file ends with one of them
         if (readableExtensions?.length > 0) {
           const hasValidExtension = readableExtensions.map((ex: string) => ex.trim()).reduce((result: boolean, extension: string) => {
             // CODAP accepts an empty string as a valid extension which should match any file
-            return result || pickedName.endsWith(`.${extension}`) || extension.length === 0;
-          }, false);
+            return result || pickedName.endsWith(`.${extension}`) || extension.length === 0
+          }, false)
           if (!hasValidExtension) {
-            this.props.client.alert(tr("~GOOGLE_DRIVE.SELECT_VALID_FILE"), tr("~GOOGLE_DRIVE.SELECT_A_FILE"));
-            return;
+            this.props.client.alert(tr("~GOOGLE_DRIVE.SELECT_VALID_FILE"), tr("~GOOGLE_DRIVE.SELECT_A_FILE"))
+            return
           }
         }
 
@@ -169,7 +169,7 @@ const GoogleFileDialogTabView = createReactClassFactory({
         providerData: {
           id: parentId
         }
-      }) : null;
+      }) : null
 
       const pickedMetadata = new CloudMetadata({
         name,
@@ -180,19 +180,19 @@ const GoogleFileDialogTabView = createReactClassFactory({
         providerData: {
           id: fileId
         }
-      });
+      })
 
       if (this.isOpen()) {
-        this.props.onConfirm(pickedMetadata);
+        this.props.onConfirm(pickedMetadata)
       } else {
         const finishSave = () => this.props.onConfirm(pickedMetadata)
 
         if (fileId) {
           // user picked a file so confirm if they want to overwrite it
-          const prompt = tr("~FILE_DIALOG.OVERWRITE_CONFIRM", {filename: pickedName});
-          this.props.client.confirm(prompt, finishSave);
+          const prompt = tr("~FILE_DIALOG.OVERWRITE_CONFIRM", {filename: pickedName})
+          this.props.client.confirm(prompt, finishSave)
         } else {
-          finishSave();
+          finishSave()
         }
       }
     } else if (data.action === google.picker.Action.CANCEL) {
@@ -206,17 +206,17 @@ const GoogleFileDialogTabView = createReactClassFactory({
     this.observer = new IntersectionObserver((entries) => {
       if (this.isOpen()) {
         if (entries.find(e => e.isIntersecting)) {
-          this.showPicker("file");
+          this.showPicker("file")
         }
       }
-    }, { root: this.ref.parentElement });
-    this.observer.observe(this.ref);
+    }, { root: this.ref.parentElement })
+    this.observer.observe(this.ref)
   },
 
   componentWillUnmount() {
-    this.picker?.setVisible(false);
-    this.picker?.dispose();
-    this.observer.unobserve(this.ref);
+    this.picker?.setVisible(false)
+    this.picker?.dispose()
+    this.observer.unobserve(this.ref)
   },
 
   filenameChanged() {
@@ -230,7 +230,7 @@ const GoogleFileDialogTabView = createReactClassFactory({
   },
 
   renderUserInfo() {
-    const { user } = this.props;
+    const { user } = this.props
     if (user) {
       return (
         div({ className: "provider-message" },
@@ -255,8 +255,8 @@ const GoogleFileDialogTabView = createReactClassFactory({
   },
 
   renderSave() {
-    const canSave = this.state.filename.trim().length > 0;
-    const saveClassName = canSave ? "" : "disabled";
+    const canSave = this.state.filename.trim().length > 0
+    const saveClassName = canSave ? "" : "disabled"
     return (div({ className: 'dialogTab googleFileDialogTab saveDialog', ref: ((elt: any) => { return this.ref = elt }) },
       (input({ type: 'text', ref: ((elt: any) => { return this.filenameRef = elt }), value: this.state.filename, placeholder: (tr("~FILE_DIALOG.FILENAME")), onChange: this.filenameChanged, onKeyDown: this.watchForEnter })),
       this.renderLogo(),
@@ -273,7 +273,7 @@ const GoogleFileDialogTabView = createReactClassFactory({
   },
 
   render() {
-    return this.isOpen() ? this.renderOpen() : this.renderSave();
+    return this.isOpen() ? this.renderOpen() : this.renderSave()
   }
 })
 
@@ -502,7 +502,7 @@ class GoogleDriveProvider extends ProviderInterface {
   }
 
   renderFileDialogTabView(fileDialogTabViewProps: any) {
-    return GoogleFileDialogTabView({ ...fileDialogTabViewProps, user: this.user, logout: this.logout.bind(this) });
+    return GoogleFileDialogTabView({ ...fileDialogTabViewProps, user: this.user, logout: this.logout.bind(this) })
   }
 
   save(content: any, metadata: CloudMetadata, callback: ProviderSaveCallback) {

@@ -1,8 +1,8 @@
 
 import S3ShareProvider from "./s3-share-provider"
-import { CloudFileManagerClient } from "../client"
 import { CloudContent, CloudContentFormat, CloudMetadata } from "./provider-interface"
 import LocalStorageProvider from './localstorage-provider'
+import { createCFMTestClient } from "../../test/test-utils"
 
 const publicUrl = 'publicUrl'
 const resourceId = 'resourceId'
@@ -18,7 +18,7 @@ jest.mock('../utils/s3-share-provider-token-service-helper', () => {
   }
 })
 
-const client = new CloudFileManagerClient()
+const client = createCFMTestClient()
 const localstorageProvider = new LocalStorageProvider({}, client)
 const testContentFormat: CloudContentFormat = { isCfmWrapped: false, isPreCfmFormat: true }
 

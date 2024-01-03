@@ -23,10 +23,10 @@ import {reportError} from "../utils/report-error"
 
 class ReadOnlyProvider extends ProviderInterface {
   static Name = 'readOnly'
-  client: CloudFileManagerClient;
-  options: CFMReadOnlyProviderOptions;
-  promises: Promise<unknown>[];
-  tree: any;
+  client: CloudFileManagerClient
+  options: CFMReadOnlyProviderOptions
+  promises: Promise<unknown>[]
+  tree: any
 
   constructor(options: CFMReadOnlyProviderOptions | undefined, client: CloudFileManagerClient) {
     super({
@@ -107,6 +107,7 @@ class ReadOnlyProvider extends ProviderInterface {
   }
 
   _loadTree = (callback: (err: string | null, tree?: any) => void) => {
+    const displayName = this.displayName
     // wait for all promises to be resolved before proceeding
     const complete = (iTree: any) => {
       return Promise.all(this.promises)
@@ -115,12 +116,12 @@ class ReadOnlyProvider extends ProviderInterface {
             return callback(null, iTree)
           } else {
             // an empty folder is unusual but not necessarily an error
-            reportError(`No contents found for ${this.displayName} provider`)
+            reportError(`No contents found for ${displayName} provider`)
             return callback(null, {})
           }
         }),
         // if a promise was rejected, then there was an error
-        (function() { return callback(`No contents found for ${this.displayName} provider`) }))
+        (function() { return callback(`No contents found for ${displayName} provider`) }))
     }
 
     if (this.tree !== null) {
