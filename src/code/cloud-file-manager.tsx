@@ -8,7 +8,7 @@ import { ClientEventCallback, CloudFileManagerClient } from './client'
 import getHashParam from './utils/get-hash-param'
 
 export interface CFMAppRuntimeOptions extends CFMAppOptions {
-  client?: CloudFileManagerClient;
+  client?: CloudFileManagerClient
 }
 
 export class CloudFileManager {
@@ -80,8 +80,9 @@ export class CloudFileManager {
   }
 
   _renderApp(anchor: HTMLElement) {
+    const renderFn = this.appOptions.renderRoot || ReactDOM.render
     this.appOptions.client = this.client
-    ReactDOM.render(<AppView {... this.appOptions} />, anchor)
+    renderFn(<AppView {...this.appOptions} />, anchor)
     this.client.iframe = anchor.getElementsByTagName('iframe')[0]
     this.client.rendered()
   }
