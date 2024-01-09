@@ -1,3 +1,4 @@
+import $ from 'jquery'
 import { createCFMTestClient } from '../../test/test-utils'
 import { CloudContent, CloudMetadata } from './provider-interface'
 import URLProvider from './url-provider'
