@@ -14,13 +14,6 @@
     "project": ["./tsconfig.json"]
   },
   "globals": {
-    "$": false,
-    "createReactClassFactory": false,
-    "createReactFactory":false,
-    "ReactDOMFactories": false,
-    "ReactDOM":false,
-    "createReactClass": false,
-    "_": false,
     "gapi": false,
     "google": false
   },

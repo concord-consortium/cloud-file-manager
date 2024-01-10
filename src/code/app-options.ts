@@ -1,3 +1,4 @@
+import React from "react"
 import { CloudContent } from "./providers/provider-interface"
 
 export interface CFMMenuItemObject {
@@ -137,5 +138,6 @@ export interface CFMAppOptions {
   app?: string;   // required when iframing - relative path to the app to wrap
   contentLoadFilter?: ContentLoadFilterFn;
   contentSaveFilter?: ContentSaveFilterFn;
+  renderRoot?: (content: React.ReactNode, container: HTMLElement) => void
   iframeAllow?: string;
 }

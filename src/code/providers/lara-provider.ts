@@ -7,6 +7,7 @@
  * DS207: Consider shorter variations of null checks
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
  */
+import $ from 'jquery'
 import React from 'react'
 import { CFMLaraProviderLogData, CFMLaraProviderOptions } from '../app-options'
 import {

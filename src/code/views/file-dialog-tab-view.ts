@@ -9,6 +9,7 @@
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
  */
 
+import $ from 'jquery'
 import _ from 'lodash'
 import createReactClass from 'create-react-class'
 import ReactDOMFactories from 'react-dom-factories'
