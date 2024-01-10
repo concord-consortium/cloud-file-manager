@@ -46,10 +46,6 @@ if (codap) {
       replace: 'webfonts/'
     },
     {
-      search: /MuseoSans_500_italic/g,
-      replace: 'MuseoSans_500_Italic'
-    },
-    {
       search: /img\//g,
       replace: 'cloud-file-manager/img/'
     }
