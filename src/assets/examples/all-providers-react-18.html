@@ -1,0 +1,74 @@
+<html>
+  <head>
+    <script src="../js/globals.js"></script>
+    <!-- load React 18, replacing React 16 from globals -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="../js/app.js"></script>
+    <link rel="stylesheet" href="../css/app.css">
+    <title>Examples: All Providers (React 18)</title>
+  </head>
+  <body>
+    <div id="wrapper">
+    </div>
+    <script>
+      // Clients can use React 18-only createRoot API
+      let root
+      function renderRoot(content, container) {
+        if (!root) {
+          // call createRoot once only
+          root = ReactDOM.createRoot(container)
+        }
+        root.render(content)
+      }
+      var options = {
+        app: "example-app/index.html",
+        mimeType: "text/plain",
+        readableMimeTypes: ["application/json"],
+        extension: "txt",
+        readableExtensions: ["json", "txt"],
+        appName: "CFM_Demo",
+        appVersion: "0.1",
+        appBuildNum: "1",
+        iframeAllow: "geolocation; bluetooth",
+        providers: [
+          "localStorage",
+          "localFile",
+          {
+            "name": "readOnly",
+            "urlDisplayName": "examples",
+            "json": {
+              "first-example": "This is the first readonly example",
+              "second-example.txt": "This is the second readonly example"
+            }
+          },
+          {
+            "name": "googleDrive",
+            "apiKey": "AIzaSyDJsZTW51IRHPJBpVV2d3HpcOZ96H_e7nw",
+            "clientId": "107140815081-p1so3nbhgvbeio1imeigd8sf1ve7l6tj.apps.googleusercontent.com",
+            "appId": "107140815081"
+          },
+          {
+            "name": "documentStore",
+            "patch": true
+          },
+          "s3-share-provider"
+        ],
+        renderRoot,
+        ui: {
+          menu: CloudFileManager.DefaultMenu,
+          menuBar: {
+            info: "Version 1.0.0",
+            help: "http://lmgtfy.com/"
+          }
+        }
+      };
+      CloudFileManager.createFrame(options, "wrapper", function (event) {
+        if (event.type == 'connected') {
+          var client = event.data.client;
+          client.insertMenuItemAfter('openFileDialog', {"name": "Import data...", action: client.importDataDialog.bind(client)});
+        }
+      });
+    </script>
+  </body>
+</html>
