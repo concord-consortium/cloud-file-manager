@@ -2,10 +2,10 @@ import React from 'react'
 import translate from '../utils/translate'
 
 interface IProps {
-  isSharing: boolean;
-  previewLink: string;
-  onToggleShare: (e: React.MouseEvent) => void;
-  onUpdateShare: (e: React.MouseEvent) => void;
+  isSharing: boolean
+  previewLink: string
+  onToggleShare: (e: React.MouseEvent) => void
+  onUpdateShare: (e: React.MouseEvent) => void
 }
 export const ShareDialogStatusView: React.FC<IProps> = ({ isSharing, previewLink, onToggleShare, onUpdateShare }) => {
   return (

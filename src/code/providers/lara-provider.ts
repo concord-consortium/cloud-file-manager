@@ -30,34 +30,34 @@ import _ from 'lodash'
 // places users can choose to open/save files like Google Drive does.
 
 interface LaraProviderOpenSavedParams {
-  recordid?: string;
-  url: string;
-  source: string;
-  readOnlyKey: string;
-  collaboratorUrls?: string[];
+  recordid?: string
+  url: string
+  source: string
+  readOnlyKey: string
+  collaboratorUrls?: string[]
 }
 
 interface LaraProviderUrlParams {
-  documentServer?: string;
-  launchFromLara?: string;
+  documentServer?: string
+  launchFromLara?: string
 }
 
 interface LaraProviderLaraParams {
-  url?: string;
-  source?: string;
+  url?: string
+  source?: string
 }
 
 interface LaraProviderCreateResponse {
-  id: string;
-  readAccessKey: string;
-  readWriteAccessKey: string;
+  id: string
+  readAccessKey: string
+  readWriteAccessKey: string
 }
 
 interface LaraProviderDocStoreParams {
-  recordid?: string;
+  recordid?: string
   accessKeys?: {
-    readOnly?: string;
-    readWrite?: string;
+    readOnly?: string
+    readWrite?: string
   }
   collaborator?: 'leader' | 'follower'
 }

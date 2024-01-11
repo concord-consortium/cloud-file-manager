@@ -45,6 +45,10 @@
     "dot-notation": ["off", { "allowKeywords": false }],
     "@typescript-eslint/dot-notation": ["warn", { "allowKeywords": false }],
     "eqeqeq": ["error", "allow-null"],
+    "@typescript-eslint/member-delimiter-style": ["warn", {
+      "multiline": { "delimiter": "none" },
+      "singleline": { "delimiter": "comma" }
+    }],
     "no-alert": "error",
     "no-caller": "error",
     "no-eval": "error",
@@ -90,7 +94,8 @@
     "no-whitespace-before-property": "warn",
     "quote-props": ["error", "as-needed", { "keywords": true, "unnecessary": false }],
     "quotes": "off",
-    "semi": ["warn", "never"],
+    "semi": "off",
+    "@typescript-eslint/semi": ["warn", "never"],
     "react/display-name": "off",
     "react/prop-types": "off", // TODO: FIX THIS
     "react/no-find-dom-node": "off" // TODO: Fix this!!!

@@ -15,32 +15,32 @@ const CODAP_PRODUCTION_URL = "https://codap.concord.org/releases/latest/"
 const FULLSCREEN_INTERACTIVE_URL = "https://models-resources.concord.org/question-interactives/full-screen/"
 
 interface IShareDialogPropsSettings {
-  serverUrl?: string;
-  serverUrlLabel?: string;
+  serverUrl?: string
+  serverUrlLabel?: string
 }
 interface IShareDialogProps {
-  currentBaseUrl: string;
-  isShared: boolean;
-  sharedDocumentId?: string;  // to support legacy shares
-  sharedDocumentUrl?: string;
-  settings?: IShareDialogPropsSettings;
-  enableLaraSharing?: boolean;
-  onAlert: (message: string, title?: string) => void;
-  onToggleShare: (callback: (err: string | null, sharedContentId?: string) => void) => void;
-  onUpdateShare: () => void;
-  close: () => void;
+  currentBaseUrl: string
+  isShared: boolean
+  sharedDocumentId?: string  // to support legacy shares
+  sharedDocumentUrl?: string
+  settings?: IShareDialogPropsSettings
+  enableLaraSharing?: boolean
+  onAlert: (message: string, title?: string) => void
+  onToggleShare: (callback: (err: string | null, sharedContentId?: string) => void) => void
+  onUpdateShare: () => void
+  close: () => void
 }
 interface IShareDialogState {
-  link: string | null;
-  embed: string | null;
-  laraServerUrl: string;
-  laraServerUrlLabel: string;
-  interactiveApiServerUrl: string;
-  interactiveApiServerUrlLabel: string;
-  fullscreenScaling: boolean;
-  graphVisToggles: boolean;
-  tabSelected: ShareDialogTab;
-  isLoadingShared: boolean;
+  link: string | null
+  embed: string | null
+  laraServerUrl: string
+  laraServerUrlLabel: string
+  interactiveApiServerUrl: string
+  interactiveApiServerUrlLabel: string
+  fullscreenScaling: boolean
+  graphVisToggles: boolean
+  tabSelected: ShareDialogTab
+  isLoadingShared: boolean
 }
 
 export default class ShareDialogView extends React.Component<IShareDialogProps, IShareDialogState> {

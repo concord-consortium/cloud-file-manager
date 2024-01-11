@@ -42,10 +42,11 @@ Production releases are done using a manual GitHub Actions workflow. You specify
 
 ## Integrating Cloud File Manager
 
-There are two ways to integrate Cloud File Manager into an application
+There are three ways to integrate Cloud File Manager into an application:
 
-* Have Cloud File Manager create an iframe that wraps an application on the *same* domain - cross-domain frames are not supported by design.
-* Embed Cloud File Manager into the application and use as a library
+* Have Cloud File Manager create an iframe that wraps an application on the *same* domain - cross-domain frames are not supported by design (e.g. SageModeler).
+* Install `@concord-consortium/cloud-file-manager` via npm/yarn and import/require its modules locally (e.g. CODAP v3).
+* [Deprecated] Embed Cloud File Manager pre-built bundles into the application and use as a library (e.g. CODAP v2).
 
 ### Iframe Integration
 
@@ -91,6 +92,129 @@ var options = {
 }
  ```
 
+### Installation via npm/yarn
+
+```
+$ npm install @concord-consortium/cloud-file-manager
+```
+
+and then in code:
+
+```typescript
+import { CloudFileManager } from "@concord-consortium/cloud-file-manager"
+
+  const cfm = new CloudFileManager()
+  const options = {
+    appOrMenuElemId: "container-div",
+    ... other options as described elsewhere ...
+  }
+  cfm.init(options)
+
+  function cfmEventHandler(event: CloudFileManagerClientEvent) {
+    console.log("cfmEventHandler", "event.type:", event.type)
+    switch(event.type) {
+      ... handle various CFM events ...
+    }
+  }
+  cfm.clientConnect(cfmEventHandler)
+```
+
+### CFM Options
+
+```typescript
+export interface CFMMenuItemObject {
+  name?: string
+  key?: string
+  action?: string | (() => void)
+  items?: CFMMenuItem[]
+  enabled?: boolean | (() => boolean)
+  separator?: boolean
+}
+export type CFMMenuItem = string | CFMMenuItemObject
+export type CFMMenu = CFMMenuItem[]
+
+export interface CFMMenuBarOptions {
+  info?: string
+  languageMenu?: {
+    currentLang: string
+    options: { label: string, langCode: string }[]
+  }
+  onLangChanged?: (langCode: string) => void
+}
+
+export interface CFMShareDialogSettings {
+  serverUrl?: string
+  serverUrlLabel?: string
+}
+
+export interface CFMUIOptions {
+  menuBar?: CFMMenuBarOptions
+  // null => no menu; undefined => default menu
+  menu?: CFMMenu | null
+  // map from menu item string to menu display name for string-only menu items
+  menuNames?: Record<string, string>
+  // used for setting the page title from the document name (see appSetsWindowTitle)
+  windowTitleSuffix?: string
+  windowTitleSeparator?: string
+  newFileOpensInNewTab?: boolean
+  newFileAddsNewToQuery?: boolean
+  confirmCloseIfDirty?: boolean
+  shareDialog?: CFMShareDialogSettings
+}
+
+export type ContentLoadFilterFn = (clientContent: CloudContent) => any
+export type ContentSaveFilterFn = (clientContent: CloudContent) => any
+
+export interface CFMHashParams {
+  sharedContentId?: string
+  fileParams?: string
+  copyParams?: string
+  newInFolderParams?: string
+}
+
+export interface CFMAppOptions {
+  // seconds (or milliseconds if > 1000), auto-save disabled by default
+  autoSaveInterval?: number
+  appName?: string
+  appVersion?: string
+  appBuildNum?: string
+  // If appOrMenuElemId is set and usingIframe is true, then the CFM presents
+  // its UI and the wrapped client app within the specified element.
+  // If appOrMenuElemId is set and usingIframe is false, then the CFM presents its menubar
+  // UI within the specified element, but there is no iframe or wrapped client app.
+  appOrMenuElemId?: string
+  // true if the menu bar should be hidden, false (default) otherwise
+  hideMenuBar?: boolean
+  ui?: CFMUIOptions
+  // true if the application sets the page title
+  // false (default) if CFM sets page title from document name
+  appSetsWindowTitle?: boolean
+  wrapFileContent?: boolean
+  mimeType?: string
+  // note different capitalization from CFMBaseProviderOptions
+  readableMimeTypes?: string[]
+  extension?: string
+  readableExtensions?: string[]
+  enableLaraSharing?: boolean
+  log?: (event: string, eventData: any) => void
+  providers?: (CFMProviderOptions | string)[]
+  hashParams?: CFMHashParams
+  sendPostMessageClientEvents?: boolean
+  // if true, client app is wrapped in an iframe within the CFM-managed div
+  usingIframe?: boolean
+  // required when iframing - relative path to the app to wrap
+  app?: string
+  // called to preprocess content when loading files
+  contentLoadFilter?: ContentLoadFilterFn
+  // called to preprocess content when saving files
+  contentSaveFilter?: ContentSaveFilterFn
+  // allow clients to customize rendering, e.g. for React 18
+  renderRoot?: (content: React.ReactNode, container: HTMLElement) => void
+  // when usingIframe, specifies the `allow` property of the iframe (permissions policy)
+  iframeAllow?: string
+}
+```
+
 ## Translation/Localization
 
 The master English strings file is `src/code/utils/lang/en-US-master.json`, which is a standard JSON file except that JavaScript-style comments are allowed. (Comments are stripped before use.) Changes to English strings should be made in the master English strings file. All other language files in `src/code/utils/lang/*.json` are output files generated by script. Translations for other languages are managed via the [Cloud File Manager](https://poeditor.com/projects/view?id=125177) project (authentication required) on [POEditor](https://poeditor.com), which provides free hosting services for open source projects.
@@ -135,7 +259,6 @@ Note that there is probably a way to eliminate the need for step 3 above by requ
 # TBD:
 
 * Document provider options (see examples or look at code to see how they are configured for now)
-* Document using as a library
 * Draw a simple architecture diagram of how the client connects to the React UI using http://asciiflow.com/
 * Document how to add another provider
 * Document the event listener functions in both createFrame and clientConnect and how each can talk to each other

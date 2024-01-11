@@ -5,9 +5,9 @@ import URLProvider from './url-provider'
 
 describe('URLProvider', () => {
   interface IAjaxOptions {
-    url: string;
-    success: (data: any) => void;
-    error: () => void;
+    url: string
+    success: (data: any) => void
+    error: () => void
   }
   const successUrl = 'https://concord.org/successUrl'
   const successResponse = 'Success!'

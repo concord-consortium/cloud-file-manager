@@ -27,8 +27,8 @@ import zhTW from './lang/zh-TW.json'
 
 type LanguageFileContent = Record<string, string>
 interface LanguageFileEntry {
-  key: string;
-  contents: LanguageFileContent;
+  key: string
+  contents: LanguageFileContent
 }
 
 const languageFiles: LanguageFileEntry[] = [

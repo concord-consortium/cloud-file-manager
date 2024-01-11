@@ -2,16 +2,16 @@ import $ from 'jquery'
 import React from 'react'
 
 interface IProps {
-  zIndex: number;
-  close?: () => void;
+  zIndex: number
+  close?: () => void
 }
 interface IState {
-  backgroundStyle: React.CSSProperties;
-  contentStyle: React.CSSProperties;
+  backgroundStyle: React.CSSProperties
+  contentStyle: React.CSSProperties
 }
 interface IDimensions {
-  width: string;
-  height: string;
+  width: string
+  height: string
 }
 export default class ModalView extends React.Component<IProps, IState> {
 

@@ -53,8 +53,8 @@ export const setInteractiveState = async (_newState: any): Promise<{error: strin
 }
 
 interface InteractiveApiProviderParams {
-  documentId?: string;
-  interactiveState?: any;
+  documentId?: string
+  interactiveState?: any
 }
 
 // pass `interactiveApi=attachment` as url parameter to always save state as an attachment
@@ -68,7 +68,7 @@ export const kAttachmentFilename = "file.json"
 
 // when writing attachments, interactive state is just a reference to the attachment
 interface InteractiveStateAttachment {
-  __attachment__: typeof kAttachmentFilename,
+  __attachment__: typeof kAttachmentFilename
   contentType?: "application/json" | "text/plain"
 }
 const interactiveStateAttachment =

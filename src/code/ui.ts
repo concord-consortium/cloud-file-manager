@@ -126,8 +126,8 @@ class CloudFileManagerUIMenu {
   }
 }
 
-export type UIEventCallback = (...args: any) => void;
-export type UIEventListenerCallback = (event: CloudFileManagerUIEvent) => void;
+export type UIEventCallback = (...args: any) => void
+export type UIEventListenerCallback = (event: CloudFileManagerUIEvent) => void
 
 class CloudFileManagerUI {
   client: CloudFileManagerClient

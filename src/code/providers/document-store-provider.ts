@@ -334,7 +334,7 @@ class DocumentStoreProvider extends ProviderInterface {
   load(metadata: CloudMetadata, callback: (err: string | null, data?: any) => void) {
     const withCredentials = !metadata.sharedContentId
     const recordid = (metadata.providerData != null ? metadata.providerData.id : undefined) || metadata.sharedContentId
-    const requestData: { recordid?: string; runKey?: string; recordname?: string; owner?: string; } = {}
+    const requestData: { recordid?: string, runKey?: string, recordname?: string, owner?: string } = {}
     if (recordid) { requestData.recordid = recordid }
     if (this.urlParams.runKey) { requestData.runKey = this.urlParams.runKey }
     if (!recordid) {

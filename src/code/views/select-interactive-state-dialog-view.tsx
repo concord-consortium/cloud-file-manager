@@ -89,7 +89,7 @@ class SelectInteractiveStateVersion extends React.Component<IProps, IState> {
 export interface SelectInteractiveStateDialogProps {
   state1: IInteractiveStateProps<{}>
   state2: IInteractiveStateProps<{}>
-  interactiveStateAvailable: boolean,
+  interactiveStateAvailable: boolean
   onSelect?: SelectInteractiveStateCallback
   close?: () => void
 }
