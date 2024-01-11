@@ -4,15 +4,15 @@ import socialIcons from 'svg-social-icons/lib/icons.json'
 import translate from '../utils/translate'
 
 interface SVGSocialIcon {
-  icon: string;   // SVG icon path string
-  mask: string;   // SVG mask path string
-  color: string;
+  icon: string   // SVG icon path string
+  mask: string   // SVG mask path string
+  color: string
 }
 type SVGSocialIconMap = Record<string, SVGSocialIcon>
 
 interface ISocialIconProps {
-  icon: string;
-  url: string;
+  icon: string
+  url: string
 }
 const SocialIcon = ({ icon, url }: ISocialIconProps) => {
   const socialIcon = (socialIcons as SVGSocialIconMap)[icon]
@@ -36,7 +36,7 @@ const SocialIcon = ({ icon, url }: ISocialIconProps) => {
 }
 
 interface ICopyAnchorLinkProps {
-  onClick: (e: React.MouseEvent) => void;
+  onClick: (e: React.MouseEvent) => void
 }
 const CopyAnchorLink = ({ onClick }: ICopyAnchorLinkProps) => {
   return document.execCommand || (window as any).clipboardData
@@ -47,8 +47,8 @@ const CopyAnchorLink = ({ onClick }: ICopyAnchorLinkProps) => {
 }
 
 interface IEmbedTabProps {
-  url: string;
-  onCopyClick: (e: React.MouseEvent) => void;
+  url: string
+  onCopyClick: (e: React.MouseEvent) => void
 }
 export const EmbedTabContents: React.FC<IEmbedTabProps> = ({ url, onCopyClick }) => {
   return (
@@ -63,16 +63,16 @@ export const EmbedTabContents: React.FC<IEmbedTabProps> = ({ url, onCopyClick })
 }
 
 export interface ILaraApiTabProps {
-  mode: 'lara' | 'api';
-  linkUrl: string;
-  serverUrlLabel: string;
-  serverUrl: string;
-  fullscreenScaling?: boolean;
-  visibilityToggles?: boolean;
-  onCopyClick: (e: React.MouseEvent) => void;
-  onChangeServerUrl: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  onChangeFullscreenScaling?: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  onChangeVisibilityToggles?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  mode: 'lara' | 'api'
+  linkUrl: string
+  serverUrlLabel: string
+  serverUrl: string
+  fullscreenScaling?: boolean
+  visibilityToggles?: boolean
+  onCopyClick: (e: React.MouseEvent) => void
+  onChangeServerUrl: (e: React.ChangeEvent<HTMLInputElement>) => void
+  onChangeFullscreenScaling?: (e: React.ChangeEvent<HTMLInputElement>) => void
+  onChangeVisibilityToggles?: (e: React.ChangeEvent<HTMLInputElement>) => void
 }
 export const LaraApiTabContents: React.FC<ILaraApiTabProps> = ({
         mode, linkUrl, serverUrlLabel, serverUrl, fullscreenScaling, visibilityToggles,
@@ -108,8 +108,8 @@ export const LaraApiTabContents: React.FC<ILaraApiTabProps> = ({
 }
 
 interface ILinkTabProps {
-  url: string;
-  onCopyClick: (e: React.MouseEvent) => void;
+  url: string
+  onCopyClick: (e: React.MouseEvent) => void
 }
 export const LinkTabContents: React.FC<ILinkTabProps> = ({ url, onCopyClick }) => {
   const encodedUrl = encodeURIComponent(url)
@@ -133,22 +133,22 @@ export const LinkTabContents: React.FC<ILinkTabProps> = ({ url, onCopyClick }) =
 
 export type ShareDialogTab = 'api' | 'embed' | 'lara' | 'link'
 export interface IShareDialogLaraApiTabProps {
-  linkUrl: string;
-  serverUrlLabel: string;
-  serverUrl: string;
-  onChangeServerUrl: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  linkUrl: string
+  serverUrlLabel: string
+  serverUrl: string
+  onChangeServerUrl: (e: React.ChangeEvent<HTMLInputElement>) => void
 }
 interface IShareDialogTabsProps {
-  tabSelected: ShareDialogTab;
-  linkUrl: string;
-  embedUrl: string;
-  interactiveApi?: IShareDialogLaraApiTabProps;
-  fullscreenScaling?: boolean;
-  visibilityToggles?: boolean;
-  onChangeFullscreenScaling?: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  onChangeVisibilityToggles?: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  onSelectTab: (tab: ShareDialogTab) => void;
-  onCopyClick: (e: React.MouseEvent) => void;
+  tabSelected: ShareDialogTab
+  linkUrl: string
+  embedUrl: string
+  interactiveApi?: IShareDialogLaraApiTabProps
+  fullscreenScaling?: boolean
+  visibilityToggles?: boolean
+  onChangeFullscreenScaling?: (e: React.ChangeEvent<HTMLInputElement>) => void
+  onChangeVisibilityToggles?: (e: React.ChangeEvent<HTMLInputElement>) => void
+  onSelectTab: (tab: ShareDialogTab) => void
+  onCopyClick: (e: React.MouseEvent) => void
 }
 export const ShareDialogTabsView: React.FC<IShareDialogTabsProps> = ({
               tabSelected, embedUrl, linkUrl, interactiveApi, onSelectTab, onCopyClick, ...others

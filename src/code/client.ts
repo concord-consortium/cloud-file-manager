@@ -42,20 +42,20 @@ let CLOUDFILEMANAGER_EVENT_ID = 0
 const CLOUDFILEMANAGER_EVENTS: Record<number, CloudFileManagerClientEvent> = {}
 
 interface IClientState {
-  availableProviders: any[];
-  shareProvider?: any;
-  openedContent?: any;
-  currentContent?: any;
-  metadata?: CloudMetadata;
-  saving?: CloudMetadata | null;
-  saved?: boolean;
-  sharing?: boolean;
-  dirty?: boolean;
-  failures?: number;
-  showingSaveAlert?: boolean;
+  availableProviders: any[]
+  shareProvider?: any
+  openedContent?: any
+  currentContent?: any
+  metadata?: CloudMetadata
+  saving?: CloudMetadata | null
+  saved?: boolean
+  sharing?: boolean
+  dirty?: boolean
+  failures?: number
+  showingSaveAlert?: boolean
 }
 
-export type ClientEventCallback = (...args: any) => void;
+export type ClientEventCallback = (...args: any) => void
 
 
 class CloudFileManagerClientEvent {
@@ -88,8 +88,8 @@ class CloudFileManagerClientEvent {
   }
 }
 
-export type ClientEventListener = (event: CloudFileManagerClientEvent) => void;
-export type OpenSaveCallback = (content: any, metadata: CloudMetadata, savedContent?: any) => void;
+export type ClientEventListener = (event: CloudFileManagerClientEvent) => void
+export type OpenSaveCallback = (content: any, metadata: CloudMetadata, savedContent?: any) => void
 
 class CloudFileManagerClient {
   _autoSaveInterval: number
@@ -103,7 +103,7 @@ class CloudFileManagerClient {
   state: IClientState
   urlProvider: URLProvider
   connectedPromise: Promise<void>
-  connectedPromiseResolver: { resolve: () => void; reject: () => void }
+  connectedPromiseResolver: { resolve: () => void, reject: () => void }
 
   constructor(options?: any) {
     this.shouldAutoSave = this.shouldAutoSave.bind(this)
@@ -139,7 +139,7 @@ class CloudFileManagerClient {
     if (this.appOptions.wrapFileContent == null) { this.appOptions.wrapFileContent = true }
     CloudContent.wrapFileContent = this.appOptions.wrapFileContent
 
-    type ProviderClass = any;
+    type ProviderClass = any
     const allProviders: Record<string, ProviderClass> = {}
 
     // Determine the available providers. Note that order in the list can

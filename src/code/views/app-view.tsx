@@ -58,32 +58,32 @@ const InnerApp = createReactClassFactory({
 })
 
 interface IAppViewProps {
-  client?: CloudFileManagerClient;
-  ui?: CFMUIOptions;
-  appOrMenuElemId?: string;
-  hideMenuBar?: boolean;
-  enableLaraSharing?: boolean;
-  usingIframe?: boolean;
-  app?: string;   // src url for <iframe>
-  iframeAllow?: string;
+  client?: CloudFileManagerClient
+  ui?: CFMUIOptions
+  appOrMenuElemId?: string
+  hideMenuBar?: boolean
+  enableLaraSharing?: boolean
+  usingIframe?: boolean
+  app?: string   // src url for <iframe>
+  iframeAllow?: string
 }
 
 interface IAppViewState {
-  filename: string | null;
-  provider?: any;
-  menuItems: CFMMenuItem[];
-  menuOptions: CFMMenuBarOptions;
-  providerDialog: null | Record<string, any>;
-  downloadDialog: null | Record<string, any>;
-  renameDialog: null | Record<string, any>;
-  shareDialog: null | CFMShareDialogSettings;
-  blockingModalProps: null | Record<string, any>;
-  alertDialog: null | Record<string, any>;
-  confirmDialog: null | Record<string, any>;
-  importDialog: null | Record<string, any>;
+  filename: string | null
+  provider?: any
+  menuItems: CFMMenuItem[]
+  menuOptions: CFMMenuBarOptions
+  providerDialog: null | Record<string, any>
+  downloadDialog: null | Record<string, any>
+  renameDialog: null | Record<string, any>
+  shareDialog: null | CFMShareDialogSettings
+  blockingModalProps: null | Record<string, any>
+  alertDialog: null | Record<string, any>
+  confirmDialog: null | Record<string, any>
+  importDialog: null | Record<string, any>
   selectInteractiveStateDialog: null | SelectInteractiveStateDialogProps
-  fileStatus?: { message: string, type: string };
-  dirty: boolean;
+  fileStatus?: { message: string, type: string }
+  dirty: boolean
 }
 
 class AppView extends React.Component<IAppViewProps, IAppViewState> {

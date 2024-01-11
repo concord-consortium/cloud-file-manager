@@ -2,9 +2,9 @@ import React from "react"
 import ModalView from "./modal-view"
 
 interface IProps {
-  title?: string;
-  zIndex?: number;
-  close?: () => void;
+  title?: string
+  zIndex?: number
+  close?: () => void
 }
 const ModalDialogView: React.FC<IProps> = ({ title, zIndex = 10, close, children }) => {
   return (

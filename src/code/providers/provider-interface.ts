@@ -4,14 +4,14 @@ import _ from 'lodash'
 
 const FILE_EXTENSION_DELIMETER = "."
 
-export type ProviderSaveCallback = (err: string | null, statusCode?: number, savedContent?: any) => void;
+export type ProviderSaveCallback = (err: string | null, statusCode?: number, savedContent?: any) => void
 
 export type ProviderOpenCallback = (err: string | null, content?: CloudContent, metadata?: CloudMetadata) => void
 export type ProviderLoadCallback = ProviderOpenCallback
 
 export type ProviderListCallback = (err: string | null, list?: CloudMetadata[]) => void
 
-export type ProviderRenameCallback = (err: string | null, metadata?: CloudMetadata) => void;
+export type ProviderRenameCallback = (err: string | null, metadata?: CloudMetadata) => void
 
 export type ProviderRemoveCallback = (err: string) => void
 
@@ -29,8 +29,8 @@ export enum ICloudFileTypes {
 
 type CloudFileContentType = string
 interface ICloudFileOpts {
-  content: CloudFileContentType;
-  metadata: CloudMetadata;
+  content: CloudFileContentType
+  metadata: CloudMetadata
 }
 
 class CloudFile {
@@ -367,10 +367,10 @@ type IProviderCapabilities = {
 export type AuthorizedOptions = {forceAuthorization?: boolean}
 
 export interface IProviderInterfaceOpts {
-  name: string;             // name by which it is referenced internally
-  displayName?: string;     // name which is displayed to users
-  urlDisplayName?: string;  // name that is used for url parameter matching
-  capabilities: IProviderCapabilities;
+  name: string             // name by which it is referenced internally
+  displayName?: string     // name which is displayed to users
+  urlDisplayName?: string  // name that is used for url parameter matching
+  capabilities: IProviderCapabilities
 }
 
 export interface IListOptions {
