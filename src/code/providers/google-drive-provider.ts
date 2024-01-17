@@ -235,7 +235,8 @@ const GoogleFileDialogTabView = createReactClassFactory({
       return (
         div({ className: "provider-message" },
           div({}, span({ style: { marginRight: 5 } }, tr("~GOOGLE_DRIVE.USERNAME_LABEL")), strong({}, user.name)),
-          div({ className: "provider-message-action", onClick: this.props.logout }, tr("~GOOGLE_DRIVE.SELECT_DIFFERENT_ACCOUNT"))
+          // HOTFIX: remove this until we can figure out why it is requesting more scopes
+          // div({ className: "provider-message-action", onClick: this.props.logout }, tr("~GOOGLE_DRIVE.SELECT_DIFFERENT_ACCOUNT"))
         )
       )
     }
