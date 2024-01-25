@@ -57,15 +57,19 @@ interface IClientState {
 
 export type ClientEventCallback = (...args: any) => void
 
+export type CFMFileChangedEventType = "renamedFile" | "savedFile" | "sharedFile" | "unsharedFile"
+export type CFMFileEventType = CFMFileChangedEventType | "closedFile" | "newedFile" | "openedFile" | "willOpenFile"
+export type CloudFileManagerEventType = "connected" | "getContent" | "importedData" | "log" | "ready" |
+              "rendered" | "requiresUserInteraction" | "stateChanged" | CFMFileEventType
 
 class CloudFileManagerClientEvent {
   callback: ClientEventCallback
   data: any
   id: number
   state: Partial<IClientState>
-  type: string
+  type: CloudFileManagerEventType
 
-  constructor(type: string, data?: any, callback: ClientEventCallback = null, state?: Partial<IClientState>) {
+  constructor(type: CloudFileManagerEventType, data?: any, callback: ClientEventCallback = null, state?: Partial<IClientState>) {
     this.type = type
     if (data == null) { data = {} }
     this.data = data
@@ -138,6 +142,7 @@ class CloudFileManagerClient {
     this.appOptions = appOptions
     if (this.appOptions.wrapFileContent == null) { this.appOptions.wrapFileContent = true }
     CloudContent.wrapFileContent = this.appOptions.wrapFileContent
+    if (this.appOptions.isClientContent) cloudContentFactory.isClientContent = this.appOptions.isClientContent
 
     type ProviderClass = any
     const allProviders: Record<string, ProviderClass> = {}
@@ -1274,7 +1279,7 @@ class CloudFileManagerClient {
     }
   }
 
-  _fileChanged(type: 'savedFile' | 'sharedFile' | 'unsharedFile' | 'renamedFile', content: any, metadata: CloudMetadata, additionalState?: any, hashParams: string = null) {
+  _fileChanged(type: CFMFileChangedEventType, content: any, metadata: CloudMetadata, additionalState?: any, hashParams: string = null) {
     if (additionalState == null) { additionalState = {} }
 
     this._updateMetaDataOverwritable(metadata)
@@ -1323,7 +1328,7 @@ class CloudFileManagerClient {
     return this._setState(state)
   }
 
-  _event(type: string, data?: any, eventCallback: ClientEventCallback = null) {
+  _event(type: CloudFileManagerEventType, data?: any, eventCallback: ClientEventCallback = null) {
     if (data == null) { data = {} }
     const event = new CloudFileManagerClientEvent(type, data, eventCallback, this.state)
     for (let listener of this._listeners) {

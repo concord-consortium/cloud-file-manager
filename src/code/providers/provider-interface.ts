@@ -2,7 +2,7 @@ import React from "react"
 import isString  from '../utils/is-string'
 import _ from 'lodash'
 
-const FILE_EXTENSION_DELIMETER = "."
+const FILE_EXTENSION_DELIMITER = "."
 
 export type ProviderSaveCallback = (err: string | null, statusCode?: number, savedContent?: any) => void
 
@@ -101,7 +101,7 @@ class CloudMetadata {
   }
 
   static nameIncludesExtension(name: string) {
-    return name.indexOf(FILE_EXTENSION_DELIMETER) >= 0
+    return name.indexOf(FILE_EXTENSION_DELIMITER) >= 0
   }
 
   static withExtension(name: string, defaultExtension?: string, keepOriginalExtension?: boolean) {
@@ -166,6 +166,13 @@ interface IEnvelopeMetaData {
 
 // singleton that can create CloudContent wrapped with global options
 class CloudContentFactory {
+  // For backward compatibility, by default we assume that a top-level `metadata`
+  // property indicates an unwrapped client document (e.g. CODAP v2). Clients can
+  // override this assumption with the `isClientContent` configuration option.
+  isClientContent = (content: unknown) => {
+    return typeof content === "object" && "metadata" in content && !!content.metadata
+  }
+
   envelopeMetadata: IEnvelopeMetaData
   constructor() {
     this.envelopeMetadata = {
@@ -207,11 +214,8 @@ class CloudContentFactory {
         // noop, just checking if it's valid json
       }
     }
-    // Currently, we assume 'metadata' is top-level property in
-    // non-CFM-wrapped documents. Could put in a client callback
-    // that would identify whether the document required
-    // conversion to eliminate this assumption from the CFM.
-    if ((content as CloudContent).metadata) {
+    // If looks like client content, then it's neither wrapped nor pre-CFM.
+    if (this.isClientContent(content)) {
       return result
     }
     if (
@@ -273,7 +277,9 @@ class CloudContent {
 
   // returns the client-visible content (excluding wrapper for wrapped clients)
   getClientContent() {
-    return this.content.content ?? this.content
+    return CloudContent.wrapFileContent
+            ? this.content.content
+            : this.content
   }
 
   requiresConversion() {

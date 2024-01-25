@@ -14,9 +14,9 @@ mockApi.getInitInteractiveMessage.mockImplementation(() => Promise.resolve({
 describe("CloudFileManagerClientEvent", () => {
 
   test('increments id with each event registered', () => {
-    const clientEvent = new CloudFileManagerClientEvent("any")
+    const clientEvent = new CloudFileManagerClientEvent("connected")
     expect(clientEvent.id).toBe(1)
-    const clientEvent2 = new CloudFileManagerClientEvent("any")
+    const clientEvent2 = new CloudFileManagerClientEvent("ready")
     expect(clientEvent2.id).toBe(2)
   })
 })
