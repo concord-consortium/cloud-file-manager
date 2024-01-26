@@ -145,9 +145,9 @@ class AppView extends React.Component<IAppViewProps, IAppViewState> {
         case 'connected':
           return this.setState({menuItems: (this.props.client._ui.menu != null ? this.props.client._ui.menu.items : undefined) || []})
       }
-  })
+    })
 
-    return this.props.client._ui.listen((event: CloudFileManagerUIEvent) => {
+    this.props.client._ui.listen((event: CloudFileManagerUIEvent) => {
       const {menuOptions} = this.state
       switch (event.type) {
         case 'showProviderDialog':
@@ -215,6 +215,8 @@ class AppView extends React.Component<IAppViewProps, IAppViewState> {
           return this.setState({menuOptions: this.state.menuOptions})
       }
     })
+
+    this.props.client._ui.resolveIsInitialized(true)
   }
 
   _getMenuItemIndex = (key: string) => {

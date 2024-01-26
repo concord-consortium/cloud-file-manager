@@ -132,6 +132,7 @@ export interface CFMAppOptions {
   // false (default) if CFM sets page title from document name
   appSetsWindowTitle?: boolean
   wrapFileContent?: boolean
+  isClientContent?: (content: unknown) => boolean
   mimeType?: string
   // note different capitalization from CFMBaseProviderOptions
   readableMimeTypes?: string[]

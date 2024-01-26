@@ -133,6 +133,11 @@ class CloudFileManagerUI {
   client: CloudFileManagerClient
   listenerCallbacks: UIEventListenerCallback[]
   menu: CloudFileManagerUIMenu
+  // set up promise to be resolved when initialization is complete
+  resolveIsInitialized: (isInitialized: boolean) => void
+  isInitialized = new Promise<boolean>((resolve, reject) => {
+    this.resolveIsInitialized = resolve
+  })
 
   constructor(client: CloudFileManagerClient) {
     this.client = client
@@ -157,7 +162,10 @@ class CloudFileManagerUI {
   }
 
   listenerCallback(evt: CloudFileManagerUIEvent) {
-    return Array.from(this.listenerCallbacks).map((callback) => callback(evt))
+    // wait until listeners have been installed before calling them
+    this.isInitialized.then(() => {
+      Array.from(this.listenerCallbacks).map((callback) => callback(evt))
+    })
   }
 
   appendMenuItem(item: CFMMenuItem) {
