@@ -2,7 +2,7 @@
   "name": "@concord-consortium/cloud-file-manager",
   "description": "Wrapper for providing file management for web applications",
   "author": "The Concord Consortium",
-  "version": "2.0.0-pre.2",
+  "version": "2.0.0-pre.3",
   "repository": {
     "type": "git",
     "url": "https://github.com/concord-consortium/cloud-file-manager"
@@ -97,7 +97,7 @@
     "clean": "rimraf dist",
     "build": "npm run clean && NODE_ENV=development webpack",
     "build:all": "npm run build:production && npm run build:library",
-    "build:library": "tsc -p tsconfig-cjs.json && tsc -p tsconfig-esm.json",
+    "build:library": "./bin/build-library.sh",
     "build:production": "npm run clean && NODE_ENV=production webpack",
     "build:codap": "npm run clean && cross-env-shell NODE_ENV=production dest=../codap/apps/dg/resources/cloud-file-manager codap=1 noGlobals=1 noMap=1 'webpack && mv $dest/js/app.js $dest/js/app.js.ignore'",
     "build:codap:development": "npm run clean && cross-env-shell NODE_ENV=development dest=../codap/apps/dg/resources/cloud-file-manager codap=1 noGlobals=1 noMap=1 'webpack && mv $dest/js/app.js $dest/js/app.js.ignore'",
