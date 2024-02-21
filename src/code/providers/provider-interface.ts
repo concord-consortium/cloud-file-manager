@@ -166,14 +166,8 @@ interface IEnvelopeMetaData {
 
 // singleton that can create CloudContent wrapped with global options
 class CloudContentFactory {
-  // For backward compatibility, by default we assume that a top-level `metadata`
-  // property indicates an unwrapped client document (e.g. CODAP v2). Clients can
-  // override this assumption with the `isClientContent` configuration option.
-  isClientContent = (content: unknown) => {
-    return typeof content === "object" && "metadata" in content && !!content.metadata
-  }
-
   envelopeMetadata: IEnvelopeMetaData
+
   constructor() {
     this.envelopeMetadata = {
       // replaced by version number at build time
@@ -215,7 +209,7 @@ class CloudContentFactory {
       }
     }
     // If looks like client content, then it's neither wrapped nor pre-CFM.
-    if (this.isClientContent(content)) {
+    if (CloudContent.isClientContent(content)) {
       return result
     }
     if (
@@ -237,7 +231,7 @@ class CloudContentFactory {
         // noop, just checking if it's json or plain text
       }
     }
-    if ((typeof content === "object") && (content?.content != null)) {
+    if ((typeof content === "object") && (content?.content != null) && !CloudContent.isClientContent(content)) {
       return content
     } else {
       return {content}
@@ -251,7 +245,17 @@ export interface CloudContentFormat {
 }
 
 class CloudContent {
+  // Client content is always wrapped by the CFM while it is being handled internally.
+  // This setting controls whether content is stored to file/disk in its wrapped form
+  // or whether it should be unwrapped before serializing to file/disk.
   static wrapFileContent: boolean = true
+
+  // For backward compatibility, by default we assume that a top-level `metadata`
+  // property indicates an unwrapped client document (e.g. CODAP v2). Clients can
+  // override this assumption with the `isClientContent` configuration option.
+  static isClientContent = (content: unknown) => {
+    return typeof content === "object" && "metadata" in content && !!content.metadata
+  }
 
   // TODO: These should probably be private, but there is some refactoring
   // that has to happen to make this possible
@@ -264,7 +268,8 @@ class CloudContent {
     this.contentFormat = contentFormat
   }
 
-  // getContent and getContentAsJSON return the file content as stored on disk
+  // getContent and getContentAsJSON return the file content as stored on disk.
+  // They are expected to be called on internally wrapped content.
   getContent() {
     return CloudContent.wrapFileContent
             ? this.content
@@ -275,11 +280,15 @@ class CloudContent {
     return JSON.stringify(this.getContent())
   }
 
-  // returns the client-visible content (excluding wrapper for wrapped clients)
+  // Returns the client-visible content (excluding wrapper).
+  // Note that this can be called with wrapped or unwrapped content independent of the `wrapFileContent`
+  // setting, because CFM wraps content internally, so we need to inspect the content.
   getClientContent() {
-    return CloudContent.wrapFileContent
-            ? this.content.content
-            : this.content
+    // if we can specifically identify client content, then return it
+    if (CloudContent.isClientContent(this.content?.content)) return this.content.content
+    if (CloudContent.isClientContent(this.content)) return this.content
+    // otherwise, assume that a nested `content` property means we are wrapped
+    return this.content?.content ?? this.content
   }
 
   requiresConversion() {

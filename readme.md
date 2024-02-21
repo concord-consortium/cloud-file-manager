@@ -189,6 +189,8 @@ export interface CFMAppOptions {
   // true if the application sets the page title
   // false (default) if CFM sets page title from document name
   appSetsWindowTitle?: boolean
+  // true if the content stored to file/disk should be wrapped with CFM metadata
+  // false if the content should be unwrapped before storing to file/disk
   wrapFileContent?: boolean
   mimeType?: string
   // note different capitalization from CFMBaseProviderOptions

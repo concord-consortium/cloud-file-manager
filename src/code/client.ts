@@ -142,7 +142,7 @@ class CloudFileManagerClient {
     this.appOptions = appOptions
     if (this.appOptions.wrapFileContent == null) { this.appOptions.wrapFileContent = true }
     CloudContent.wrapFileContent = this.appOptions.wrapFileContent
-    if (this.appOptions.isClientContent) cloudContentFactory.isClientContent = this.appOptions.isClientContent
+    if (this.appOptions.isClientContent) CloudContent.isClientContent = this.appOptions.isClientContent
 
     type ProviderClass = any
     const allProviders: Record<string, ProviderClass> = {}
