@@ -288,9 +288,7 @@ class CloudContent {
     if (CloudContent.isClientContent(this.content?.content)) return this.content.content
     if (CloudContent.isClientContent(this.content)) return this.content
     // otherwise, assume that a nested `content` property means we are wrapped
-    return this.content?.content
-            ? this.content.content
-            : this.content
+    return this.content?.content ?? this.content
   }
 
   requiresConversion() {

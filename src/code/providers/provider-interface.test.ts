@@ -25,9 +25,7 @@ describe("ProviderInterface", () => {
     CloudContent.isClientContent = (inContent: any) => !!inContent?.content?.isContent
     expect(CloudContent.isClientContent(docContent)).toBe(true)
     const wrappedContent = cloudContentFactory.createEnvelopedCloudContent(docContent)
-    console.log(wrappedContent)
     const unwrappedContent = wrappedContent.getClientContent()
-    console.log(unwrappedContent)
     expect(CloudContent.isClientContent(unwrappedContent)).toBe(true)
     expect(unwrappedContent).toEqual(docContent)
   })
