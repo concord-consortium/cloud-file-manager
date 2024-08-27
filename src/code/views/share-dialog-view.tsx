@@ -240,23 +240,25 @@ export default class ShareDialogView extends React.Component<IShareDialogProps, 
 
   render() {
     const { isShared } = this.props
-    const { isLoadingShared, link } = this.state
-    const sharing = isShared || (link != null)
+    const { isLoadingShared } = this.state
+    const shareUrl = this.getShareLink()
+    const embedUrl = this.getEmbed()
+    const sharing = isShared || (shareUrl != null)
     return (
       <ModalDialogView title={translate('~DIALOG.SHARED')} close={this.props.close}>
         <div className='share-dialog' data-testid='share-dialog'>
           <div className='share-top-dialog'>
             {isLoadingShared
               ? <ShareLoadingView />
-              : <ShareDialogStatusView isSharing={sharing} previewLink={this.state.link}
+              : <ShareDialogStatusView isSharing={sharing} previewLink={shareUrl}
                   onToggleShare={this.toggleShare} onUpdateShare={this.updateShare}/>}
           </div>
 
           {sharing &&
             <ShareDialogTabsView
               tabSelected={this.state.tabSelected}
-              linkUrl={this.state.link}
-              embedUrl={this.state.embed}
+              linkUrl={shareUrl}
+              embedUrl={embedUrl}
               interactiveApi={this.props.enableLaraSharing
                 ? {
                     linkUrl: this.getInteractiveApiLink(),
