@@ -10,12 +10,12 @@ import $ from 'jquery'
 import _ from 'lodash'
 import mime from 'mime'
 
-import tr from './utils/translate'
+import tr, { setCurrentLanguage } from './utils/translate'
 import isString from './utils/is-string'
 import base64Array from 'base64-js' // https://github.com/beatgammit/base64-js
 import getQueryParam from './utils/get-query-param'
 
-import { CFMAppOptions, CFMMenuItem, isCustomClientProvider } from './app-options'
+import { CFMAppOptions, CFMMenuItem, CFMUIMenuOptions, isCustomClientProvider } from './app-options'
 import { CloudFileManagerUI, UIEventCallback }  from './ui'
 
 import LocalStorageProvider  from './providers/localstorage-provider'
@@ -347,6 +347,10 @@ class CloudFileManagerClient {
     for (let provider of this.state.availableProviders) {
       if (provider.canAuto(capability)) { return provider }
     }
+  }
+
+  replaceMenu(options: CFMUIMenuOptions) {
+    this._ui.replaceMenu(options)
   }
 
   appendMenuItem(item: CFMMenuItem) {
@@ -1162,6 +1166,7 @@ class CloudFileManagerClient {
   }
 
   changeLanguage(newLangCode: string, callback: (newLangCode?: string) => void) {
+    setCurrentLanguage(newLangCode)
     if (callback) {
       const postSave = (err: string | null) => {
         if (err) {

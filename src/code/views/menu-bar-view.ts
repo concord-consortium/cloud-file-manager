@@ -12,7 +12,7 @@ import ReactDOMFactories from "react-dom-factories"
 import { createReactFactory } from '../create-react-factory'
 import DropDownView from "./dropdown-view"
 import {TriangleOnlyAnchor} from './dropdown-anchors'
-import tr from '../utils/translate'
+import tr, { getCurrentLanguage } from '../utils/translate'
 
 const {div, i, span, input} = ReactDOMFactories
 const Dropdown = createReactFactory(DropDownView)
@@ -158,9 +158,10 @@ export default createReactClass({
 
   renderLanguageMenu() {
     const langMenu = this.props.options.languageMenu
+    const currentLang = getCurrentLanguage()
     const items = langMenu.options
       // Do not show current language in the menu.
-      .filter((option: any) => option.langCode !== langMenu.currentLang)
+      .filter((option: any) => currentLang !== option.langCode)
       .map((option: any) => {
         let className
         const label = option.label || option.langCode.toUpperCase()
@@ -172,7 +173,7 @@ export default createReactClass({
       })
 
     const hasFlags = langMenu.options.filter((option: any) => option.flag != null).length > 0
-    const currentOption = langMenu.options.filter((option: any) => option.langCode === langMenu.currentLang)[0]
+    const currentOption = langMenu.options.filter((option: any) => currentLang === option.langCode)[0]
     const defaultOption = hasFlags ? {flag: "us"} : {label: "English"}
     const {flag, label} = currentOption || defaultOption
     const menuAnchor = flag ?

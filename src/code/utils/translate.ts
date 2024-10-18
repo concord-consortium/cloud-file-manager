@@ -32,22 +32,22 @@ interface LanguageFileEntry {
 }
 
 const languageFiles: LanguageFileEntry[] = [
-  {key: 'de',    contents: de},     // German
-  {key: 'el',    contents: el},     // Greek
-  {key: 'en-US', contents: enUS},   // US English
-  {key: 'es',    contents: es},     // Spanish
-  {key: 'fa',    contents: fa},     // Farsi (Persian)
-  {key: 'he',    contents: he},     // Hebrew
-  {key: 'ja' ,   contents: ja},     // Japanese
-  {key: 'ko' ,   contents: ko},     // Korean
-  {key: 'nb',    contents: nb},     // Norwegian Bokmål
-  {key: 'nn',    contents: nn},     // Norwegian Nynorsk
-  {key: 'pl',    contents: pl},     // Polish Polski
-  {key: 'pt-BR', contents: ptBR},   // Brazilian Portuguese
-  {key: 'th',    contents: th},     // Thai
-  {key: 'tr',    contents: tr},     // Turkish
-  {key: 'zh',    contents: zhHans}, // Simplified Chinese
-  {key: 'zh-TW', contents: zhTW}    // Traditional Chinese (Taiwan)
+  {key: 'de',       contents: de},     // German
+  {key: 'el',       contents: el},     // Greek
+  {key: 'en-US',    contents: enUS},   // US English
+  {key: 'es',       contents: es},     // Spanish
+  {key: 'fa',       contents: fa},     // Farsi (Persian)
+  {key: 'he',       contents: he},     // Hebrew
+  {key: 'ja' ,      contents: ja},     // Japanese
+  {key: 'ko' ,      contents: ko},     // Korean
+  {key: 'nb',       contents: nb},     // Norwegian Bokmål
+  {key: 'nn',       contents: nn},     // Norwegian Nynorsk
+  {key: 'pl',       contents: pl},     // Polish Polski
+  {key: 'pt-BR',    contents: ptBR},   // Brazilian Portuguese
+  {key: 'th',       contents: th},     // Thai
+  {key: 'tr',       contents: tr},     // Turkish
+  {key: 'zh-Hans',  contents: zhHans}, // Simplified Chinese
+  {key: 'zh-TW',    contents: zhTW}    // Traditional Chinese (Taiwan)
 ]
 
 // returns baseLANG from baseLANG-REGION if REGION exists
@@ -84,23 +84,33 @@ languageFiles.forEach(function(lang) {
 
 const lang = (urlParams as any).lang || getPageLanguage() || getFirstBrowserLanguage()
 const baseLang = getBaseLanguage(lang || '')
-// CODAP/Sproutcore lower cases language in documentElement
-const defaultLang = lang && translations[lang.toLowerCase()] ? lang : baseLang && translations[baseLang] ? baseLang : "en"
+// CODAP/SproutCore lower cases language in documentElement
+const defaultLang: string = lang && translations[lang.toLowerCase()] ? lang : baseLang && translations[baseLang] ? baseLang : "en"
+
+let gCurrentLanguage = defaultLang
+
+export function getCurrentLanguage() {
+  return gCurrentLanguage
+}
+
+export function setCurrentLanguage(lang: string) {
+  gCurrentLanguage = lang
+}
 
 // console.log(`CFM: using ${defaultLang} for translation (lang is "${(urlParams as any).lang}" || "${getFirstBrowserLanguage()}")`)
 
 const varRegExp = /%\{\s*([^}\s]*)\s*\}/g
 
-const translate = function(key: string, vars?: Record<string ,string>, lang?: string) {
+const translate = function(key: string, vars?: Record<string, string>, lang?: string) {
   if (vars == null) { vars = {} }
-  if (lang == null) { lang = defaultLang }
+  if (lang == null) { lang = gCurrentLanguage }
   lang = lang.toLowerCase()
   let translation = translations[lang] != null ? translations[lang][key] : undefined
   if ((translation == null)) { translation = key }
   return translation.replace(varRegExp, function(match: string, key: string) {
     return Object.prototype.hasOwnProperty.call(vars, key)
             ? vars[key]
-            : `'** UKNOWN KEY: ${key} **`
+            : `'** UNKNOWN KEY: ${key} **`
   })
 }
 
