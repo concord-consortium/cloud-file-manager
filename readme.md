@@ -138,8 +138,8 @@ export interface CFMMenuBarOptions {
   languageMenu?: {
     currentLang: string
     options: { label: string, langCode: string }[]
+    onLangChanged?: (langCode: string) => void
   }
-  onLangChanged?: (langCode: string) => void
 }
 
 export interface CFMShareDialogSettings {

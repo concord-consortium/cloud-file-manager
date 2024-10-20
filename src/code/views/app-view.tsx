@@ -172,6 +172,8 @@ class AppView extends React.Component<IAppViewProps, IAppViewState> {
           return this.setState({confirmDialog: event.data})
         case 'showSelectInteractiveStateDialog':
           return this.setState({selectInteractiveStateDialog: event.data})
+        case 'replaceMenu':
+          return this.setState({ menuItems: this.props.client._ui.menu.items })
         case 'appendMenuItem':
           this.state.menuItems.push(event.data)
           return this.setState({menuItems: this.state.menuItems})

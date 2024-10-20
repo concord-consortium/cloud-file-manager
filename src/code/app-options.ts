@@ -19,8 +19,8 @@ export interface CFMMenuBarOptions {
   languageMenu?: {
     currentLang: string
     options: { label: string, langCode: string }[]
+    onLangChanged?: (langCode: string) => void
   }
-  onLangChanged?: (langCode: string) => void
 }
 
 export interface CFMShareDialogSettings {
@@ -28,12 +28,15 @@ export interface CFMShareDialogSettings {
   serverUrlLabel?: string
 }
 
-export interface CFMUIOptions {
-  menuBar?: CFMMenuBarOptions
+export interface CFMUIMenuOptions {
   // null => no menu; undefined => default menu
   menu?: CFMMenu | null
   // map from menu item string to menu display name for string-only menu items
   menuNames?: Record<string, string>
+}
+
+export interface CFMUIOptions extends CFMUIMenuOptions {
+  menuBar?: CFMMenuBarOptions
   // used for setting the page title from the document name (see appSetsWindowTitle)
   windowTitleSuffix?: string
   windowTitleSeparator?: string

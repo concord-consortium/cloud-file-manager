@@ -2,10 +2,10 @@
   "name": "@concord-consortium/cloud-file-manager",
   "description": "Wrapper for providing file management for web applications",
   "author": "The Concord Consortium",
-  "version": "2.0.0-pre.4",
+  "version": "2.0.0-pre.6",
   "repository": {
     "type": "git",
-    "url": "https://github.com/concord-consortium/cloud-file-manager"
+    "url": "git+https://github.com/concord-consortium/cloud-file-manager.git"
   },
   "engines": {
     "node": ">= 16",
@@ -107,7 +107,7 @@
     "publish:npm:next": "npm publish --access public --tag next",
     "publish:npm:next:preview": "npm publish --access public --tag next --dry-run",
     "publish:yalc": "npx yalc publish",
-    "strings:build": "./node_modules/.bin/strip-json-comments src/code/utils/lang/en-US-master.json > src/code/utils/lang/en-US.json",
+    "strings:build": "strip-json-comments src/code/utils/lang/en-US-master.json > src/code/utils/lang/en-US.json",
     "strings:pull:usage": "echo Usage: `npm run strings:pull -- -a <poeditor_api_key>`",
     "strings:pull": "./bin/strings-pull-project.sh",
     "strings:push:usage": "echo Usage: `npm run strings:push -- -a <poeditor_api_key>`",
