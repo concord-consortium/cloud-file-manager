@@ -9,7 +9,7 @@
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
  */
 import { CloudFileManagerClient } from './client'
-import { CFMMenu, CFMMenuItem, CFMUIOptions } from './app-options'
+import { CFMMenu, CFMMenuItem, CFMUIMenuOptions, CFMUIOptions } from './app-options'
 import tr  from './utils/translate'
 import isString  from './utils/is-string'
 import { SelectInteractiveStateDialogProps } from './views/select-interactive-state-dialog-view'
@@ -29,9 +29,9 @@ class CloudFileManagerUIMenu {
   static DefaultMenu: CFMMenu = ['newFileDialog', 'openFileDialog', 'revertSubMenu', 'separator', 'save', 'createCopy', 'shareSubMenu', 'renameDialog']
 
   items: CFMMenuItem[]
-  options: CFMUIOptions
+  options: CFMUIMenuOptions
 
-  constructor(options: CFMUIOptions, client: CloudFileManagerClient) {
+  constructor(options: CFMUIMenuOptions, client: CloudFileManagerClient) {
     this.options = options
     this.items = this.parseMenuItems(options.menu, client)
   }
@@ -97,7 +97,7 @@ class CloudFileManagerUIMenu {
       const item = menuItems[i]
       if (item === 'separator') {
         menuItem = {
-          key: `seperator${i}`,
+          key: `separator${i}`,
           separator: true
         }
       } else if (isString(item)) {
@@ -166,6 +166,11 @@ class CloudFileManagerUI {
     this.isInitialized.then(() => {
       Array.from(this.listenerCallbacks).map((callback) => callback(evt))
     })
+  }
+
+  replaceMenu(options: CFMUIMenuOptions) {
+    this.menu = new CloudFileManagerUIMenu(options, this.client)
+    this.listenerCallback(new CloudFileManagerUIEvent('replaceMenu', options))
   }
 
   appendMenuItem(item: CFMMenuItem) {
