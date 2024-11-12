@@ -72,6 +72,14 @@
       function openLocalFile(e) {
         cfmClient && cfmClient.openLocalFile(e.target.files[0]);
       }
+
+      function openLocalFileWithConfirmation(e) {
+        cfmClient && cfmClient.openLocalFileWithConfirmation(e.target.files[0]);
+      }
+
+      function clearInput(event) {
+        event.target.value = null;
+      }
     </script>
   </head>
   <body>
@@ -90,10 +98,16 @@
       <button onclick="saveSecondaryFileAs()">Export Separate File</button>
     </div>
     <div>
-      Import Local File: <input type="file" onchange="importLocalFile(event)">
+      Import Local File: 
+      <input type="file" onchange="importLocalFile(event)" onclick="clearInput(event)">
     </div>
     <div>
-      Open Local File: <input type="file" onchange="openLocalFile(event)">
+      Open Local File:
+      <input type="file" onchange="openLocalFile(event)" onclick="clearInput(event)">
+    </div>
+    <div>
+      Open Local File with Confirmation: 
+      <input type="file" oninput="openLocalFileWithConfirmation(event)" onclick="clearInput(event)">
     </div>
     <script type="text/javascript">
       var cfm = parent && parent.CloudFileManager ? parent.CloudFileManager : null,

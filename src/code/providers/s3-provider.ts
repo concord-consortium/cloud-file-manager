@@ -13,7 +13,7 @@ import tr from '../utils/translate'
 
 // New method for sharing read only documents using S3.
 // The readWrite key must be retained in the original document
-// so that the shared document can be upadted.
+// so that the shared document can be updated.
 // Based on the historical `document-store-share-provider`
 class S3Provider extends ProviderInterface {
   public static Name = 's3-provider'

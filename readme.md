@@ -7,6 +7,8 @@ The Cloud File Manager is a Javascript library that enables applications to save
 * Local and remote read-only files
 * Browser LocalStorage (used mostly for development/testing)
 
+[More details on the providers](doc/providers.md)
+
 ## Development Setup
     npm install
     npm run build
@@ -25,6 +27,26 @@ More info:
   3. Ensure you have a `.localhost-ssl` certificate directory in your home directory (create if needed, typically `C:\Users\UserName` on Windows) and cd into that directory
   4. Make the cert files: `mkcert -cert-file localhost.pem -key-file localhost.key localhost 127.0.0.1 ::1`
   5. Run `npm run start:secure` to run `webpack-dev-server` in development mode with hot module replacement
+
+### Testing in CODAPv3 and other projects
+
+The CFM is used as a npm library in CODAPv3, and possibly other projects as well. As you're making changes to this library, it can be helpful to test those changes within client projects without deploying. This can be done with yalc.
+
+[yalc](https://www.npmjs.com/package/yalc) provides an alternative to `npm link`. It acts as a very simple local repository for locally developed packages that can be shared across a local environment. It provides a better workflow than `npm | yarn link` for package authors. There are scripts in package.json to make this easier.
+
+To publish an in-development version of the CFM library, run:
+
+`npm run yalc:publish`
+
+To consume an in-development version of the CFM library, in the root directory of the client project:
+
+`npx yalc add @concord-consortium/cloud-file-manager`
+
+To update all clients that are using the in-development version of CFM, in the CFM project:
+
+`npm run yalc:publish`
+
+`yalc` modifies the `package.json` of the client project with a link to the local `yalc` repository. _This is a good thing!_ as it makes it obvious when you're using an in-development version of a library and serves as a reminder to install a fully published version before pushing to GitHub, etc. It also means that running `npm install` in the client project will not break the setup.
 
 ## Deployment
 
