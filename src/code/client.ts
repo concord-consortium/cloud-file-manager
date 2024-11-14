@@ -485,6 +485,15 @@ class CloudFileManagerClient {
     })
   }
 
+  openLocalFileWithConfirmation(file: any, callback: OpenSaveCallback = null) {
+    const openFile = () => this.openLocalFile(file, callback)
+    if (!this.state.dirty) {
+      return openFile()
+    } else {
+      return this.confirm(tr('~CONFIRM.OPEN_FILE'), openFile)
+    }  
+  }
+
   importLocalFile(file: any, callback: (data: any) => void = null) {
     return this.readLocalFile(file, (data: any) => {
       return this.importData(data, callback)
