@@ -4,7 +4,7 @@ The CFM tracks both a `name` and `filename` in the metadata it keeps about the c
 When a client starts up. If it doesn't load an existing file the CFM will not have a `name` or `filename`. When the user saves the file the save dialog will show the CFM's `MENUBAR.UNTITLED_DOCUMENT` string as the name. There is not a configuration option for clients to override this default name.
 
 When a file is loaded the CFM figures out the `name` and `filename`. When the filesystem supports file names these fields come from the actual filesystem file name. If the filesystem does not support file names, the CFM will look for the name inside of the content of the file. It looks in:
-`docName`, `name`, and `content.name`. The client shouldn't have to set one of these properties. The `name` property should be set by the CFM when it saves a file in one of these file systems. If the client is using the *unwrapped* mode for files then is should be careful not to use this `name` property for something else since it will get overridden by the CFM.
+`docName`, `name`, and `content.name`. The client shouldn't have to set one of these properties. The `name` property should be set by the CFM when it saves a file in one of these file systems. If the client is using the *unwrapped* mode for files then it should be careful not to use this `name` property for something else since it will get overwritten by the CFM.
 
 Some clients need to know what the current document name is. To do this they have to handle the following events: `openedFile`, `savedFile`, and `renamedFile`.
 - `openedFile`: the filename can be found in `event.data.metadata.filename`.
