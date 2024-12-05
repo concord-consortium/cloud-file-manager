@@ -10,6 +10,8 @@ const isProduction = NODE_ENV === 'production'
 const srcDir = path.resolve(__dirname, 'src')
 const destDir = path.resolve(__dirname, dest || './dist')
 
+const Dotenv = require("dotenv-webpack")
+
 // Base configuration shared between configurations for each entry point.
 // Note that the env passed in to these configuration functions is the webpack
 // environment, as controlled via --env command-line arguments, which we are not
@@ -80,7 +82,8 @@ const baseConfig = (env) => ({
         test: /\.js$/,
         rules: replacementStrings.js
       }
-    ])
+    ]),
+    new Dotenv({ path: "./.env.local" })
   ]
 })
 
