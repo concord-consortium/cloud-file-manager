@@ -31,7 +31,7 @@ export function getClassRailsUrl(): string {
  */
 export function getUserRailsUrl(): string {
   if (isLocalHostname()) {
-    return process.env.REACT_APP_CLASS_RAILS_URL
+    return process.env.REACT_APP_USER_RAILS_URL
   }
 
   const hostname = window.location.hostname
