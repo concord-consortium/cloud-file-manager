@@ -30,6 +30,7 @@ import LocalFileProvider  from './providers/local-file-provider'
 import PostMessageProvider  from './providers/post-message-provider'
 import URLProvider  from './providers/url-provider'
 import TestProvider  from './providers/test-provider'
+import ClassRailsProvider from './providers/class-rails-provider'
 
 import {
   CloudContent, cloudContentFactory, CloudMetadata, ECapabilities, ProviderInterface
@@ -159,6 +160,7 @@ class CloudFileManagerClient {
       LocalFileProvider,
       PostMessageProvider,
       S3Provider,
+      ClassRailsProvider,
       TestProvider
     ]
     for (Provider of providerList) {
@@ -648,6 +650,7 @@ class CloudFileManagerClient {
   }
 
   save(callback: OpenSaveCallback = null) {
+    console.log("save client")
     return this._event('getContent', { shared: this._sharedMetadata() }, (stringContent: any) => {
       return this.saveContent(stringContent, callback)
     })
