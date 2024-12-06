@@ -1,3 +1,7 @@
+import {
+  PostMessageManager,
+  PostMessageManagerImpl,
+} from "@team-monolith/post-message-manager"
 import { getCodapActivity, updateCodapActivity } from "../api/codapActivities"
 import {
   getProfilesCodapActivityProject,
@@ -30,6 +34,11 @@ class ClassRailsProvider extends ProviderInterface {
       metadata: CloudMetadata
     }
   >
+  private _postMessageManager: PostMessageManager
+  private _activityName: string | undefined
+
+  private _ready: Promise<void>
+  private isReady: boolean = false
 
   constructor(
     options: CFMBaseProviderOptions | undefined,
@@ -53,9 +62,25 @@ class ClassRailsProvider extends ProviderInterface {
     this.options = options
     this.client = client
     this.files = {}
+    this._ready = this.initialize()
   }
   static Available() {
     return true
+  }
+
+  private async initialize(): Promise<void> {
+    this._postMessageManager = new PostMessageManagerImpl()
+    this._activityName = await this._loadActivityName()
+    this.isReady = true // 초기화 완료
+  }
+
+  /**
+   * 준비 상태를 확인하고, 준비가 되지 않았다면 준비가 될 때까지 대기합니다.
+   */
+  async ensureReady(): Promise<void> {
+    if (!this.isReady) {
+      await this._ready
+    }
   }
 
   /**
@@ -83,6 +108,24 @@ class ClassRailsProvider extends ProviderInterface {
       return await updateCodapActivity({ id: projectId, projectData })
     } else {
       return await updateProfilesCodapActivity({ id: projectId, projectData })
+    }
+  }
+
+  /**
+   * postMessage를 통해 부모 창으로부터 활동 이름을 가져옵니다.
+   */
+  private async _loadActivityName(): Promise<string | undefined> {
+    try {
+      const activityName = (await this._postMessageManager.send({
+        messageType: "getActivityName",
+        payload: null,
+        target: window.parent,
+        targetOrigin: "*",
+      })) as string
+      return activityName
+    } catch {
+      // timeout
+      return undefined
     }
   }
 
@@ -130,9 +173,10 @@ class ClassRailsProvider extends ProviderInterface {
     return true
   }
 
-  openSaved(openSavedParams: any, callback: ProviderOpenCallback) {
+  async openSaved(openSavedParams: any, callback: ProviderOpenCallback) {
+    await this.ensureReady() // 준비 상태 확인
     const metadata = new CloudMetadata({
-      name: "activity-name", // TODO
+      name: this._activityName ?? "제목없음",
       type: CloudMetadata.File,
       parent: null,
       provider: this,
