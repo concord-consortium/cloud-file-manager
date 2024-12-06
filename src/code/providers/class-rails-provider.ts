@@ -20,7 +20,6 @@ import {
   ProviderOpenCallback,
   ProviderSaveCallback,
 } from "./provider-interface"
-import { DEFAULT_CODAP_PROJECT_DATA } from "./constant"
 
 class ClassRailsProvider extends ProviderInterface {
   static Name = "classRails"
@@ -157,9 +156,19 @@ class ClassRailsProvider extends ProviderInterface {
       return callback?.("잘못된 접근입니다.")
     }
     try {
-      let projectData = await this._getProjectData(this._projectId)
+      const projectData = await this._getProjectData(this._projectId)
+
+      // 프로젝트 데이터가 없다면 새로운 프로젝트를 열도록 합니다.
+      // openNewCodapProject: true로 설정하여 새로운 프로젝트를 열도록 합니다.
+      // 이 플래그를 핸들링하는 로직은 client.ts의 _fileOpened 함수에서 처리합니다.
       if (projectData === null) {
-        projectData = DEFAULT_CODAP_PROJECT_DATA
+        return callback(
+          null,
+          new CloudContent(
+            { openNewCodapProject: true },
+            { isCfmWrapped: false, isPreCfmFormat: false }
+          )
+        )
       }
       return callback(
         null,

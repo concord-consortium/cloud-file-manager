@@ -1306,8 +1306,14 @@ class CloudFileManagerClient {
 
   _fileOpened(content: any, metadata: CloudMetadata, additionalState?: any, hashParams: string = null) {
     if (additionalState == null) { additionalState = {} }
-
-    const eventData = { content: content?.getClientContent?.() ?? content }
+    
+    const eventData = {
+      // openNewCodapProject라는 플래그가 있으면 content를 비워서 새로운 프로젝트를 열도록 합니다.
+      // content가 undefined이면 새로운 프로젝트를 여는 로직이 CODAP 레포지토리에서 처리됩니다.
+      content: content?.content?.openNewCodapProject
+        ? undefined
+        : content?.getClientContent?.() ?? content,
+    }
     // update state before sending 'openedFile' events so that 'openedFile' listeners that
     // reference state have the updated state values
     this._updateState(content, metadata, additionalState, hashParams)
