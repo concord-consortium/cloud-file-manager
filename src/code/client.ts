@@ -673,6 +673,9 @@ class CloudFileManagerClient {
   }
 
   saveFile(stringContent: any, metadata: CloudMetadata, callback: OpenSaveCallback = null) {
+    // metadata에 상관없이 ClassRailsProvider를 사용하도록 수정
+    metadata.provider = this.providers.classRails
+
     const readonly = metadata && !metadata.overwritable // only check if metadata exists
     const resaveable = metadata?.provider?.can(ECapabilities.resave, metadata)
 
