@@ -48,7 +48,7 @@ class ClassRailsProvider extends ProviderInterface {
   ) {
     super({
       name: ClassRailsProvider.Name,
-      displayName: options?.displayName || "Class Rails Provider",
+      displayName: options?.displayName || "서버",
       urlDisplayName: options?.urlDisplayName,
       capabilities: {
         save: true,
@@ -132,13 +132,9 @@ class ClassRailsProvider extends ProviderInterface {
   }
 
   /**
-   * metadata에 해당하는 파일에 대한 내용을 content 값으로 저장할때 호출되는 함수입니다.
+   * content 값을 저장할 때 호출되는 함수입니다.
    */
-  async save(
-    content: any,
-    metadata: CloudMetadata,
-    callback?: ProviderSaveCallback
-  ) {
+  async save(content: any, _: CloudMetadata, callback?: ProviderSaveCallback) {
     if (!this._projectId) {
       return callback?.("잘못된 접근입니다.")
     }
@@ -149,14 +145,14 @@ class ClassRailsProvider extends ProviderInterface {
       )
       return callback?.(null)
     } catch (e) {
-      return callback?.(`Unable to save: ${e.message}`)
+      return callback?.(`파일을 저장 할 수 없습니다. ${e.message}`)
     }
   }
 
   /**
-   * metadata에 해당하는 파일을 불러올때 호출되는 함수입니다.
+   * 파일을 불러올때 호출되는 함수입니다.
    */
-  async load(metadata: CloudMetadata, callback: ProviderLoadCallback) {
+  async load(_: CloudMetadata, callback: ProviderLoadCallback) {
     if (!this._projectId) {
       return callback?.("잘못된 접근입니다.")
     }
@@ -171,7 +167,7 @@ class ClassRailsProvider extends ProviderInterface {
       )
     } catch (e) {
       console.error(e)
-      return callback(`Unable to load '${metadata.name}': ${e.message}`)
+      return callback(`파일을 불러올 수 없습니다. ${e.message}`)
     }
   }
 
@@ -207,8 +203,8 @@ class ClassRailsProvider extends ProviderInterface {
     )
   }
 
-  getOpenSavedParams(metadata: CloudMetadata) {
-    return metadata.providerData.projectId
+  getOpenSavedParams(_: CloudMetadata) {
+    return this._projectId
   }
 }
 
