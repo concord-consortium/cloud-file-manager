@@ -37,6 +37,7 @@ class ClassRailsProvider extends ProviderInterface {
   >
   private _postMessageManager: PostMessageManager
   private _activityName: string | undefined
+  private _projectId: string | undefined = undefined
 
   private _ready: Promise<void>
   private isReady: boolean = false
@@ -138,10 +139,13 @@ class ClassRailsProvider extends ProviderInterface {
     metadata: CloudMetadata,
     callback?: ProviderSaveCallback
   ) {
+    if (!this._projectId) {
+      return callback?.("잘못된 접근입니다.")
+    }
     try {
       await this._updateProjectData(
         content.getContentAsJSON?.() || content,
-        metadata.providerData.projectId
+        this._projectId
       )
       return callback?.(null)
     } catch (e) {
@@ -153,10 +157,11 @@ class ClassRailsProvider extends ProviderInterface {
    * metadata에 해당하는 파일을 불러올때 호출되는 함수입니다.
    */
   async load(metadata: CloudMetadata, callback: ProviderLoadCallback) {
+    if (!this._projectId) {
+      return callback?.("잘못된 접근입니다.")
+    }
     try {
-      let projectData = await this._getProjectData(
-        metadata.providerData.projectId
-      )
+      let projectData = await this._getProjectData(this._projectId)
       if (projectData === null) {
         projectData = DEFAULT_CODAP_PROJECT_DATA
       }
@@ -190,12 +195,12 @@ class ClassRailsProvider extends ProviderInterface {
    */
   async openSaved(openSavedParams: any, callback: ProviderOpenCallback) {
     await this._ensureReady() // 준비 상태 확인
+    this._projectId = openSavedParams
     const metadata = new CloudMetadata({
       name: this._activityName ?? "제목없음",
       type: CloudMetadata.File,
       parent: null,
       provider: this,
-      providerData: { projectId: openSavedParams },
     })
     return this.load(metadata, (err: string | null, content: any) =>
       callback(err, content, metadata)
