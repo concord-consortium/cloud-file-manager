@@ -62,13 +62,13 @@ class ClassRailsProvider extends ProviderInterface {
     this.options = options
     this.client = client
     this.files = {}
-    this._ready = this.initialize()
+    this._ready = this._initialize()
   }
   static Available() {
     return true
   }
 
-  private async initialize(): Promise<void> {
+  private async _initialize(): Promise<void> {
     this._postMessageManager = new PostMessageManagerImpl()
     this._activityName = await this._loadActivityName()
     this.isReady = true // 초기화 완료
@@ -77,7 +77,7 @@ class ClassRailsProvider extends ProviderInterface {
   /**
    * 준비 상태를 확인하고, 준비가 되지 않았다면 준비가 될 때까지 대기합니다.
    */
-  async ensureReady(): Promise<void> {
+  private async _ensureReady(): Promise<void> {
     if (!this.isReady) {
       await this._ready
     }
@@ -185,7 +185,7 @@ class ClassRailsProvider extends ProviderInterface {
    * 이때, `openSavedParams`는 project_id가 됩니다.
    */
   async openSaved(openSavedParams: any, callback: ProviderOpenCallback) {
-    await this.ensureReady() // 준비 상태 확인
+    await this._ensureReady() // 준비 상태 확인
     const metadata = new CloudMetadata({
       name: this._activityName ?? "제목없음",
       type: CloudMetadata.File,
