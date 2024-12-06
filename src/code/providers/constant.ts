@@ -7,7 +7,6 @@ export const DEFAULT_CODAP_PROJECT_DATA = {
   "globalValues": [],
   "appName": "DG",
   "appVersion": "2.0",
-  "appBuildNum": "0730",
   "lang": "ko",
   "idCount": 1,
   "metadata": {},
