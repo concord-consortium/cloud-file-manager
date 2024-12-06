@@ -20,6 +20,7 @@ import {
   ProviderOpenCallback,
   ProviderSaveCallback,
 } from "./provider-interface"
+import { DEFAULT_CODAP_PROJECT_DATA } from "./constant"
 
 class ClassRailsProvider extends ProviderInterface {
   static Name = "classRails"
@@ -153,9 +154,12 @@ class ClassRailsProvider extends ProviderInterface {
    */
   async load(metadata: CloudMetadata, callback: ProviderLoadCallback) {
     try {
-      const projectData = await this._getProjectData(
+      let projectData = await this._getProjectData(
         metadata.providerData.projectId
       )
+      if (projectData === null) {
+        projectData = DEFAULT_CODAP_PROJECT_DATA
+      }
       return callback(
         null,
         cloudContentFactory.createEnvelopedCloudContent(projectData)
