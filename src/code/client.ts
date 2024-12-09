@@ -38,6 +38,7 @@ import {
 import { reportError } from "./utils/report-error"
 import { SelectInteractiveStateCallback, SelectInteractiveStateDialogProps } from './views/select-interactive-state-dialog-view'
 import { IGetInteractiveState, setOnUnload } from '@concord-consortium/lara-interactive-api'
+import { registerSavePostMessage } from './post-message-manager'
 
 let CLOUDFILEMANAGER_EVENT_ID = 0
 const CLOUDFILEMANAGER_EVENTS: Record<number, CloudFileManagerClientEvent> = {}
@@ -262,6 +263,9 @@ class CloudFileManagerClient {
     if (this.appOptions.ui?.confirmCloseIfDirty) {
       this._setupConfirmOnClose()
     }
+
+    // "save" postMessage에 대한 이벤트 등록
+    registerSavePostMessage(this.save.bind(this))
 
     return this._startPostMessageListener()
   }
