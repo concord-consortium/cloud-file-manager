@@ -52,7 +52,7 @@ class ClassRailsProvider extends ProviderInterface {
       capabilities: {
         save: true,
         resave: true,
-        "export": true,
+        "export": false,
         load: true,
         list: false,
         remove: false,
@@ -186,10 +186,6 @@ class ClassRailsProvider extends ProviderInterface {
   }
 
   canOpenSaved() {
-    return true
-  }
-
-  canAuto() {
     return true
   }
 

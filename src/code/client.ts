@@ -1105,6 +1105,15 @@ class CloudFileManagerClient {
     }
   }
 
+  /**
+   * 현재 열려있는 파일을 다른 이름으로 저장합니다.
+   */
+  exportFile() {
+    return this._event('getContent', { shared: this._sharedMetadata() }, (content: any) => {
+      return this.saveSecondaryFileAsDialog(content, "codap", "application/json", () => {})
+    })
+  }
+
   saveSecondaryFileAsDialog(stringContent: any, extension: string, mimeType: string, callback: OpenSaveCallback) {
     // set the mimeType if not given with the extension
     const extensionMimeType = mime.getType(extension)
