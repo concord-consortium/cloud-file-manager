@@ -1110,7 +1110,13 @@ class CloudFileManagerClient {
    */
   exportFile() {
     return this._event('getContent', { shared: this._sharedMetadata() }, (content: any) => {
-      return this.saveSecondaryFileAsDialog(content, "codap", "application/json", () => {})
+      const a = document.createElement('a')
+      const stringContent = JSON.stringify(content)
+      const blob = new Blob([stringContent], {type: 'text/plain'})
+      a.href = URL.createObjectURL(blob)
+      a.download = `${this.state.metadata?.name || '제목없음'}.codap`
+      a.click()
+      return URL.revokeObjectURL(a.href)
     })
   }
 
