@@ -182,6 +182,9 @@ class ClassRailsProvider extends ProviderInterface {
     }
   }
 
+  /**
+   * 파일을 로드 완료 후 호출되는 함수입니다. 
+   */
   fileOpened(_content: CloudContent, _metadata: CloudMetadata): void {
     postProjectLoadedMessageToParent(this._projectId)
   }
