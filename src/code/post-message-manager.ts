@@ -16,3 +16,42 @@ export function registerSavePostMessage(
     },
   })
 }
+export function registerReloadPostMessage(reload: () => void) {
+  postMessageManager.register({
+    messageType: "reload",
+    callback: async () => {
+      reload()
+      return true
+    },
+  })
+}
+
+export function postiframeLoadedMessageToParent() {
+  if (window === window.parent) return
+  const iframeKey = new URLSearchParams(window.location.search).get("iframe_key")
+  if (!iframeKey) return
+  try {
+    postMessageManager.send({
+      messageType: `iframeLoaded-${iframeKey}`,
+      payload: null,
+      target: window.parent,
+      targetOrigin: "*",
+    })
+  } catch {
+    /* ignore */
+  }
+}
+
+export function postProjectLoadedMessageToParent(projectId: string) {
+  if (window === window.parent) return
+  try {
+    postMessageManager.send({
+      messageType: "projectLoaded",
+      payload: projectId,
+      target: window.parent,
+      targetOrigin: "*",
+    })
+  } catch {
+    /* ignore */
+  }
+}

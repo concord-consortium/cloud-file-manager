@@ -38,7 +38,8 @@ import {
 import { reportError } from "./utils/report-error"
 import { SelectInteractiveStateCallback, SelectInteractiveStateDialogProps } from './views/select-interactive-state-dialog-view'
 import { IGetInteractiveState, setOnUnload } from '@concord-consortium/lara-interactive-api'
-import { registerSavePostMessage } from './post-message-manager'
+import { postiframeLoadedMessageToParent, registerReloadPostMessage, registerSavePostMessage } from './post-message-manager'
+import getHashParam from './utils/get-hash-param'
 
 let CLOUDFILEMANAGER_EVENT_ID = 0
 const CLOUDFILEMANAGER_EVENTS: Record<number, CloudFileManagerClientEvent> = {}
@@ -266,6 +267,19 @@ class CloudFileManagerClient {
 
     // "save" postMessage에 대한 이벤트 등록
     registerSavePostMessage(this.save.bind(this))
+    // "reload" postMessage에 대한 이벤트 등록
+    registerReloadPostMessage(this.processUrlParams.bind(this))
+
+    // hashchange 이벤트 등록
+    window.addEventListener("hashchange", (ev) => {
+      this.appOptions.hashParams = {
+        sharedContentId: getHashParam("shared"),
+        fileParams: getHashParam("file"),
+        copyParams: getHashParam("copy"),
+        newInFolderParams: getHashParam("newInFolder"),
+      }
+      this.processUrlParams()
+    })
 
     return this._startPostMessageListener()
   }
@@ -329,6 +343,7 @@ class CloudFileManagerClient {
   }
 
   ready() {
+    postiframeLoadedMessageToParent()
     return this._event('ready')
   }
 
