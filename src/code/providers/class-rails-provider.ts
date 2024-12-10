@@ -151,7 +151,7 @@ class ClassRailsProvider extends ProviderInterface {
   /**
    * 파일을 불러올때 호출되는 함수입니다.
    */
-  async load(_: CloudMetadata, callback: ProviderLoadCallback) {
+  async load(metadata: CloudMetadata, callback: ProviderLoadCallback) {
     if (!this._projectId) {
       return callback?.("잘못된 접근입니다.")
     }
@@ -162,6 +162,7 @@ class ClassRailsProvider extends ProviderInterface {
       // openNewCodapProject: true로 설정하여 새로운 프로젝트를 열도록 합니다.
       // 이 플래그를 핸들링하는 로직은 client.ts의 _fileOpened 함수에서 처리합니다.
       if (projectData === null) {
+        metadata.rename(this._activityName ?? "제목없음")
         return callback(
           null,
           new CloudContent(
@@ -170,10 +171,10 @@ class ClassRailsProvider extends ProviderInterface {
           )
         )
       }
-      return callback(
-        null,
+      const content =
         cloudContentFactory.createEnvelopedCloudContent(projectData)
-      )
+      metadata.rename(projectData.name ?? this._activityName ?? "제목없음")
+      return callback(null, content)
     } catch (e) {
       console.error(e)
       return callback(`파일을 불러올 수 없습니다. ${e.message}`)
@@ -198,7 +199,6 @@ class ClassRailsProvider extends ProviderInterface {
     await this._ensureReady() // 준비 상태 확인
     this._projectId = openSavedParams
     const metadata = new CloudMetadata({
-      name: this._activityName ?? "제목없음",
       type: CloudMetadata.File,
       parent: null,
       provider: this,
