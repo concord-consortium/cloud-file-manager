@@ -87,11 +87,11 @@ class ClassRailsProvider extends ProviderInterface {
 
   /**
    * 프로젝트 데이터를 서버에서 요청하여 가져옵니다.
-   * 이때, is_edit_mode URL 파라미터에 따라 다른 API 엔드포인트를 사용합니다.
+   * 이때, mode URL 파라미터에 따라 다른 API 엔드포인트를 사용합니다.
    */
   private async _getProjectData(projectId: string) {
     const urlParams = new URLSearchParams(window.location.search)
-    const isEditMode = urlParams.has("is_edit_mode")
+    const isEditMode = urlParams.get("mode") === "edit"
     if (isEditMode) {
       return (await getCodapActivity(projectId)).projectData
     } else {
@@ -101,11 +101,11 @@ class ClassRailsProvider extends ProviderInterface {
 
   /**
    * 프로젝트 데이터를 서버에 업데이트합니다.
-   * 이때, is_edit_mode URL 파라미터에 따라 다른 API 엔드포인트를 사용합니다.
+   * 이때, mode URL 파라미터에 따라 다른 API 엔드포인트를 사용합니다.
    */
   private async _updateProjectData(projectData: unknown, projectId: string) {
     const urlParams = new URLSearchParams(window.location.search)
-    const isEditMode = urlParams.has("is_edit_mode")
+    const isEditMode = urlParams.get("mode") === "edit"
     if (isEditMode) {
       return await updateCodapActivity({ id: projectId, projectData })
     } else {
