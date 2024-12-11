@@ -33,6 +33,7 @@ export async function fetchClassRails(
  * Rails 서버로 요청을 보내는 함수입니다.
  *
  * env 환경변수 객체를 사용할 수 없는 환경이므로, refreshToken 로직은 생략되어있습니다.
+ * v3 정식 출시 이후 runtime env를 주입 가능하게 된다면 401 오류시 refreshToken 로직을 추가할 수 있습니다.
  *
  * @throws {HttpError}
  * @throws {JupyterHubError}

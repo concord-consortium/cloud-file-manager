@@ -192,10 +192,10 @@ class ClassRailsProvider extends ProviderInterface {
 
   /**
    * 저장된 프로젝트를 열때 호출되는 함수입니다.
-   * 대표적인 use-case는 `#file=class-rails:project_id` 형태의 URL을 통해 저장된 프로젝트를 열 때 사용됩니다.
+   * 대표적인 use-case는 `#file=classRails:project_id` 형태의 URL을 통해 저장된 프로젝트를 열 때 사용됩니다.
    * 이때, `openSavedParams`는 project_id가 됩니다.
    */
-  async openSaved(openSavedParams: any, callback: ProviderOpenCallback) {
+  async openSaved(openSavedParams: string, callback: ProviderOpenCallback) {
     await this._ensureReady() // 준비 상태 확인
     this._projectId = openSavedParams
     const metadata = new CloudMetadata({
