@@ -1,19 +1,28 @@
 import { includeAndConvert } from "../lib/jsonapi"
 import { ProfilesCodapActivity } from "../models/profilesActivitiable"
-import { fetchClassRails } from "./base"
+import { fetchClassRails, snakeCaseInclude } from "./base"
 
-/**
- * ProfilesCodapActivity의 project data를 가져옵니다.
- * 값이 null인 경우 원본 CodapActivity의 project data를 가져오는 로직이 BE에 구현되어 있습니다.
- * 이 API는 json api spec을 따르지 않고, project data를 직접 반환합니다.
- */
-export async function getProfilesCodapActivityProject(
-  profilesScratchActivityId: string
-): Promise<any> {
+export async function getProfilesCodapActivity<
+  T extends
+    | ""
+    | "profilesActivity.classroomsActivity.activity"
+    | "profilesActivity.classroomsActivity.activity.activitiable" = ""
+>(args: {
+  id: string
+  includeProfilesActivity?: T
+}): Promise<ProfilesCodapActivity<T>> {
+  const { id, includeProfilesActivity } = args
+
+  const params = new URLSearchParams()
+  if (includeProfilesActivity) {
+    params.append("include", snakeCaseInclude(includeProfilesActivity))
+  }
+
   const response = await fetchClassRails(
-    `/api/v1/profiles_codap_activities/${profilesScratchActivityId}/project`
+    `/api/v1/profiles_codap_activities/${id}?${params.toString()}`
   )
-  return response.json()
+  const jsonResponse = await response.json()
+  return includeAndConvert(jsonResponse.data, jsonResponse.included)
 }
 
 export async function updateProfilesCodapActivity(

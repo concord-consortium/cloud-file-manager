@@ -1,17 +1,22 @@
 import { First } from "../utils/type"
 import { Activity } from "./activity"
 
+// 복잡한 타입 정의에 대한 설명은 src/models/README.md 참고
+
 type Attributes = {
   id: string
-  type: "codap_activity"
-  projectData: unknown
+  classroomsMaterialId: string
+  activityId: string
 }
 
 type Relationships = {
   activity: Activity
 }
 
-type CodapActivityRelationships<T extends string> = Omit<
+export type ClassroomsActivity<T extends string = ""> = Attributes &
+  ClassroomsActivityRelationships<T>
+
+type ClassroomsActivityRelationships<T extends string> = Omit<
   {
     [Key in T as First<Key>]: Key extends `activity.${infer Last}`
       ? Activity<Last>
@@ -21,8 +26,3 @@ type CodapActivityRelationships<T extends string> = Omit<
   },
   ""
 >
-
-export type CodapActivity<T extends string = ""> = Attributes &
-  CodapActivityRelationships<T>
-
-export type Activitiable = CodapActivity

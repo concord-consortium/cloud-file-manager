@@ -1,10 +1,9 @@
 /**
  * API 요청을 보내는 함수들을 모아놓은 파일입니다.
- * 
+ *
  * entry-ts 레포지토리의 코드를 참조하여 작성하였으나, env 환경변수 객체를 사용할 수 없는 환경이므로,
  * refreshToken 로직을 제거하여 작성하였습니다.
  */
-
 
 import {
   HttpError,
@@ -19,6 +18,7 @@ import { getCookieToken } from "../lib/cookie"
 import { parseJsonResponse } from "../lib/json"
 import { getClassRailsUrl } from "../lib/getServiceUrl"
 import fetchRetryBuilder from "fetch-retry"
+import { snakeCase } from "../utils/changeCase"
 
 const fetch = fetchRetryBuilder(window.fetch)
 
@@ -80,4 +80,13 @@ async function fetchRails(
     throw new HttpError(res.status, text, res.url)
   }
   return res
+}
+
+// lodash snakeCase가 `.`와 `,`을 `_`로 변환하기 때문에
+// `.` | `,`을 변환하지 않고 그대로 유지하는 snakeCase를 만들었습니다.
+export function snakeCaseInclude(includes: string) {
+  return includes
+    .split(",")
+    .map((include) => include.split(".").map(snakeCase).join("."))
+    .join(",")
 }
