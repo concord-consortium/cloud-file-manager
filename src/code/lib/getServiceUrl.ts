@@ -1,5 +1,5 @@
 /**
- * transforms entry.{DOMAIN} to {DOMAIN}
+ * transforms codap.{DOMAIN} to {DOMAIN}
  */
 export function getMainUrl(): string {
   if (isLocalHostname()) {
@@ -13,7 +13,7 @@ export function getMainUrl(): string {
 }
 
 /**
- * transforms entry.{DOMAIN} to class.{DOMAIN}
+ * transforms codap.{DOMAIN} to class.{DOMAIN}
  */
 export function getClassRailsUrl(): string {
   if (isLocalHostname()) {
@@ -27,7 +27,7 @@ export function getClassRailsUrl(): string {
 }
 
 /**
- * transforms entry.{DOMAIN} to user.{DOMAIN}
+ * transforms codap.{DOMAIN} to user.{DOMAIN}
  */
 export function getUserRailsUrl(): string {
   if (isLocalHostname()) {

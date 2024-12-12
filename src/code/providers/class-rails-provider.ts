@@ -1,10 +1,6 @@
-import {
-  PostMessageManager,
-  PostMessageManagerImpl,
-} from "@team-monolith/post-message-manager"
 import { getCodapActivity, updateCodapActivity } from "../api/codapActivities"
 import {
-  getProfilesCodapActivityProject,
+  getProfilesCodapActivity,
   updateProfilesCodapActivity,
 } from "../api/profilesCodapActivities"
 import { CFMBaseProviderOptions } from "../app-options"
@@ -35,12 +31,7 @@ class ClassRailsProvider extends ProviderInterface {
       metadata: CloudMetadata
     }
   >
-  private _postMessageManager: PostMessageManager
-  private _activityName: string | undefined
   private _projectId: string | undefined = undefined
-
-  private _ready: Promise<void>
-  private isReady: boolean = false
 
   constructor(
     options: CFMBaseProviderOptions | undefined,
@@ -64,25 +55,9 @@ class ClassRailsProvider extends ProviderInterface {
     this.options = options
     this.client = client
     this.files = {}
-    this._ready = this._initialize()
   }
   static Available() {
     return true
-  }
-
-  private async _initialize(): Promise<void> {
-    this._postMessageManager = new PostMessageManagerImpl()
-    this._activityName = await this._loadActivityName()
-    this.isReady = true // 초기화 완료
-  }
-
-  /**
-   * 준비 상태를 확인하고, 준비가 되지 않았다면 준비가 될 때까지 대기합니다.
-   */
-  private async _ensureReady(): Promise<void> {
-    if (!this.isReady) {
-      await this._ready
-    }
   }
 
   /**
@@ -93,9 +68,19 @@ class ClassRailsProvider extends ProviderInterface {
     const urlParams = new URLSearchParams(window.location.search)
     const isEditMode = urlParams.get("mode") === "edit"
     if (isEditMode) {
-      return (await getCodapActivity(projectId)).projectData
+      return (await getCodapActivity({ id: projectId })).projectData
     } else {
-      return await getProfilesCodapActivityProject(projectId)
+      const profilesCodapActivity = await getProfilesCodapActivity({
+        id: projectId,
+        includeProfilesActivity:
+          "profilesActivity.classroomsActivity.activity.activitiable",
+      })
+      // profilesCodapActivity.projectData가 없다면 원본 activity의 projectData를 반환합니다.
+      return (
+        profilesCodapActivity.projectData ??
+        profilesCodapActivity.profilesActivity.classroomsActivity.activity
+          .activitiable.projectData
+      )
     }
   }
 
@@ -114,20 +99,24 @@ class ClassRailsProvider extends ProviderInterface {
   }
 
   /**
-   * postMessage를 통해 부모 창으로부터 활동 이름을 가져옵니다.
+   * 원본 활동의 이름을 가져옵니다.
    */
-  private async _loadActivityName(): Promise<string | undefined> {
-    try {
-      const activityName = (await this._postMessageManager.send({
-        messageType: "getActivityName",
-        payload: null,
-        target: window.parent,
-        targetOrigin: "*",
-      })) as string
-      return activityName
-    } catch {
-      // timeout
-      return undefined
+  private async _getActivityName(projectId: string) {
+    const urlParams = new URLSearchParams(window.location.search)
+    const isEditMode = urlParams.has("is_edit_mode")
+    if (isEditMode) {
+      const codapActivity = await getCodapActivity({
+        id: projectId,
+        includeActivity: "activity",
+      })
+      return codapActivity.activity.name
+    } else {
+      const profilesCodapActivity = await getProfilesCodapActivity({
+        id: projectId,
+        includeProfilesActivity: "profilesActivity.classroomsActivity.activity",
+      })
+      return profilesCodapActivity.profilesActivity.classroomsActivity.activity
+        .name
     }
   }
 
@@ -157,24 +146,23 @@ class ClassRailsProvider extends ProviderInterface {
       return callback?.("잘못된 접근입니다.")
     }
     try {
-      const projectData = await this._getProjectData(this._projectId)
-
-      // 프로젝트 데이터가 없다면 새로운 프로젝트를 열도록 합니다.
-      // openNewCodapProject: true로 설정하여 새로운 프로젝트를 열도록 합니다.
-      // 이 플래그를 핸들링하는 로직은 client.ts의 _fileOpened 함수에서 처리합니다.
-      if (projectData === null) {
-        metadata.rename(this._activityName ?? "제목없음")
-        return callback(
-          null,
-          new CloudContent(
-            { openNewCodapProject: true },
-            { isCfmWrapped: false, isPreCfmFormat: false }
-          )
-        )
+      let activityName = ""
+      try {
+        activityName = await this._getActivityName(this._projectId)
+      } catch {
+        activityName = "제목없음"
       }
+
+      const projectData = await this._getProjectData(this._projectId)
+      if (projectData === null) {
+        // projectData가 null이라면, content 값으로 null을 반환합니다.
+        metadata.rename(activityName)
+        return callback(null, null)
+      }
+
       const content =
         cloudContentFactory.createEnvelopedCloudContent(projectData)
-      metadata.rename(projectData.name ?? this._activityName ?? "제목없음")
+      metadata.rename((projectData as any).name ?? activityName)
       return callback(null, content)
     } catch (e) {
       console.error(e)
@@ -200,11 +188,10 @@ class ClassRailsProvider extends ProviderInterface {
 
   /**
    * 저장된 프로젝트를 열때 호출되는 함수입니다.
-   * 대표적인 use-case는 `#file=class-rails:project_id` 형태의 URL을 통해 저장된 프로젝트를 열 때 사용됩니다.
+   * 대표적인 use-case는 `#file=classRails:project_id` 형태의 URL을 통해 저장된 프로젝트를 열 때 사용됩니다.
    * 이때, `openSavedParams`는 project_id가 됩니다.
    */
-  async openSaved(openSavedParams: any, callback: ProviderOpenCallback) {
-    await this._ensureReady() // 준비 상태 확인
+  openSaved(openSavedParams: string, callback: ProviderOpenCallback) {
     this._projectId = openSavedParams
     const metadata = new CloudMetadata({
       type: CloudMetadata.File,

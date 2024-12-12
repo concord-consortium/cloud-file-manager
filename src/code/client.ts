@@ -63,7 +63,7 @@ export type ClientEventCallback = (...args: any) => void
 export type CFMFileChangedEventType = "renamedFile" | "savedFile" | "sharedFile" | "unsharedFile"
 export type CFMFileEventType = CFMFileChangedEventType | "closedFile" | "newedFile" | "openedFile" | "willOpenFile"
 export type CloudFileManagerEventType = "connected" | "getContent" | "importedData" | "log" | "ready" |
-              "rendered" | "requiresUserInteraction" | "stateChanged" | CFMFileEventType
+              "rendered" | "requiresUserInteraction" | "stateChanged" | "getEmptyContent" | CFMFileEventType
 
 class CloudFileManagerClientEvent {
   callback: ClientEventCallback
@@ -595,10 +595,21 @@ class CloudFileManagerClient {
         // we can open the document without authorization in some cases
         if (isAuthorized || !provider.isAuthorizationRequired()) {
           this._event('willOpenFile', {op: "openProviderFile"})
-          return provider.openSaved(providerParams, (err: string | null, content: any, metadata: CloudMetadata) => {
+          return provider.openSaved(providerParams, async (err: string | null, content: any, metadata: CloudMetadata) => {
             if (err) {
               return this.alert(err, () => this.ready())
             }
+
+            // content가 null 값인 경우, EmptyContent 값을 받아와 content를 생성합니다.
+            if (!content) {
+              const emptyContent = await new Promise((resolve) =>
+                this._event("getEmptyContent", {}, (emptyContent: any) => {
+                  resolve(emptyContent)
+                })
+              )
+              content = cloudContentFactory.createEnvelopedCloudContent(emptyContent)
+            }
+            
             // if we just opened the file, it doesn't need to be saved until the contents are changed unless
             // it requires conversion from an older version
             content = this._filterLoadedContent(content)
