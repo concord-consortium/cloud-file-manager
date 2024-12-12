@@ -153,19 +153,12 @@ class ClassRailsProvider extends ProviderInterface {
       }
 
       const projectData = await this._getProjectData(this._projectId)
-      // 프로젝트 데이터가 없다면 새로운 프로젝트를 열도록 합니다.
-      // openNewCodapProject: true로 설정하여 새로운 프로젝트를 열도록 합니다.
-      // 이 플래그를 핸들링하는 로직은 client.ts의 _fileOpened 함수에서 처리합니다.
       if (projectData === null) {
+        // projectData가 null이라면, content 값으로 null을 반환합니다.
         metadata.rename(activityName)
-        return callback(
-          null,
-          new CloudContent(
-            { openNewCodapProject: true },
-            { isCfmWrapped: false, isPreCfmFormat: false }
-          )
-        )
+        return callback(null, null)
       }
+
       const content =
         cloudContentFactory.createEnvelopedCloudContent(projectData)
       metadata.rename((projectData as any).name ?? activityName)
@@ -190,7 +183,7 @@ class ClassRailsProvider extends ProviderInterface {
    * 대표적인 use-case는 `#file=classRails:project_id` 형태의 URL을 통해 저장된 프로젝트를 열 때 사용됩니다.
    * 이때, `openSavedParams`는 project_id가 됩니다.
    */
-  async openSaved(openSavedParams: string, callback: ProviderOpenCallback) {
+  openSaved(openSavedParams: string, callback: ProviderOpenCallback) {
     this._projectId = openSavedParams
     const metadata = new CloudMetadata({
       type: CloudMetadata.File,
