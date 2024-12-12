@@ -28,7 +28,9 @@ export function registerReloadPostMessage(reload: () => void) {
 
 export function postiframeLoadedMessageToParent() {
   if (window === window.parent) return
-  const iframeKey = new URLSearchParams(window.location.search).get("iframe_key")
+  const iframeKey = new URLSearchParams(window.location.search).get(
+    "iframe_key"
+  )
   if (!iframeKey) return
   try {
     postMessageManager.send({
@@ -42,12 +44,14 @@ export function postiframeLoadedMessageToParent() {
   }
 }
 
-export function postProjectLoadedMessageToParent(projectId: string) {
+export function postProjectLoadedMessageToParent(
+  projectDataUpdatedAt: string | null
+) {
   if (window === window.parent) return
   try {
     postMessageManager.send({
       messageType: "projectLoaded",
-      payload: projectId,
+      payload: projectDataUpdatedAt,
       target: window.parent,
       targetOrigin: "*",
     })
