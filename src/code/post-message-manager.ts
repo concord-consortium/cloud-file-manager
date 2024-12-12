@@ -26,6 +26,18 @@ export function registerReloadPostMessage(reload: () => void) {
   })
 }
 
+export function registerLoadProjectPostMessage(
+  loadProject: (projectId: string) => void
+) {
+  postMessageManager.register({
+    messageType: "loadProject",
+    callback: (projectId: string) => {
+      loadProject(projectId)
+      return true
+    },
+  })
+}
+
 export function postiframeLoadedMessageToParent() {
   if (window === window.parent) return
   const iframeKey = new URLSearchParams(window.location.search).get(
