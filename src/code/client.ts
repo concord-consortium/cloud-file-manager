@@ -102,6 +102,7 @@ class CloudFileManagerClientEvent {
 
 export type ClientEventListener = (event: CloudFileManagerClientEvent) => void
 export type OpenSaveCallback = (content: any, metadata: CloudMetadata, savedContent?: any) => void
+type OpenProviderFileCallback = (updatedAt: string | null) => void
 
 class CloudFileManagerClient {
   _autoSaveInterval: number
@@ -273,14 +274,25 @@ class CloudFileManagerClient {
     // "save" postMessage에 대한 이벤트 등록
     registerSavePostMessage(this.save.bind(this))
     // "reload" postMessage에 대한 이벤트 등록
-    registerReloadPostMessage(this.processUrlParams.bind(this))
+    registerReloadPostMessage(async () => {
+      const hashFileParams = getHashParam("file")
+      const [providerName, providerParams] = hashFileParams.split(":")
+      return await new Promise((resolve) => {
+        this.openProviderFile(providerName, providerParams, (updatedAt) => {
+          resolve(updatedAt)
+        })
+      })
+    })
     // "loadProject" postMessage에 대한 이벤트 등록
-    registerLoadProjectPostMessage((projectId: string) => {
+    registerLoadProjectPostMessage(async (projectId: string) => {
       window.location.hash = `file=classRails:${projectId}`
-      this.appOptions.hashParams = {
-        fileParams: getHashParam("file")
-      }
-      this.processUrlParams()
+      const hashFileParams = getHashParam("file")
+      const [providerName, providerParams] = hashFileParams.split(":")
+      return await new Promise((resolve) => {
+        this.openProviderFile(providerName, providerParams, (updatedAt) => {
+          resolve(updatedAt)
+        })
+      })
     })
 
     return this._startPostMessageListener()
@@ -590,7 +602,7 @@ class CloudFileManagerClient {
     this.connectedPromise.then(() => this.openProviderFile(providerName, providerParams))
   }
 
-  openProviderFile(providerName: string, providerParams?: any) {
+  openProviderFile(providerName: string, providerParams?: any, callback: OpenProviderFileCallback = null) {
     const provider = this.providers[providerName]
     if (provider) {
       return provider.authorized((isAuthorized: boolean) => {
@@ -617,6 +629,7 @@ class CloudFileManagerClient {
             content = this._filterLoadedContent(content)
             const additionalState = { openedContent: content.clone(), dirty: content.requiresConversion() }
             this._fileOpened(content, metadata, additionalState, this._getHashParams(metadata))
+            callback(metadata.providerData?.projectDataUpdatedAt)
             return provider.fileOpened(content, metadata)
           })
         } else {

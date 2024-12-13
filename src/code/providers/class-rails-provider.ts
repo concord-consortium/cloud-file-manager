@@ -16,7 +16,6 @@ import {
   ProviderOpenCallback,
   ProviderSaveCallback,
 } from "./provider-interface"
-import { postProjectLoadedMessageToParent } from "../post-message-manager"
 
 class ClassRailsProvider extends ProviderInterface {
   static Name = "classRails"
@@ -181,15 +180,6 @@ class ClassRailsProvider extends ProviderInterface {
       console.error(e)
       return callback(`파일을 불러올 수 없습니다. ${e.message}`)
     }
-  }
-
-  /**
-   * 파일을 로드 완료 후 호출되는 함수입니다.
-   */
-  fileOpened(_content: CloudContent, metadata: CloudMetadata): void {
-    postProjectLoadedMessageToParent(
-      metadata.providerData?.projectDataUpdatedAt
-    )
   }
 
   list(_: CloudMetadata, callback: ProviderListCallback) {

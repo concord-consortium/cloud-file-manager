@@ -16,24 +16,24 @@ export function registerSavePostMessage(
     },
   })
 }
-export function registerReloadPostMessage(reload: () => void) {
+export function registerReloadPostMessage(
+  reload: () => Promise<string | null>
+) {
   postMessageManager.register({
     messageType: "reload",
     callback: async () => {
-      reload()
-      return true
+      return await reload()
     },
   })
 }
 
 export function registerLoadProjectPostMessage(
-  loadProject: (projectId: string) => void
+  loadProject: (projectId: string) => Promise<string | null>
 ) {
   postMessageManager.register({
     messageType: "loadProject",
-    callback: (projectId: string) => {
-      loadProject(projectId)
-      return true
+    callback: async (projectId: string) => {
+      return await loadProject(projectId)
     },
   })
 }
@@ -48,22 +48,6 @@ export function postiframeLoadedMessageToParent() {
     postMessageManager.send({
       messageType: `iframeLoaded-${iframeKey}`,
       payload: null,
-      target: window.parent,
-      targetOrigin: "*",
-    })
-  } catch {
-    /* ignore */
-  }
-}
-
-export function postProjectLoadedMessageToParent(
-  projectDataUpdatedAt: string | null
-) {
-  if (window === window.parent) return
-  try {
-    postMessageManager.send({
-      messageType: "projectLoaded",
-      payload: projectDataUpdatedAt,
       target: window.parent,
       targetOrigin: "*",
     })
