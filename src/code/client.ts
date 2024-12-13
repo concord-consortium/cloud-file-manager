@@ -665,7 +665,6 @@ class CloudFileManagerClient {
   }
 
   save(callback: OpenSaveCallback = null) {
-    console.log("save client")
     return this._event('getContent', { shared: this._sharedMetadata() }, (stringContent: any) => {
       return this.saveContent(stringContent, callback)
     })
