@@ -611,7 +611,10 @@ class CloudFileManagerClient {
           this._event('willOpenFile', {op: "openProviderFile"})
           return provider.openSaved(providerParams, async (err: string | null, content: any, metadata: CloudMetadata) => {
             if (err) {
-              return this.alert(err, () => this.ready())
+              return this.alert(err, () => {
+                this.ready()
+                return callback(null)
+              })
             }
 
             // content가 null 값인 경우, EmptyContent 값을 받아와 content를 생성합니다.
@@ -629,15 +632,19 @@ class CloudFileManagerClient {
             content = this._filterLoadedContent(content)
             const additionalState = { openedContent: content.clone(), dirty: content.requiresConversion() }
             this._fileOpened(content, metadata, additionalState, this._getHashParams(metadata))
-            callback(metadata.providerData?.projectDataUpdatedAt)
-            return provider.fileOpened(content, metadata)
+            provider.fileOpened(content, metadata) 
+            return callback(metadata.providerData?.projectDataUpdatedAt)
           })
         } else {
-          return this.confirmAuthorizeAndOpen(provider, providerParams)
+          this.confirmAuthorizeAndOpen(provider, providerParams)
+          return callback(null)
         }
       }, {forceAuthorization: true}) // force authorization for Google Drive
     } else {
-      return this.alert(tr("~ALERT.NO_PROVIDER"), () => this.ready())
+      return this.alert(tr("~ALERT.NO_PROVIDER"), () => {
+        this.ready()
+        return callback(null)
+      })
     }
   }
 
