@@ -17,3 +17,7 @@ cypress/screenshots
 
 # Local SSL certificates:
 LocalhostCertificates
+
+# env
+.env
+.env.local

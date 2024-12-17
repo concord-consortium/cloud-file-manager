@@ -30,6 +30,7 @@ import LocalFileProvider  from './providers/local-file-provider'
 import PostMessageProvider  from './providers/post-message-provider'
 import URLProvider  from './providers/url-provider'
 import TestProvider  from './providers/test-provider'
+import ClassRailsProvider from './providers/class-rails-provider'
 
 import {
   CloudContent, cloudContentFactory, CloudMetadata, ECapabilities, ProviderInterface
@@ -37,6 +38,7 @@ import {
 import { reportError } from "./utils/report-error"
 import { SelectInteractiveStateCallback, SelectInteractiveStateDialogProps } from './views/select-interactive-state-dialog-view'
 import { IGetInteractiveState, setOnUnload } from '@concord-consortium/lara-interactive-api'
+import { registerSavePostMessage } from './post-message-manager'
 
 let CLOUDFILEMANAGER_EVENT_ID = 0
 const CLOUDFILEMANAGER_EVENTS: Record<number, CloudFileManagerClientEvent> = {}
@@ -60,7 +62,7 @@ export type ClientEventCallback = (...args: any) => void
 export type CFMFileChangedEventType = "renamedFile" | "savedFile" | "sharedFile" | "unsharedFile"
 export type CFMFileEventType = CFMFileChangedEventType | "closedFile" | "newedFile" | "openedFile" | "willOpenFile"
 export type CloudFileManagerEventType = "connected" | "getContent" | "importedData" | "log" | "ready" |
-              "rendered" | "requiresUserInteraction" | "stateChanged" | CFMFileEventType
+              "rendered" | "requiresUserInteraction" | "stateChanged" | "getEmptyContent" | CFMFileEventType
 
 class CloudFileManagerClientEvent {
   callback: ClientEventCallback
@@ -159,6 +161,7 @@ class CloudFileManagerClient {
       LocalFileProvider,
       PostMessageProvider,
       S3Provider,
+      ClassRailsProvider,
       TestProvider
     ]
     for (Provider of providerList) {
@@ -260,6 +263,9 @@ class CloudFileManagerClient {
     if (this.appOptions.ui?.confirmCloseIfDirty) {
       this._setupConfirmOnClose()
     }
+
+    // "save" postMessage에 대한 이벤트 등록
+    registerSavePostMessage(this.save.bind(this))
 
     return this._startPostMessageListener()
   }
@@ -574,10 +580,21 @@ class CloudFileManagerClient {
         // we can open the document without authorization in some cases
         if (isAuthorized || !provider.isAuthorizationRequired()) {
           this._event('willOpenFile', {op: "openProviderFile"})
-          return provider.openSaved(providerParams, (err: string | null, content: any, metadata: CloudMetadata) => {
+          return provider.openSaved(providerParams, async (err: string | null, content: any, metadata: CloudMetadata) => {
             if (err) {
               return this.alert(err, () => this.ready())
             }
+
+            // content가 null 값인 경우, EmptyContent 값을 받아와 content를 생성합니다.
+            if (!content) {
+              const emptyContent = await new Promise((resolve) =>
+                this._event("getEmptyContent", {}, (emptyContent: any) => {
+                  resolve(emptyContent)
+                })
+              )
+              content = cloudContentFactory.createEnvelopedCloudContent(emptyContent)
+            }
+            
             // if we just opened the file, it doesn't need to be saved until the contents are changed unless
             // it requires conversion from an older version
             content = this._filterLoadedContent(content)
@@ -670,6 +687,9 @@ class CloudFileManagerClient {
   }
 
   saveFile(stringContent: any, metadata: CloudMetadata, callback: OpenSaveCallback = null) {
+    // metadata에 상관없이 ClassRailsProvider를 사용하도록 수정
+    metadata.provider = this.providers.classRails
+
     const readonly = metadata && !metadata.overwritable // only check if metadata exists
     const resaveable = metadata?.provider?.can(ECapabilities.resave, metadata)
 
@@ -1095,6 +1115,21 @@ class CloudFileManagerClient {
     }
   }
 
+  /**
+   * 현재 열려있는 파일을 다른 이름으로 저장합니다.
+   */
+  exportFile() {
+    return this._event('getContent', { shared: this._sharedMetadata() }, (content: any) => {
+      const a = document.createElement('a')
+      const stringContent = JSON.stringify(content)
+      const blob = new Blob([stringContent], {type: 'text/plain'})
+      a.href = URL.createObjectURL(blob)
+      a.download = `${this.state.metadata?.name || '제목없음'}.codap`
+      a.click()
+      return URL.revokeObjectURL(a.href)
+    })
+  }
+
   saveSecondaryFileAsDialog(stringContent: any, extension: string, mimeType: string, callback: OpenSaveCallback) {
     // set the mimeType if not given with the extension
     const extensionMimeType = mime.getType(extension)
@@ -1303,8 +1338,14 @@ class CloudFileManagerClient {
 
   _fileOpened(content: any, metadata: CloudMetadata, additionalState?: any, hashParams: string = null) {
     if (additionalState == null) { additionalState = {} }
-
-    const eventData = { content: content?.getClientContent?.() ?? content }
+    
+    const eventData = {
+      // openNewCodapProject라는 플래그가 있으면 content를 비워서 새로운 프로젝트를 열도록 합니다.
+      // content가 undefined이면 새로운 프로젝트를 여는 로직이 CODAP 레포지토리에서 처리됩니다.
+      content: content?.content?.openNewCodapProject
+        ? undefined
+        : content?.getClientContent?.() ?? content,
+    }
     // update state before sending 'openedFile' events so that 'openedFile' listeners that
     // reference state have the updated state values
     this._updateState(content, metadata, additionalState, hashParams)
