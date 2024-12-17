@@ -38,7 +38,13 @@ import {
 import { reportError } from "./utils/report-error"
 import { SelectInteractiveStateCallback, SelectInteractiveStateDialogProps } from './views/select-interactive-state-dialog-view'
 import { IGetInteractiveState, setOnUnload } from '@concord-consortium/lara-interactive-api'
-import { registerSavePostMessage } from './post-message-manager'
+import {
+  postiframeLoadedMessageToParent,
+  registerLoadProjectPostMessage,
+  registerReloadPostMessage,
+  registerSavePostMessage,
+} from "./post-message-manager"
+import getHashParam from './utils/get-hash-param'
 
 let CLOUDFILEMANAGER_EVENT_ID = 0
 const CLOUDFILEMANAGER_EVENTS: Record<number, CloudFileManagerClientEvent> = {}
@@ -96,6 +102,7 @@ class CloudFileManagerClientEvent {
 
 export type ClientEventListener = (event: CloudFileManagerClientEvent) => void
 export type OpenSaveCallback = (content: any, metadata: CloudMetadata, savedContent?: any) => void
+type OpenProviderFileCallback = (updatedAt: string | null) => void
 
 class CloudFileManagerClient {
   _autoSaveInterval: number
@@ -266,6 +273,27 @@ class CloudFileManagerClient {
 
     // "save" postMessage에 대한 이벤트 등록
     registerSavePostMessage(this.save.bind(this))
+    // "reload" postMessage에 대한 이벤트 등록
+    registerReloadPostMessage(async () => {
+      const hashFileParams = getHashParam("file")
+      const [providerName, providerParams] = hashFileParams.split(":")
+      return await new Promise((resolve) => {
+        this.openProviderFile(providerName, providerParams, (updatedAt) => {
+          resolve(updatedAt)
+        })
+      })
+    })
+    // "loadProject" postMessage에 대한 이벤트 등록
+    registerLoadProjectPostMessage(async (projectId: string) => {
+      window.location.hash = `file=classRails:${projectId}`
+      const hashFileParams = getHashParam("file")
+      const [providerName, providerParams] = hashFileParams.split(":")
+      return await new Promise((resolve) => {
+        this.openProviderFile(providerName, providerParams, (updatedAt) => {
+          resolve(updatedAt)
+        })
+      })
+    })
 
     return this._startPostMessageListener()
   }
@@ -329,6 +357,7 @@ class CloudFileManagerClient {
   }
 
   ready() {
+    postiframeLoadedMessageToParent()
     return this._event('ready')
   }
 
@@ -573,7 +602,7 @@ class CloudFileManagerClient {
     this.connectedPromise.then(() => this.openProviderFile(providerName, providerParams))
   }
 
-  openProviderFile(providerName: string, providerParams?: any) {
+  openProviderFile(providerName: string, providerParams?: any, callback: OpenProviderFileCallback = null) {
     const provider = this.providers[providerName]
     if (provider) {
       return provider.authorized((isAuthorized: boolean) => {
@@ -582,7 +611,10 @@ class CloudFileManagerClient {
           this._event('willOpenFile', {op: "openProviderFile"})
           return provider.openSaved(providerParams, async (err: string | null, content: any, metadata: CloudMetadata) => {
             if (err) {
-              return this.alert(err, () => this.ready())
+              return this.alert(err, () => {
+                this.ready()
+                return callback?.(null)
+              })
             }
 
             // content가 null 값인 경우, EmptyContent 값을 받아와 content를 생성합니다.
@@ -600,14 +632,19 @@ class CloudFileManagerClient {
             content = this._filterLoadedContent(content)
             const additionalState = { openedContent: content.clone(), dirty: content.requiresConversion() }
             this._fileOpened(content, metadata, additionalState, this._getHashParams(metadata))
-            return provider.fileOpened(content, metadata)
+            provider.fileOpened(content, metadata) 
+            return callback?.(metadata.providerData?.projectDataUpdatedAt)
           })
         } else {
-          return this.confirmAuthorizeAndOpen(provider, providerParams)
+          this.confirmAuthorizeAndOpen(provider, providerParams)
+          return callback?.(null)
         }
       }, {forceAuthorization: true}) // force authorization for Google Drive
     } else {
-      return this.alert(tr("~ALERT.NO_PROVIDER"), () => this.ready())
+      return this.alert(tr("~ALERT.NO_PROVIDER"), () => {
+        this.ready()
+        return callback?.(null)
+      })
     }
   }
 
