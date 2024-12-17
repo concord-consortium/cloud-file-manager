@@ -60,14 +60,21 @@ class ClassRailsProvider extends ProviderInterface {
   }
 
   /**
-   * 프로젝트 데이터를 서버에서 요청하여 가져옵니다.
-   * 이때, is_edit_mode URL 파라미터에 따라 다른 API 엔드포인트를 사용합니다.
+   * 프로젝트 정보를 서버에서 요청하여 가져옵니다.
+   * 이때, mode URL 파라미터에 따라 다른 API 엔드포인트를 사용합니다.
    */
-  private async _getProjectData(projectId: string) {
+  private async _getProject(projectId: string): Promise<{
+    data: unknown
+    updatedAt: string | null
+  }> {
     const urlParams = new URLSearchParams(window.location.search)
-    const isEditMode = urlParams.has("is_edit_mode")
+    const isEditMode = urlParams.get("mode") === "edit"
     if (isEditMode) {
-      return (await getCodapActivity({ id: projectId })).projectData
+      const codapActivity = await getCodapActivity({ id: projectId })
+      return {
+        data: codapActivity.projectData,
+        updatedAt: null,
+      }
     } else {
       const profilesCodapActivity = await getProfilesCodapActivity({
         id: projectId,
@@ -75,21 +82,23 @@ class ClassRailsProvider extends ProviderInterface {
           "profilesActivity.classroomsActivity.activity.activitiable",
       })
       // profilesCodapActivity.projectData가 없다면 원본 activity의 projectData를 반환합니다.
-      return (
-        profilesCodapActivity.projectData ??
-        profilesCodapActivity.profilesActivity.classroomsActivity.activity
-          .activitiable.projectData
-      )
+      return {
+        data:
+          profilesCodapActivity.projectData ??
+          profilesCodapActivity.profilesActivity.classroomsActivity.activity
+            .activitiable.projectData,
+        updatedAt: profilesCodapActivity.projectDataUpdatedAt,
+      }
     }
   }
 
   /**
    * 프로젝트 데이터를 서버에 업데이트합니다.
-   * 이때, is_edit_mode URL 파라미터에 따라 다른 API 엔드포인트를 사용합니다.
+   * 이때, mode URL 파라미터에 따라 다른 API 엔드포인트를 사용합니다.
    */
   private async _updateProjectData(projectData: unknown, projectId: string) {
     const urlParams = new URLSearchParams(window.location.search)
-    const isEditMode = urlParams.has("is_edit_mode")
+    const isEditMode = urlParams.get("mode") === "edit"
     if (isEditMode) {
       return await updateCodapActivity({ id: projectId, projectData })
     } else {
@@ -152,16 +161,20 @@ class ClassRailsProvider extends ProviderInterface {
         activityName = "제목없음"
       }
 
-      const projectData = await this._getProjectData(this._projectId)
-      if (projectData === null) {
+      const project = await this._getProject(this._projectId)
+      if (project.data === null) {
         // projectData가 null이라면, content 값으로 null을 반환합니다.
         metadata.rename(activityName)
         return callback(null, null)
       }
 
-      const content =
-        cloudContentFactory.createEnvelopedCloudContent(projectData)
-      metadata.rename((projectData as any).name ?? activityName)
+      const content = cloudContentFactory.createEnvelopedCloudContent(
+        project.data
+      )
+      metadata.rename((project.data as any).name ?? activityName)
+      metadata.providerData = {
+        projectDataUpdatedAt: project.updatedAt,
+      }
       return callback(null, content)
     } catch (e) {
       console.error(e)
