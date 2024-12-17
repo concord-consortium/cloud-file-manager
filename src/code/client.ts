@@ -613,7 +613,7 @@ class CloudFileManagerClient {
             if (err) {
               return this.alert(err, () => {
                 this.ready()
-                return callback(null)
+                return callback?.(null)
               })
             }
 
@@ -633,17 +633,17 @@ class CloudFileManagerClient {
             const additionalState = { openedContent: content.clone(), dirty: content.requiresConversion() }
             this._fileOpened(content, metadata, additionalState, this._getHashParams(metadata))
             provider.fileOpened(content, metadata) 
-            return callback(metadata.providerData?.projectDataUpdatedAt)
+            return callback?.(metadata.providerData?.projectDataUpdatedAt)
           })
         } else {
           this.confirmAuthorizeAndOpen(provider, providerParams)
-          return callback(null)
+          return callback?.(null)
         }
       }, {forceAuthorization: true}) // force authorization for Google Drive
     } else {
       return this.alert(tr("~ALERT.NO_PROVIDER"), () => {
         this.ready()
-        return callback(null)
+        return callback?.(null)
       })
     }
   }
