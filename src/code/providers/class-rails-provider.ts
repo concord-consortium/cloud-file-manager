@@ -64,10 +64,6 @@ class ClassRailsProvider extends ProviderInterface {
    * 프로젝트 정보를 서버에서 요청하여 가져옵니다.
    * 이때, mode URL 파라미터에 따라 다른 API 엔드포인트를 사용합니다.
    */
-  /**
-   * 프로젝트 정보를 서버에서 요청하여 가져옵니다.
-   * 이때, mode URL 파라미터에 따라 다른 API 엔드포인트를 사용합니다.
-   */
   private async _getProject(projectId: string): Promise<{
     data: unknown
     updatedAt: string | null
