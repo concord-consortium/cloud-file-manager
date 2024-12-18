@@ -64,6 +64,10 @@ class ClassRailsProvider extends ProviderInterface {
    * 프로젝트 정보를 서버에서 요청하여 가져옵니다.
    * 이때, mode URL 파라미터에 따라 다른 API 엔드포인트를 사용합니다.
    */
+  /**
+   * 프로젝트 정보를 서버에서 요청하여 가져옵니다.
+   * 이때, mode URL 파라미터에 따라 다른 API 엔드포인트를 사용합니다.
+   */
   private async _getProject(projectId: string): Promise<{
     data: unknown
     updatedAt: string | null
@@ -72,8 +76,10 @@ class ClassRailsProvider extends ProviderInterface {
     const isEditMode = urlParams.get("mode") === "edit"
     if (isEditMode) {
       const codapActivity = await getCodapActivity({ id: projectId })
+      const response = await fetch(codapActivity.url)
+      const projectData = await response.json()
       return {
-        data: codapActivity.projectData,
+        data: projectData,
         updatedAt: null,
       }
     } else {
@@ -82,12 +88,16 @@ class ClassRailsProvider extends ProviderInterface {
         includeProfilesActivity:
           "profilesActivity.classroomsActivity.activity.activitiable",
       })
-      // profilesCodapActivity.projectData가 없다면 원본 activity의 projectData를 반환합니다.
-      return {
-        data:
-          profilesCodapActivity.projectData ??
+
+      // profilesCodapActivity.url이 없다면 원본 activity의 url에서 데이터를 가져옵니다.
+      const response = await fetch(
+        profilesCodapActivity.url ??
           profilesCodapActivity.profilesActivity.classroomsActivity.activity
-            .activitiable.projectData,
+            .activitiable.url
+      )
+      const projectData = await response.json()
+      return {
+        data: projectData,
         updatedAt: profilesCodapActivity.projectDataUpdatedAt,
       }
     }
