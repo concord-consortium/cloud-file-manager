@@ -5,6 +5,7 @@ type Attributes = {
   id: string
   type: "profiles_codap_activity"
   projectData: unknown
+  url: string | null
   projectDataUpdatedAt: string | null // 한번도 저장하지 않은 경우 null
   lastStep: number
 }
