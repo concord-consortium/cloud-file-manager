@@ -86,11 +86,18 @@ class ClassRailsProvider extends ProviderInterface {
       })
 
       // profilesCodapActivity.url이 없다면 원본 activity의 url에서 데이터를 가져옵니다.
-      const response = await fetch(
+      const projectUrl =
         profilesCodapActivity.url ??
-          profilesCodapActivity.profilesActivity.classroomsActivity.activity
-            .activitiable.url
-      )
+        profilesCodapActivity.profilesActivity.classroomsActivity.activity
+          .activitiable.url
+      if (!projectUrl) {
+        return {
+          data: null,
+          updatedAt: profilesCodapActivity.projectDataUpdatedAt,
+        }
+      }
+
+      const response = await fetch(projectUrl)
       const projectData = await response.json()
       return {
         data: projectData,
