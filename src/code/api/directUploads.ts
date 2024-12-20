@@ -1,3 +1,7 @@
+/**
+ * main-react 레포지토리의 코드를 가져오고, token 관련 코드를 수정했습니다.
+ */
+
 import { DirectUpload, Blob } from "@rails/activestorage"
 import { getClassRailsUrl } from "../lib/getServiceUrl"
 import { getCookieToken } from "../lib/cookie"
