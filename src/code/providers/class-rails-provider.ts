@@ -125,7 +125,7 @@ class ClassRailsProvider extends ProviderInterface {
    */
   private async _getActivityName(projectId: string) {
     const urlParams = new URLSearchParams(window.location.search)
-    const isEditMode = urlParams.has("is_edit_mode")
+    const isEditMode = urlParams.get("mode") === "edit"
     if (isEditMode) {
       const codapActivity = await getCodapActivity({
         id: projectId,
