@@ -72,6 +72,10 @@ class ClassRailsProvider extends ProviderInterface {
     const isEditMode = urlParams.get("mode") === "edit"
     if (isEditMode) {
       const codapActivity = await getCodapActivity({ id: projectId })
+      if (!codapActivity.url) {
+        return { data: null, updatedAt: null }
+      }
+
       const response = await fetch(codapActivity.url)
       const projectData = await response.json()
       return {
