@@ -78,10 +78,7 @@ class ClassRailsProvider extends ProviderInterface {
 
       const response = await fetch(codapActivity.url)
       const projectData = await response.json()
-      return {
-        data: projectData,
-        updatedAt: null,
-      }
+      return { data: projectData, updatedAt: null }
     } else {
       const profilesCodapActivity = await getProfilesCodapActivity({
         id: projectId,
