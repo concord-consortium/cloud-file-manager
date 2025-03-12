@@ -18,6 +18,11 @@
     <script type="text/javascript">
       var cfmClient, cfmContent;
 
+      function getQueryVariable(variable) {
+        const urlParams = new URLSearchParams(window.location.search);
+        return urlParams.get(variable)
+      }
+
       // Disable "Expected an assignment or function call and instead saw an expression" warning
       /*jshint -W030 */
       function newFile() {
@@ -37,6 +42,21 @@
         cfmClient && cfmClient.saveFileAsDialog(getContent());
       }
 
+      function share() {
+        document.getElementById("share-info").innerHTML = "Sharing..."
+        cfmClient && cfmClient.share((data) => {
+          const sharedMetadata = cfmClient._sharedMetadata()
+          console.log("share data", sharedMetadata)
+          const { location } = window 
+          const urlParams = new URLSearchParams(location.search);
+          urlParams.set("url", sharedMetadata.sharedDocumentUrl)
+
+          document.getElementById("share-info").innerHTML = 
+            `<a href="${location.origin}${location.pathname}?${urlParams.toString()}">Link to Example loading the shared data</a>`
+        });
+
+      }
+
       function getContent() {
         cfmContent = document.getElementById("text").value;
         return cfmContent;
@@ -50,6 +70,10 @@
       function connected(client) {
         cfmClient = client;
         cfmContent = document.getElementById("text").value;
+        var urlToLoad = getQueryVariable("url");
+        if (urlToLoad) {
+          client.openUrlFile(urlToLoad);
+        }
       }
 
       function changed() {
@@ -64,7 +88,8 @@
   <body>
     <h2>Demo App</h2>
     <p>
-      This simple demo app uses the textarea below to edit text files.  You can either use the menu bar or the buttons below to open, save and create new files.
+      This simple demo app uses the textarea below to edit text files.  You can use the buttons below to open, save, and create new files, 
+      or create a share link to a file.
     </p>
     <div>
       <textarea cols="50" rows="10" id="text"></textarea>
@@ -74,6 +99,10 @@
       <button onclick="openFile()">Open</button>
       <button onclick="saveFile()">Save</button>
       <button onclick="saveFileAs()">Save As</button>
+      <button onclick="share()">Share</button>
+    </div>
+    <div id="share-info">
+
     </div>
     <script type="text/javascript">
       var clientOptions = {

@@ -3,6 +3,7 @@ const { NODE_ENV, dest, codap, noGlobals, noMap } = process.env;
 const CopyPlugin = require('copy-webpack-plugin')
 const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 const ReplaceInFileWebpackPlugin = require('replace-in-file-webpack-plugin')
+const Dotenv = require('dotenv-webpack')
 const { assets, replacementStrings } = require('./build-support/build-opts')
 
 const isProduction = NODE_ENV === 'production'
@@ -54,6 +55,7 @@ const baseConfig = (env) => ({
     extensions: ['.tsx', '.ts', '.js', '.jsx', '.json', '.styl']
   },
   plugins: [
+    new Dotenv(),
     new MiniCssExtractPlugin({
       filename: (pathData) =>
         `${pathData.chunk.name.replace(/js\//, 'css/').replace(/\.js$/, '.css')}`
