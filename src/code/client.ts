@@ -207,22 +207,30 @@ class CloudFileManagerClient {
         if (allProviders[providerName]) {
           Provider = allProviders[providerName]
           // don't add providers that require configuration if no (or invalid) configuration provided
-          if (!Provider.hasValidOptions || Provider.hasValidOptions(providerOptions)) {
-            const provider = new Provider(providerOptions, this)
-            this.providers[providerName] = provider
-            shareProvider = this._getShareProvider()
-            // also add to here in providers list so we can look it up when parsing url hash
-            if (provider.urlDisplayName) {
-              this.providers[provider.urlDisplayName] = provider
-            }
-            availableProviders.push(provider)
+          if (Provider.hasValidOptions && !Provider.hasValidOptions(providerOptions)) {
+            continue
+          }
 
-            // InteractiveApiProvider is a newer form of Lara provider
-            if (!isInteractiveApiRequested && (providerName === "lara")) {
-              const interactiveApiProvider = new InteractiveApiProvider(providerOptions, this)
-              this.providers.interactiveApi = interactiveApiProvider
-              availableProviders.push(interactiveApiProvider)
-            }
+          const provider = new Provider(providerOptions, this)
+          this.providers[providerName] = provider
+
+          // TODO: It isn't clear why the share provider is being created in this loop.
+          // Perhaps it is so the share provider is not be created if the configuration is `providers: []`
+          if (!shareProvider) {
+            shareProvider = this._getShareProvider()
+          }
+
+          // also add to here in providers list so we can look it up when parsing url hash
+          if (provider.urlDisplayName) {
+            this.providers[provider.urlDisplayName] = provider
+          }
+          availableProviders.push(provider)
+
+          // InteractiveApiProvider is a newer form of Lara provider
+          if (!isInteractiveApiRequested && (providerName === "lara")) {
+            const interactiveApiProvider = new InteractiveApiProvider(providerOptions, this)
+            this.providers.interactiveApi = interactiveApiProvider
+            availableProviders.push(interactiveApiProvider)
           }
         } else {
           this.alert(`Unknown provider: ${providerName}`)
@@ -915,9 +923,12 @@ class CloudFileManagerClient {
         sharedContent.addMetadata(sharingMetadata)
         const currentContent = this._createOrUpdateCurrentContent(stringContent, this.state.metadata)
         sharedContent.set('docName', currentContent.get('docName'))
-        // save the current name at the top level so it is displayed when the shared file is loaded
+        // try to save the current name at the top level so it is displayed when the shared file is loaded
         if (this.state.metadata) {
-          sharedContent.getClientContent().name = this.state.metadata.name
+          const clientContent = sharedContent.getClientContent()
+          if (typeof clientContent === "object") {
+            clientContent.name = this.state.metadata.name
+          }
         }
         if (shared) {
           currentContent.remove('isUnshared')
