@@ -11,10 +11,9 @@ import ReactDOM from "react-dom"
 import ReactDOMFactories from "react-dom-factories"
 import { createReactFactory } from '../create-react-factory'
 import DropDownView from "./dropdown-view"
-import {TriangleOnlyAnchor} from './dropdown-anchors'
 import tr, { getCurrentLanguage } from '../utils/translate'
 
-const {div, i, span, input} = ReactDOMFactories
+const {div, i, span, input, button} = ReactDOMFactories
 const Dropdown = createReactFactory(DropDownView)
 
 export default createReactClass({
@@ -26,6 +25,11 @@ export default createReactClass({
     if (window.addEventListener) {
       window.addEventListener('mousedown', this.checkBlur, true)
       window.addEventListener('touchstart', this.checkBlur, true)
+    }
+
+    // Focus the file menu button for keyboard accessibility
+    if (this.fileMenuButtonRef) {
+      this.fileMenuButtonRef.focus()
     }
 
     return this.props.client._ui.listen((event: any) => {
@@ -181,7 +185,6 @@ export default createReactClass({
     :
       (div({className: "lang-menu with-border"},
         (span({className: "lang-label"}, label || defaultOption.label)),
-        TriangleOnlyAnchor
       ))
 
     return (Dropdown({
@@ -197,15 +200,21 @@ export default createReactClass({
     const isAuthorized = provider && provider.isAuthorizationRequired() && provider.authorized()
     return (div({className: 'menu-bar'},
       (div({className: 'menu-bar-left'},
-        (Dropdown({items: this.props.items})),
-        this.state.editingFilename ?
-          (div({className: 'menu-bar-content-filename'},
-            (input({ref: ((elt: any) => { return this.filenameRef = elt }), value: this.state.editableFilename, onChange: this.filenameChanged, onKeyDown: this.watchForEnter}))
-          ))
-        :
-          (div({className: 'menu-bar-content-filename', onClick: this.filenameClicked}, this.state.filename)),
-        this.props.fileStatus ?
-          (span({className: `menu-bar-file-status-${this.props.fileStatus.type}`}, this.props.fileStatus.message)) : undefined
+        (button({ref: (el: any) => { this.fileMenuButtonRef = el }, className: "file-menu-button"},
+          Dropdown({items: this.props.items}),
+          "File"
+        )),
+        (div({className: 'menu-bar-content-filename'},
+          this.state.editingFilename ?
+            (input({ref: ((elt: any) => { return this.filenameRef = elt }), value: this.state.editableFilename,
+              onChange: this.filenameChanged, onKeyDown: this.watchForEnter,
+              onMouseEnter: (e: any) => e.stopPropagation(), onMouseMove: (e: any) => e.stopPropagation()
+            }))
+          :
+            (span({className: 'content-filename', onClick: this.filenameClicked}, this.state.filename)),
+            this.props.fileStatus ?
+              (span({className: `menu-bar-file-status-${this.props.fileStatus.type}`}, this.props.fileStatus.message)) : undefined
+        )),
       )),
       (div({className: 'menu-bar-right'},
         this.props.options.info ?

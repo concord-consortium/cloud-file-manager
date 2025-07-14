@@ -10,6 +10,7 @@ const isProduction = NODE_ENV === 'production'
 
 const srcDir = path.resolve(__dirname, 'src')
 const destDir = path.resolve(__dirname, dest || './dist')
+const publicDir = path.resolve(__dirname, 'public')
 
 // Base configuration shared between configurations for each entry point.
 // Note that the env passed in to these configuration functions is the webpack
@@ -26,6 +27,11 @@ const baseConfig = (env) => ({
   output: {
     filename: '[name]',
     path: destDir
+  },
+  devServer: {
+    static: {
+      directory: publicDir
+    }
   },
   module: {
     rules: [
@@ -61,10 +67,20 @@ const baseConfig = (env) => ({
         `${pathData.chunk.name.replace(/js\//, 'css/').replace(/\.js$/, '.css')}`
     }),
     new CopyPlugin({
-      patterns: assets.map(name => ({
-        from: path.resolve(__dirname, `./src/assets/${name}`),
-        to: `${destDir}/${name}`
-      }))
+      patterns: [
+        ...assets.map(name => ({
+          from: path.resolve(__dirname, `./src/assets/${name}`),
+          to: `${destDir}/${name}`
+        })),
+        {
+          from: publicDir,
+          to: destDir,
+          noErrorOnMissing: true,
+          globOptions: {
+            ignore: ['**/.*'] // ignore hidden files
+          }
+        }
+      ]
     }),
     new ReplaceInFileWebpackPlugin([
       {
