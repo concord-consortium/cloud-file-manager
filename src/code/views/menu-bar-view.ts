@@ -13,7 +13,7 @@ import { createReactFactory } from '../create-react-factory'
 import DropDownView from "./dropdown-view"
 import tr, { getCurrentLanguage } from '../utils/translate'
 
-const {div, i, span, input, button} = ReactDOMFactories
+const {div, i, span, input, button, img} = ReactDOMFactories
 const Dropdown = createReactFactory(DropDownView)
 
 export default createReactClass({
@@ -215,6 +215,10 @@ export default createReactClass({
             this.props.fileStatus ?
               (span({className: `menu-bar-file-status-${this.props.fileStatus.type}`}, this.props.fileStatus.message)) : undefined
         )),
+      )),
+      (div({className: 'menu-bar-center'},
+        (img({className: 'app-logo', src: '/assets/img/codap-logo.svg', alt: "CODAP Logo"})),
+        (span({className: 'version-label'}, `v3.0.0 (2369)`)),
       )),
       (div({className: 'menu-bar-right'},
         this.props.options.info ?
