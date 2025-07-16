@@ -214,7 +214,7 @@ export default createReactClass({
       (div({className: 'menu-bar'},
         (div({className: 'menu-bar-left'},
           this.renderFileMenu(),
-                    (div({className: 'menu-bar-content-filename'},
+          (div({className: 'menu-bar-content-filename'},
             this.state.editingFilename
             ? (input({ref: ((elt: any) => { return this.filenameRef = elt }), value: this.state.editableFilename,
                 onChange: this.filenameChanged, onKeyDown: this.watchForEnter,
