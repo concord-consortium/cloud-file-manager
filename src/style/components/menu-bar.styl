@@ -3,15 +3,21 @@
   font-size 14px
   font-weight 500
   letter-spacing 0.2px
-  width 100%
+  width 100vw
   background-color #a5e3f6
   padding  8px 0px 8px
   color #222
   height menu-bar-height
   box-sizing border-box
-
   enable-flex(row)
   align-items center
+  display flex
+  flex-direction row
+  align-items center
+  justify-content: space-between;
+  position relative
+  border-bottom 1px solid #33b7e1
+  box-shadow 0 0 6px 0 rgba(0, 0, 0, 0.25)
 
   span, i
     padding-left 0.5em
@@ -32,21 +38,21 @@
     cursor pointer
     vertical-align middle
     no-select()
-    border-radius: 4px;
-    border: solid 1px #006c8e;
-
-    &:hover
-      background-color #d3f4ff
 
     .content-filename
       display flex
       align-items center
       padding 0
+      height 100%
       width fit-content
       padding 0 10px
+      border-radius: 4px;
+      border: solid 1px #006c8e;
+      &:hover
+        background-color #d3f4ff
 
     input
-      width 100%
+      width fit-content
       height 28px
       box-sizing border-box
       font-size 14px
@@ -58,17 +64,28 @@
       border-radius 4px
       padding 0 10px
 
-  .menu-bar-file-status-alert
+  .menu-bar-file-status
     label-font()
-    background-color #f00
-    padding 2px 7px
+    color white
+    height 100%
     -webkit-border-radius: 5px
     -moz-border-radius: 5px
-    border-radius: 5px
-    margin-left 20px
-
-  .menu-bar-file-status-info
-    font-style: italic
+    border-radius: 45px
+    margin-left 8px
+    display flex
+    align-items center
+    justify-content center
+    padding 0 10px
+    &.alert
+      background-color #b00020
+    &.saving-info
+      font-style: italic
+      color #222
+      background-color #f5f500
+    &.info
+      font-style: normal
+      color #222
+      background-color #00e100
 
   .menu-bar-left, .menu-bar-right
     height 100%
@@ -76,22 +93,18 @@
     align-items center
     flex: 0 0 auto
 
-  .menu-bar-left
-    .file-menu-button
+    .menu-bar-button
       display: flex
       flex-direction: row
       align-items: center
       background-color: #a5e3f6
       border: none
-      width: 66px
+      width: fit-content
       height: 30px
       margin: 0 8px 0 10px
-      padding: 0 8px 0 0
       border-radius: 4px
       box-sizing: border-box
       border: solid 2px transparent
-      .default-anchor
-        padding-right: 5px
       &:hover
         background-color: #d3f4ff
       &:active
@@ -99,19 +112,38 @@
       &:focus
         border: solid 2px #0957d0
 
+    .menu-hidden, .menu-showing
+      margin-top 0
+      position absolute
+      top menu-bar-height - 16px
+
+  .menu-bar-left
+    .file-menu-button
+      width: 66px
+      padding: 0 8px 0 0
+      .default-anchor
+        padding-right: 5px
+    .menu
+      padding 0
+    .menu-showing
+      left 10px
+
   .menu-bar-center
     display flex
     flex-direction row
     align-items center
     justify-content center
     flex 1 1 0%
+    position absolute
+    left 50%
+    transform translateX(-50%)
+    width max-content
 
   .menu-bar-right
-    padding-left 0.5em
-    padding-right 0.5em
-
-    .menu-hidden, .menu-showing
-      right 10px
+    .lang-menu-button
+      padding 0 0 0 5px
+    .lang-label
+      padding 0 8px 0 5px
 
   span.gdrive-user
     height 14px
@@ -135,6 +167,14 @@
     position relative
     top 3px
 
+  .menu-list-container
+    border-radius 4px
+    box-shadow 0 2px 6px 2px rgba(0, 0, 0, 0.25)
+    background-color #fff
+
+    ul
+      margin 0
+
   // Customize default drop-down styles. Language menu is a bit more compact.
   .lang-menu
     &.with-border
@@ -149,11 +189,4 @@
       .flag
         vertical-align middle
         margin-right 10px
-    .lang-label
-      padding-right: 0.25em;
-      margin-top: -11px
-      background-image: url('../../img/language-icon.svg')
-      background-repeat: no-repeat;
-      padding-left: 21px;
-      background-position: 4px 0;
-      background-size: 13px;
+

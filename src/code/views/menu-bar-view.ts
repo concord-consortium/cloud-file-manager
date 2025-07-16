@@ -180,10 +180,12 @@ export default createReactClass({
     const currentOption = langMenu.options.filter((option: any) => currentLang === option.langCode)[0]
     const defaultOption = hasFlags ? {flag: "us"} : {label: "English"}
     const {flag, label} = currentOption || defaultOption
+    const withBorder = langMenu.withBorder ? 'with-border' : ''
     const menuAnchor = flag ?
       (div({className: `flag flag-${flag}`}))
     :
-      (div({className: "lang-menu with-border"},
+      (button({className: `menu-bar-button lang-menu-button ${withBorder}`},
+        (img({className: 'lang-icon', src: '/assets/img/language-icon.svg', alt: "Language Icon"})),
         (span({className: "lang-label"}, label || defaultOption.label)),
       ))
 
@@ -195,40 +197,49 @@ export default createReactClass({
     }))
   },
 
+  renderFileMenu() {
+    const fileMenuAnchor =
+      (button({ref: (el: any) => { this.fileMenuButtonRef = el }, className: "menu-bar-button file-menu-button"},
+          (img({className: 'menu-icon', src: '/assets/img/menu-icon.svg', alt: "Menu Icon"})),
+          (span({className: "menu-label"}, 'File')) // TODO need to change this to a localized string
+      ))
+
+    return (Dropdown({items: this.props.items, menuAnchor: fileMenuAnchor}))
+  },
+
   render() {
     const { provider } = this.props
     const isAuthorized = provider && provider.isAuthorizationRequired() && provider.authorized()
-    return (div({className: 'menu-bar'},
-      (div({className: 'menu-bar-left'},
-        (button({ref: (el: any) => { this.fileMenuButtonRef = el }, className: "file-menu-button"},
-          Dropdown({items: this.props.items}),
-          "File"
+    return (
+      (div({className: 'menu-bar'},
+        (div({className: 'menu-bar-left'},
+          this.renderFileMenu(),
+                    (div({className: 'menu-bar-content-filename'},
+            this.state.editingFilename
+            ? (input({ref: ((elt: any) => { return this.filenameRef = elt }), value: this.state.editableFilename,
+                onChange: this.filenameChanged, onKeyDown: this.watchForEnter,
+                onMouseEnter: (e: any) => e.stopPropagation(), onMouseMove: (e: any) => e.stopPropagation()
+              }))
+            : (span({className: 'content-filename', onClick: this.filenameClicked}, this.state.filename)),
+                this.props.fileStatus
+                  ? (span({className: `menu-bar-file-status ${this.props.fileStatus.type}`}, this.props.fileStatus.message))
+                  : undefined
+          )),
         )),
-        (div({className: 'menu-bar-content-filename'},
-          this.state.editingFilename ?
-            (input({ref: ((elt: any) => { return this.filenameRef = elt }), value: this.state.editableFilename,
-              onChange: this.filenameChanged, onKeyDown: this.watchForEnter,
-              onMouseEnter: (e: any) => e.stopPropagation(), onMouseMove: (e: any) => e.stopPropagation()
-            }))
-          :
-            (span({className: 'content-filename', onClick: this.filenameClicked}, this.state.filename)),
-            this.props.fileStatus ?
-              (span({className: `menu-bar-file-status-${this.props.fileStatus.type}`}, this.props.fileStatus.message)) : undefined
+        (div({className: 'menu-bar-center'},
+          (img({className: 'app-logo', src: '/assets/img/codap-logo.svg', alt: "CODAP Logo"})),
+          (span({className: 'version-label'}, `v3.0.0 (2369)`)),
         )),
-      )),
-      (div({className: 'menu-bar-center'},
-        (img({className: 'app-logo', src: '/assets/img/codap-logo.svg', alt: "CODAP Logo"})),
-        (span({className: 'version-label'}, `v3.0.0 (2369)`)),
-      )),
-      (div({className: 'menu-bar-right'},
-        this.props.options.info ?
-          (span({className: 'menu-bar-info', onClick: this.infoClicked}, this.props.options.info)) : undefined,
-        isAuthorized ? this.props.provider.renderUser() : undefined,
-        this.props.options.help ?
-          (i({style: {fontSize: "13px"}, className: 'clickable icon-help', onClick: this.help})) : undefined,
-        this.props.options.languageMenu ?
-          this.renderLanguageMenu() : undefined
+        (div({className: 'menu-bar-right'},
+          this.props.options.info ?
+            (span({className: 'menu-bar-info', onClick: this.infoClicked}, this.props.options.info)) : undefined,
+          isAuthorized ? this.props.provider.renderUser() : undefined,
+          this.props.options.help ?
+            (i({style: {fontSize: "13px"}, className: 'clickable icon-help', onClick: this.help})) : undefined,
+          this.props.options.languageMenu ?
+            this.renderLanguageMenu() : undefined
+        ))
       ))
-    ))
+    )
   }
 })

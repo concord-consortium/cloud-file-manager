@@ -14,7 +14,7 @@ import ReactDOMFactories from 'react-dom-factories'
 import { createReactClassFactory } from '../create-react-factory'
 import { DefaultAnchor } from './dropdown-anchors'
 
-const {div, i, ul, li} = ReactDOMFactories
+const {div, i, ul, li, span} = ReactDOMFactories
 
 const DropdownItem = createReactClassFactory({
   displayName: 'DropdownItem',
@@ -139,7 +139,7 @@ const DropDown = createReactClass({
               DefaultAnchor
           )),
           (div({className: menuClass},
-            (ul({},
+            (ul({className: 'menu-list-container'},
               (() => {
               const result = []
               for (index = 0; index < this.props.items.length; index++) {
