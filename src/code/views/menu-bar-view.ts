@@ -161,7 +161,8 @@ export default createReactClass({
   },
 
   renderLanguageMenu() {
-    const langMenu = this.props.options.languageMenu
+    const {options} = this.props
+    const langMenu = options.languageMenu
     const currentLang = getCurrentLanguage()
     const items = langMenu.options
       // Do not show current language in the menu.
@@ -185,7 +186,7 @@ export default createReactClass({
       (div({className: `flag flag-${flag}`}))
     :
       (button({className: `menu-bar-button lang-menu-button ${withBorder}`},
-        (img({className: 'lang-icon', src: '/assets/img/language-icon.svg', alt: "Language Icon"})),
+        (img({className: 'lang-icon', src: options.languageAnchorIcon, alt: "Language Icon"})),
         (span({className: "lang-label"}, label || defaultOption.label)),
       ))
 
@@ -198,17 +199,19 @@ export default createReactClass({
   },
 
   renderFileMenu() {
+    const { client } = this.props
+    const menuOptions = client._ui.menu.options || []
     const fileMenuAnchor =
       (button({ref: (el: any) => { this.fileMenuButtonRef = el }, className: "menu-bar-button file-menu-button"},
-          (img({className: 'menu-icon', src: '/assets/img/menu-icon.svg', alt: "Menu Icon"})),
-          (span({className: "menu-label"}, 'File')) // TODO need to change this to a localized string
+          (img({className: 'menu-icon', src: menuOptions.menuAnchorIcon, alt: "Menu Icon"})),
+          (span({className: "menu-label"}, menuOptions.menuAnchorName))
       ))
 
     return (Dropdown({items: this.props.items, menuAnchor: fileMenuAnchor}))
   },
 
   render() {
-    const { provider } = this.props
+    const { provider, client, options, fileStatus } = this.props
     const isAuthorized = provider && provider.isAuthorizationRequired() && provider.authorized()
     return (
       (div({className: 'menu-bar'},
@@ -222,17 +225,16 @@ export default createReactClass({
               }))
             : (span({className: 'content-filename', onClick: this.filenameClicked}, this.state.filename)),
                 this.props.fileStatus
-                  ? (span({className: `menu-bar-file-status ${this.props.fileStatus.type}`}, this.props.fileStatus.message))
+                  ? (span({className: `menu-bar-file-status ${fileStatus.type}`}, fileStatus.message))
                   : undefined
           )),
         )),
         (div({className: 'menu-bar-center'},
-          (img({className: 'app-logo', src: '/assets/img/codap-logo.svg', alt: "CODAP Logo"})),
-          (span({className: 'version-label'}, `v3.0.0 (2369)`)),
+          (img({className: 'app-logo', src: client.appOptions.appIcon, alt: "CODAP Logo"})),
+          this.props.options.info ?
+            (span({className: 'menu-bar-info', onClick: this.infoClicked}, options.info)) : undefined,
         )),
         (div({className: 'menu-bar-right'},
-          this.props.options.info ?
-            (span({className: 'menu-bar-info', onClick: this.infoClicked}, this.props.options.info)) : undefined,
           isAuthorized ? this.props.provider.renderUser() : undefined,
           this.props.options.help ?
             (i({style: {fontSize: "13px"}, className: 'clickable icon-help', onClick: this.help})) : undefined,
