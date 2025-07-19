@@ -115,6 +115,9 @@
         background-color: #eaf9ff
       &:focus
         border: solid 2px #0957d0
+      .menu-icon
+        height: 24px
+        width: 24px
 
     .menu-hidden, .menu-showing
       margin-top 0
@@ -129,6 +132,11 @@
         padding-right: 5px
     .menu
       padding 0
+
+    svg
+      fill #fff
+    svg.default-anchor
+      border 1px solid #aaa
     .menu-showing
       left 10px
 
@@ -140,7 +148,7 @@
     flex 1 1 0%
     position absolute
     left 50%
-    transform translateX(-50%)
+    transform translateX(-15%)
     width max-content
 
   .menu-bar-right

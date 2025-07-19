@@ -14,7 +14,7 @@ import ReactDOMFactories from 'react-dom-factories'
 import { createReactClassFactory } from '../create-react-factory'
 import { DefaultAnchor } from './dropdown-anchors'
 
-const {div, i, ul, li, span} = ReactDOMFactories
+const {div, img, ul, li, span} = ReactDOMFactories
 
 const DropdownItem = createReactClassFactory({
   displayName: 'DropdownItem',
@@ -64,9 +64,10 @@ const DropdownItem = createReactClassFactory({
       if (!enabled || !(this.props.item.action || this.props.item.items)) { classes.push('disabled') }
       const content = this.props.item.name || this.props.item.content || this.props.item
       return (li({ref: ((elt: any) => { return this.itemRef = elt }), className: classes.join(' '), onClick: this.clicked, onMouseEnter: this.mouseEnter },
+        (img({className: 'menu-list-icon', src: this.props.item.icon, alt: this.props.item.name})) || undefined,
+        (span({className: 'menu-item-content'}, content)),
         this.props.item.items ?
-          (i({className: 'icon-inspectorArrow-collapse'})) : undefined,
-        content
+          (img({className: `submenu-list-arrow`, src: this.props.subMenuExpandIcon})) : undefined,
       ))
     }
   }
@@ -144,13 +145,14 @@ const DropDown = createReactClass({
               const result = []
               for (index = 0; index < this.props.items.length; index++) {
                 item = this.props.items[index]
-                result.push((DropdownItem({key: index, item, select: this.select, setSubMenu: this.setSubMenu})))
+                result.push((DropdownItem({key: index, item, select: this.select, setSubMenu: this.setSubMenu,
+                      subMenuExpandIcon: this.props.subMenuExpandIcon})))
               }
               return result
             })()
             )),
             this.state.subMenu ?
-              (div({className: menuClass, style: this.state.subMenu.style},
+              (div({className: `${menuClass} sub-menu`, style: this.state.subMenu.style},
                 (ul({},
                   (() => {
                   const result1 = []

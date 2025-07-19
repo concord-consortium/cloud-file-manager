@@ -37,6 +37,7 @@ export interface CFMUIMenuOptions {
   menuAnchorName?: string
   // map from menu item string to menu display name for string-only menu items
   menuNames?: Record<string, string>
+  subMenuExpandIcon?: string
 }
 
 export interface CFMUIOptions extends CFMUIMenuOptions {

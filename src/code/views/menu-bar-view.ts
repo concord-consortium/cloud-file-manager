@@ -186,7 +186,7 @@ export default createReactClass({
       (div({className: `flag flag-${flag}`}))
     :
       (button({className: `menu-bar-button lang-menu-button ${withBorder}`},
-        (img({className: 'lang-icon', src: options.languageAnchorIcon, alt: "Language Icon"})),
+        (img({className: 'menu-icon lang-icon', src: options.languageAnchorIcon, alt: "Language Icon"})),
         (span({className: "lang-label"}, label || defaultOption.label)),
       ))
 
@@ -207,7 +207,8 @@ export default createReactClass({
           (span({className: "menu-label"}, menuOptions.menuAnchorName))
       ))
 
-    return (Dropdown({items: this.props.items, menuAnchor: fileMenuAnchor}))
+    return (Dropdown({items: this.props.items, menuAnchor: fileMenuAnchor,
+      subMenuExpandIcon: menuOptions.subMenuExpandIcon}))
   },
 
   render() {
