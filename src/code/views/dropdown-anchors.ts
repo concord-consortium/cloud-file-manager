@@ -22,5 +22,6 @@ const TriangleOnlyAnchor =
   ))
 
 export {
-  DefaultAnchor, TriangleOnlyAnchor
+  DefaultAnchor,
+  TriangleOnlyAnchor
 }
