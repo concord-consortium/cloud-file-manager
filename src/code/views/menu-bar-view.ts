@@ -28,8 +28,8 @@ export default createReactClass({
     }
 
     // Focus the file menu button for keyboard accessibility
-    if (this.fileMenuButtonRef) {
-      this.fileMenuButtonRef.focus()
+    if (this.fileMenuButtonRef.current) {
+      this.fileMenuButtonRef.current.focus()
     }
 
     return this.props.client._ui.listen((event: any) => {
