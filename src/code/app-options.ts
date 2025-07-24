@@ -50,6 +50,7 @@ export interface CFMUIOptions extends CFMUIMenuOptions {
   // if true, adds `beforeunload` handler to request confirmation before leaving page
   confirmCloseIfDirty?: boolean
   shareDialog?: CFMShareDialogSettings
+  clientToolBarPosition?: "top" | "left",
 }
 
 export interface CFMBaseProviderOptions {

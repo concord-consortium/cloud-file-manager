@@ -64,7 +64,7 @@ const DropdownItem = createReactClassFactory({
       if (!enabled || !(this.props.item.action || this.props.item.items)) { classes.push('disabled') }
       const content = this.props.item.name || this.props.item.content || this.props.item
       return (li({ref: ((elt: any) => { return this.itemRef = elt }), className: classes.join(' '), onClick: this.clicked, onMouseEnter: this.mouseEnter },
-        (img({className: 'menu-list-icon', src: this.props.item.icon, alt: this.props.item.name})) || undefined,
+        this.props.item.icon && (img({className: 'menu-list-icon', src: this.props.item.icon, alt: this.props.item.name})),
         (span({className: 'menu-item-content'}, content)),
         this.props.item.items ?
           (img({className: `submenu-list-arrow`, src: this.props.subMenuExpandIcon})) : undefined,

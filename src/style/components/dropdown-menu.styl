@@ -2,6 +2,11 @@
   display inline-block
   vertical-align middle
   padding-left 5px
+  font-family 'Roboto', 'Arial', 'sans-serif'
+  font-size 14px
+  font-weight 500
+  letter-spacing 0.2px
+  color #222
 
 .menu-hidden
   display none
@@ -9,20 +14,20 @@
   display block
 
 .menu-hidden, .menu-showing
-  font-size 13px
+  font-size 14px
   text-align center
   background none
   position fixed
   min-width 150px
   z-index 1000
-  color dark-blue
+  color #222
   ul
     text-align left
     display block
-    margin-top 0.5em
-    padding 4px
+    margin-top 5px
+    padding 2px
     list-style none
-    box-shadow 0 0 5px rgba(0, 0, 0, 0.15)
+    box-shadow 0 2px 6px 2px rgba(0, 0, 0, 0.25)
     background #fff
 
   li.menuItem
@@ -31,13 +36,12 @@
     flex-direction row
     align-items center
     position relative
-    margin 2px
     padding 4px
     cursor pointer
     transition all 0.2
     &.disabled
-      color #aaa
-      font-style italic
+      color #222
+      opacity: 0.35
     &.separator
       border-top 1px solid #aaa
       padding 0
@@ -61,7 +65,7 @@
   li:hover
     background #e9e9e9
     &.disabled
-      color #aaa
+      color #222
       background none
       cursor not-allowed
     &.separator
@@ -70,4 +74,5 @@
 .sub-menu
   position absolute;
   left 130px !important;
-  width fit-content
+  display flex
+  flex-direction row

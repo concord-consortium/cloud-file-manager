@@ -16,8 +16,11 @@
   align-items center
   justify-content: space-between;
   position relative
-  border-bottom 1px solid #33b7e1
-  box-shadow 0 0 6px 0 rgba(0, 0, 0, 0.25)
+  border-bottom 1px solid transparent
+
+  &.toolbar-position-left
+    border-bottom 1px solid #33b7e1
+    box-shadow 0 0 6px 0 rgba(0, 0, 0, 0.25)
 
   span, i
     padding-left 0.5em
@@ -113,7 +116,9 @@
         background-color: #d3f4ff
       &:active
         background-color: #eaf9ff
-      &:focus
+      &:focus-visible
+        border: solid 2px transparent
+      &:focus-visible
         border: solid 2px #0957d0
       .menu-icon
         height: 24px
@@ -156,6 +161,11 @@
       padding 0 0 0 5px
     .lang-label
       padding 0 8px 0 5px
+    .menu
+      right 8px
+      .menu-showing
+        ul
+          right 100px
 
   span.gdrive-user
     height 14px
@@ -194,10 +204,12 @@
       padding-right 5px
     no-select()
     .menu-showing
+      right 8px
       min-width 50px
 
     .lang-option
       padding 0
+      margin-right: 12px
       .flag
         vertical-align middle
         margin-right 10px

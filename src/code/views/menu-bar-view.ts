@@ -215,7 +215,7 @@ export default createReactClass({
     const { provider, client, options, fileStatus } = this.props
     const isAuthorized = provider && provider.isAuthorizationRequired() && provider.authorized()
     return (
-      (div({className: 'menu-bar'},
+      (div({className: `menu-bar ${options.clientToolBarPosition === "left" ? 'toolbar-position-left' : ''}`},
         (div({className: 'menu-bar-left'},
           this.renderFileMenu(),
           (div({className: 'menu-bar-content-filename'},
