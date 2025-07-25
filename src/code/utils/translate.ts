@@ -18,6 +18,7 @@ import ja from './lang/ja.json'
 import ko from './lang/ko.json'
 import nb from './lang/nb.json'
 import nn from './lang/nn.json'
+import nl from "./lang/nl.json"
 import pl from "./lang/pl.json"
 import ptBR from './lang/pt-BR.json'
 import th from './lang/th.json'
@@ -42,6 +43,7 @@ const languageFiles: LanguageFileEntry[] = [
   {key: 'ko' ,   contents: ko},     // Korean
   {key: 'nb',    contents: nb},     // Norwegian Bokmål
   {key: 'nn',    contents: nn},     // Norwegian Nynorsk
+  {key: 'nl',    contents: nl},     // Dutch Nederlands
   {key: 'pl',    contents: pl},     // Polish Polski
   {key: 'pt-BR', contents: ptBR},   // Brazilian Portuguese
   {key: 'th',    contents: th},     // Thai

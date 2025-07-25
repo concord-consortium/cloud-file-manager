@@ -33,7 +33,7 @@
   "~FILE_STATUS.SAVING": "Kaydediliyor...",
   "~FILE_STATUS.SAVED": "Tüm değişiklikler kaydedildi",
   "~FILE_STATUS.SAVED_TO_PROVIDER": "Tüm Değişiklikler %{providerName} Olarak Kaydedildi",
-  "~FILE_STATUS.UNSAVED": "Kaydedilmemiş",
+  "~FILE_STATUS.UNSAVED": "Kaydedilmedi",
   "~FILE_DIALOG.FILENAME": "Dosya Adı",
   "~FILE_DIALOG.OPEN": "Aç",
   "~FILE_DIALOG.SAVE": "Kaydet",
@@ -152,5 +152,5 @@
   "~GOOGLE_DRIVE.SELECT_A_FILE": "Dosya seç",
   "~GOOGLE_DRIVE.SELECT_A_FOLDER": "Klasör seç",
   "~GOOGLE_DRIVE.STARRED": "Yıldızlı",
-  "~GOOGLE_DRIVE.SELECT_VALID_FILE": "Please select a valid file for this application"
+  "~GOOGLE_DRIVE.SELECT_VALID_FILE": "Bu uygulama için lütfen geçerli dosya seçiniz"
 }
