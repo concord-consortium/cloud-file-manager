@@ -116,4 +116,9 @@ const translate = function(key: string, vars?: Record<string, string>, lang?: st
 
 export const getDefaultLang = () => defaultLang
 
+export const getSpecialLangFontClassName = (lang: string) => {
+  const specialLangFonts = ["fa", "th", "ja", "ko", "zh-Hans", "zh-TW", "he"]
+  return specialLangFonts.includes(lang) ? `lang-${lang}` : ""
+}
+
 export default translate

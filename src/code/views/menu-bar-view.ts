@@ -11,7 +11,7 @@ import ReactDOM from "react-dom"
 import ReactDOMFactories from "react-dom-factories"
 import { createReactFactory } from '../create-react-factory'
 import DropDownView from "./dropdown-view"
-import tr, { getCurrentLanguage } from '../utils/translate'
+import tr, { getCurrentLanguage, getSpecialLangFontClassName } from '../utils/translate'
 
 const {div, i, span, input, button, img} = ReactDOMFactories
 const Dropdown = createReactFactory(DropDownView)
@@ -164,6 +164,7 @@ export default createReactClass({
     const {options} = this.props
     const langMenu = options.languageMenu
     const currentLang = getCurrentLanguage()
+    const langClass = getSpecialLangFontClassName(currentLang)
     const items = langMenu.options
       // Do not show current language in the menu.
       .filter((option: any) => currentLang !== option.langCode)
@@ -185,7 +186,7 @@ export default createReactClass({
     const menuAnchor = flag ?
       (div({className: `flag flag-${flag}`}))
     :
-      (button({className: `menu-bar-button lang-menu-button ${withBorder}`},
+      (button({className: `menu-bar-button lang-menu-button ${withBorder} ${langClass}`},
         (img({className: 'menu-icon lang-icon', src: options.languageAnchorIcon, alt: "Language Icon"})),
         (span({className: "lang-label"}, label || defaultOption.label)),
       ))
@@ -200,9 +201,11 @@ export default createReactClass({
 
   renderFileMenu() {
     const { client } = this.props
+    const currentLang = getCurrentLanguage()
+    const langClass = getSpecialLangFontClassName(currentLang)
     const menuOptions = client._ui.menu.options || []
     const fileMenuAnchor =
-      (button({ref: (el: any) => { this.fileMenuButtonRef = el }, className: "menu-bar-button file-menu-button"},
+      (button({ref: (el: any) => { this.fileMenuButtonRef = el }, className: `menu-bar-button file-menu-button ${langClass}`},
           (img({className: 'menu-icon', src: menuOptions.menuAnchorIcon, alt: "Menu Icon"})),
           (span({className: "menu-label"}, menuOptions.menuAnchorName))
       ))
@@ -213,12 +216,15 @@ export default createReactClass({
 
   render() {
     const { provider, client, options, fileStatus } = this.props
+    const currentLang = getCurrentLanguage()
+    console.log(`MenuBar: current language is ${currentLang}`)
+    const langClass = getSpecialLangFontClassName(currentLang)
     const isAuthorized = provider && provider.isAuthorizationRequired() && provider.authorized()
     return (
-      (div({className: `menu-bar ${options.clientToolBarPosition === "left" ? 'toolbar-position-left' : ''}`},
+      (div({className: `menu-bar ${options.clientToolBarPosition === "left" ? 'toolbar-position-left' : ''} ${langClass}`},
         (div({className: 'menu-bar-left'},
           this.renderFileMenu(),
-          (div({className: 'menu-bar-content-filename'},
+          (div({className: `menu-bar-content-filename ${langClass}`},
             this.state.editingFilename
             ? (input({ref: ((elt: any) => { return this.filenameRef = elt }), value: this.state.editableFilename,
                 onChange: this.filenameChanged, onKeyDown: this.watchForEnter,
@@ -226,7 +232,7 @@ export default createReactClass({
               }))
             : (span({className: 'content-filename', onClick: this.filenameClicked}, this.state.filename)),
                 this.props.fileStatus
-                  ? (span({className: `menu-bar-file-status ${fileStatus.type}`}, fileStatus.message))
+                  ? (span({className: `menu-bar-file-status ${fileStatus.type} ${langClass}`}, fileStatus.message))
                   : undefined
           )),
         )),

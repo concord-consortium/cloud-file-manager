@@ -13,6 +13,7 @@ import ReactDOM from 'react-dom'
 import ReactDOMFactories from 'react-dom-factories'
 import { createReactClassFactory } from '../create-react-factory'
 import { DefaultAnchor } from './dropdown-anchors'
+import { getCurrentLanguage, getSpecialLangFontClassName } from '../utils/translate'
 
 const {div, img, ul, li, span} = ReactDOMFactories
 
@@ -57,6 +58,8 @@ const DropdownItem = createReactClassFactory({
                       : true
 
     const classes = ['menuItem']
+    const currentLang = getCurrentLanguage()
+    const langClass = getSpecialLangFontClassName(currentLang)
     if (this.props.item.separator) {
       classes.push('separator')
       return (li({className: classes.join(' ')}, ''))
@@ -65,7 +68,7 @@ const DropdownItem = createReactClassFactory({
       const content = this.props.item.name || this.props.item.content || this.props.item
       return (li({ref: ((elt: any) => { return this.itemRef = elt }), className: classes.join(' '), onClick: this.clicked, onMouseEnter: this.mouseEnter },
         this.props.item.icon && (img({className: 'menu-list-icon', src: this.props.item.icon, alt: this.props.item.name})),
-        (span({className: 'menu-item-content'}, content)),
+        (span({className: `menu-item-content ${langClass}`}, content)),
         this.props.item.items ?
           (img({className: `submenu-list-arrow`, src: this.props.subMenuExpandIcon})) : undefined,
       ))
@@ -101,9 +104,7 @@ const DropDown = createReactClass({
   },
 
   checkClose(evt: any) {
-    // no need to walk the DOM if the menu isn't open
     if (!this.state.showingMenu) { return }
-    // if the click is on the menu, let the menu handle it
     let elt = evt.target
     while (elt != null) {
       if ((typeof elt.className === "string") && (elt.className.indexOf(cfmMenuClass) >= 0)) { return }
@@ -127,13 +128,15 @@ const DropDown = createReactClass({
 
   render() {
     let index, item
+    const currentLang = getCurrentLanguage()
+    const langClass = getSpecialLangFontClassName(currentLang)
     const menuClass = `${cfmMenuClass} ${this.state.showingMenu ? 'menu-showing' : 'menu-hidden'}`
     const dropdownClass = `menu ${this.props.className ? this.props.className : ''}`
     const menuAnchorClass = `menu-anchor ${this.props.menuAnchorClassName ? this.props.menuAnchorClassName : ''}`
     return (div({className: dropdownClass},
       (this.props.items != null ? this.props.items.length : undefined) > 0 ?
         (div({},
-          (div({className: `${cfmMenuClass} ${menuAnchorClass}`, onClick: () => this.select(null)},
+          (div({className: `${cfmMenuClass} ${menuAnchorClass} ${langClass}`, onClick: () => this.select(null)},
             this.props.menuAnchor ?
               this.props.menuAnchor
             :
