@@ -131,7 +131,7 @@ const DropDown = createReactClass({
     const currentLang = getCurrentLanguage()
     const langClass = getSpecialLangFontClassName(currentLang)
     const menuClass = `${cfmMenuClass} ${this.state.showingMenu ? 'menu-showing' : 'menu-hidden'}`
-    const dropdownClass = `menu ${this.props.className ? this.props.className : ''}`
+    const dropdownClass = `menu ${this.props.className ? this.props.className : ''} ${this.state.showingMenu ? 'menu-open' : 'menu-close'}`
     const menuAnchorClass = `menu-anchor ${this.props.menuAnchorClassName ? this.props.menuAnchorClassName : ''}`
     return (div({className: dropdownClass},
       (this.props.items != null ? this.props.items.length : undefined) > 0 ?

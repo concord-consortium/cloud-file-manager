@@ -21,12 +21,6 @@
     border-bottom 1px solid #33b7e1
     box-shadow 0 0 6px 0 rgba(0, 0, 0, 0.25)
 
-  span, i
-    padding-left 0.5em
-    padding-right 0.5em
-    vertical-align middle
-    display inline-block
-
   .menu-bar-content-filename
     font-family 'Roboto', 'sans-serif'
     font-size 14px
@@ -93,35 +87,35 @@
     height 100%
     display flex
     align-items center
-    flex: 0 0 auto
+    flex 0 0 auto
 
     .menu-bar-button
-      display: flex
-      flex-direction: row
-      align-items: center
-      font-family 'Roboto', 'Arial', 'sans-serif'
+      display flex
+      flex-direction row
+      align-items center
+      font-family 'Roboto', 'sans-serif'
       font-size 14px
       font-weight 500
       letter-spacing 0.2px
-      background-color: #a5e3f6
-      border: none
-      width: fit-content
-      height: 30px
-      margin: 0 8px 0 10px
-      border-radius: 4px
-      box-sizing: border-box
-      border: solid 2px transparent
+      background-color #a5e3f6
+      border none
+      width fit-content
+      height 30px
+      border-radius 4px
+      box-sizing border-box
+      border solid 2px transparent
       &:hover
-        background-color: #d3f4ff
+        background-color #d3f4ff
       &:active
-        background-color: #eaf9ff
+        background-color #eaf9ff
       &:focus
-        border: solid 2px transparent
+        border solid 2px transparent
       &:focus-visible
-        border: solid 2px #0957d0
+        border solid 2px #0957d0
       .menu-icon
-        height: 24px
-        width: 24px
+        height 24px
+        width 24px
+        margin 0 5px
 
     .menu-hidden, .menu-showing
       margin-top 0
@@ -129,13 +123,17 @@
       top menu-bar-height - 16px
 
   .menu-bar-left
+    margin-left 10px
     .file-menu-button
       width: 66px
       padding: 0 8px 0 0
+      margin-right 8px
       .default-anchor
         padding-right: 5px
     .menu
       padding 0
+      &.menu-open .file-menu-button
+        background-color #d3f4ff
 
     svg
       fill #fff
@@ -156,12 +154,14 @@
     width max-content
 
   .menu-bar-right
+    margin-right 10px
     .lang-menu-button
+      margin-left 8px
       padding 0 0 0 5px
-    .lang-label
-      padding 0 8px 0 5px
     .menu
       right 8px
+      &.menu-open .lang-menu-button
+        background-color #d3f4ff
       .menu-showing
         ul
           right 100px
