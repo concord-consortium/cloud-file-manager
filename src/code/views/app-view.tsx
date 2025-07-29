@@ -120,7 +120,7 @@ class AppView extends React.Component<IAppViewProps, IAppViewState> {
       const fileStatus = (() => {
         let message
         if (event.state.saving) {
-          return {message: tr('~FILE_STATUS.SAVING'), type: 'info'}
+          return {message: tr('~FILE_STATUS.SAVING'), type: 'saving-info'}
         } else if (event.state.saved) {
           const providerName = event.state.metadata.provider?.displayName
           message = providerName

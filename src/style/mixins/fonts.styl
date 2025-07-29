@@ -1,42 +1,38 @@
-// @import url(http://fonts.googleapis.com/css?family=Montserrat:400,700)
+// @import url(http://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,400..700;1,400..700&family=Roboto:ital,wght@0,400..700;1,400..700&family=Noto+Sans+TC:wght@400..700&family=Noto+Sans+SC:wght@400..700&family=Noto+Sans+Thai:wght@400..700&family=Noto+Sans+Hebrew:wght@400..700&&family=Noto+Sans+Arabic:wght@400..700&&family=Noto+Sans+KR:wght@400..700&family=Noto+Sans+JP:wght@400..700)
 
 default-font(style=normal, variant=normal, weight=normal, size=12px)
   font-style style
   font-variant variant
   font-weight weight
   font-size size
-  font-family 'Montserrat', sans-serif
+  font-family 'Roboto', sans-serif
   text-transform none
 
-label-font(style=normal, variant=normal, weight=normal, size=12px, transform=uppercase)
+label-font(style=normal, variant=normal, weight=normal, size=14px)
   default-font(style:style, variant:variant, weight:weight, size:size)
-  font-family 'Museo Sans', 'Montserrat', sans-serif
-  text-transform transform
+  font-family 'Roboto', sans-serif
 
-italic-font(size=12px)
-	font-family 'Museo Sans', 'Montserrat', sans-serif
-	font-style italic
+italic-font(size=14px)
+	font-family 'Roboto', sans-serif
+  font-style italic
 
-@font-face
-	font-family Montserrat
-	src url("../../fonts/Montserrat-Bold.otf")
-	font-weight bold
-	font-style normal
+arabic-font(size=14px)
+  font-family 'Noto Sans Arabic', sans-serif
 
-@font-face
-	font-family: Montserrat
-	src url("../../fonts/Montserrat-Regular.otf")
-	font-weight  normal
-	font-style normal
+hebrew-font(size=14px)
+  font-family 'Noto Sans Hebrew', sans-serif
 
-@font-face
-	font-family Museo Sans
-	src url("../../fonts/MuseoSans_500.otf")
-	font-weight normal
-	font-style normal
+japanese-font(size=14px)
+  font-family 'Noto Sans Japanese', sans-serif
 
-@font-face
-	font-family Museo Sans
-	src url("../../fonts/MuseoSans_500_Italic.otf")
-	font-weight normal
-	font-style italic
+korean-font(size=14px)
+  font-family 'Noto Sans Korean', sans-serif
+
+thai-font(size=14px)
+  font-family 'Noto Sans Thai', sans-serif
+
+simplified-chinese-font(size=14px)
+  font-family 'Noto Sans SC', sans-serif
+
+traditional-chinese-font(size=14px)
+  font-family 'Noto Sans TC', sans-serif

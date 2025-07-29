@@ -8,6 +8,7 @@ export interface CFMMenuItemObject {
   items?: CFMMenuItem[]
   enabled?: boolean | (() => boolean)
   separator?: boolean
+  icon?: string
 }
 
 export type CFMMenuItem = string | CFMMenuItemObject
@@ -16,6 +17,7 @@ export type CFMMenu = CFMMenuItem[]
 
 export interface CFMMenuBarOptions {
   info?: string
+  languageAnchorIcon?: string
   languageMenu?: {
     currentLang: string
     options: { label: string, langCode: string }[]
@@ -31,8 +33,11 @@ export interface CFMShareDialogSettings {
 export interface CFMUIMenuOptions {
   // null => no menu; undefined => default menu
   menu?: CFMMenu | null
+  menuAnchorIcon?: string
+  menuAnchorName?: string
   // map from menu item string to menu display name for string-only menu items
   menuNames?: Record<string, string>
+  subMenuExpandIcon?: string
 }
 
 export interface CFMUIOptions extends CFMUIMenuOptions {
@@ -45,6 +50,7 @@ export interface CFMUIOptions extends CFMUIMenuOptions {
   // if true, adds `beforeunload` handler to request confirmation before leaving page
   confirmCloseIfDirty?: boolean
   shareDialog?: CFMShareDialogSettings
+  clientToolBarPosition?: "top" | "left"
 }
 
 export interface CFMBaseProviderOptions {
@@ -122,6 +128,7 @@ export interface CFMAppOptions {
   autoSaveInterval?: number
   appName?: string
   appVersion?: string
+  appIcon?: string
   appBuildNum?: string
   // If appOrMenuElemId is set and usingIframe is true, then the CFM presents
   // its UI and the wrapped client app within the specified element.

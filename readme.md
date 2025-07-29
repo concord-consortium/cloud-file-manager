@@ -173,8 +173,11 @@ export interface CFMUIOptions {
   menuBar?: CFMMenuBarOptions
   // null => no menu; undefined => default menu
   menu?: CFMMenu | null
+  menuAnchorIcon?: string
+  menuAnchorName?: string
   // map from menu item string to menu display name for string-only menu items
   menuNames?: Record<string, string>
+  subMenuExpandIcon?: string
   // used for setting the page title from the document name (see appSetsWindowTitle)
   windowTitleSuffix?: string
   windowTitleSeparator?: string

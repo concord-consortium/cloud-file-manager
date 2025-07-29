@@ -11,10 +11,9 @@ import ReactDOM from "react-dom"
 import ReactDOMFactories from "react-dom-factories"
 import { createReactFactory } from '../create-react-factory'
 import DropDownView from "./dropdown-view"
-import {TriangleOnlyAnchor} from './dropdown-anchors'
-import tr, { getCurrentLanguage } from '../utils/translate'
+import tr, { getCurrentLanguage, getSpecialLangFontClassName } from '../utils/translate'
 
-const {div, i, span, input} = ReactDOMFactories
+const {div, i, span, input, button, img} = ReactDOMFactories
 const Dropdown = createReactFactory(DropDownView)
 
 export default createReactClass({
@@ -26,6 +25,11 @@ export default createReactClass({
     if (window.addEventListener) {
       window.addEventListener('mousedown', this.checkBlur, true)
       window.addEventListener('touchstart', this.checkBlur, true)
+    }
+
+    // Focus the file menu button for keyboard accessibility
+    if (this.fileMenuButtonRef.current) {
+      this.fileMenuButtonRef.current.focus()
     }
 
     return this.props.client._ui.listen((event: any) => {
@@ -157,8 +161,10 @@ export default createReactClass({
   },
 
   renderLanguageMenu() {
-    const langMenu = this.props.options.languageMenu
+    const {options} = this.props
+    const langMenu = options.languageMenu
     const currentLang = getCurrentLanguage()
+    const langClass = getSpecialLangFontClassName(currentLang)
     const items = langMenu.options
       // Do not show current language in the menu.
       .filter((option: any) => currentLang !== option.langCode)
@@ -176,12 +182,13 @@ export default createReactClass({
     const currentOption = langMenu.options.filter((option: any) => currentLang === option.langCode)[0]
     const defaultOption = hasFlags ? {flag: "us"} : {label: "English"}
     const {flag, label} = currentOption || defaultOption
+    const withBorder = langMenu.withBorder ? 'with-border' : ''
     const menuAnchor = flag ?
       (div({className: `flag flag-${flag}`}))
     :
-      (div({className: "lang-menu with-border"},
+      (button({className: `menu-bar-button lang-menu-button ${withBorder} ${langClass}`},
+        (img({className: 'menu-icon lang-icon', src: options.languageAnchorIcon, alt: "Language Icon"})),
         (span({className: "lang-label"}, label || defaultOption.label)),
-        TriangleOnlyAnchor
       ))
 
     return (Dropdown({
@@ -192,30 +199,56 @@ export default createReactClass({
     }))
   },
 
-  render() {
-    const { provider } = this.props
-    const isAuthorized = provider && provider.isAuthorizationRequired() && provider.authorized()
-    return (div({className: 'menu-bar'},
-      (div({className: 'menu-bar-left'},
-        (Dropdown({items: this.props.items})),
-        this.state.editingFilename ?
-          (div({className: 'menu-bar-content-filename'},
-            (input({ref: ((elt: any) => { return this.filenameRef = elt }), value: this.state.editableFilename, onChange: this.filenameChanged, onKeyDown: this.watchForEnter}))
-          ))
-        :
-          (div({className: 'menu-bar-content-filename', onClick: this.filenameClicked}, this.state.filename)),
-        this.props.fileStatus ?
-          (span({className: `menu-bar-file-status-${this.props.fileStatus.type}`}, this.props.fileStatus.message)) : undefined
-      )),
-      (div({className: 'menu-bar-right'},
-        this.props.options.info ?
-          (span({className: 'menu-bar-info', onClick: this.infoClicked}, this.props.options.info)) : undefined,
-        isAuthorized ? this.props.provider.renderUser() : undefined,
-        this.props.options.help ?
-          (i({style: {fontSize: "13px"}, className: 'clickable icon-help', onClick: this.help})) : undefined,
-        this.props.options.languageMenu ?
-          this.renderLanguageMenu() : undefined
+  renderFileMenu() {
+    const { client } = this.props
+    const currentLang = getCurrentLanguage()
+    const langClass = getSpecialLangFontClassName(currentLang)
+    const menuOptions = client._ui.menu.options || []
+    const fileMenuAnchor =
+      (button({ref: (el: any) => { this.fileMenuButtonRef = el }, className: `menu-bar-button file-menu-button ${langClass}`},
+          (img({className: 'menu-icon', src: menuOptions.menuAnchorIcon, alt: "Menu Icon"})),
+          (span({className: "menu-label"}, menuOptions.menuAnchorName))
       ))
-    ))
+
+    return (Dropdown({items: this.props.items, menuAnchor: fileMenuAnchor,
+      subMenuExpandIcon: menuOptions.subMenuExpandIcon}))
+  },
+
+  render() {
+    const { provider, client, options, fileStatus } = this.props
+    const currentLang = getCurrentLanguage()
+    console.log(`MenuBar: current language is ${currentLang}`)
+    const langClass = getSpecialLangFontClassName(currentLang)
+    const isAuthorized = provider && provider.isAuthorizationRequired() && provider.authorized()
+    return (
+      (div({className: `menu-bar ${options.clientToolBarPosition === "left" ? 'toolbar-position-left' : ''} ${langClass}`},
+        (div({className: 'menu-bar-left'},
+          this.renderFileMenu(),
+          (div({className: `menu-bar-content-filename ${langClass}`},
+            this.state.editingFilename
+            ? (input({ref: ((elt: any) => { return this.filenameRef = elt }), value: this.state.editableFilename,
+                onChange: this.filenameChanged, onKeyDown: this.watchForEnter,
+                onMouseEnter: (e: any) => e.stopPropagation(), onMouseMove: (e: any) => e.stopPropagation()
+              }))
+            : (span({className: 'content-filename', onClick: this.filenameClicked}, this.state.filename)),
+                this.props.fileStatus
+                  ? (span({className: `menu-bar-file-status ${fileStatus.type} ${langClass}`}, fileStatus.message))
+                  : undefined
+          )),
+        )),
+        (div({className: 'menu-bar-center'},
+          (img({className: 'app-logo', src: client.appOptions.appIcon, alt: "CODAP Logo"})),
+          this.props.options.info ?
+            (span({className: 'menu-bar-info', onClick: this.infoClicked}, options.info)) : undefined,
+        )),
+        (div({className: 'menu-bar-right'},
+          isAuthorized ? this.props.provider.renderUser() : undefined,
+          this.props.options.help ?
+            (i({style: {fontSize: "13px"}, className: 'clickable icon-help', onClick: this.help})) : undefined,
+          this.props.options.languageMenu ?
+            this.renderLanguageMenu() : undefined
+        ))
+      ))
+    )
   }
 })
