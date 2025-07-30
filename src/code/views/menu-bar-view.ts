@@ -9,11 +9,12 @@
 import createReactClass from "create-react-class"
 import ReactDOM from "react-dom"
 import ReactDOMFactories from "react-dom-factories"
-import { createReactFactory } from '../create-react-factory'
+import { CFMUIMenuOptions } from "../app-options"
+import { createReactFactory } from "../create-react-factory"
+import tr, { getCurrentLanguage, getSpecialLangFontClassName } from "../utils/translate"
 import DropDownView from "./dropdown-view"
-import tr, { getCurrentLanguage, getSpecialLangFontClassName } from '../utils/translate'
 
-const {div, i, span, input, button, img} = ReactDOMFactories
+const {div, span, input, button, img} = ReactDOMFactories
 const Dropdown = createReactFactory(DropDownView)
 
 export default createReactClass({
@@ -28,9 +29,9 @@ export default createReactClass({
     }
 
     // Focus the file menu button for keyboard accessibility
-    if (this.fileMenuButtonRef.current) {
-      this.fileMenuButtonRef.current.focus()
-    }
+    // if (this.fileMenuButtonRef.current) {
+    //   this.fileMenuButtonRef.current.focus()
+    // }
 
     return this.props.client._ui.listen((event: any) => {
       switch (event.type) {
@@ -139,12 +140,8 @@ export default createReactClass({
     }
   },
 
-  help() {
-    return window.open(this.props.options.help, '_blank')
-  },
-
   infoClicked() {
-    return (typeof this.props.options.onInfoClicked === 'function' ? this.props.options.onInfoClicked(this.props.client) : undefined)
+    return (typeof this.props.options.onInfoClick === 'function' ? this.props.options.onInfoClick() : undefined)
   },
 
   // CODAP eats the click events in the main workspace which causes the blur event not to fire so we need to check for a non-bubbling global click event when editing
@@ -203,6 +200,7 @@ export default createReactClass({
     const { client } = this.props
     const currentLang = getCurrentLanguage()
     const langClass = getSpecialLangFontClassName(currentLang)
+    const menuBarOptions = client.appOptions.ui.menuBar || {}
     const menuOptions = client._ui.menu.options || []
     const fileMenuAnchor =
       (button({ref: (el: any) => { this.fileMenuButtonRef = el }, className: `menu-bar-button file-menu-button ${langClass}`},
@@ -211,7 +209,23 @@ export default createReactClass({
       ))
 
     return (Dropdown({items: this.props.items, menuAnchor: fileMenuAnchor,
-      subMenuExpandIcon: menuOptions.subMenuExpandIcon}))
+      subMenuExpandIcon: menuBarOptions.subMenuExpandIcon}))
+  },
+
+  renderOtherMenu(options: CFMUIMenuOptions) {
+    const { client } = this.props
+    const currentLang = getCurrentLanguage()
+    const langClass = getSpecialLangFontClassName(currentLang)
+    const menuBarOptions = client.appOptions.ui.menuBar || {}
+    const menuAnchor =
+      (button({className: `menu-bar-button other-menu-button ${langClass}`},
+          (img({className: 'menu-icon', src: options.menuAnchorIcon, alt: "Menu Icon"})),
+          (span({className: "menu-label"}, options.menuAnchorName))
+      ))
+    const menuKey = `other-menu-${options.className || ''}-${options.menuAnchorName || ''}`
+
+    return (Dropdown({key: menuKey, items: options.menu, menuAnchor: menuAnchor, className: options.className,
+      subMenuExpandIcon: menuBarOptions.subMenuExpandIcon}))
   },
 
   render() {
@@ -237,14 +251,15 @@ export default createReactClass({
           )),
         )),
         (div({className: 'menu-bar-center'},
-          (img({className: 'app-logo', src: client.appOptions.appIcon, alt: "CODAP Logo"})),
+          (img({className: 'app-logo', src: client.appOptions.appIcon, alt: "CODAP Logo", onClick: this.infoClicked})),
           this.props.options.info ?
-            (span({className: 'menu-bar-info', onClick: this.infoClicked}, options.info)) : undefined,
+            (span({className: 'menu-bar-info'}, options.info)) : undefined,
         )),
         (div({className: 'menu-bar-right'},
           isAuthorized ? this.props.provider.renderUser() : undefined,
-          this.props.options.help ?
-            (i({style: {fontSize: "13px"}, className: 'clickable icon-help', onClick: this.help})) : undefined,
+          this.props.options.otherMenus && this.props.options.otherMenus.map((menuOptions: CFMUIMenuOptions) => {
+            return this.renderOtherMenu(menuOptions)
+          }),
           this.props.options.languageMenu ?
             this.renderLanguageMenu() : undefined
         ))

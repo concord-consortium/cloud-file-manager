@@ -17,6 +17,9 @@ export type CFMMenu = CFMMenuItem[]
 
 export interface CFMMenuBarOptions {
   info?: string
+  onInfoClick?: () => void
+  subMenuExpandIcon?: string
+  otherMenus?: CFMUIMenuOptions[]
   languageAnchorIcon?: string
   languageMenu?: {
     currentLang: string
@@ -31,13 +34,13 @@ export interface CFMShareDialogSettings {
 }
 
 export interface CFMUIMenuOptions {
+  className?: string
   // null => no menu; undefined => default menu
   menu?: CFMMenu | null
   menuAnchorIcon?: string
   menuAnchorName?: string
   // map from menu item string to menu display name for string-only menu items
   menuNames?: Record<string, string>
-  subMenuExpandIcon?: string
 }
 
 export interface CFMUIOptions extends CFMUIMenuOptions {
