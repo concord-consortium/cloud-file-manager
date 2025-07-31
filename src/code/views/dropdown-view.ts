@@ -77,6 +77,7 @@ const DropdownItem = createReactClassFactory({
 })
 
 const cfmMenuClass = 'cfm-menu dg-wants-touch'
+const cfmOpenMenuClassSelector = '.cfm-menu.dg-wants-touch.menu-showing'
 
 const DropDown = createReactClass({
 
@@ -92,26 +93,34 @@ const DropDown = createReactClass({
   componentDidMount() {
     if (window.addEventListener) {
       window.addEventListener('mousedown', this.checkClose, true)
-      return window.addEventListener('touchstart', this.checkClose, true)
+      window.addEventListener('touchstart', this.checkClose, true)
+      window.addEventListener('keydown', this.handleKeyDown, true)
     }
   },
 
   componentWillUnmount() {
     if (window.removeEventListener) {
       window.removeEventListener('mousedown', this.checkClose, true)
-      return window.removeEventListener('touchstart', this.checkClose, true)
+      window.removeEventListener('touchstart', this.checkClose, true)
+      window.removeEventListener('keydown', this.handleKeyDown, true)
     }
   },
 
   checkClose(evt: any) {
     if (!this.state.showingMenu) { return }
-    let elt = evt.target
-    while (elt != null) {
-      if ((typeof elt.className === "string") && (elt.className.indexOf(cfmMenuClass) >= 0)) { return }
-      elt = elt.parentNode
+    // if the click is inside the open menu, do nothing
+    if (evt.target instanceof Element) {
+      const openMenuParent = evt.target.closest(cfmOpenMenuClassSelector)
+      if (openMenuParent) return
     }
     // otherwise, close the menu
     return this.setState({showingMenu: false, subMenu: false})
+  },
+
+  handleKeyDown(evt: KeyboardEvent) {
+    if (this.state.showingMenu && evt.key === 'Escape') {
+      this.setState({ showingMenu: false, subMenu: false })
+    }
   },
 
   setSubMenu(subMenu: any) {
