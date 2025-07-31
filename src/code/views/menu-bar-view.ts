@@ -28,11 +28,6 @@ export default createReactClass({
       window.addEventListener('touchstart', this.checkBlur, true)
     }
 
-    // Focus the file menu button for keyboard accessibility
-    // if (this.fileMenuButtonRef.current) {
-    //   this.fileMenuButtonRef.current.focus()
-    // }
-
     return this.props.client._ui.listen((event: any) => {
       switch (event.type) {
         case 'editInitialFilename':
