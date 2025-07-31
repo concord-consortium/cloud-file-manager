@@ -109,14 +109,16 @@ const DropDown = createReactClass({
   checkClose(evt: any) {
     if (!this.state.showingMenu) { return }
     // if the click is inside the open menu, do nothing
-    const openMenuParent = evt.target.closest(cfmOpenMenuClassSelector)
-    if (openMenuParent) return
+    if (evt.target instanceof Element) {
+      const openMenuParent = evt.target.closest(cfmOpenMenuClassSelector)
+      if (openMenuParent) return
+    }
     // otherwise, close the menu
     return this.setState({showingMenu: false, subMenu: false})
   },
 
   handleKeyDown(evt: KeyboardEvent) {
-    if (evt.key === 'Escape') {
+    if (this.state.showingMenu && evt.key === 'Escape') {
       this.setState({ showingMenu: false, subMenu: false })
     }
   },
