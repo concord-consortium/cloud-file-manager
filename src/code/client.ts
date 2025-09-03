@@ -15,7 +15,7 @@ import isString from './utils/is-string'
 import base64Array from 'base64-js' // https://github.com/beatgammit/base64-js
 import getQueryParam from './utils/get-query-param'
 
-import { CFMAppOptions, CFMMenuItem, CFMUIMenuOptions, isCustomClientProvider } from './app-options'
+import { CFMAppOptions, CFMMenuBarOptions, CFMMenuItem, CFMUIMenuOptions, isCustomClientProvider } from './app-options'
 import { CloudFileManagerUI, UIEventCallback }  from './ui'
 
 import LocalStorageProvider  from './providers/localstorage-provider'
@@ -388,6 +388,10 @@ class CloudFileManagerClient {
 
   setMenuBarInfo(info: string) {
     return this._ui.setMenuBarInfo(info)
+  }
+
+  updateMenuBar(bar: CFMMenuBarOptions) {
+    return this._ui.updateMenuBar(bar)
   }
 
   newFile(callback: ClientEventCallback = null) {

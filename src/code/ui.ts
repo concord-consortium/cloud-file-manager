@@ -9,7 +9,7 @@
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
  */
 import { CloudFileManagerClient } from './client'
-import { CFMMenu, CFMMenuItem, CFMUIMenuOptions, CFMUIOptions } from './app-options'
+import { CFMMenu, CFMMenuBarOptions, CFMMenuItem, CFMUIMenuOptions, CFMUIOptions } from './app-options'
 import tr  from './utils/translate'
 import isString  from './utils/is-string'
 import { SelectInteractiveStateDialogProps } from './views/select-interactive-state-dialog-view'
@@ -195,6 +195,10 @@ class CloudFileManagerUI {
 
   setMenuBarInfo(info: string) {
     return this.listenerCallback(new CloudFileManagerUIEvent('setMenuBarInfo', info))
+  }
+
+  updateMenuBar(bar: CFMMenuBarOptions) {
+    return this.listenerCallback(new CloudFileManagerUIEvent('updateMenuBar', bar))
   }
 
   saveFileDialog(callback: UIEventCallback) {

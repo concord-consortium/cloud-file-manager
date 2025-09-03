@@ -215,6 +215,8 @@ class AppView extends React.Component<IAppViewProps, IAppViewState> {
           menuOptions.info = event.data
           this.setState({menuOptions: menuOptions})
           return this.setState({menuOptions: this.state.menuOptions})
+        case 'updateMenuBar':
+          return this.setState({ menuOptions: { ...menuOptions, ...event.data } })
       }
     })
 
