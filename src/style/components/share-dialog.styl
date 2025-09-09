@@ -55,8 +55,22 @@
     border-top 1px solid #000
     border-bottom 1px solid #000
 
-    .copy-link
+    .share-url-container
+      align-items center
+      display flex
+      flex-direction row
+      justify-content space-between
+
+    .copy-button
+      background-color #72bfca
+      border-radius 5px
+      color white
+      font-weight bold
+      padding 5px 10px
       margin-left 10px
+
+      &:hover
+        background-color darken(#72bfca, 30%)
 
     .social-icons
       margin-top 10px
@@ -96,7 +110,7 @@
           fill: #0f0b0b;
 
     input
-      margin-top 5px
+      margin-top 10px
       margin-bottom 10px
       padding 5px
       width 100%

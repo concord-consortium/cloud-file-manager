@@ -38,11 +38,11 @@ const SocialIcon = ({ icon, url }: ISocialIconProps) => {
 interface ICopyAnchorLinkProps {
   onClick: (e: React.MouseEvent) => void
 }
-const CopyAnchorLink = ({ onClick }: ICopyAnchorLinkProps) => {
+const CopyButton = ({ onClick }: ICopyAnchorLinkProps) => {
   return document.execCommand || (window as any).clipboardData
-          ? <a className='copy-link' href='#' onClick={onClick} data-testid='copy-anchor-link'>
+          ? <button className='copy-button' onClick={onClick} data-testid='copy-button'>
               {translate('~SHARE_DIALOG.COPY')}
-            </a>
+            </button>
           : null
 }
 
@@ -54,9 +54,9 @@ export const EmbedTabContents: React.FC<IEmbedTabProps> = ({ url, onCopyClick })
   return (
     <div data-testid='embed-tab-contents'>
       {translate("~SHARE_DIALOG.EMBED_MESSAGE")}
-      <CopyAnchorLink onClick={onCopyClick} />
-      <div>
+      <div className="share-url-container">
         <textarea value={url || ""} readOnly={true} />
+        <CopyButton onClick={onCopyClick} />
       </div>
     </div>
   )
@@ -81,9 +81,9 @@ export const LaraApiTabContents: React.FC<ILaraApiTabProps> = ({
   return (
     <div className={mode} data-testid='lara-api-tab-contents'>
       {translate(mode === 'lara' ? '~SHARE_DIALOG.LARA_MESSAGE' : '~SHARE_DIALOG.INTERACTIVE_API_MESSAGE')}
-      <CopyAnchorLink onClick={onCopyClick}/>
-      <div>
+      <div className="share-url-container">
         <input value={linkUrl} readOnly={true} />
+        <CopyButton onClick={onCopyClick}/>
       </div>
       <div className='lara-api-settings'>
         <div className='codap-server-url'>
@@ -119,9 +119,9 @@ export const LinkTabContents: React.FC<ILinkTabProps> = ({ url, onCopyClick }) =
   return (
     <div data-testid='link-tab-contents'>
       {translate("~SHARE_DIALOG.LINK_MESSAGE")}
-      <CopyAnchorLink onClick={onCopyClick} />
-      <div>
+      <div className="share-url-container">
         <input value={url || ""} readOnly={true} />
+        <CopyButton onClick={onCopyClick} />
       </div>
       <div className='social-icons'>
         <SocialIcon icon='facebook' url={facebookUrl} />
