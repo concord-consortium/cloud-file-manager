@@ -17,8 +17,8 @@ describe('ShareDialogView', () => {
         onAlert={mockAlert} onToggleShare={mockToggleShare} onUpdateShare={mockUpdateShare} close={mockClose} />
     )
     expect(screen.getByTestId('share-dialog')).toBeInTheDocument()
-    expect(screen.queryByTestId('toggle-anchor')).toBeNull()
-    expect(screen.queryByTestId('preview-anchor')).toBeNull()
+    expect(screen.queryByTestId('toggle-share-button')).toBeNull()
+    expect(screen.queryByTestId('preview-button')).toBeNull()
 
     await userEvent.click(screen.getByTestId('share-button-element'))
 
