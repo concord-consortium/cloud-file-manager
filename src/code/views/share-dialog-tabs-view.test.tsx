@@ -26,9 +26,9 @@ describe('ShareDialogTabsView', () => {
     expect(screen.getByTestId('link-tab-contents')).toBeInTheDocument()
     expect(screen.queryByTestId('embed-tab-contents')).toBeNull()
     expect(screen.queryByTestId('lara-api-tab-contents')).toBeNull()
-    expect(screen.getByTestId('copy-anchor-link')).toBeInTheDocument()
+    expect(screen.getByTestId('copy-button')).toBeInTheDocument()
 
-    await userEvent.click(screen.getByTestId('copy-anchor-link'))
+    await userEvent.click(screen.getByTestId('copy-button'))
     await userEvent.click(screen.getByTestId('sharing-tab-embed'))
 
     expect(mockCopy).toHaveBeenCalledTimes(1)
@@ -46,9 +46,9 @@ describe('ShareDialogTabsView', () => {
     expect(screen.queryByTestId('link-tab-contents')).toBeNull()
     expect(screen.getByTestId('embed-tab-contents')).toBeInTheDocument()
     expect(screen.queryByTestId('lara-api-tab-contents')).toBeNull()
-    expect(screen.getByTestId('copy-anchor-link')).toBeInTheDocument()
+    expect(screen.getByTestId('copy-button')).toBeInTheDocument()
 
-    await userEvent.click(screen.getByTestId('copy-anchor-link'))
+    await userEvent.click(screen.getByTestId('copy-button'))
     await userEvent.click(screen.getByTestId('sharing-tab-link'))
 
     expect(mockCopy).toHaveBeenCalledTimes(2)
@@ -66,7 +66,7 @@ describe('ShareDialogTabsView', () => {
     expect(screen.queryByTestId('link-tab-contents')).toBeNull()
     expect(screen.queryByTestId('embed-tab-contents')).toBeNull()
     expect(screen.queryByTestId('lara-api-tab-contents')).toBeNull()
-    expect(screen.queryByTestId('copy-anchor-link')).toBeNull()
+    expect(screen.queryByTestId('copy-button')).toBeNull()
   })
 
   it('renders with interactive api sharing', async () => {

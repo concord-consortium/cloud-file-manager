@@ -17,10 +17,13 @@
       font-size 14px
       margin-left 10px
 
-  .share-button
-    display flex
-    gap 20px
+  .share-buttons
     align-items center
+    display flex
+    flex-direction row
+    gap 20px
+    justify-content space-evenly
+    width 100%
 
     button
       modal-button()
@@ -55,8 +58,22 @@
     border-top 1px solid #000
     border-bottom 1px solid #000
 
-    .copy-link
+    .share-url-container
+      align-items center
+      display flex
+      flex-direction row
+      justify-content space-between
+
+    .copy-button
+      background-color #72bfca
+      border-radius 5px
+      color white
+      font-weight bold
+      padding 5px 10px
       margin-left 10px
+
+      &:hover
+        background-color darken(#72bfca, 30%)
 
     .social-icons
       margin-top 10px
@@ -96,7 +113,7 @@
           fill: #0f0b0b;
 
     input
-      margin-top 5px
+      margin-top 10px
       margin-bottom 10px
       padding 5px
       width 100%
@@ -104,6 +121,9 @@
       width unset !important
       margin-bottom unset
     textarea
+      border 1px solid rgb(118, 118, 118)
+      border-radius 3px
+      border-style inset
       margin-top 5px
       width 100%
       padding 5px

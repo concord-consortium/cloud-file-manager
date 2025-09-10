@@ -17,8 +17,8 @@ describe('ShareDialogView', () => {
         onAlert={mockAlert} onToggleShare={mockToggleShare} onUpdateShare={mockUpdateShare} close={mockClose} />
     )
     expect(screen.getByTestId('share-dialog')).toBeInTheDocument()
-    expect(screen.queryByTestId('toggle-anchor')).toBeNull()
-    expect(screen.queryByTestId('preview-anchor')).toBeNull()
+    expect(screen.queryByTestId('toggle-share-button')).toBeNull()
+    expect(screen.queryByTestId('preview-button')).toBeNull()
 
     await userEvent.click(screen.getByTestId('share-button-element'))
 
@@ -50,7 +50,7 @@ describe('ShareDialogView', () => {
     expect(mockToggleShare).not.toHaveBeenCalled()
     expect(mockUpdateShare).toHaveBeenCalled()
 
-    await userEvent.click(screen.getByTestId('copy-anchor-link'))
+    await userEvent.click(screen.getByTestId('copy-button'))
     await userEvent.click(screen.getByTestId('sharing-tab-embed'))
 
     rerender(
@@ -59,7 +59,7 @@ describe('ShareDialogView', () => {
         onAlert={mockAlert} onToggleShare={mockToggleShare} onUpdateShare={mockUpdateShare} close={mockClose} />
     )
 
-    await userEvent.click(screen.getByTestId('copy-anchor-link'))
+    await userEvent.click(screen.getByTestId('copy-button'))
     await userEvent.click(screen.getByTestId('sharing-tab-link'))
 })
 
@@ -117,7 +117,7 @@ describe('ShareDialogView', () => {
     )
 
     // copy interactive api share url
-    await userEvent.click(screen.getByTestId('copy-anchor-link'))
+    await userEvent.click(screen.getByTestId('copy-button'))
 
     // trigger change handlers
     fireEvent.change(screen.getByTestId('server-url-input'), { target: { value: 'https://concord.org/newServerUrl' } })

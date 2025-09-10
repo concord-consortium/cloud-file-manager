@@ -8,30 +8,32 @@ interface IProps {
   onUpdateShare: (e: React.MouseEvent) => void
 }
 export const ShareDialogStatusView: React.FC<IProps> = ({ isSharing, previewLink, onToggleShare, onUpdateShare }) => {
+  const handlePreviewClick = () => window.open(previewLink, "_blank", "noopener,noreferrer")
   return (
     <div>
       <div className='share-status' data-testid='share-status'>
         {translate("~SHARE_DIALOG.SHARE_STATE")}
         <strong>
           {translate(isSharing ? "~SHARE_DIALOG.SHARE_STATE_ENABLED" : "~SHARE_DIALOG.SHARE_STATE_DISABLED")}
-          {isSharing &&
-            <a href='#' onClick={onToggleShare} data-testid='toggle-anchor'>
-              {translate("~SHARE_DIALOG.STOP_SHARING")}
-            </a>
-          }
         </strong>
       </div>
-      <div className='share-button'>
+      <div className='share-buttons'>
         <button onClick={isSharing ? onUpdateShare : onToggleShare} data-testid='share-button-element'>
           {translate(isSharing ? "~SHARE_DIALOG.UPDATE_SHARING" : "~SHARE_DIALOG.ENABLE_SHARING")}
         </button>
         <div className={isSharing ? 'share-button-help-sharing' : 'share-button-help-not-sharing'}>
           {isSharing
-            ? <a href={previewLink} target="_blank" rel="noreferrer" data-testid='preview-anchor'>
+            ? <button onClick={handlePreviewClick} data-testid='preview-button'>
                 {translate("~SHARE_DIALOG.PREVIEW_SHARING")}
-              </a>
-            : translate("~SHARE_DIALOG.ENABLE_SHARING_MESSAGE")}
+              </button>
+            : <span>{translate("~SHARE_DIALOG.ENABLE_SHARING_MESSAGE")}</span>
+          }
         </div>
+        {isSharing &&
+          <button onClick={onToggleShare} data-testid="toggle-share-button">
+            {translate("~SHARE_DIALOG.STOP_SHARING")}
+          </button>
+        }
       </div>
     </div>
   )

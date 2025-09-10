@@ -12,8 +12,8 @@ describe('ModalDialogView', () => {
         onToggleShare={mockToggle} onUpdateShare={mockUpdate} />
     )
     expect(screen.getByTestId('share-status')).toBeInTheDocument()
-    expect(screen.queryByTestId('toggle-anchor')).toBeNull()
-    expect(screen.queryByTestId('preview-anchor')).toBeNull()
+    expect(screen.queryByTestId('toggle-share-button')).toBeNull()
+    expect(screen.queryByTestId('preview-button')).toBeNull()
 
     await userEvent.click(screen.getByTestId('share-button-element'))
 
@@ -29,8 +29,8 @@ describe('ModalDialogView', () => {
         onToggleShare={mockToggle} onUpdateShare={mockUpdate} />
     )
     expect(screen.getByTestId('share-status')).toBeInTheDocument()
-    expect(screen.getByTestId('toggle-anchor')).toBeInTheDocument()
-    expect(screen.getByTestId('preview-anchor')).toBeInTheDocument()
+    expect(screen.getByTestId('toggle-share-button')).toBeInTheDocument()
+    expect(screen.getByTestId('preview-button')).toBeInTheDocument()
 
     await userEvent.click(screen.getByTestId('share-button-element'))
 

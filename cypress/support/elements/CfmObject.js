@@ -168,8 +168,8 @@ class CfmObject{
     getShareLink(){
         return cy.get('.share-dialog .sharing-tab-contents input')
     }
-    getCopyLink(){
-        return cy.get('.share-dialog .sharing-tab-contents .copy-link')
+    getCopyButton(){
+        return cy.get('.share-dialog .sharing-tab-contents .copy-button')
     }
     getEmbedText(){
         return cy.get('.share-dialog .sharing-tab-contents textarea')
