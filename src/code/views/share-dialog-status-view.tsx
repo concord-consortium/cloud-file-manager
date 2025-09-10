@@ -8,6 +8,7 @@ interface IProps {
   onUpdateShare: (e: React.MouseEvent) => void
 }
 export const ShareDialogStatusView: React.FC<IProps> = ({ isSharing, previewLink, onToggleShare, onUpdateShare }) => {
+  const handlePreviewClick = () => window.open(previewLink, "_blank", "noopener,noreferrer")
   return (
     <div>
       <div className='share-status' data-testid='share-status'>
@@ -22,7 +23,7 @@ export const ShareDialogStatusView: React.FC<IProps> = ({ isSharing, previewLink
         </button>
         <div className={isSharing ? 'share-button-help-sharing' : 'share-button-help-not-sharing'}>
           {isSharing
-            ? <button onClick={() => window.open(previewLink, "_blank")} data-testid='preview-button'>
+            ? <button onClick={handlePreviewClick} data-testid='preview-button'>
                 {translate("~SHARE_DIALOG.PREVIEW_SHARING")}
               </button>
             : <span>{translate("~SHARE_DIALOG.ENABLE_SHARING_MESSAGE")}</span>
