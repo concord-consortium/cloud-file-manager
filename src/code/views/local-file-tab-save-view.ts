@@ -26,23 +26,26 @@ export default createReactClass({
     // do so, we specify that we want to include the share info, which tells the client
     // to leave the content alone.
 
-    const hasPropsContent = ((this.props.dialog.data != null ? this.props.dialog.data.content : undefined) != null)
-    const extension = hasPropsContent && this.props.dialog.data.extension
-                  ? this.props.dialog.data.extension : 'json'
-    const filename = (this.props.client.state.metadata != null ? this.props.client.state.metadata.name : undefined) || (tr("~MENUBAR.UNTITLED_DOCUMENT"))
+    const { client, dialog: { data } } = this.props
+    const { appOptions } = client
+    const { metadata } = client.state
+
+    const hasPropsContent = data?.content != null
+    const extension = hasPropsContent && data.extension ? data.extension : (appOptions?.extension ?? 'json')
+    const mimeType = hasPropsContent && data.mimeType ? data.mimeType : (appOptions?.mimeType ?? 'text/plain')
+    const filename = metadata?.name ?? (tr("~MENUBAR.UNTITLED_DOCUMENT"))
 
     return {
       filename,
       supportsDownloadAttribute: document.createElement('a').download !== undefined,
       downloadFilename: this.getDownloadFilename(hasPropsContent, filename, extension),
       extension,
-      mimeType: hasPropsContent && (this.props.dialog.data.mimeType != null)
-                  ? this.props.dialog.data.mimeType : 'text/plain',
-      shared: this.props.client.isShared(),
+      mimeType,
+      shared: client.isShared(),
       hasPropsContent,
       includeShareInfo: hasPropsContent,
       gotContent: hasPropsContent,
-      content: (this.props.dialog.data != null ? this.props.dialog.data.content : undefined)
+      content: (hasPropsContent ? data.content : undefined)
     }
   },
 
