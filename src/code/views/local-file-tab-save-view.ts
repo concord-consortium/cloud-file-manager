@@ -32,7 +32,7 @@ export default createReactClass({
 
     const hasPropsContent = data?.content != null
     const extension = hasPropsContent && data.extension ? data.extension : (appOptions?.extension ?? 'json')
-    const mimeType = hasPropsContent && data.mimeType ? data.mimeType : (appOptions?.mimeType ?? 'text/plain')
+    const mimeType = hasPropsContent && data.mimeType ? data.mimeType : (appOptions?.localFileMimeType ?? appOptions?.mimeType ?? 'text/plain')
     const filename = metadata?.name ?? (tr("~MENUBAR.UNTITLED_DOCUMENT"))
 
     return {

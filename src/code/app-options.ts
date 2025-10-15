@@ -147,6 +147,10 @@ export interface CFMAppOptions {
   wrapFileContent?: boolean
   isClientContent?: (content: unknown) => boolean
   mimeType?: string
+  // if present, used when saving to local file system
+  // if set to "application/octet-stream " this prevents iOS from appending a file extension
+  // based on MIME type
+  localFileMimeType?: string
   // note different capitalization from CFMBaseProviderOptions
   readableMimeTypes?: string[]
   extension?: string
