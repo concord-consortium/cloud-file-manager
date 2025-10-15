@@ -218,6 +218,10 @@ export interface CFMAppOptions {
   // false if the content should be unwrapped before storing to file/disk
   wrapFileContent?: boolean
   mimeType?: string
+  // if present, used when saving to local file system
+  // if set to "application/octet-stream " this prevents iOS from appending a file extension
+  // based on MIME type
+  localFileMimeType?: string
   // note different capitalization from CFMBaseProviderOptions
   readableMimeTypes?: string[]
   extension?: string
