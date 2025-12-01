@@ -35,11 +35,12 @@ export const setInteractiveState = async (_newState: any): Promise<{error: strin
   if (shouldSaveAsAttachment(newState)) {
     const contentType = newState === 'string' ? 'text/plain' : 'application/json'
     const content = contentType === 'application/json' ? JSON.stringify(newState) : newState
-    const response = await writeAttachment({ name: kAttachmentFilename, content, contentType })
+    const name = newAttachmentFilename()
+    const response = await writeAttachment({ name, content, contentType })
     if (!response.ok) {
       return {error: response.statusText}
     }
-    savedInteractiveState = interactiveStateAttachment(contentType)
+    savedInteractiveState = { __attachment__: name, contentType }
   }
   else {
     savedInteractiveState = newState
@@ -64,19 +65,26 @@ export const kAttachmentUrlParameter = "attachment"
 export const kDynamicAttachmentSizeThreshold = 480 * 1024
 
 // in solidarity with legacy DocumentStore implementation and S3 sharing implementation
-export const kAttachmentFilename = "file.json"
+export const kLegacyAttachmentFilename = "file.json"
+
+// to support interactive state history the attachment filenames need to be unique per save
+// so we use a timestamp-based naming scheme
+export const timeBasedAttachmentPattern = "file-{ts}.json"
+export const timeBasedAttachmentRegex  = /^file-(\d+)\.json$/
+export const newAttachmentFilename = () => timeBasedAttachmentPattern.replace("{ts}", `${Date.now()}`)
 
 // when writing attachments, interactive state is just a reference to the attachment
 interface InteractiveStateAttachment {
-  __attachment__: typeof kAttachmentFilename
+  __attachment__: string
   contentType?: "application/json" | "text/plain"
 }
-const interactiveStateAttachment =
-(contentType?: InteractiveStateAttachment["contentType"]): InteractiveStateAttachment => {
-  return { __attachment__: kAttachmentFilename, contentType }
+const isInteractiveStateAttachment = (content: any) => {
+  const attachment = typeof content === "object" ? content.__attachment__ : undefined
+  if (attachment && typeof attachment === "string") {
+    return attachment === kLegacyAttachmentFilename || timeBasedAttachmentRegex.test(attachment)
+  }
+  return false
 }
-const isInteractiveStateAttachment = (content: any) =>
-        (typeof content === "object") && (content.__attachment__ === kAttachmentFilename)
 
 // This provider supports LARA interactives that save/restore state via the LARA interactive API.
 // To signal to the CFM that this provider should handle save/restore operations, add

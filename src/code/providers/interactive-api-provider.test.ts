@@ -1,6 +1,6 @@
 import { IRuntimeInitInteractive } from "@concord-consortium/lara-interactive-api"
 import { CloudFileManagerClient } from "../client"
-import InteractiveApiProvider, { kAttachmentFilename, kAttachmentUrlParameter, kDynamicAttachmentSizeThreshold, shouldSaveAsAttachment } from "./interactive-api-provider"
+import InteractiveApiProvider, { kLegacyAttachmentFilename, kAttachmentUrlParameter, kDynamicAttachmentSizeThreshold, shouldSaveAsAttachment, timeBasedAttachmentPattern, timeBasedAttachmentRegex, newAttachmentFilename } from "./interactive-api-provider"
 import { CloudContent, CloudMetadata, ECapabilities } from "./provider-interface"
 
 jest.mock('@concord-consortium/lara-interactive-api')
@@ -596,7 +596,7 @@ describe('InteractiveApiProvider', () => {
     expect(typeof saveCallback.mock.calls[0][0]).toBe("string")
 
     // load with callback
-    mockApi.getInteractiveState.mockImplementation(() => ({ __attachment__: kAttachmentFilename }))
+    mockApi.getInteractiveState.mockImplementation(() => ({ __attachment__: kLegacyAttachmentFilename }))
     mockApi.readAttachment.mockImplementation(() => ({ ok: true, text: () => "fooContent" }))
     const loadCallback = jest.fn()
     await provider.load(metadata, loadCallback)
@@ -704,6 +704,24 @@ describe('InteractiveApiProvider', () => {
     expect(shouldSaveAsAttachment(contentBelowThreshold)).toBe(true)
     expect(shouldSaveAsAttachment(contentAtThreshold)).toBe(true)
     expect(shouldSaveAsAttachment(contentAboveThreshold)).toBe(true)
+  })
+
+  it('should support both legacy and new time-based attachment filenames', () => {
+    expect(kLegacyAttachmentFilename).toBe("file.json")
+    expect(timeBasedAttachmentPattern).toBe("file-{ts}.json")
+    expect(timeBasedAttachmentRegex).toEqual(/^file-(\d+)\.json$/)
+
+    // mock Date.now to return a fixed timestamp - this is automatically reset after the test
+    const timestamp = 1764565200 // arbitrary timestamp of 2025-11-01T12:00:00.000Z
+    jest.spyOn(Date, 'now').mockReturnValue(timestamp)
+
+    const expectedFilename = `file-${timestamp}.json`
+    const generatedFilename = newAttachmentFilename()
+    expect(generatedFilename).toBe(expectedFilename)
+    const match = generatedFilename.match(timeBasedAttachmentRegex)
+    expect(match).not.toBeNull()
+    expect(match![1]).toBe(`${timestamp}`)
+    expect(generatedFilename.replace(`${timestamp}`, "{ts}")).toBe(timeBasedAttachmentPattern)
   })
 
 })
