@@ -711,10 +711,9 @@ describe('InteractiveApiProvider', () => {
     expect(timeBasedAttachmentPattern).toBe("file-{ts}.json")
     expect(timeBasedAttachmentRegex).toEqual(/^file-(\d+)\.json$/)
 
-    // mock Date.now to return a fixed timestamp
-    const timestamp = 1764585000
-    const _now = window.Date.now
-    window.Date.now = () => timestamp
+    // mock Date.now to return a fixed timestamp - this is automatically reset after the test
+    const timestamp = 1764565200 // arbitrary timestamp of 2025-11-01T12:00:00.000Z
+    jest.spyOn(Date, 'now').mockReturnValue(timestamp)
 
     const expectedFilename = `file-${timestamp}.json`
     const generatedFilename = newAttachmentFilename()
@@ -723,9 +722,6 @@ describe('InteractiveApiProvider', () => {
     expect(match).not.toBeNull()
     expect(match![1]).toBe(`${timestamp}`)
     expect(generatedFilename.replace(`${timestamp}`, "{ts}")).toBe(timeBasedAttachmentPattern)
-
-    // restore Date.now
-    window.Date.now = _now
   })
 
 })
