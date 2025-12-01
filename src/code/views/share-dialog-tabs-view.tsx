@@ -167,7 +167,7 @@ export const ShareDialogTabsView: React.FC<IShareDialogTabsProps> = ({
         {interactiveApi &&
           <li className={classNames('sharing-tab', 'sharing-tab-api', { 'sharing-tab-selected': tabSelected === 'api' })}
               onClick={() => onSelectTab('api')} data-testid='sharing-tab-api'>
-            Interactive API
+            Activity Player
           </li>}
       </ul>
       <div className="sharing-tab-contents">
