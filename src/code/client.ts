@@ -503,7 +503,7 @@ class CloudFileManagerClient {
       return openFile()
     } else {
       return this.confirm(tr('~CONFIRM.OPEN_FILE'), openFile)
-    }  
+    }
   }
 
   importLocalFile(file: any, callback: (data: any) => void = null) {
@@ -1248,6 +1248,7 @@ class CloudFileManagerClient {
   }
 
   confirmDialog(params: any) {
+    this._event("requiresUserInteraction")
     return this._ui.confirmDialog(params)
   }
 
