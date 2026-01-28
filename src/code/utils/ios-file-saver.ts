@@ -16,9 +16,10 @@ export function isIOSSafari(): boolean {
   const ua = navigator.userAgent
 
   // Check for iOS devices (iPhone, iPad, iPod)
-  // Also check for iPad in desktop mode (reports as Macintosh but has touch points)
+  // Also check for iPad in desktop mode (reports as Macintosh but has touch capability)
+  // Regular Macs report maxTouchPoints = 0, iPads report 5
   const isIOS = /iPad|iPhone|iPod/.test(ua) ||
-    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
+    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 0)
 
   // Check for Safari (not Chrome, Firefox, Edge, etc. on iOS)
   // All iOS browsers use WebKit, but we specifically want Safari's behavior
@@ -51,10 +52,15 @@ export function blobToDataUrl(blob: Blob): Promise<string> {
 
 /**
  * Downloads a file using a data URL approach.
- * Opens the data URL in a new window/tab for the user to save.
+ * Creates a temporary anchor element with the data URL and triggers a click.
+ *
+ * Note: The `download` attribute behavior varies by browser for data URLs.
+ * Testing on iOS Safari 18.7 showed the filename is honored, though older
+ * versions may use a generic name. Desktop browsers generally respect the
+ * filename value.
  *
  * @param blob - The file content as a Blob
- * @param filename - The filename (used for display, but browser may not honor it)
+ * @param filename - The filename for the download
  */
 export async function downloadViaDataUrl(blob: Blob, filename: string): Promise<void> {
   const dataUrl = await blobToDataUrl(blob)

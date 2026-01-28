@@ -103,14 +103,15 @@ export default createReactClass({
       return
     }
 
-    const blob = this.props.client.getDownloadBlob(this.state.content, this.state.includeShareInfo, this.state.mimeType)
+    // Lazily create blob only when needed (not needed for browsers with download attribute support)
+    const getBlob = () => this.props.client.getDownloadBlob(this.state.content, this.state.includeShareInfo, this.state.mimeType)
 
     // Handle iOS Safari specially due to blob URL bugs in iOS 18.2+
     if (isIOSSafari()) {
       if (e != null) {
         e.preventDefault()
       }
-      this.handleIOSSave(blob)
+      this.handleIOSSave(getBlob())
       return false
     }
 
@@ -119,7 +120,7 @@ export default createReactClass({
       this.downloadRef.href = this.props.client.getDownloadUrl(this.state.content, this.state.includeShareInfo, this.state.mimeType)
       if (simulateClick) { this.downloadRef.click() }
     } else {
-      saveAs(blob, this.state.downloadFilename, { autoBom: true })
+      saveAs(getBlob(), this.state.downloadFilename, { autoBom: true })
       if (e != null) {
         e.preventDefault()
       }
