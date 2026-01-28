@@ -48,9 +48,6 @@ npm run test:coverage
 
 # Run tests in watch mode
 npm run test:watch
-
-# Open Cypress for local testing
-npm run test:local
 ```
 
 ## Local Development with Client Projects
