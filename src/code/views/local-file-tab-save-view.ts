@@ -8,12 +8,13 @@
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
  */
 import createReactClass from 'create-react-class'
+import { saveAs } from 'file-saver'
 import ReactDOMFactories from 'react-dom-factories'
 const {div, input, button, a} = ReactDOMFactories
-import tr from '../utils/translate'
 import { CloudMetadata } from '../providers/provider-interface'
 import { cloudContentFactory } from '../providers/provider-interface'
-import FileSaver  from '../lib/file-saver'
+import { isIOSSafari, handleIOSDownload } from '../utils/ios-file-saver'
+import tr from '../utils/translate'
 
 export default createReactClass({
 
@@ -95,34 +96,60 @@ export default createReactClass({
   },
 
   confirm(e: any, simulateClick: boolean) {
-    if (!this.confirmDisabled()) {
-      if (this.state.supportsDownloadAttribute) {
-        this.downloadRef.href = this.props.client.getDownloadUrl(this.state.content, this.state.includeShareInfo, this.state.mimeType)
-        if (simulateClick) { this.downloadRef.click() }
-      } else {
-        const blob = this.props.client.getDownloadBlob(this.state.content, this.state.includeShareInfo, this.state.mimeType)
-        FileSaver.saveAs(blob, this.state.downloadFilename, true)
-        if (e != null) {
-          e.preventDefault()
-        }
+    if (this.confirmDisabled()) {
+      if (e != null) {
+        e.preventDefault()
       }
+      return
+    }
 
-      const metadata = new CloudMetadata({
-        name: this.state.downloadFilename.split('.')[0],
-        type: CloudMetadata.File,
-        parent: null,
-        provider: this.props.provider
-      })
-      this.props.dialog.callback(metadata)
-      this.props.close()
+    // Lazily create blob only when needed (not needed for browsers with download attribute support)
+    const getBlob = () => this.props.client.getDownloadBlob(this.state.content, this.state.includeShareInfo, this.state.mimeType)
 
-      // return value indicates whether to trigger href
-      return this.state.supportsDownloadAttribute
+    // Handle iOS Safari specially due to blob URL bugs in iOS 18.2+
+    if (isIOSSafari()) {
+      if (e != null) {
+        e.preventDefault()
+      }
+      this.handleIOSSave(getBlob())
+      return false
+    }
+
+    // Standard download handling for other browsers
+    if (this.state.supportsDownloadAttribute) {
+      this.downloadRef.href = this.props.client.getDownloadUrl(this.state.content, this.state.includeShareInfo, this.state.mimeType)
+      if (simulateClick) { this.downloadRef.click() }
     } else {
+      saveAs(getBlob(), this.state.downloadFilename, { autoBom: true })
       if (e != null) {
         e.preventDefault()
       }
     }
+
+    this.completeDownload()
+
+    // return value indicates whether to trigger href
+    return this.state.supportsDownloadAttribute
+  },
+
+  async handleIOSSave(blob: Blob) {
+    const handled = await handleIOSDownload(blob, this.state.downloadFilename)
+    if (!handled) {
+      // Fall back to standard saveAs if iOS handling failed
+      saveAs(blob, this.state.downloadFilename, { autoBom: true })
+    }
+    this.completeDownload()
+  },
+
+  completeDownload() {
+    const metadata = new CloudMetadata({
+      name: this.state.downloadFilename.split('.')[0],
+      type: CloudMetadata.File,
+      parent: null,
+      provider: this.props.provider
+    })
+    this.props.dialog.callback(metadata)
+    this.props.close()
   },
 
   contextMenu(e: any) {
