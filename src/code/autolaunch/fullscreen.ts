@@ -46,9 +46,9 @@ export function fullscreenSupport (iframe: any) {
     $('#fullscreen-help').show()
     var $button = $('.fullscreen-icon')
     $button.show()
-    $button.on('click', () => screenfull.toggle())
-    screenfull.on('change', () => {
-      if(screenfull.isFullscreen) {
+    $button.on('click', () => screenfull?.toggle())
+    screenfull?.on('change', () => {
+      if(screenfull?.isFullscreen) {
         $button.addClass('fullscreen')
       }
       else {
