@@ -103,9 +103,9 @@ class LegacyGoogleDriveProvider extends ProviderInterface {
                                               (typeof options?.apiKey === 'string')
   static IMMEDIATE = true
   static SHOW_POPUP = false
-  static gisLoadPromise: Promise<unknown> = null
-  static gapiLoadPromise: Promise<unknown> = null
-  static apiLoadPromise: Promise<unknown> = null
+  static gisLoadPromise: Promise<unknown> | null = null
+  static gapiLoadPromise: Promise<unknown> | null = null
+  static apiLoadPromise: Promise<unknown> | null = null
   _autoRenewTimeout: number
   apiKey: string
   authCallback: (authorized: boolean) => void
@@ -115,8 +115,8 @@ class LegacyGoogleDriveProvider extends ProviderInterface {
   clientId: string
   apiLoadState: ELoadState
   mimeType: string
-  options: CFMLegacyGoogleDriveProviderOptions
-  readableMimetypes: string[]
+  options?: CFMLegacyGoogleDriveProviderOptions
+  readableMimetypes: string[] = []
   scopes: string
   user: any
   onAuthorizationChangeCallback: OnAuthorizationChangeCallback|undefined
@@ -143,22 +143,22 @@ class LegacyGoogleDriveProvider extends ProviderInterface {
     this.client = client
     this.authToken = null
     this.user = null
-    this.apiKey = this.options.apiKey
-    this.clientId = this.options.clientId
+    this.apiKey = this.options?.apiKey ?? ''
+    this.clientId = this.options?.clientId ?? ''
     if (!this.apiKey) {
       throw new Error((tr("~GOOGLE_DRIVE.ERROR_MISSING_APIKEY")))
     }
     if (!this.clientId) {
       throw new Error((tr("~GOOGLE_DRIVE.ERROR_MISSING_CLIENTID")))
     }
-    this.scopes = (this.options.scopes || [
+    this.scopes = (this.options?.scopes || [
       'https://www.googleapis.com/auth/drive',
       'https://www.googleapis.com/auth/drive.install',
       'https://www.googleapis.com/auth/drive.file',
       'https://www.googleapis.com/auth/userinfo.profile'
     ]).join(" ")
-    this.mimeType = this.options.mimeType || "text/plain"
-    this.readableMimetypes = this.options.readableMimetypes
+    this.mimeType = this.options?.mimeType || "text/plain"
+    this.readableMimetypes = this.options?.readableMimetypes ?? []
 
     this.apiLoadState = ELoadState.notLoaded
     this.waitForAPILoad()
@@ -605,7 +605,7 @@ class LegacyGoogleDriveProvider extends ProviderInterface {
     const driveId = metadata.parent?.providerData.driveId
 
     if (!isUpdate) {
-      const parentId = metadata.parent.providerData.shortcutDetails?.targetId || metadata.parent.providerData.id
+      const parentId = metadata.parent?.providerData.shortcutDetails?.targetId || metadata.parent?.providerData.id
       headerContents.parents = [parentId || "root"]
     }
     if (driveId) {
@@ -671,7 +671,7 @@ class LegacyGoogleDriveProvider extends ProviderInterface {
       new CloudMetadata({name: tr("~GOOGLE_DRIVE.MY_DRIVE"), type: CloudMetadata.Folder, provider: this, providerData: {driveType: EDriveType.myDrive}}),
       new CloudMetadata({name: tr("~GOOGLE_DRIVE.SHARED_WITH_ME"), type: CloudMetadata.Folder, provider: this, providerData: {driveType: EDriveType.sharedWithMe}}),
     ]
-    if (!this.options.disableSharedDrives) {
+    if (!this.options?.disableSharedDrives) {
       drives.push(new CloudMetadata({name: tr("~GOOGLE_DRIVE.SHARED_DRIVES"), type: CloudMetadata.Folder, provider: this, providerData: {driveType: EDriveType.sharedDrives}}))
     }
     return drives
