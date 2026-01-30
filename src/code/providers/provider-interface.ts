@@ -18,7 +18,7 @@ export type ProviderRemoveCallback = (err: string) => void
 export type ProviderCloseCallback = (err: string) => void
 
 // TODO: When the document is shared, this is the callback signature
-export type ProviderShareCallback = (err: string, data?: string) => void
+export type ProviderShareCallback = (err: string | null, data?: string) => void
 
 export enum ICloudFileTypes {
   File = "file",
