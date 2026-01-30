@@ -52,7 +52,6 @@ const GoogleFileDialogTabView = createReactClassFactory({
     const metadata = new CloudMetadata({
       name: filename,
       type: ICloudFileTypes.File,
-      parent: null,
       overwritable: true,
       provider: this.props.provider,
       providerData: {
@@ -169,7 +168,7 @@ const GoogleFileDialogTabView = createReactClassFactory({
         providerData: {
           id: parentId
         }
-      }) : null
+      }) : undefined
 
       const pickedMetadata = new CloudMetadata({
         name,
@@ -350,9 +349,9 @@ class GoogleDriveProvider extends ProviderInterface {
     (typeof options?.apiKey === 'string')
   static IMMEDIATE = true
   static SHOW_POPUP = false
-  static gisLoadPromise: Promise<unknown> = null
-  static gapiLoadPromise: Promise<unknown> = null
-  static apiLoadPromise: Promise<unknown> = null
+  static gisLoadPromise: Promise<unknown> | null = null
+  static gapiLoadPromise: Promise<unknown> | null = null
+  static apiLoadPromise: Promise<unknown> | null = null
   _autoRenewTimeout: number
   apiKey: string
   authCallback: (authorized: boolean) => void
@@ -363,8 +362,8 @@ class GoogleDriveProvider extends ProviderInterface {
   appId: string
   apiLoadState: ELoadState
   mimeType: string
-  options: CFMGoogleDriveProviderOptions
-  readableMimetypes: string[]
+  options?: CFMGoogleDriveProviderOptions
+  readableMimetypes: string[] = []
   extension: string
   readableExtensions: string[]
   scopes: string
