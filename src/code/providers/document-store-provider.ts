@@ -359,7 +359,7 @@ class DocumentStoreProvider extends ProviderInterface {
         metadata.rename(metadata.name || metadata.providerData.name ||
                         data.docName || data.name || data.content?.name)
         if (metadata.name) {
-          content.addMetadata({docName: metadata.filename})
+          content.addMetadata({docName: metadata.filename ?? undefined})
         }
 
         return callback(null, content)
@@ -450,7 +450,7 @@ class DocumentStoreProvider extends ProviderInterface {
       statusCode: {
         403: () => {
           this.user = null
-          return callback(tr("~DOCSTORE.SAVE_403_ERROR", {filename: metadata.name}), 403)
+          return callback(tr("~DOCSTORE.SAVE_403_ERROR", {filename: metadata.name ?? 'the file'}), 403)
         }
       },
       error(jqXHR) {
@@ -458,12 +458,12 @@ class DocumentStoreProvider extends ProviderInterface {
           if (jqXHR.status === 403) { return } // let statusCode handler deal with it
           const responseJson = JSON.parse(jqXHR.responseText)
           if (responseJson.message === 'error.duplicate') {
-            return callback(tr("~DOCSTORE.SAVE_DUPLICATE_ERROR", {filename: metadata.name}))
+            return callback(tr("~DOCSTORE.SAVE_DUPLICATE_ERROR", {filename: metadata.name ?? 'the file'}))
           } else {
-            return callback(tr("~DOCSTORE.SAVE_ERROR_WITH_MESSAGE", {filename: metadata.name, message: responseJson.message}))
+            return callback(tr("~DOCSTORE.SAVE_ERROR_WITH_MESSAGE", {filename: metadata.name ?? 'the file', message: responseJson.message}))
           }
         } catch (error) {
-          return callback(tr("~DOCSTORE.SAVE_ERROR", {filename: metadata.name}))
+          return callback(tr("~DOCSTORE.SAVE_ERROR", {filename: metadata.name ?? 'the file'}))
         }
       }})
   }
@@ -484,12 +484,12 @@ class DocumentStoreProvider extends ProviderInterface {
       statusCode: {
         403: () => {
           this.user = null
-          return callback(tr("~DOCSTORE.REMOVE_403_ERROR", {filename: metadata.name}), 403)
+          return callback(tr("~DOCSTORE.REMOVE_403_ERROR", {filename: metadata.name ?? 'the file'}), 403)
         }
       },
       error(jqXHR) {
         if (jqXHR.status === 403) { return } // let statusCode handler deal with it
-        return callback(tr("~DOCSTORE.REMOVE_ERROR", {filename: metadata.name}))
+        return callback(tr("~DOCSTORE.REMOVE_ERROR", {filename: metadata.name ?? 'the file'}))
       }})
   }
 
@@ -511,12 +511,12 @@ class DocumentStoreProvider extends ProviderInterface {
       statusCode: {
         403: () => {
           this.user = null
-          return callback(tr("~DOCSTORE.RENAME_403_ERROR", {filename: metadata.name}), 403)
+          return callback(tr("~DOCSTORE.RENAME_403_ERROR", {filename: metadata.name ?? 'the file'}), 403)
         }
       },
       error(jqXHR) {
         if (jqXHR.status === 403) { return } // let statusCode handler deal with it
-        return callback(tr("~DOCSTORE.RENAME_ERROR", {filename: metadata.name}))
+        return callback(tr("~DOCSTORE.RENAME_ERROR", {filename: metadata.name ?? 'the file'}))
       }})
   }
 
@@ -558,7 +558,7 @@ class DocumentStoreProvider extends ProviderInterface {
       },
       rejectCallback: () => {
         if (deprecationPhase > 1) {
-          this.client.appOptions.autoSaveInterval = null
+          this.client.appOptions.autoSaveInterval = undefined
         }
       }
     })

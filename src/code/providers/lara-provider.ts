@@ -38,8 +38,8 @@ interface LaraProviderOpenSavedParams {
 }
 
 interface LaraProviderUrlParams {
-  documentServer?: string
-  launchFromLara?: string
+  documentServer?: string | null
+  launchFromLara?: string | null
 }
 
 interface LaraProviderLaraParams {
@@ -68,7 +68,7 @@ class LaraProvider extends ProviderInterface {
   collaboratorUrls: string[]
   docStoreUrl: DocumentStoreUrl
   laraParams: LaraProviderLaraParams
-  openSavedParams: LaraProviderOpenSavedParams
+  openSavedParams: LaraProviderOpenSavedParams | null
   options: CFMLaraProviderOptions
   removableQueryParams: string[]
   savedContent: any
@@ -192,7 +192,7 @@ class LaraProvider extends ProviderInterface {
         // 'name' at the top level of 'content' for wrapped CODAP documents
         metadata.rename(metadata.name || data.docName || data.name || data.content?.name)
         if (metadata.name) {
-          content.addMetadata({docName: metadata.filename})
+          content.addMetadata({docName: metadata.filename ?? undefined})
         }
 
         return callback(null, content)
@@ -349,13 +349,17 @@ class LaraProvider extends ProviderInterface {
             callback(null)
           } else {
             const url = urlQueue.shift()
-            updateRunState(url, function(err: string | null) {
-              if (err) {
-                callback(err)
-              } else {
-                processQueue()
-              }
-            })
+            if (url) {
+              updateRunState(url, function(err: string | null) {
+                if (err) {
+                  callback(err)
+                } else {
+                  processQueue()
+                }
+              })
+            } else {
+              processQueue()
+            }
           }
         }
         processQueue()
@@ -388,10 +392,9 @@ class LaraProvider extends ProviderInterface {
       if (docStore?.recordid && (docStore.accessKeys?.readOnly || docStore.accessKeys?.readWrite)) {
 
         const cloneDoc = (callback: (err: string | null) => void) => {
-          const createParams = {
-            source: docStore.recordid,
-            accessKey: `RO::${docStore.accessKeys.readOnly}`
-          }
+          const createParams: Record<string, string> = {}
+          if (docStore.recordid) createParams.source = docStore.recordid
+          if (docStore.accessKeys?.readOnly) createParams.accessKey = `RO::${docStore.accessKeys.readOnly}`
           const {method, url} = this.docStoreUrl.v2CreateDocument(createParams)
           return $.ajax({
             type: method,
