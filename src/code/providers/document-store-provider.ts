@@ -74,7 +74,7 @@ class DocumentStoreProvider extends ProviderInterface {
   options: CFMDocumentStoreProviderOptions
   removableQueryParams: string[]
   savedContent: any
-  urlParams: Record<string, string>
+  urlParams: Record<string, string | null>
   user: any
 
   static get deprecationPhase() {

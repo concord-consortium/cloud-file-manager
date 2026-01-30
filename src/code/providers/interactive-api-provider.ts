@@ -29,7 +29,7 @@ export const shouldSaveAsAttachment = (content: any) => {
 }
 
 const getInteractiveState = () => cloneDeep(_getInteractiveState())
-export const setInteractiveState = async (_newState: any): Promise<{error: string}> => {
+export const setInteractiveState = async (_newState: any): Promise<{error: string | null}> => {
   let savedInteractiveState: any
   const newState = cloneDeep(_newState)
   if (shouldSaveAsAttachment(newState)) {
@@ -192,7 +192,7 @@ class InteractiveApiProvider extends ProviderInterface {
     })
   }
 
-  async getInitialInteractiveStateAndinteractiveId(initInteractiveMessage: IInitInteractive): Promise<{interactiveState: {}, interactiveId?: string}> {
+  async getInitialInteractiveStateAndinteractiveId(initInteractiveMessage: IInitInteractive): Promise<{interactiveState: {}, interactiveId?: string} | null> {
     if ((initInteractiveMessage.mode === "authoring") || (initInteractiveMessage.mode === "reportItem")) {
       return null
     }
@@ -210,7 +210,7 @@ class InteractiveApiProvider extends ProviderInterface {
     const {allLinkedStates} = initInteractiveMessage
 
     // this is adapted from the existing autolaunch.ts file
-    if (interactiveId && allLinkedStates?.length > 0) {
+    if (interactiveId && allLinkedStates && allLinkedStates.length > 0) {
       // find linked state which is directly linked to this one along with the most recent linked state.
       const directlyLinkedState = allLinkedStates[0]
 

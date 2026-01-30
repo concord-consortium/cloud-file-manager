@@ -10,7 +10,7 @@ export type DocumentStoreUrlParams = Record<string, string | number | boolean>
 class DocumentStoreUrl {
   docStoreUrl: string
 
-  constructor(docStoreUrl: string) {
+  constructor(docStoreUrl?: string | null) {
     this.docStoreUrl = docStoreUrl || defaultDocStoreUrl
     // eliminate trailing slashes
     this.docStoreUrl = this.docStoreUrl.replace(/\/+$/, '')
