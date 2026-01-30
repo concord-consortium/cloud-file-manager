@@ -18,7 +18,7 @@ import {
 class LocalStorageProvider extends ProviderInterface {
   static Name = 'localStorage'
   client: CloudFileManagerClient
-  options: CFMBaseProviderOptions
+  options?: CFMBaseProviderOptions
 
   constructor(options: CFMBaseProviderOptions | undefined, client: CloudFileManagerClient) {
     super({
@@ -97,7 +97,7 @@ class LocalStorageProvider extends ProviderInterface {
   remove(metadata: CloudMetadata, callback?: ProviderRemoveCallback) {
     try {
       window.localStorage.removeItem(this._getKey(metadata.filename))
-      return callback?.(null)
+      return callback?.('')
     } catch (error) {
       return callback?.('Unable to delete')
     }
@@ -105,7 +105,7 @@ class LocalStorageProvider extends ProviderInterface {
 
   rename(metadata: CloudMetadata, newName: string, callback?: ProviderRenameCallback) {
     try {
-      const content = window.localStorage.getItem(this._getKey(metadata.filename))
+      const content = window.localStorage.getItem(this._getKey(metadata.filename)) ?? ''
       window.localStorage.setItem(this._getKey(CloudMetadata.withExtension(newName)), content)
       window.localStorage.removeItem(this._getKey(metadata.filename))
       metadata.rename(newName)
@@ -121,7 +121,6 @@ class LocalStorageProvider extends ProviderInterface {
     const metadata = new CloudMetadata({
       name: openSavedParams,
       type: CloudMetadata.File,
-      parent: null,
       provider: this
     })
     return this.load(metadata, (err: string | null, content: any) => callback(err, content, metadata))
@@ -131,8 +130,8 @@ class LocalStorageProvider extends ProviderInterface {
     return metadata.name
   }
 
-  _getKey(name = '') {
-    return `cfm::${name.replace(/\t/g, ' ')}`
+  _getKey(name: string | null = '') {
+    return `cfm::${(name ?? '').replace(/\t/g, ' ')}`
   }
 }
 
