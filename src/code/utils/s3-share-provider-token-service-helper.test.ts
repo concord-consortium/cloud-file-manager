@@ -31,17 +31,15 @@ jest.mock('@concord-consortium/token-service', () => {
 })
 
 // Mock S3
-const mockUploadPromise = jest.fn()
-const mockDeleteObjectPromise = jest.fn()
-const mockUpload = jest.fn(() => ({ promise: mockUploadPromise }))
-const mockDeleteObject = jest.fn(() => ({ promise: mockDeleteObjectPromise }))
+const mockSend = jest.fn()
 
-jest.mock('aws-sdk/clients/s3', () => {
-  return jest.fn().mockImplementation(() => ({
-    upload: mockUpload,
-    deleteObject: mockDeleteObject
-  }))
-})
+jest.mock('@aws-sdk/client-s3', () => ({
+  S3Client: jest.fn().mockImplementation(() => ({
+    send: mockSend
+  })),
+  PutObjectCommand: jest.fn().mockImplementation((params) => ({ ...params, _type: 'PutObject' })),
+  DeleteObjectCommand: jest.fn().mockImplementation((params) => ({ ...params, _type: 'DeleteObject' }))
+}))
 
 const legacyId = "23424"
 
@@ -102,7 +100,7 @@ describe("s3-share-provider-token-service-helper", () => {
       mockGetCredentials.mockResolvedValue(mockCredentials)
       mockGetPublicS3Path.mockReturnValue(mockPublicPath)
       mockGetPublicS3Url.mockReturnValue(mockPublicUrl)
-      mockUploadPromise.mockResolvedValue({})
+      mockSend.mockResolvedValue({})
     })
 
     it("should create a resource and upload file to S3", async () => {
@@ -121,8 +119,9 @@ describe("s3-share-provider-token-service-helper", () => {
       // Verify credentials were obtained
       expect(mockGetCredentials).toHaveBeenCalledWith(mockResource.id, mockReadWriteToken)
 
-      // Verify S3 upload was called with correct parameters
-      expect(mockUpload).toHaveBeenCalledWith({
+      // Verify S3 send was called with PutObjectCommand containing correct parameters
+      const { PutObjectCommand } = require('@aws-sdk/client-s3')
+      expect(PutObjectCommand).toHaveBeenCalledWith({
         Bucket: mockResource.bucket,
         Key: mockPublicPath,
         Body: fileContent,
@@ -130,6 +129,7 @@ describe("s3-share-provider-token-service-helper", () => {
         ContentEncoding: 'UTF-8',
         CacheControl: 'max-age=60'
       })
+      expect(mockSend).toHaveBeenCalled()
 
       // Verify returned values
       expect(result).toEqual({
@@ -162,7 +162,7 @@ describe("s3-share-provider-token-service-helper", () => {
       mockGetResource.mockResolvedValue(mockResource)
       mockGetCredentials.mockResolvedValue(mockCredentials)
       mockGetPublicS3Path.mockReturnValue(mockPublicPath)
-      mockUploadPromise.mockResolvedValue({})
+      mockSend.mockResolvedValue({})
     })
 
     it("should get existing resource and upload new content", async () => {
@@ -177,8 +177,9 @@ describe("s3-share-provider-token-service-helper", () => {
       // Verify credentials were obtained with readWriteToken
       expect(mockGetCredentials).toHaveBeenCalledWith(mockResource.id, mockReadWriteToken)
 
-      // Verify S3 upload was called with correct parameters
-      expect(mockUpload).toHaveBeenCalledWith({
+      // Verify S3 send was called with PutObjectCommand containing correct parameters
+      const { PutObjectCommand } = require('@aws-sdk/client-s3')
+      expect(PutObjectCommand).toHaveBeenCalledWith({
         Bucket: mockResource.bucket,
         Key: mockPublicPath,
         Body: newFileContent,
@@ -186,6 +187,7 @@ describe("s3-share-provider-token-service-helper", () => {
         ContentEncoding: 'UTF-8',
         CacheControl: 'max-age=60'
       })
+      expect(mockSend).toHaveBeenCalled()
     })
 
     it("should work without readWriteToken", async () => {
@@ -213,7 +215,7 @@ describe("s3-share-provider-token-service-helper", () => {
       mockGetResource.mockResolvedValue(mockResource)
       mockGetCredentials.mockResolvedValue(mockCredentials)
       mockGetPublicS3Path.mockReturnValue(mockPublicPath)
-      mockDeleteObjectPromise.mockResolvedValue({})
+      mockSend.mockResolvedValue({})
     })
 
     it("should get existing resource and delete from S3", async () => {
@@ -227,11 +229,13 @@ describe("s3-share-provider-token-service-helper", () => {
       // Verify credentials were obtained with readWriteToken
       expect(mockGetCredentials).toHaveBeenCalledWith(mockResource.id, mockReadWriteToken)
 
-      // Verify S3 deleteObject was called with correct parameters
-      expect(mockDeleteObject).toHaveBeenCalledWith({
+      // Verify S3 send was called with DeleteObjectCommand containing correct parameters
+      const { DeleteObjectCommand } = require('@aws-sdk/client-s3')
+      expect(DeleteObjectCommand).toHaveBeenCalledWith({
         Bucket: mockResource.bucket,
         Key: mockPublicPath
       })
+      expect(mockSend).toHaveBeenCalled()
     })
 
     it("should work without readWriteToken", async () => {
