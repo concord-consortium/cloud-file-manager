@@ -1,12 +1,3 @@
-// TODO: This file was created by bulk-decaffeinate.
-// Sanity-check the conversion and remove this comment.
-/*
- * decaffeinate suggestions:
- * DS102: Remove unnecessary code created because of implicit returns
- * DS205: Consider reworking code to avoid use of IIFEs
- * DS207: Consider shorter variations of null checks
- * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
- */
 import $ from 'jquery'
 import createReactClass from 'create-react-class'
 import ReactDOM from 'react-dom'
@@ -22,14 +13,14 @@ const DropdownItem = createReactClassFactory({
 
   clicked() {
     if (this.props.item.items) {
-      return this.showSubMenu()
+      this.showSubMenu()
     } else {
-      return this.props.select(this.props.item)
+      this.props.select(this.props.item)
     }
   },
 
   mouseEnter() {
-    return this.showSubMenu()
+    this.showSubMenu()
   },
 
   showSubMenu() {
@@ -39,7 +30,7 @@ const DropdownItem = createReactClassFactory({
       const menuItem = $(domNode)
       const menu = menuItem.parent().parent()
 
-      return this.props.setSubMenu({
+      this.props.setSubMenu({
         style: {
           position: 'absolute',
           left: menu.width(),
@@ -48,7 +39,7 @@ const DropdownItem = createReactClassFactory({
         items: this.props.item.items
       })
     } else {
-      return (typeof this.props.setSubMenu === 'function' ? this.props.setSubMenu(null) : undefined)
+      this.props.setSubMenu?.(null)
     }
   },
 
@@ -68,7 +59,7 @@ const DropdownItem = createReactClassFactory({
     } else {
       if (!enabled || !(this.props.item.action || this.props.item.items)) { classes.push('disabled') }
       const content = this.props.item.name || this.props.item.content || this.props.item
-      return (li({ref: ((elt: any) => { return this.itemRef = elt }), className: classes.join(' '), onClick: this.clicked, onMouseEnter: this.mouseEnter },
+      return (li({ref: ((elt: any) => { this.itemRef = elt }), className: classes.join(' '), onClick: this.clicked, onMouseEnter: this.mouseEnter },
         this.props.item.icon && (img({className: 'menu-list-icon', src: this.props.item.icon, alt: this.props.item.name})),
         (span({className: `menu-item-content ${langClass}`}, content)),
         this.props.item.items ?
@@ -116,7 +107,7 @@ const DropDown = createReactClass({
       if (openMenuParent) return
     }
     // otherwise, close the menu
-    return this.setState({showingMenu: false, subMenu: false})
+    this.setState({showingMenu: false, subMenu: false})
   },
 
   handleKeyDown(evt: KeyboardEvent) {
@@ -126,56 +117,42 @@ const DropDown = createReactClass({
   },
 
   setSubMenu(subMenu: any) {
-    return this.setState({subMenu})
+    this.setState({subMenu})
   },
 
   select(item: any) {
-    if (item != null ? item.items : undefined) { return }
+    if (item?.items) { return }
     const nextState = (!this.state.showingMenu)
     this.setState({showingMenu: nextState})
     if (!item) { return }
-    return (typeof item.action === 'function' ? item.action() : undefined)
+    item.action?.()
   },
 
   render() {
-    let index, item
     const currentLang = getCurrentLanguage()
     const langClass = getSpecialLangFontClassName(currentLang)
     const menuClass = `${cfmMenuClass} ${this.state.showingMenu ? 'menu-showing' : 'menu-hidden'}`
-    const dropdownClass = `menu ${this.props.className ? this.props.className : ''} ${this.state.showingMenu ? 'menu-open' : 'menu-close'}`
-    const menuAnchorClass = `menu-anchor ${this.props.menuAnchorClassName ? this.props.menuAnchorClassName : ''}`
+    const dropdownClass = `menu ${this.props.className || ''} ${this.state.showingMenu ? 'menu-open' : 'menu-close'}`
+    const menuAnchorClass = `menu-anchor ${this.props.menuAnchorClassName || ''}`
     return (div({className: dropdownClass},
-      (this.props.items != null ? this.props.items.length : undefined) > 0 ?
+      this.props.items?.length > 0 ?
         (div({},
           (div({className: `${cfmMenuClass} ${menuAnchorClass} ${langClass}`, onClick: () => this.select(null)},
-            this.props.menuAnchor ?
-              this.props.menuAnchor
-            :
-              DefaultAnchor
+            this.props.menuAnchor || DefaultAnchor
           )),
           (div({className: menuClass},
             (ul({className: 'menu-list-container'},
-              (() => {
-              const result = []
-              for (index = 0; index < this.props.items.length; index++) {
-                item = this.props.items[index]
-                result.push((DropdownItem({key: index, item, select: this.select, setSubMenu: this.setSubMenu,
-                      subMenuExpandIcon: this.props.subMenuExpandIcon})))
-              }
-              return result
-            })()
+              this.props.items.map((item: any, index: number) =>
+                DropdownItem({key: index, item, select: this.select, setSubMenu: this.setSubMenu,
+                  subMenuExpandIcon: this.props.subMenuExpandIcon})
+              )
             )),
             this.state.subMenu ?
               (div({className: `${menuClass} sub-menu`, style: this.state.subMenu.style},
                 (ul({},
-                  (() => {
-                  const result1 = []
-                  for (index = 0; index < this.state.subMenu.items.length; index++) {
-                    item = this.state.subMenu.items[index]
-                    result1.push((DropdownItem({key: index, item, select: this.select})))
-                  }
-                  return result1
-                })()
+                  this.state.subMenu.items.map((item: any, index: number) =>
+                    DropdownItem({key: index, item, select: this.select})
+                  )
                 ))
               )) : undefined
           ))

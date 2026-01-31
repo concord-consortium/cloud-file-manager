@@ -1,11 +1,3 @@
-// TODO: This file was created by bulk-decaffeinate.
-// Sanity-check the conversion and remove this comment.
-/*
- * decaffeinate suggestions:
- * DS102: Remove unnecessary code created because of implicit returns
- * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
- */
-
 import createReactClass from 'create-react-class'
 import ReactDOMFactories from 'react-dom-factories'
 import { createReactFactory } from "../create-react-factory"
@@ -20,10 +12,8 @@ export default createReactClass({
   displayName: 'AlertDialogView',
 
   close() {
-    if (typeof this.props.close === 'function') {
-      this.props.close()
-    }
-    return (typeof this.props.callback === 'function' ? this.props.callback() : undefined)
+    this.props.close?.()
+    this.props.callback?.()
   },
 
   render() {
