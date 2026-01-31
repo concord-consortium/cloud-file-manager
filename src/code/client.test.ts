@@ -166,7 +166,7 @@ describe("CloudFileManagerClient", () => {
 
     beforeAll(() => {
       location = window.location
-      delete window.location
+      delete (window as any).location
     })
     beforeEach(() => {
       client = new CloudFileManagerClient()

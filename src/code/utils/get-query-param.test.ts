@@ -4,7 +4,7 @@ describe('getQueryParam', () => {
   const originalLocation = window.location
 
   const mockWindowLocation = (newLocation: Location | URL) => {
-    delete window.location
+    delete (window as any).location
     window.location = newLocation as Location
   }
 

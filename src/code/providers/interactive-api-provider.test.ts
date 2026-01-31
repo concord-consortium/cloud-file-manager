@@ -10,7 +10,7 @@ describe('InteractiveApiProvider', () => {
   const originalLocation = window.location
 
   const mockWindowLocation = (newLocation: Location | URL) => {
-    delete window.location
+    delete (window as any).location
     window.location = newLocation as Location
   }
 
@@ -58,7 +58,7 @@ describe('InteractiveApiProvider', () => {
     const client = new CloudFileManagerClient()
     const content = new CloudContent('fooContent', { isCfmWrapped: false, isPreCfmFormat: false })
     const metadata = new CloudMetadata({ name: 'foo' })
-    const provider = new InteractiveApiProvider(undefined, client)
+    const provider = new InteractiveApiProvider({} as any, client)
     expect(provider.name).toBe(InteractiveApiProvider.Name)
     expect(mockApi.getInitInteractiveMessage).toHaveBeenCalledTimes(1)
     expect(mockApi.getInteractiveState).toHaveBeenCalledTimes(0)
