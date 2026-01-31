@@ -1,10 +1,3 @@
-// TODO: This file was created by bulk-decaffeinate.
-// Sanity-check the conversion and remove this comment.
-/*
- * decaffeinate suggestions:
- * DS102: Remove unnecessary code created because of implicit returns
- * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
- */
 const AuthorizeMixin = {
   getInitialState(this: any) {
     this._isAuthorized = false
@@ -37,12 +30,12 @@ const AuthorizeMixin = {
     // in componentDidMount(). Providers that require asynchronous checks
     // for authorization may return before or after the first render, so
     // code should be prepared for either eventuality.
-    return this.props.provider.authorized((authorized: boolean) => {
+    this.props.provider.authorized((authorized: boolean) => {
       // always set the instance variable
       this._isAuthorized = authorized
       // set the state if we can
       if (this._isMounted) {
-        return this.setState({authorized})
+        this.setState({authorized})
       }
     })
   },
@@ -51,12 +44,12 @@ const AuthorizeMixin = {
     this._isMounted = true
     // synchronize state if necessary
     if (this.state.authorized !== this._isAuthorized) {
-      return this.setState({authorized: this._isAuthorized})
+      this.setState({authorized: this._isAuthorized})
     }
   },
 
   componentWillUnmount(this: any) {
-    return this._isMounted = false
+    this._isMounted = false
   },
 
   render(this: any) {
