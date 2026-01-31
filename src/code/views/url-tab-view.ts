@@ -20,7 +20,7 @@ export default createReactClass({
     return {hover: false}
   },
 
-  importUrl(url: any, via: any) {
+  importUrl(url: string, via: string) {
     if (typeof this.props.dialog.callback === 'function') {
       this.props.dialog.callback(url, via)
     }
@@ -40,17 +40,17 @@ export default createReactClass({
     return this.props.close()
   },
 
-  dragEnter(e: any) {
+  dragEnter(e: React.DragEvent<HTMLDivElement>) {
     e.preventDefault()
     return this.setState({hover: true})
   },
 
-  dragLeave(e: any) {
+  dragLeave(e: React.DragEvent<HTMLDivElement>) {
     e.preventDefault()
     return this.setState({hover: false})
   },
 
-  drop(e: any) {
+  drop(e: React.DragEvent<HTMLDivElement>) {
     e.preventDefault()
     if (e.dataTransfer) {
       const droppedUrls = (e.dataTransfer.getData('url') || e.dataTransfer.getData('text/uri-list') || '').split('\n')

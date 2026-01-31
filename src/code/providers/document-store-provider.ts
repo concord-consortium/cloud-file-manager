@@ -65,7 +65,7 @@ const DocumentStoreAuthorizationDialog = createReactClassFactory({
 class DocumentStoreProvider extends ProviderInterface {
   static Name = 'documentStore'
   _docStoreLoaded!: boolean
-  _loginWindow: any = null
+  _loginWindow: Window | null = null
   authCallback!: (authorized: boolean) => void
   client: CloudFileManagerClient
   disableForNextSave?: boolean
@@ -219,11 +219,12 @@ class DocumentStoreProvider extends ProviderInterface {
       this._loginWindow = window.open(this.docStoreUrl.authorize(), 'auth', windowFeatures.join())
 
       if (this._loginWindow) {
+        const loginWindow = this._loginWindow
         const pollAction = () => {
           try {
-            if (this._loginWindow.location.host === window.location.host) {
+            if (loginWindow.location.host === window.location.host) {
               clearInterval(poll)
-              this._loginWindow.close()
+              loginWindow.close()
               this._checkLogin()
               if (completionCallback) { return completionCallback() }
             }

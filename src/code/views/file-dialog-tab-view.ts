@@ -28,7 +28,7 @@ const FileListFile = createReactClassFactory({
     return this.lastClick = 0
   },
 
-  fileSelected(e: any) {
+  fileSelected(e: React.MouseEvent<HTMLDivElement>) {
     e.preventDefault()
     e.stopPropagation()
     const now = (new Date()).getTime()
@@ -76,7 +76,7 @@ const FileList = createReactClassFactory({
     return this._isMounted = false
   },
 
-  load(folder: any) {
+  load(folder: CloudMetadata | null) {
     this.setState({ loading: true })
     return this.props.provider.list(folder, (err: string | null, list: CloudMetadata[]) => {
       // asynchronous callback may be called after dialog has been dismissed
@@ -88,7 +88,7 @@ const FileList = createReactClassFactory({
     }, this.props.listOptions)
   },
 
-  parentSelected(e: any) {
+  parentSelected(e: React.MouseEvent<HTMLDivElement>) {
     return this.props.fileSelected(this.props.folder?.parent)
   },
 
@@ -234,7 +234,7 @@ const FileDialogTab = createReactClass({
     return this.props.dialog.action === 'saveSecondaryFileAs'
   },
 
-  searchChanged(e: any) {
+  searchChanged(e: React.ChangeEvent<HTMLInputElement>) {
     const search = e.target.value
     return this.setState({
       search,
@@ -268,7 +268,7 @@ const FileDialogTab = createReactClass({
     return saveMetadata
   },
 
-  getStateForFolder(folder: CloudMetadata | null, initialFolder: any) {
+  getStateForFolder(folder: CloudMetadata | null, initialFolder?: boolean) {
     const metadata = this.isOpen() ? this.state?.metadata || null : this.getSaveMetadata()
 
     if (initialFolder) {
@@ -393,7 +393,7 @@ const FileDialogTab = createReactClass({
     return null
   },
 
-  watchForEnter(e: any) {
+  watchForEnter(e: React.KeyboardEvent<HTMLInputElement>) {
     if ((e.keyCode === 13) && !this.confirmDisabled()) {
       return this.confirm()
     }

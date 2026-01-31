@@ -73,7 +73,7 @@ export default createReactClass({
     })
   },
 
-  filenameClicked(e: any) {
+  filenameClicked(e: React.MouseEvent<HTMLSpanElement>) {
     e.preventDefault()
     e.stopPropagation()
     this.setState({
@@ -127,7 +127,7 @@ export default createReactClass({
     }
   },
 
-  watchForEnter(e: any) {
+  watchForEnter(e: React.KeyboardEvent<HTMLInputElement>) {
     if (e.keyCode === 13) {
       return this.rename()
     } else if (e.keyCode === 27) {
@@ -144,7 +144,7 @@ export default createReactClass({
     if (this.state.editingFilename && (e.target !== this.filename())) { return this.filenameBlurred() }
   },
 
-  langChanged(langCode: any) {
+  langChanged(langCode: string) {
     const {client, options} = this.props
     const {onLangChanged} = options.languageMenu
     if (onLangChanged != null) {

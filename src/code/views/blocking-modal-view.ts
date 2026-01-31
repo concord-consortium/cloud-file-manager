@@ -22,7 +22,7 @@ export default createReactClass({
   },
 
   // used by CODAP to dismiss the startup dialog if a file is dropped on it
-  drop(e: any) {
+  drop(e: React.DragEvent<HTMLDivElement>) {
     return (typeof this.props.onDrop === 'function' ? this.props.onDrop(e) : undefined)
   },
 

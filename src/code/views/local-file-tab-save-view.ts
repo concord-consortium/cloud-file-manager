@@ -151,7 +151,7 @@ export default createReactClass({
     this.props.close()
   },
 
-  contextMenu(e: any) {
+  contextMenu(e: React.MouseEvent<HTMLAnchorElement>) {
     this.downloadRef.href = this.props.client.getDownloadUrl(this.state.content, this.state.includeShareInfo, this.state.mimeType)
   },
 
@@ -159,7 +159,7 @@ export default createReactClass({
     this.props.close()
   },
 
-  watchForEnter(e: any) {
+  watchForEnter(e: React.KeyboardEvent<HTMLInputElement>) {
     if ((e.keyCode === 13) && !this.confirmDisabled()) {
       e.preventDefault()
       e.stopPropagation()
