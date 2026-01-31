@@ -228,7 +228,7 @@ class DocumentStoreProvider extends ProviderInterface {
               if (completionCallback) { return completionCallback() }
             }
           } catch (e) {
-            reportError(e)
+            reportError(e instanceof Error ? e : String(e))
           }
         }
         var poll = setInterval(pollAction, 200)

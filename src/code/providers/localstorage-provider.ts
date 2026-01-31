@@ -56,7 +56,7 @@ class LocalStorageProvider extends ProviderInterface {
       window.localStorage.setItem(fileKey, content.getContentAsJSON?.() || content)
       return callback?.(null)
     } catch (e) {
-      return callback?.(`Unable to save: ${e.message}`)
+      return callback?.(`Unable to save: ${e instanceof Error ? e.message : String(e)}`)
     }
   }
 
@@ -65,7 +65,7 @@ class LocalStorageProvider extends ProviderInterface {
       const content = window.localStorage.getItem(this._getKey(metadata.filename))
       return callback(null, cloudContentFactory.createEnvelopedCloudContent(content))
     } catch (e) {
-      return callback(`Unable to load '${metadata.name}': ${e.message}`)
+      return callback(`Unable to load '${metadata.name}': ${e instanceof Error ? e.message : String(e)}`)
     }
   }
 

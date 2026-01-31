@@ -349,7 +349,7 @@ class InteractiveApiProvider extends ProviderInterface {
       callback(null, content, metadata)
     }
     catch(e) {
-      callback(e.message)
+      callback(e instanceof Error ? e.message : String(e))
     }
   }
 
