@@ -1,18 +1,7 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import React from 'react'
-import TabbedPanelViewComponent from './tabbed-panel-view'
-
-// Cast to accept props since createReactClass components don't have proper TypeScript types
-const TabbedPanelView = TabbedPanelViewComponent as unknown as React.ComponentType<{
-  tabs: Array<{
-    label: string
-    component: React.ReactNode
-    capability?: string
-    onSelected?: (capability: string) => void
-  }>
-  selectedTabIndex?: number
-}>
+import TabbedPanelView from './tabbed-panel-view'
 
 describe('TabbedPanelView', () => {
   const createTabs = (onSelected?: jest.Mock) => [

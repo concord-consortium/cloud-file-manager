@@ -1,17 +1,6 @@
 import { render, screen } from '@testing-library/react'
 import React from 'react'
-import ModalTabbedDialogViewComponent from './modal-tabbed-dialog-view'
-
-// Cast to accept props since createReactClass components don't have proper TypeScript types
-const ModalTabbedDialogView = ModalTabbedDialogViewComponent as unknown as React.ComponentType<{
-  title: string
-  close?: () => void
-  tabs: Array<{
-    label: string
-    component: React.ReactNode
-  }>
-  selectedTabIndex?: number
-}>
+import ModalTabbedDialogView from './modal-tabbed-dialog-view'
 
 describe('ModalTabbedDialogView', () => {
   const createTabs = () => [
