@@ -33,7 +33,7 @@ class CloudFileManagerUIMenu {
 
   constructor(options: CFMUIMenuOptions, client: CloudFileManagerClient) {
     this.options = options
-    this.items = this.parseMenuItems(options.menu, client)
+    this.items = this.parseMenuItems(options.menu ?? [], client)
   }
 
   parseMenuItems(menuItems: CFMMenuItem[], client: CloudFileManagerClient) {
@@ -64,7 +64,7 @@ class CloudFileManagerUIMenu {
       if (subMenuItems) {
         return this.parseMenuItems(subMenuItems, client)
       } else {
-        return null
+        return undefined
       }
     }
 
@@ -132,7 +132,7 @@ export type UIEventListenerCallback = (event: CloudFileManagerUIEvent) => void
 class CloudFileManagerUI {
   client: CloudFileManagerClient
   listenerCallbacks: UIEventListenerCallback[]
-  menu: CloudFileManagerUIMenu
+  menu: CloudFileManagerUIMenu | null
   // set up promise to be resolved when initialization is complete
   resolveIsInitialized: (isInitialized: boolean) => void
   isInitialized = new Promise<boolean>((resolve, reject) => {

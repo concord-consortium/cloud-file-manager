@@ -32,10 +32,10 @@ export class CloudFileManager {
   init(appOptions: CFMAppOptions) {
     this.appOptions = appOptions
     this.appOptions.hashParams = {
-      sharedContentId: getHashParam("shared"),
-      fileParams: getHashParam("file"),
-      copyParams: getHashParam("copy"),
-      newInFolderParams: getHashParam("newInFolder")
+      sharedContentId: getHashParam("shared") ?? undefined,
+      fileParams: getHashParam("file") ?? undefined,
+      copyParams: getHashParam("copy") ?? undefined,
+      newInFolderParams: getHashParam("newInFolder") ?? undefined
     }
 
     this.client.setAppOptions(this.appOptions)
@@ -48,13 +48,19 @@ export class CloudFileManager {
     this.appOptions.appOrMenuElemId = appElemId
     this.init(this.appOptions)
     this.client.listen(eventCallback)
-    this._renderApp(document.getElementById(appElemId))
+    const appElem = document.getElementById(appElemId)
+    if (appElem) {
+      this._renderApp(appElem)
+    }
   }
 
   clientConnect(eventCallback: ClientEventCallback) {
     try {
       if (this.appOptions.appOrMenuElemId != null) {
-        this._renderApp(document.getElementById(this.appOptions.appOrMenuElemId))
+        const appElem = document.getElementById(this.appOptions.appOrMenuElemId)
+        if (appElem) {
+          this._renderApp(appElem)
+        }
       } else {
         this._createHiddenApp()
       }

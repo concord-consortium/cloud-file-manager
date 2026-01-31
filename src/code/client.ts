@@ -338,7 +338,7 @@ class CloudFileManagerClient {
     return this._event('rendered', {client: this})
   }
 
-  listen(listener: ClientEventListener) {
+  listen(listener?: ClientEventListener) {
     if (listener) {
       return this._listeners.push(listener)
     }
