@@ -92,7 +92,7 @@ const FileList = createReactClassFactory({
     return this.props.fileSelected(this.props.folder?.parent)
   },
 
-  fileSelected(metadata: any) {
+  fileSelected(metadata: CloudMetadata) {
     if (!this.state.loading) {
       this.props.fileSelected(metadata)
     }
@@ -168,7 +168,7 @@ const FileDialogTab = createReactClass({
   // authorization status, and re-render when authorization status changes.
 
   UNSAFE_componentWillMount() {
-    const setAuthorization = (authorized: any) => {
+    const setAuthorization = (authorized: boolean) => {
       // always set the instance variable
       this._isAuthorized = authorized
       // set the state if we can
@@ -178,7 +178,7 @@ const FileDialogTab = createReactClass({
     }
 
     // listen for logouts (Google Drive provider)
-    this.props.provider.onAuthorizationChange?.((authorized: any) => {
+    this.props.provider.onAuthorizationChange?.((authorized: boolean) => {
       // reset rendering when de-authorized
       if (this._isAuthorized && !authorized) {
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -422,7 +422,7 @@ const FileDialogTab = createReactClass({
     const lowerSearch = search.toLowerCase()
     const filtering = isOpen && search.length > 0
     const list = filtering
-      ? this.state.list.filter((item: any) => item.name.toLowerCase().indexOf(lowerSearch) !== -1)
+      ? this.state.list.filter((item: CloudMetadata) => item.name?.toLowerCase().indexOf(lowerSearch) !== -1)
       : this.state.list
     const listFiltered = list.length !== this.state.list.length
 

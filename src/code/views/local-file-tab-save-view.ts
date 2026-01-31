@@ -95,7 +95,7 @@ export default createReactClass({
     }
   },
 
-  confirm(e: any, simulateClick: boolean) {
+  confirm(e: MouseEvent | null, simulateClick: boolean) {
     if (this.confirmDisabled()) {
       if (e != null) {
         e.preventDefault()

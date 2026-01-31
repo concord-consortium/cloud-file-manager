@@ -140,7 +140,7 @@ export default createReactClass({
   },
 
   // CODAP eats the click events in the main workspace which causes the blur event not to fire so we need to check for a non-bubbling global click event when editing
-  checkBlur(e: any) {
+  checkBlur(e: MouseEvent | TouchEvent) {
     if (this.state.editingFilename && (e.target !== this.filename())) { return this.filenameBlurred() }
   },
 
@@ -237,7 +237,7 @@ export default createReactClass({
             this.state.editingFilename
             ? (input({ref: ((elt: any) => { return this.filenameRef = elt }), value: this.state.editableFilename,
                 onChange: this.filenameChanged, onKeyDown: this.watchForEnter,
-                onMouseEnter: (e: any) => e.stopPropagation(), onMouseMove: (e: any) => e.stopPropagation()
+                onMouseEnter: (e: React.MouseEvent) => e.stopPropagation(), onMouseMove: (e: React.MouseEvent) => e.stopPropagation()
               }))
             : (span({className: 'content-filename', onClick: this.filenameClicked}, this.state.filename)),
                 this.props.fileStatus
