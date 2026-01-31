@@ -1,4 +1,4 @@
-import { getLegacyUrl } from './s3-share-provider-token-service-helper'
+import { getLegacyUrl, createFile, updateFile, deleteFile } from './s3-share-provider-token-service-helper'
 
 const getTokenServiceEnvMock = jest.fn()
 jest.mock('./config', () => {
@@ -9,9 +9,65 @@ jest.mock('./config', () => {
   }
 })
 
+// Mock the token-service client
+const mockCreateResource = jest.fn()
+const mockGetReadWriteToken = jest.fn()
+const mockGetCredentials = jest.fn()
+const mockGetPublicS3Path = jest.fn()
+const mockGetPublicS3Url = jest.fn()
+const mockGetResource = jest.fn()
+
+jest.mock('@concord-consortium/token-service', () => {
+  return {
+    TokenServiceClient: jest.fn().mockImplementation(() => ({
+      createResource: mockCreateResource,
+      getReadWriteToken: mockGetReadWriteToken,
+      getCredentials: mockGetCredentials,
+      getPublicS3Path: mockGetPublicS3Path,
+      getPublicS3Url: mockGetPublicS3Url,
+      getResource: mockGetResource
+    }))
+  }
+})
+
+// Mock S3
+const mockSend = jest.fn()
+
+jest.mock('@aws-sdk/client-s3', () => ({
+  S3Client: jest.fn().mockImplementation(() => ({
+    send: mockSend
+  })),
+  PutObjectCommand: jest.fn().mockImplementation((params) => ({ ...params, _type: 'PutObject' })),
+  DeleteObjectCommand: jest.fn().mockImplementation((params) => ({ ...params, _type: 'DeleteObject' }))
+}))
+
 const legacyId = "23424"
 
+// Common test data
+const mockResource = {
+  id: 'resource-123',
+  bucket: 'test-bucket',
+  region: 'us-east-1',
+  publicPath: 'public/path'
+}
+
+const mockCredentials = {
+  accessKeyId: 'test-access-key',
+  secretAccessKey: 'test-secret-key',
+  sessionToken: 'test-session-token'
+}
+
+const mockReadWriteToken = 'test-read-write-token'
+const mockPublicPath = 'cfm-shared/resource-123/file.json'
+const mockPublicUrl = 'https://test-bucket.s3.amazonaws.com/cfm-shared/resource-123/file.json'
+
 describe("s3-share-provider-token-service-helper", () => {
+  beforeEach(() => {
+    jest.clearAllMocks()
+    getTokenServiceEnvMock.mockReset()
+    getTokenServiceEnvMock.mockImplementation(() => 'production')
+  })
+
   describe("production environment", () => {
     beforeEach( () => {
       getTokenServiceEnvMock.mockReset()
@@ -34,6 +90,170 @@ describe("s3-share-provider-token-service-helper", () => {
         const result = getLegacyUrl(legacyId)
         expect(result).toEqual("https://token-service-files.concordqa.org/legacy-document-store/23424")
       })
+    })
+  })
+
+  describe("createFile", () => {
+    beforeEach(() => {
+      mockCreateResource.mockResolvedValue(mockResource)
+      mockGetReadWriteToken.mockReturnValue(mockReadWriteToken)
+      mockGetCredentials.mockResolvedValue(mockCredentials)
+      mockGetPublicS3Path.mockReturnValue(mockPublicPath)
+      mockGetPublicS3Url.mockReturnValue(mockPublicUrl)
+      mockSend.mockResolvedValue({})
+    })
+
+    it("should create a resource and upload file to S3", async () => {
+      const fileContent = '{"test": "content"}'
+      const result = await createFile({ fileContent })
+
+      // Verify resource creation
+      expect(mockCreateResource).toHaveBeenCalledWith({
+        tool: 'cfm-shared',
+        type: 's3Folder',
+        name: 'file.json',
+        description: 'Document created by CFM',
+        accessRuleType: 'readWriteToken'
+      })
+
+      // Verify credentials were obtained
+      expect(mockGetCredentials).toHaveBeenCalledWith(mockResource.id, mockReadWriteToken)
+
+      // Verify S3 send was called with PutObjectCommand containing correct parameters
+      const { PutObjectCommand } = require('@aws-sdk/client-s3')
+      expect(PutObjectCommand).toHaveBeenCalledWith({
+        Bucket: mockResource.bucket,
+        Key: mockPublicPath,
+        Body: fileContent,
+        ContentType: 'text/html',
+        ContentEncoding: 'UTF-8',
+        CacheControl: 'max-age=60'
+      })
+      expect(mockSend).toHaveBeenCalled()
+
+      // Verify returned values
+      expect(result).toEqual({
+        publicUrl: mockPublicUrl,
+        resourceId: mockResource.id,
+        readWriteToken: mockReadWriteToken
+      })
+    })
+
+    it("should return empty string for readWriteToken when not available", async () => {
+      mockGetReadWriteToken.mockReturnValue(null)
+      const fileContent = '{"test": "content"}'
+      const result = await createFile({ fileContent })
+
+      expect(result.readWriteToken).toEqual('')
+    })
+
+    it("should use the token service environment from config", async () => {
+      const { TokenServiceClient } = require('@concord-consortium/token-service')
+
+      getTokenServiceEnvMock.mockImplementation(() => 'staging')
+      await createFile({ fileContent: 'test' })
+
+      expect(TokenServiceClient).toHaveBeenCalledWith({ env: 'staging' })
+    })
+  })
+
+  describe("updateFile", () => {
+    beforeEach(() => {
+      mockGetResource.mockResolvedValue(mockResource)
+      mockGetCredentials.mockResolvedValue(mockCredentials)
+      mockGetPublicS3Path.mockReturnValue(mockPublicPath)
+      mockSend.mockResolvedValue({})
+    })
+
+    it("should get existing resource and upload new content", async () => {
+      const newFileContent = '{"updated": "content"}'
+      const resourceId = 'resource-123'
+
+      await updateFile({ newFileContent, resourceId, readWriteToken: mockReadWriteToken })
+
+      // Verify resource was fetched
+      expect(mockGetResource).toHaveBeenCalledWith(resourceId)
+
+      // Verify credentials were obtained with readWriteToken
+      expect(mockGetCredentials).toHaveBeenCalledWith(mockResource.id, mockReadWriteToken)
+
+      // Verify S3 send was called with PutObjectCommand containing correct parameters
+      const { PutObjectCommand } = require('@aws-sdk/client-s3')
+      expect(PutObjectCommand).toHaveBeenCalledWith({
+        Bucket: mockResource.bucket,
+        Key: mockPublicPath,
+        Body: newFileContent,
+        ContentType: 'text/html',
+        ContentEncoding: 'UTF-8',
+        CacheControl: 'max-age=60'
+      })
+      expect(mockSend).toHaveBeenCalled()
+    })
+
+    it("should work without readWriteToken", async () => {
+      const newFileContent = '{"updated": "content"}'
+      const resourceId = 'resource-123'
+
+      await updateFile({ newFileContent, resourceId })
+
+      // Verify credentials were obtained with undefined readWriteToken
+      expect(mockGetCredentials).toHaveBeenCalledWith(mockResource.id, undefined)
+    })
+
+    it("should use the token service environment from config", async () => {
+      const { TokenServiceClient } = require('@concord-consortium/token-service')
+
+      getTokenServiceEnvMock.mockImplementation(() => 'staging')
+      await updateFile({ newFileContent: 'test', resourceId: 'resource-123' })
+
+      expect(TokenServiceClient).toHaveBeenCalledWith({ env: 'staging' })
+    })
+  })
+
+  describe("deleteFile", () => {
+    beforeEach(() => {
+      mockGetResource.mockResolvedValue(mockResource)
+      mockGetCredentials.mockResolvedValue(mockCredentials)
+      mockGetPublicS3Path.mockReturnValue(mockPublicPath)
+      mockSend.mockResolvedValue({})
+    })
+
+    it("should get existing resource and delete from S3", async () => {
+      const resourceId = 'resource-123'
+
+      await deleteFile({ resourceId, readWriteToken: mockReadWriteToken })
+
+      // Verify resource was fetched
+      expect(mockGetResource).toHaveBeenCalledWith(resourceId)
+
+      // Verify credentials were obtained with readWriteToken
+      expect(mockGetCredentials).toHaveBeenCalledWith(mockResource.id, mockReadWriteToken)
+
+      // Verify S3 send was called with DeleteObjectCommand containing correct parameters
+      const { DeleteObjectCommand } = require('@aws-sdk/client-s3')
+      expect(DeleteObjectCommand).toHaveBeenCalledWith({
+        Bucket: mockResource.bucket,
+        Key: mockPublicPath
+      })
+      expect(mockSend).toHaveBeenCalled()
+    })
+
+    it("should work without readWriteToken", async () => {
+      const resourceId = 'resource-123'
+
+      await deleteFile({ resourceId })
+
+      // Verify credentials were obtained with undefined readWriteToken
+      expect(mockGetCredentials).toHaveBeenCalledWith(mockResource.id, undefined)
+    })
+
+    it("should use the token service environment from config", async () => {
+      const { TokenServiceClient } = require('@concord-consortium/token-service')
+
+      getTokenServiceEnvMock.mockImplementation(() => 'staging')
+      await deleteFile({ resourceId: 'resource-123' })
+
+      expect(TokenServiceClient).toHaveBeenCalledWith({ env: 'staging' })
     })
   })
 })

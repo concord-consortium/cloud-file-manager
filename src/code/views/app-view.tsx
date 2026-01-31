@@ -1,12 +1,3 @@
-// TODO: This file was created by bulk-decaffeinate.
-// Sanity-check the conversion and remove this comment.
-/*
- * decaffeinate suggestions:
- * DS102: Remove unnecessary code created because of implicit returns
- * DS205: Consider reworking code to avoid use of IIFEs
- * DS207: Consider shorter variations of null checks
- * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
- */
 import _ from "lodash"
 import React from "react"
 import ReactDOMFactories from "react-dom-factories"
@@ -90,13 +81,14 @@ class AppView extends React.Component<IAppViewProps, IAppViewState> {
   displayName: string
   state: IAppViewState
 
-  constructor(props: any) {
+  constructor(props: IAppViewProps) {
     super(props)
     this.displayName = 'CloudFileManager'
+    const client = this.props.client
     this.state = {
-      filename: this.getFilename(this.props.client.state.metadata),
-      provider: this.props.client.state.metadata?.provider,
-      menuItems: this.props.client._ui.menu?.items || [],
+      filename: this.getFilename(client?.state.metadata),
+      provider: client?.state.metadata?.provider,
+      menuItems: client?._ui.menu?.items || [],
       menuOptions: this.props.ui?.menuBar || {},
       providerDialog: null,
       downloadDialog: null,
@@ -111,116 +103,142 @@ class AppView extends React.Component<IAppViewProps, IAppViewState> {
     }
   }
 
-  getFilename(metadata: CloudMetadata) {
+  getFilename(metadata?: CloudMetadata) {
     return metadata?.name || null
   }
 
-  componentDidMount() {
-    this.props.client.listen((event: CloudFileManagerClientEvent) => {
-      const fileStatus = (() => {
-        let message
-        if (event.state.saving) {
-          return {message: tr('~FILE_STATUS.SAVING'), type: 'saving-info'}
-        } else if (event.state.saved) {
-          const providerName = event.state.metadata.provider?.displayName
-          message = providerName
-            ? tr('~FILE_STATUS.SAVED_TO_PROVIDER', { providerName })
-            : tr('~FILE_STATUS.SAVED')
-          return {message, type: 'info'}
-        } else if (event.state.failures) {
-          return {message: tr('~FILE_STATUS.FAILURE'), type: 'alert'}
-        } else if (event.state.dirty) {
-          return {message: tr('~FILE_STATUS.UNSAVED'), type: 'alert'}
-        } else {
-          return null
+  getFileStatus(event: CloudFileManagerClientEvent): { message: string, type: string } | undefined {
+    if (event.state.saving) {
+      return {message: tr('~FILE_STATUS.SAVING'), type: 'saving-info'}
+    } else if (event.state.saved) {
+      const providerName = event.state.metadata?.provider?.displayName
+      const message = providerName
+        ? tr('~FILE_STATUS.SAVED_TO_PROVIDER', { providerName })
+        : tr('~FILE_STATUS.SAVED')
+      return {message, type: 'info'}
+    } else if (event.state.failures) {
+      return {message: tr('~FILE_STATUS.FAILURE'), type: 'alert'}
+    } else if (event.state.dirty) {
+      return {message: tr('~FILE_STATUS.UNSAVED'), type: 'alert'}
+    }
+    return undefined
+  }
+
+  handleUIEvent(event: CloudFileManagerUIEvent) {
+    const { client } = this.props
+    if (!client) return
+
+    const { menuOptions } = this.state
+    switch (event.type) {
+      case 'showProviderDialog':
+        this.setState({providerDialog: event.data})
+        break
+      case 'showDownloadDialog':
+        this.setState({downloadDialog: event.data})
+        break
+      case 'showRenameDialog':
+        this.setState({renameDialog: event.data})
+        break
+      case 'showImportDialog':
+        this.setState({importDialog: event.data})
+        break
+      case 'showShareDialog':
+        this.setState({shareDialog: event.data})
+        break
+      case 'showBlockingModal':
+        this.setState({blockingModalProps: event.data})
+        break
+      case 'hideBlockingModal':
+        this.setState({blockingModalProps: null})
+        break
+      case 'showAlertDialog':
+        this.setState({alertDialog: event.data})
+        break
+      case 'hideAlertDialog':
+        this.setState({alertDialog: null})
+        break
+      case 'showConfirmDialog':
+        this.setState({confirmDialog: event.data})
+        break
+      case 'showSelectInteractiveStateDialog':
+        this.setState({selectInteractiveStateDialog: event.data})
+        break
+      case 'replaceMenu':
+        this.setState({ menuItems: client._ui.menu?.items || [] })
+        break
+      case 'appendMenuItem':
+        this.state.menuItems.push(event.data)
+        this.setState({menuItems: this.state.menuItems})
+        break
+      case 'prependMenuItem':
+        this.state.menuItems.unshift(event.data)
+        this.setState({menuItems: this.state.menuItems})
+        break
+      case 'replaceMenuItem': {
+        const index = this._getMenuItemIndex(event.data.key)
+        if (index !== -1) {
+          const {menuItems} = this.state
+          menuItems[index] = event.data.item
+          this.setState({menuItems})
         }
-      })()
+        break
+      }
+      case 'insertMenuItemBefore': {
+        const index = this._getMenuItemIndex(event.data.key)
+        if (index !== -1) {
+          if (index === 0) {
+            this.state.menuItems.unshift(event.data.item)
+          } else {
+            this.state.menuItems.splice(index, 0, event.data.item)
+          }
+          this.setState({menuItems: this.state.menuItems})
+        }
+        break
+      }
+      case 'insertMenuItemAfter': {
+        const index = this._getMenuItemIndex(event.data.key)
+        if (index !== -1) {
+          if (index === (this.state.menuItems.length - 1)) {
+            this.state.menuItems.push(event.data.item)
+          } else {
+            this.state.menuItems.splice(index + 1, 0, event.data.item)
+          }
+          this.setState({menuItems: this.state.menuItems})
+        }
+        break
+      }
+      case 'setMenuBarInfo':
+        menuOptions.info = event.data
+        this.setState({menuOptions})
+        break
+      case 'updateMenuBar':
+        this.setState({ menuOptions: { ...menuOptions, ...event.data } })
+        break
+    }
+  }
+
+  componentDidMount() {
+    const { client } = this.props
+    if (!client) return
+
+    client.listen((event: CloudFileManagerClientEvent) => {
+      const fileStatus = this.getFileStatus(event)
       this.setState({
         filename: this.getFilename(event.state.metadata),
-        provider: (event.state.metadata != null ? event.state.metadata.provider : undefined),
+        provider: event.state.metadata?.provider,
         fileStatus
       })
 
-      switch (event.type) {
-        case 'connected':
-          return this.setState({menuItems: (this.props.client._ui.menu != null ? this.props.client._ui.menu.items : undefined) || []})
+      if (event.type === 'connected') {
+        this.setState({menuItems: client._ui.menu?.items || []})
       }
     })
 
-    this.props.client._ui.listen((event: CloudFileManagerUIEvent) => {
-      const {menuOptions} = this.state
-      switch (event.type) {
-        case 'showProviderDialog':
-          return this.setState({providerDialog: event.data})
-        case 'showDownloadDialog':
-          return this.setState({downloadDialog: event.data})
-        case 'showRenameDialog':
-          return this.setState({renameDialog: event.data})
-        case 'showImportDialog':
-          return this.setState({importDialog: event.data})
-        case 'showShareDialog':
-          return this.setState({shareDialog: event.data})
-        case 'showBlockingModal':
-          return this.setState({blockingModalProps: event.data})
-        case 'hideBlockingModal':
-          return this.setState({blockingModalProps: null})
-        case 'showAlertDialog':
-          return this.setState({alertDialog: event.data})
-        case 'hideAlertDialog':
-          return this.setState({alertDialog: null})
-        case 'showConfirmDialog':
-          return this.setState({confirmDialog: event.data})
-        case 'showSelectInteractiveStateDialog':
-          return this.setState({selectInteractiveStateDialog: event.data})
-        case 'replaceMenu':
-          return this.setState({ menuItems: this.props.client._ui.menu.items })
-        case 'appendMenuItem':
-          this.state.menuItems.push(event.data)
-          return this.setState({menuItems: this.state.menuItems})
-        case 'prependMenuItem':
-          this.state.menuItems.unshift(event.data)
-          return this.setState({menuItems: this.state.menuItems})
-        case 'replaceMenuItem':
-          var index = this._getMenuItemIndex(event.data.key)
-          if (index !== -1) {
-            const {menuItems} = this.state
-            menuItems[index] = event.data.item
-            this.setState({menuItems: menuItems})
-            return this.setState({menuItems: this.state.menuItems})
-          }
-          break
-        case 'insertMenuItemBefore':
-          index = this._getMenuItemIndex(event.data.key)
-          if (index !== -1) {
-            if (index === 0) {
-              this.state.menuItems.unshift(event.data.item)
-            } else {
-              this.state.menuItems.splice(index, 0, event.data.item)
-            }
-            return this.setState({menuItems: this.state.menuItems})
-          }
-          break
-        case 'insertMenuItemAfter':
-          index = this._getMenuItemIndex(event.data.key)
-          if (index !== -1) {
-            if (index === (this.state.menuItems.length - 1)) {
-              this.state.menuItems.push(event.data.item)
-            } else {
-              this.state.menuItems.splice(index + 1, 0, event.data.item)
-            }
-            return this.setState({menuItems: this.state.menuItems})
-          }
-          break
-        case 'setMenuBarInfo':
-          menuOptions.info = event.data
-          this.setState({menuOptions: menuOptions})
-          return this.setState({menuOptions: this.state.menuOptions})
-        case 'updateMenuBar':
-          return this.setState({ menuOptions: { ...menuOptions, ...event.data } })
-      }
+    client._ui.listen((event: CloudFileManagerUIEvent) => {
+      this.handleUIEvent(event)
     })
 
-    this.props.client._ui.resolveIsInitialized(true)
+    client._ui.resolveIsInitialized(true)
   }
 
   _getMenuItemIndex = (key: string) => {
@@ -246,7 +264,7 @@ class AppView extends React.Component<IAppViewProps, IAppViewState> {
   }
 
   closeDialogs = () => {
-    return this.setState({
+    this.setState({
       providerDialog: null,
       downloadDialog: null,
       renameDialog: null,
@@ -257,11 +275,11 @@ class AppView extends React.Component<IAppViewProps, IAppViewState> {
   }
 
   closeAlert = () => {
-    return this.setState({alertDialog: null})
+    this.setState({alertDialog: null})
   }
 
   closeConfirm = () => {
-    return this.setState({confirmDialog: null})
+    this.setState({confirmDialog: null})
   }
 
   renderDialogs = () => {
@@ -279,6 +297,7 @@ class AppView extends React.Component<IAppViewProps, IAppViewState> {
         return (ImportTabbedDialog({client: this.props.client, dialog: this.state.importDialog, close: this.closeDialogs}))
       } else if (this.state.shareDialog) {
         const { client, enableLaraSharing, ui } = this.props
+        if (!client) return null
         return (
           <ShareDialogView currentBaseUrl={client.getCurrentUrl()} isShared={client.isShared()}
             sharedDocumentId={client.state?.currentContent?.get('sharedDocumentId')}

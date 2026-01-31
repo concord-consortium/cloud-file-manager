@@ -1,11 +1,3 @@
-// TODO: This file was created by bulk-decaffeinate.
-// Sanity-check the conversion and remove this comment.
-/*
- * decaffeinate suggestions:
- * DS102: Remove unnecessary code created because of implicit returns
- * DS207: Consider shorter variations of null checks
- * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
- */
 import createReactClass from "create-react-class"
 import ReactDOM from "react-dom"
 import ReactDOMFactories from "react-dom-factories"
@@ -28,14 +20,13 @@ export default createReactClass({
       window.addEventListener('touchstart', this.checkBlur, true)
     }
 
-    return this.props.client._ui.listen((event: any) => {
-      switch (event.type) {
-        case 'editInitialFilename':
-          this.setState({
-            editingFilename: true,
-            editingInitialFilename: true
-          })
-          return setTimeout((() => this.focusFilename()), 10)
+    this.props.client._ui.listen((event: any) => {
+      if (event.type === 'editInitialFilename') {
+        this.setState({
+          editingFilename: true,
+          editingInitialFilename: true
+        })
+        setTimeout(() => this.focusFilename(), 10)
       }
     })
   },
@@ -43,16 +34,16 @@ export default createReactClass({
   componentWillUnmount() {
     if (window.removeEventListener) {
       window.removeEventListener('mousedown', this.checkBlur, true)
-      return window.removeEventListener('touchstart', this.checkBlur, true)
+      window.removeEventListener('touchstart', this.checkBlur, true)
     }
   },
 
   getFilename(props: any) {
-    if ((props.filename != null ? props.filename.length : undefined) > 0) { return props.filename } else { return (tr("~MENUBAR.UNTITLED_DOCUMENT")) }
+    return props.filename?.length > 0 ? props.filename : tr("~MENUBAR.UNTITLED_DOCUMENT")
   },
 
   getEditableFilename(props: any) {
-    if ((props.filename != null ? props.filename.length : undefined) > 0) { return props.filename } else { return (tr("~MENUBAR.UNTITLED_DOCUMENT")) }
+    return props.filename?.length > 0 ? props.filename : tr("~MENUBAR.UNTITLED_DOCUMENT")
   },
 
   getInitialState() {
@@ -66,30 +57,31 @@ export default createReactClass({
   },
 
   UNSAFE_componentWillReceiveProps(nextProps: any) {
-    return this.setState({
+    this.setState({
       filename: this.getFilename(nextProps),
       editableFilename: this.getEditableFilename(nextProps),
       provider: nextProps.provider
     })
   },
 
-  filenameClicked(e: any) {
+  filenameClicked(e: React.MouseEvent<HTMLSpanElement>) {
     e.preventDefault()
     e.stopPropagation()
     this.setState({
       editingFilename: true,
       editingInitialFilename: false
     })
-    return setTimeout((() => this.focusFilename()), 10)
+    setTimeout(() => this.focusFilename(), 10)
   },
 
   filenameChanged() {
-    return this.setState({
-      editableFilename: this.filename().value})
+    this.setState({
+      editableFilename: this.filename().value
+    })
   },
 
   filenameBlurred() {
-    return this.rename()
+    this.rename()
   },
 
   filename() {
@@ -99,13 +91,13 @@ export default createReactClass({
   focusFilename() {
     const el = this.filename()
     el.focus()
-    return el.select()
+    el.select()
   },
 
   cancelEdit() {
-    return this.setState({
+    this.setState({
       editingFilename: false,
-      editableFilename: (this.state.filename != null ? this.state.filename.length : undefined) > 0 ? this.state.filename : this.state.initialEditableFilename
+      editableFilename: this.state.filename?.length > 0 ? this.state.filename : this.state.initialEditableFilename
     })
   },
 
@@ -117,38 +109,40 @@ export default createReactClass({
       } else {
         this.props.client.rename(this.props.client.state.metadata, filename)
       }
-      return this.setState({
+      this.setState({
         editingFilename: false,
         filename,
         editableFilename: filename
       })
     } else {
-      return this.cancelEdit()
+      this.cancelEdit()
     }
   },
 
-  watchForEnter(e: any) {
+  watchForEnter(e: React.KeyboardEvent<HTMLInputElement>) {
     if (e.keyCode === 13) {
-      return this.rename()
+      this.rename()
     } else if (e.keyCode === 27) {
-      return this.cancelEdit()
+      this.cancelEdit()
     }
   },
 
   infoClicked() {
-    return (typeof this.props.options.onInfoClick === 'function' ? this.props.options.onInfoClick() : undefined)
+    this.props.options.onInfoClick?.()
   },
 
   // CODAP eats the click events in the main workspace which causes the blur event not to fire so we need to check for a non-bubbling global click event when editing
-  checkBlur(e: any) {
-    if (this.state.editingFilename && (e.target !== this.filename())) { return this.filenameBlurred() }
+  checkBlur(e: MouseEvent | TouchEvent) {
+    if (this.state.editingFilename && (e.target !== this.filename())) {
+      this.filenameBlurred()
+    }
   },
 
-  langChanged(langCode: any) {
+  langChanged(langCode: string) {
     const {client, options} = this.props
     const {onLangChanged} = options.languageMenu
-    if (onLangChanged != null) {
-      return client.changeLanguage(langCode, onLangChanged)
+    if (onLangChanged) {
+      client.changeLanguage(langCode, onLangChanged)
     }
   },
 
@@ -235,9 +229,9 @@ export default createReactClass({
           this.renderFileMenu(),
           (div({className: `menu-bar-content-filename ${langClass}`},
             this.state.editingFilename
-            ? (input({ref: ((elt: any) => { return this.filenameRef = elt }), value: this.state.editableFilename,
+            ? (input({ref: ((elt: any) => { this.filenameRef = elt }), value: this.state.editableFilename,
                 onChange: this.filenameChanged, onKeyDown: this.watchForEnter,
-                onMouseEnter: (e: any) => e.stopPropagation(), onMouseMove: (e: any) => e.stopPropagation()
+                onMouseEnter: (e: React.MouseEvent) => e.stopPropagation(), onMouseMove: (e: React.MouseEvent) => e.stopPropagation()
               }))
             : (span({className: 'content-filename', onClick: this.filenameClicked}, this.state.filename)),
                 this.props.fileStatus

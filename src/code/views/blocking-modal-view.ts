@@ -1,10 +1,3 @@
-// TODO: This file was created by bulk-decaffeinate.
-// Sanity-check the conversion and remove this comment.
-/*
- * decaffeinate suggestions:
- * DS102: Remove unnecessary code created because of implicit returns
- * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
- */
 import createReactClass from 'create-react-class'
 import ReactDOMFactories from 'react-dom-factories'
 import { createReactFactory } from '../create-react-factory'
@@ -18,12 +11,12 @@ export default createReactClass({
   displayName: 'BlockingModal',
 
   close() {
-    return (typeof this.props.close === 'function' ? this.props.close() : undefined)
+    this.props.close?.()
   },
 
   // used by CODAP to dismiss the startup dialog if a file is dropped on it
-  drop(e: any) {
-    return (typeof this.props.onDrop === 'function' ? this.props.onDrop(e) : undefined)
+  drop(e: React.DragEvent<HTMLDivElement>) {
+    this.props.onDrop?.(e)
   },
 
   render() {

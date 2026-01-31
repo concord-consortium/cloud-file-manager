@@ -1,11 +1,3 @@
-// TODO: This file was created by bulk-decaffeinate.
-// Sanity-check the conversion and remove this comment.
-/*
- * decaffeinate suggestions:
- * DS102: Remove unnecessary code created because of implicit returns
- * DS207: Consider shorter variations of null checks
- * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
- */
 import { CFMBaseProviderOptions } from '../app-options'
 import { CloudFileManagerClient } from '../client'
 import tr from '../utils/translate'
@@ -18,7 +10,7 @@ import {
 class LocalStorageProvider extends ProviderInterface {
   static Name = 'localStorage'
   client: CloudFileManagerClient
-  options: CFMBaseProviderOptions
+  options?: CFMBaseProviderOptions
 
   constructor(options: CFMBaseProviderOptions | undefined, client: CloudFileManagerClient) {
     super({
@@ -54,18 +46,18 @@ class LocalStorageProvider extends ProviderInterface {
     try {
       const fileKey = this._getKey(metadata.filename)
       window.localStorage.setItem(fileKey, content.getContentAsJSON?.() || content)
-      return callback?.(null)
+      callback?.(null)
     } catch (e) {
-      return callback?.(`Unable to save: ${e.message}`)
+      callback?.(`Unable to save: ${e instanceof Error ? e.message : String(e)}`)
     }
   }
 
   load(metadata: CloudMetadata, callback: ProviderLoadCallback) {
     try {
       const content = window.localStorage.getItem(this._getKey(metadata.filename))
-      return callback(null, cloudContentFactory.createEnvelopedCloudContent(content))
+      callback(null, cloudContentFactory.createEnvelopedCloudContent(content))
     } catch (e) {
-      return callback(`Unable to load '${metadata.name}': ${e.message}`)
+      callback(`Unable to load '${metadata.name}': ${e instanceof Error ? e.message : String(e)}`)
     }
   }
 
@@ -75,7 +67,7 @@ class LocalStorageProvider extends ProviderInterface {
 
     const list = []
     const prefix = this._getKey((metadata?.path?.() || []).join('/'))
-    for (let key of Object.keys(window.localStorage || {})) {
+    for (const key of Object.keys(window.localStorage || {})) {
       if (key.substr(0, prefix.length) === prefix) {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const [filename, ...remainder] = key.substr(prefix.length).split('/')
@@ -86,32 +78,31 @@ class LocalStorageProvider extends ProviderInterface {
             type: remainder.length > 0 ? CloudMetadata.Folder : CloudMetadata.File,
             parent: metadata,
             provider: this
-          })
-          )
+          }))
         }
       }
     }
-    return callback(null, list)
+    callback(null, list)
   }
 
   remove(metadata: CloudMetadata, callback?: ProviderRemoveCallback) {
     try {
       window.localStorage.removeItem(this._getKey(metadata.filename))
-      return callback?.(null)
+      callback?.('')
     } catch (error) {
-      return callback?.('Unable to delete')
+      callback?.('Unable to delete')
     }
   }
 
   rename(metadata: CloudMetadata, newName: string, callback?: ProviderRenameCallback) {
     try {
-      const content = window.localStorage.getItem(this._getKey(metadata.filename))
+      const content = window.localStorage.getItem(this._getKey(metadata.filename)) ?? ''
       window.localStorage.setItem(this._getKey(CloudMetadata.withExtension(newName)), content)
       window.localStorage.removeItem(this._getKey(metadata.filename))
       metadata.rename(newName)
-      return callback?.(null, metadata)
+      callback?.(null, metadata)
     } catch (error) {
-      return callback?.('Unable to rename')
+      callback?.('Unable to rename')
     }
   }
 
@@ -121,18 +112,17 @@ class LocalStorageProvider extends ProviderInterface {
     const metadata = new CloudMetadata({
       name: openSavedParams,
       type: CloudMetadata.File,
-      parent: null,
       provider: this
     })
-    return this.load(metadata, (err: string | null, content: any) => callback(err, content, metadata))
+    this.load(metadata, (err: string | null, content: any) => callback(err, content, metadata))
   }
 
   getOpenSavedParams(metadata: CloudMetadata) {
     return metadata.name
   }
 
-  _getKey(name = '') {
-    return `cfm::${name.replace(/\t/g, ' ')}`
+  _getKey(name: string | null = '') {
+    return `cfm::${(name ?? '').replace(/\t/g, ' ')}`
   }
 }
 

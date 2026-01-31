@@ -1,10 +1,3 @@
-// TODO: This file was created by bulk-decaffeinate.
-// Sanity-check the conversion and remove this comment.
-/*
- * decaffeinate suggestions:
- * DS102: Remove unnecessary code created because of implicit returns
- * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
- */
 import createReactClass from 'create-react-class'
 import ReactDOMFactories from 'react-dom-factories'
 const {div, input, button} = ReactDOMFactories
@@ -29,49 +22,48 @@ export default createReactClass({
     return {hover: false}
   },
 
-  changed(e: any) {
+  changed(e: React.ChangeEvent<HTMLInputElement>) {
     const { files } = e.target
+    if (!files) return
     if (files.length > 1) {
-      return this.props.client.alert(tr("~LOCAL_FILE_DIALOG.MULTIPLE_FILES_SELECTED"))
+      this.props.client.alert(tr("~LOCAL_FILE_DIALOG.MULTIPLE_FILES_SELECTED"))
     } else if (files.length === 1) {
-      return this.openFile(files[0], 'select')
+      this.openFile(files[0], 'select')
     }
   },
 
-  openFile(file: any, via: any) {
+  openFile(file: File, via: string) {
     const metadata = new CloudMetadata({
       name: file.name.split('.')[0],
       type: CloudMetadata.File,
-      parent: null,
       provider: this.props.provider,
       providerData: {
         file
       }
     })
-    if (typeof this.props.dialog.callback === 'function') {
-      this.props.dialog.callback(metadata, via)
-    }
-    return this.props.close()
+    this.props.dialog.callback?.(metadata, via)
+    this.props.close()
   },
 
   cancel() {
-    return this.props.close()
+    this.props.close()
   },
 
-  dragEnter(e: any) {
+  dragEnter(e: React.DragEvent<HTMLDivElement>) {
     e.preventDefault()
-    return this.setState({hover: true})
+    this.setState({hover: true})
   },
 
-  dragLeave(e: any) {
+  dragLeave(e: React.DragEvent<HTMLDivElement>) {
     e.preventDefault()
-    return this.setState({hover: false})
+    this.setState({hover: false})
   },
 
-  drop(e: any) {
+  drop(e: DragEvent) {
     e.preventDefault()
     e.stopPropagation()
-    const droppedFiles = e.dataTransfer ? e.dataTransfer.files : e.target.files
+    const droppedFiles = e.dataTransfer?.files
+    if (!droppedFiles) return
     if (droppedFiles.length > 1) {
       this.props.client.alert(tr("~LOCAL_FILE_DIALOG.MULTIPLE_FILES_DROPPED"))
     } else if (droppedFiles.length === 1) {
@@ -83,7 +75,7 @@ export default createReactClass({
     const dropClass = `dropArea${this.state.hover ? ' dropHover' : ''}`
     return (div({className: 'dialogTab localFileLoad'},
       // 'drop' event handler installed as DOM event handler in componentDidMount()
-      (div({ref: ((elt: any) => { return this.dropZoneRef = elt }), className: dropClass, onDragEnter: this.dragEnter, onDragLeave: this.dragLeave},
+      (div({ref: ((elt: any) => { this.dropZoneRef = elt }), className: dropClass, onDragEnter: this.dragEnter, onDragLeave: this.dragLeave},
         (tr("~LOCAL_FILE_DIALOG.DROP_FILE_HERE")),
         (input({type: 'file', onChange: this.changed}))
       )),

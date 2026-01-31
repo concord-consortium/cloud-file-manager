@@ -1,12 +1,3 @@
-// TODO: This file was created by bulk-decaffeinate.
-// Sanity-check the conversion and remove this comment.
-/*
- * decaffeinate suggestions:
- * DS102: Remove unnecessary code created because of implicit returns
- * DS103: Rewrite code to no longer use __guard__
- * DS207: Consider shorter variations of null checks
- * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
- */
 import createReactClass from 'create-react-class'
 import { saveAs } from 'file-saver'
 import ReactDOMFactories from 'react-dom-factories'
@@ -54,8 +45,8 @@ export default createReactClass({
     if (!this.state.hasPropsContent) {
       this.props.client._event('getContent', { shared: this.props.client._sharedMetadata() }, (content: any) => {
         const envelopedContent = cloudContentFactory.createEnvelopedCloudContent(content)
-        __guard__(this.props.client.state != null ? this.props.client.state.currentContent : undefined, (x: any) => x.copyMetadataTo(envelopedContent))
-        return this.setState({
+        this.props.client.state?.currentContent?.copyMetadataTo(envelopedContent)
+        this.setState({
           gotContent: true,
           content: envelopedContent
         })
@@ -66,23 +57,23 @@ export default createReactClass({
     // in which the onClick handler got triggered multiple times and the default
     // handler could not be prevented, presumably due to React's SyntheticEvent system.
     // The solution here is to use standard browser event handlers.
-    return this.downloadRef.addEventListener('click', this.confirm)
+    this.downloadRef.addEventListener('click', this.confirm)
   },
 
   componentWillUnmount() {
-    return this.downloadRef.removeEventListener('click', this.confirm)
+    this.downloadRef.removeEventListener('click', this.confirm)
   },
 
   filenameChanged() {
     const filename = this.filenameRef.value
-    return this.setState({
+    this.setState({
       filename,
       downloadFilename: this.getDownloadFilename(this.state.hasPropsContent, filename, this.state.extension)
     })
   },
 
   includeShareInfoChanged() {
-    return this.setState({includeShareInfo: this.includeShareInfoRef.checked})
+    this.setState({includeShareInfo: this.includeShareInfoRef.checked})
   },
 
   getDownloadFilename(hasPropsContent: boolean, filename: string, extension: string) {
@@ -95,7 +86,7 @@ export default createReactClass({
     }
   },
 
-  confirm(e: any, simulateClick: boolean) {
+  confirm(e: MouseEvent | null, simulateClick: boolean) {
     if (this.confirmDisabled()) {
       if (e != null) {
         e.preventDefault()
@@ -145,14 +136,13 @@ export default createReactClass({
     const metadata = new CloudMetadata({
       name: this.state.downloadFilename.split('.')[0],
       type: CloudMetadata.File,
-      parent: null,
       provider: this.props.provider
     })
     this.props.dialog.callback(metadata)
     this.props.close()
   },
 
-  contextMenu(e: any) {
+  contextMenu(e: React.MouseEvent<HTMLAnchorElement>) {
     this.downloadRef.href = this.props.client.getDownloadUrl(this.state.content, this.state.includeShareInfo, this.state.mimeType)
   },
 
@@ -160,7 +150,7 @@ export default createReactClass({
     this.props.close()
   },
 
-  watchForEnter(e: any) {
+  watchForEnter(e: React.KeyboardEvent<HTMLInputElement>) {
     if ((e.keyCode === 13) && !this.confirmDisabled()) {
       e.preventDefault()
       e.stopPropagation()
@@ -178,7 +168,7 @@ export default createReactClass({
     // for modern browsers
     const downloadAnchor = (a({
       href: '#',
-      ref: (elt: any) => { return this.downloadRef = elt },
+      ref: (elt: any) => { this.downloadRef = elt },
       className: (confirmDisabled ? 'disabled' : ''),
       download: this.state.downloadFilename,
       onContextMenu: this.contextMenu
@@ -186,16 +176,16 @@ export default createReactClass({
 
     // for Safari (or other non-modern browsers)
     const downloadButton = (button({
-      ref: (elt: any) => { return this.downloadRef = elt },
+      ref: (elt: any) => { this.downloadRef = elt },
       className: (confirmDisabled ? 'disabled' : '')
     }, tr('~FILE_DIALOG.DOWNLOAD')))
 
     return (div({className: 'dialogTab localFileSave'},
-      (input({type: 'text', ref: ((elt: any) => { return this.filenameRef = elt }), value: this.state.filename, placeholder: (tr("~FILE_DIALOG.FILENAME")), onChange: this.filenameChanged, onKeyDown: this.watchForEnter})),
+      (input({type: 'text', ref: ((elt: any) => { this.filenameRef = elt }), value: this.state.filename, placeholder: (tr("~FILE_DIALOG.FILENAME")), onChange: this.filenameChanged, onKeyDown: this.watchForEnter})),
       (div({className: 'saveArea'},
         this.state.shared && !this.state.hasPropsContent ?
           (div({className: 'shareCheckbox'},
-            (input({type: 'checkbox', ref: ((elt: any) => { return this.includeShareInfoRef = elt }), value: this.state.includeShareInfo, onChange: this.includeShareInfoChanged})),
+            (input({type: 'checkbox', ref: ((elt: any) => { this.includeShareInfoRef = elt }), value: this.state.includeShareInfo, onChange: this.includeShareInfoChanged})),
             (tr('~DOWNLOAD_DIALOG.INCLUDE_SHARE_INFO'))
           )) : undefined
       )),
@@ -206,6 +196,3 @@ export default createReactClass({
     ))
   }
 })
-function __guard__(value: any, transform: any) {
-  return (typeof value !== 'undefined' && value !== null) ? transform(value) : undefined
-}

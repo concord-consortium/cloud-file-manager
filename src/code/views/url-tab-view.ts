@@ -1,10 +1,3 @@
-// TODO: This file was created by bulk-decaffeinate.
-// Sanity-check the conversion and remove this comment.
-/*
- * decaffeinate suggestions:
- * DS102: Remove unnecessary code created because of implicit returns
- * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
- */
 import $ from "jquery"
 import createReactClass from "create-react-class"
 import ReactDOM from "react-dom"
@@ -20,44 +13,42 @@ export default createReactClass({
     return {hover: false}
   },
 
-  importUrl(url: any, via: any) {
-    if (typeof this.props.dialog.callback === 'function') {
-      this.props.dialog.callback(url, via)
-    }
-    return this.props.close()
+  importUrl(url: string, via: string) {
+    this.props.dialog.callback?.(url, via)
+    this.props.close()
   },
 
   import() {
     const url = $.trim((ReactDOM.findDOMNode(this.urlRef) as any).value)
     if (url.length === 0) {
-      return this.props.client.alert(tr("~IMPORT_URL.PLEASE_ENTER_URL"))
+      this.props.client.alert(tr("~IMPORT_URL.PLEASE_ENTER_URL"))
     } else {
-      return this.importUrl(url, 'select')
+      this.importUrl(url, 'select')
     }
   },
 
   cancel() {
-    return this.props.close()
+    this.props.close()
   },
 
-  dragEnter(e: any) {
+  dragEnter(e: React.DragEvent<HTMLDivElement>) {
     e.preventDefault()
-    return this.setState({hover: true})
+    this.setState({hover: true})
   },
 
-  dragLeave(e: any) {
+  dragLeave(e: React.DragEvent<HTMLDivElement>) {
     e.preventDefault()
-    return this.setState({hover: false})
+    this.setState({hover: false})
   },
 
-  drop(e: any) {
+  drop(e: React.DragEvent<HTMLDivElement>) {
     e.preventDefault()
     if (e.dataTransfer) {
       const droppedUrls = (e.dataTransfer.getData('url') || e.dataTransfer.getData('text/uri-list') || '').split('\n')
       if (droppedUrls.length > 1) {
-        return this.props.client.alert(tr("~IMPORT_URL.MULTIPLE_URLS_DROPPED"))
+        this.props.client.alert(tr("~IMPORT_URL.MULTIPLE_URLS_DROPPED"))
       } else if (droppedUrls.length === 1) {
-        return this.importUrl(droppedUrls[0], 'drop')
+        this.importUrl(droppedUrls[0], 'drop')
       }
     }
   },
@@ -68,7 +59,7 @@ export default createReactClass({
       (div({className: dropClass, onDragEnter: this.dragEnter, onDragLeave: this.dragLeave, onDrop: this.drop},
         (tr("~URL_TAB.DROP_URL_HERE"))
       )),
-      (input({ref: ((elt: any) => { return this.urlRef = elt }), placeholder: 'URL'})),
+      (input({ref: ((elt: any) => { this.urlRef = elt }), placeholder: 'URL'})),
       (div({className: 'buttons'},
         (button({onClick: this["import"]}, (tr("~URL_TAB.IMPORT")))),
         (button({onClick: this.cancel}, (tr("~FILE_DIALOG.CANCEL"))))

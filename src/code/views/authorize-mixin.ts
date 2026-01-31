@@ -1,12 +1,5 @@
-// TODO: This file was created by bulk-decaffeinate.
-// Sanity-check the conversion and remove this comment.
-/*
- * decaffeinate suggestions:
- * DS102: Remove unnecessary code created because of implicit returns
- * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
- */
 const AuthorizeMixin = {
-  getInitialState() {
+  getInitialState(this: any) {
     this._isAuthorized = false
     return {authorized: false}
   },
@@ -29,7 +22,7 @@ const AuthorizeMixin = {
   // and the state to track the authorization status, render the appropriate
   // authorization status, and re-render when authorization status changes.
 
-  UNSAFE_componentWillMount() {
+  UNSAFE_componentWillMount(this: any) {
     // Check for authorization before the first render. Providers that
     // don't require authorization or are already authorized will respond
     // immediately, but since the component isn't mounted yet we can't
@@ -37,29 +30,29 @@ const AuthorizeMixin = {
     // in componentDidMount(). Providers that require asynchronous checks
     // for authorization may return before or after the first render, so
     // code should be prepared for either eventuality.
-    return this.props.provider.authorized((authorized: any) => {
+    this.props.provider.authorized((authorized: boolean) => {
       // always set the instance variable
       this._isAuthorized = authorized
       // set the state if we can
       if (this._isMounted) {
-        return this.setState({authorized})
+        this.setState({authorized})
       }
     })
   },
 
-  componentDidMount() {
+  componentDidMount(this: any) {
     this._isMounted = true
     // synchronize state if necessary
     if (this.state.authorized !== this._isAuthorized) {
-      return this.setState({authorized: this._isAuthorized})
+      this.setState({authorized: this._isAuthorized})
     }
   },
 
-  componentWillUnmount() {
-    return this._isMounted = false
+  componentWillUnmount(this: any) {
+    this._isMounted = false
   },
 
-  render() {
+  render(this: any) {
     if (this._isAuthorized || this.state.authorized) {
       return this.renderWhenAuthorized()
     } else {

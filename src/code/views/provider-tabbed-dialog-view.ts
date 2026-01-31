@@ -1,14 +1,3 @@
-// TODO: This file was created by bulk-decaffeinate.
-// Sanity-check the conversion and remove this comment.
-/*
- * decaffeinate suggestions:
- * DS101: Remove unnecessary use of Array.from
- * DS102: Remove unnecessary code created because of implicit returns
- * DS103: Rewrite code to no longer use __guard__
- * DS205: Consider reworking code to avoid use of IIFEs
- * DS207: Consider shorter variations of null checks
- * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
- */
 import createReactClass from 'create-react-class'
 import { createReactFactory } from '../create-react-factory'
 import tr  from '../utils/translate'
@@ -24,21 +13,26 @@ const SelectProviderDialogTab = createReactFactory(selectProviderDialogTabView)
 export default createReactClass({
   displayName: 'ProviderTabbedDialog',
 
+  getDialogConfig() {
+    switch (this.props.dialog.action) {
+      case 'openFile': return ['list', FileDialogTab] as const
+      case 'saveFile': case 'saveFileAs': return ['save', FileDialogTab] as const
+      case 'saveSecondaryFileAs': return ['export', FileDialogTab] as const
+      case 'createCopy': return ['save', FileDialogTab] as const
+      case 'selectProvider': return [null, SelectProviderDialogTab] as const
+      default: return [null, FileDialogTab] as const
+    }
+  },
+
   render() {
-    const [capability, TabComponent] = Array.from((() => { switch (this.props.dialog.action) {
-      case 'openFile': return ['list', FileDialogTab]
-      case 'saveFile': case 'saveFileAs': return ['save', FileDialogTab]
-      case 'saveSecondaryFileAs': return ['export', FileDialogTab]
-      case 'createCopy': return ['save', FileDialogTab]
-      case 'selectProvider': return [null, SelectProviderDialogTab]
-    } })())
+    const [capability, TabComponent] = this.getDialogConfig()
 
     const tabs = []
     let selectedTabIndex = 0
     for (let i = 0; i < this.props.client.state.availableProviders.length; i++) {
       const provider = this.props.client.state.availableProviders[i]
       if (!capability || provider.capabilities[capability]) {
-        const filteredTabComponent = provider.filterTabComponent(capability, TabComponent)
+        const filteredTabComponent = provider.filterTabComponent(capability as any, TabComponent)
         if (filteredTabComponent) {
           const component = filteredTabComponent({
             client: this.props.client,
@@ -48,7 +42,7 @@ export default createReactClass({
           })
           const onSelected = provider.onProviderTabSelected ? provider.onProviderTabSelected.bind(provider) : null
           tabs.push((TabbedPanel as any).Tab({key: i, label: (tr(provider.displayName)), component, capability, onSelected}))
-          if (provider.name === __guard__(this.props.client.state.metadata != null ? this.props.client.state.metadata.provider : undefined, (x: any) => x.name)) {
+          if (provider.name === this.props.client.state.metadata?.provider?.name) {
             selectedTabIndex = tabs.length - 1
           }
         }
@@ -58,7 +52,3 @@ export default createReactClass({
     return (ModalTabbedDialog({title: (tr(this.props.dialog.title)), close: this.props.close, tabs, selectedTabIndex}))
   }
 })
-
-function __guard__(value: any, transform: any) {
-  return (typeof value !== 'undefined' && value !== null) ? transform(value) : undefined
-}

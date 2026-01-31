@@ -10,7 +10,7 @@ import {
 class TestProvider extends ProviderInterface {
   static Name = 'testProvider'
   client: CloudFileManagerClient
-  options: CFMBaseProviderOptions
+  options?: CFMBaseProviderOptions
 
   content: any
   files: Record<string, {content: CloudContent, metadata: CloudMetadata}>
@@ -40,12 +40,14 @@ class TestProvider extends ProviderInterface {
   }
 
   save(content: any, metadata: CloudMetadata, callback?: ProviderSaveCallback) {
-    this.files[metadata.filename] = {content, metadata}
+    const filename = metadata.filename ?? ''
+    this.files[filename] = {content, metadata}
     return callback?.(null)
   }
 
   load(metadata: CloudMetadata, callback: ProviderLoadCallback) {
-    const file = this.files[metadata.filename]
+    const filename = metadata.filename ?? ''
+    const file = this.files[filename]
     if (file) {
       return callback(null, file.content)
     }
@@ -57,13 +59,15 @@ class TestProvider extends ProviderInterface {
   }
 
   remove(metadata: CloudMetadata, callback?: ProviderRemoveCallback) {
-    delete this.files[metadata.filename]
-    return callback?.(null)
+    const filename = metadata.filename ?? ''
+    delete this.files[filename]
+    return callback?.('')
   }
 
   rename(metadata: CloudMetadata, newName: string, callback?: ProviderRenameCallback) {
-    const temp = this.files[metadata.filename]
-    delete this.files[metadata.filename]
+    const filename = metadata.filename ?? ''
+    const temp = this.files[filename]
+    delete this.files[filename]
     this.files[newName] = temp
     metadata.name = newName
     return callback?.(null, metadata)
@@ -77,7 +81,6 @@ class TestProvider extends ProviderInterface {
     const metadata = new CloudMetadata({
       name: openSavedParams,
       type: CloudMetadata.File,
-      parent: null,
       provider: this
     })
     return this.load(metadata, (err: string | null, content: any) => callback(err, content, metadata))

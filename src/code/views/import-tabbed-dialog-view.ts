@@ -1,10 +1,3 @@
-// TODO: This file was created by bulk-decaffeinate.
-// Sanity-check the conversion and remove this comment.
-/*
- * decaffeinate suggestions:
- * DS102: Remove unnecessary code created because of implicit returns
- * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
- */
 import createReactClass from 'create-react-class'
 import { createReactFactory } from '../create-react-factory'
 import TabbedPanel  from './tabbed-panel-view'
@@ -22,26 +15,25 @@ export default createReactClass({
   displayName: 'ImportTabbedDialog',
 
   importFile(metadata: any, via: any) {
-    switch (metadata.provider) {
-      case 'localFile':
-        var reader = new FileReader()
-        reader.onload = loaded => {
-          const data = {
-            file: {
-              name: metadata.providerData.file.name,
-              content: loaded.target.result,
-              object: metadata.providerData.file
-            },
-            via
-          }
-          return (typeof this.props.dialog.callback === 'function' ? this.props.dialog.callback(data) : undefined)
+    if (metadata.provider === 'localFile') {
+      const reader = new FileReader()
+      reader.onload = loaded => {
+        const data = {
+          file: {
+            name: metadata.providerData.file.name,
+            content: loaded.target?.result,
+            object: metadata.providerData.file
+          },
+          via
         }
-        return reader.readAsText(metadata.providerData.file)
+        this.props.dialog.callback?.(data)
+      }
+      reader.readAsText(metadata.providerData.file)
     }
   },
 
-  importUrl(url: string, via: any) {
-    return this.props.dialog.callback?.({url, via})
+  importUrl(url: string, via: string) {
+    this.props.dialog.callback?.({url, via})
   },
 
   render() {

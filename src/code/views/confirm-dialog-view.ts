@@ -1,10 +1,3 @@
-// TODO: This file was created by bulk-decaffeinate.
-// Sanity-check the conversion and remove this comment.
-/*
- * decaffeinate suggestions:
- * DS102: Remove unnecessary code created because of implicit returns
- * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
- */
 import createReactClass from 'create-react-class'
 import ReactDOMFactories from 'react-dom-factories'
 import classNames from 'classnames'
@@ -22,17 +15,13 @@ export default createReactClass({
   displayName: 'ConfirmDialogView',
 
   confirm() {
-    if (typeof this.props.callback === 'function') {
-      this.props.callback()
-    }
-    return (typeof this.props.close === 'function' ? this.props.close() : undefined)
+    this.props.callback?.()
+    this.props.close?.()
   },
 
   reject() {
-    if (typeof this.props.rejectCallback === 'function') {
-      this.props.rejectCallback()
-    }
-    return (typeof this.props.close === 'function' ? this.props.close() : undefined)
+    this.props.rejectCallback?.()
+    this.props.close?.()
   },
 
   render() {

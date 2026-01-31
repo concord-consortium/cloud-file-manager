@@ -49,7 +49,7 @@ describe('URLProvider', () => {
     expect(callback).toHaveBeenCalled()
     const [err, content, metadata]: [string | null, CloudContent, CloudMetadata] = callback.mock.calls[0]
     expect(typeof err).toBe('string')
-    expect(err.includes(errorUrl)).toBe(true)
+    expect(err?.includes(errorUrl)).toBe(true)
     expect(content).toBeUndefined()
     expect(metadata).toBeUndefined()
   })

@@ -39,7 +39,9 @@ interface ICopyAnchorLinkProps {
   onClick: (e: React.MouseEvent) => void
 }
 const CopyButton = ({ onClick }: ICopyAnchorLinkProps) => {
-  return document.execCommand || (window as any).clipboardData
+  // Use navigator.clipboard API or legacy methods
+  const hasClipboardSupport = typeof document.execCommand === 'function' || !!(window as any).clipboardData
+  return hasClipboardSupport
           ? <button className='copy-button' onClick={onClick} data-testid='copy-button'>
               {translate('~SHARE_DIALOG.COPY')}
             </button>
@@ -178,6 +180,7 @@ export const ShareDialogTabsView: React.FC<IShareDialogTabsProps> = ({
             case 'embed':
               return <EmbedTabContents url={embedUrl} onCopyClick={onCopyClick} />
             case 'api': {
+              if (!interactiveApi) return null
               const { linkUrl: url, ...apiOthers } = interactiveApi
               return <LaraApiTabContents mode='api' linkUrl={url} onCopyClick={onCopyClick}
                                         {...others} {...apiOthers} />

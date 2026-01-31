@@ -1,11 +1,3 @@
-// TODO: This file was created by bulk-decaffeinate.
-// Sanity-check the conversion and remove this comment.
-/*
- * decaffeinate suggestions:
- * DS102: Remove unnecessary code created because of implicit returns
- * DS207: Consider shorter variations of null checks
- * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
- */
 //
 // This utility class simplifies working with document store URLs
 //
@@ -15,7 +7,7 @@ class PatchableContent {
   patchObjectHash?: (obj: any) => string
   savedContent: any
 
-  constructor(patchObjectHash: (obj: any) => string, savedContent?: any) {
+  constructor(patchObjectHash?: (obj: any) => string, savedContent?: any) {
     this.patchObjectHash = patchObjectHash
     this.savedContent = savedContent
   }
@@ -32,7 +24,7 @@ class PatchableContent {
 
     // only patch if the diff is smaller than saving the entire file
     // e.g. when large numbers of cases are deleted the diff can be larger
-    if (canPatch && (result.diffJson != null) && (result.diffJson.length < result.contentJson.length)) {
+    if (canPatch && result.diffJson && (result.diffJson.length < result.contentJson.length)) {
       result.shouldPatch = true;
       (result as any).sendContent = result.diffJson
       result.mimeType = 'application/json-patch+json'
@@ -44,7 +36,7 @@ class PatchableContent {
   }
 
   updateContent(content: any) {
-    return this.savedContent = content
+    this.savedContent = content
   }
 
   _createDiff(obj1: any, obj2: any) {

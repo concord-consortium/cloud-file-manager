@@ -1,12 +1,3 @@
-// TODO: This file was created by bulk-decaffeinate.
-// Sanity-check the conversion and remove this comment.
-/*
- * decaffeinate suggestions:
- * DS101: Remove unnecessary use of Array.from
- * DS102: Remove unnecessary code created because of implicit returns
- * DS207: Consider shorter variations of null checks
- * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
- */
 import createReactClass from "create-react-class"
 import ReactDOMFactories from "react-dom-factories"
 import { createReactClassFactory } from "../create-react-factory"
@@ -19,8 +10,7 @@ class TabInfo {
   label: any
   onSelected: any
 
-  constructor(settings: any) {
-    if (settings == null) { settings = {} }
+  constructor(settings: any = {}) {
     ({label: this.label, component: this.component, capability: this.capability, onSelected: this.onSelected} = settings)
   }
 }
@@ -29,9 +19,9 @@ const Tab = createReactClassFactory({
 
   displayName: 'TabbedPanelTab',
 
-  clicked(e: any) {
+  clicked(e: React.MouseEvent<HTMLLIElement>) {
     e.preventDefault()
-    return this.props.onSelected(this.props.index)
+    this.props.onSelected(this.props.index)
   },
 
   render() {
@@ -49,21 +39,21 @@ export default createReactClass({
   },
 
   componentDidMount() {
-    return (typeof this.props.tabs[this.state.selectedTabIndex].onSelected === 'function' ? this.props.tabs[this.state.selectedTabIndex].onSelected(this.props.tabs[this.state.selectedTabIndex].capability) : undefined)
+    const tab = this.props.tabs[this.state.selectedTabIndex]
+    tab.onSelected?.(tab.capability)
   },
 
   statics: {
     Tab(settings: any) { return new TabInfo(settings) }
   },
 
-  selectedTab(index: any) {
-    if (typeof this.props.tabs[index].onSelected === 'function') {
-      this.props.tabs[index].onSelected(this.props.tabs[index].capability)
-    }
-    return this.setState({selectedTabIndex: index})
+  selectedTab(index: number) {
+    const tab = this.props.tabs[index]
+    tab.onSelected?.(tab.capability)
+    this.setState({selectedTabIndex: index})
   },
 
-  renderTab(tab: any, index: any) {
+  renderTab(tab: TabInfo, index: number) {
     return (Tab({
       label: tab.label,
       key: index,
@@ -75,21 +65,20 @@ export default createReactClass({
 
   renderTabs() {
     return (div({className: 'workspace-tabs'},
-      (Array.from(this.props.tabs).map((tab, index) => ul({key: index}, this.renderTab(tab, index))))
+      this.props.tabs.map((tab: TabInfo, index: number) => ul({key: index}, this.renderTab(tab, index)))
     ))
   },
 
   renderSelectedPanel() {
     return (div({className: 'workspace-tab-component'},
-      Array.from(this.props.tabs).map((tab, index) =>
-        (div({
+      this.props.tabs.map((tab: TabInfo, index: number) =>
+        div({
           key: index,
           style: {
             display: index === this.state.selectedTabIndex ? 'block' : 'none'
           }
-          },
-          (tab as any).component
-        )))
+        }, tab.component)
+      )
     ))
   },
 
