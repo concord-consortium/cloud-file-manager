@@ -267,7 +267,7 @@ const FileDialogTab = createReactClass({
     return saveMetadata
   },
 
-  getStateForFolder(folder: CloudMetadata, initialFolder: any) {
+  getStateForFolder(folder: CloudMetadata | null, initialFolder: any) {
     const metadata = this.isOpen() ? this.state?.metadata || null : this.getSaveMetadata()
 
     if (initialFolder) {
@@ -430,7 +430,7 @@ const FileDialogTab = createReactClass({
       : null
 
     // when exporting only show folders as we can't filter based on mimetypes like text/csv or image/png to show only those files
-    const listOptions: IListOptions = this.isExport() && this.props.dialog.data?.extension ? {extension: this.props.dialog.data.extension} : undefined
+    const listOptions: IListOptions | undefined = this.isExport() && this.props.dialog.data?.extension ? {extension: this.props.dialog.data.extension} : undefined
 
     return (div({className: 'dialogTab'},
       (input({type: 'text', value: search, placeholder: (tr(isOpen ? "~FILE_DIALOG.FILTER" : "~FILE_DIALOG.FILENAME")), autoFocus: true, onChange: this.searchChanged, onKeyDown: this.watchForEnter, ref: (elt: any) => { return this.inputRef = elt }})),

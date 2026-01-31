@@ -31,6 +31,7 @@ export default createReactClass({
       case 'saveSecondaryFileAs': return ['export', FileDialogTab]
       case 'createCopy': return ['save', FileDialogTab]
       case 'selectProvider': return [null, SelectProviderDialogTab]
+      default: return [null, FileDialogTab]
     } })())
 
     const tabs = []

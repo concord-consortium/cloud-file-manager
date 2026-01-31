@@ -29,7 +29,7 @@ export default createReactClass({
           const data = {
             file: {
               name: metadata.providerData.file.name,
-              content: loaded.target.result,
+              content: loaded.target?.result,
               object: metadata.providerData.file
             },
             via

@@ -42,7 +42,6 @@ export default createReactClass({
     const metadata = new CloudMetadata({
       name: file.name.split('.')[0],
       type: CloudMetadata.File,
-      parent: null,
       provider: this.props.provider,
       providerData: {
         file

@@ -34,7 +34,9 @@ const DropdownItem = createReactClassFactory({
 
   showSubMenu() {
     if (this.props.item.items) {
-      const menuItem = $(ReactDOM.findDOMNode(this.itemRef))
+      const domNode = ReactDOM.findDOMNode(this.itemRef) as Element | null
+      if (!domNode) return
+      const menuItem = $(domNode)
       const menu = menuItem.parent().parent()
 
       return this.props.setSubMenu({

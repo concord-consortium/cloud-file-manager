@@ -23,7 +23,7 @@ class SelectInteractiveStateVersion extends React.Component<IProps, IState> {
   }
 
   handleSelect = () => {
-    this.props.onSelect(this.props.version.interactiveState)
+    this.props.onSelect?.(this.props.version.interactiveState ?? {})
     this.props.close?.()
   }
 
@@ -45,7 +45,7 @@ class SelectInteractiveStateVersion extends React.Component<IProps, IState> {
   render() {
     const {preview} = this.state
     const {version} = this.props
-    const updatedAt = (new Date(version.updatedAt)).toLocaleString()
+    const updatedAt = (new Date(version.updatedAt ?? Date.now())).toLocaleString()
     const previewClassName = `preview${preview ? ' preview-active' : ''}`
     const previewIframeClassName = preview ? 'preview-iframe-fullsize' : 'preview-iframe'
 
