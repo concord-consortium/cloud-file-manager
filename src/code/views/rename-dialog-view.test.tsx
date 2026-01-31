@@ -1,14 +1,7 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import React from 'react'
-import RenameDialogViewComponent from './rename-dialog-view'
-
-// Cast to accept props since createReactClass components don't have proper TypeScript types
-const RenameDialogView = RenameDialogViewComponent as React.ComponentType<{
-  filename?: string
-  close?: () => void
-  callback?: (filename: string) => void
-}>
+import RenameDialogView from './rename-dialog-view'
 
 describe('RenameDialogView', () => {
   it('should render with dialog title', () => {

@@ -1,24 +1,7 @@
 import { fireEvent, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import React from 'react'
-import DropdownViewComponent from './dropdown-view'
-
-// Cast to accept props since createReactClass components don't have proper TypeScript types
-const DropdownView = DropdownViewComponent as unknown as React.ComponentType<{
-  items: Array<{
-    name?: string
-    content?: string
-    action?: () => void
-    enabled?: boolean | (() => boolean)
-    separator?: boolean
-    icon?: string
-    items?: Array<any>
-  }>
-  className?: string
-  menuAnchor?: React.ReactNode
-  menuAnchorClassName?: string
-  subMenuExpandIcon?: string
-}>
+import DropdownView from './dropdown-view'
 
 describe('DropdownView', () => {
   const createItems = (action?: jest.Mock) => [

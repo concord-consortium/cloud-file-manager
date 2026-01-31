@@ -1,20 +1,7 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import React from 'react'
-import ConfirmDialogViewComponent from './confirm-dialog-view'
-
-// Cast to accept props since createReactClass components don't have proper TypeScript types
-const ConfirmDialogView = ConfirmDialogViewComponent as React.ComponentType<{
-  title?: string
-  message?: string
-  className?: string
-  yesTitle?: string
-  noTitle?: string
-  hideNoButton?: boolean
-  close?: () => void
-  callback?: () => void
-  rejectCallback?: () => void
-}>
+import ConfirmDialogView from './confirm-dialog-view'
 
 describe('ConfirmDialogView', () => {
   it('should render with default title and button labels', () => {
