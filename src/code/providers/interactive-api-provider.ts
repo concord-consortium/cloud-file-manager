@@ -192,7 +192,7 @@ class InteractiveApiProvider extends ProviderInterface {
     })
   }
 
-  async getInitialInteractiveStateAndinteractiveId(initInteractiveMessage: IInitInteractive): Promise<{interactiveState: {}, interactiveId?: string} | null> {
+  async getInitialInteractiveStateAndinteractiveId(initInteractiveMessage: IInitInteractive): Promise<{interactiveState: any, interactiveId?: string} | null> {
     if ((initInteractiveMessage.mode === "authoring") || (initInteractiveMessage.mode === "reportItem")) {
       return null
     }
@@ -204,7 +204,7 @@ class InteractiveApiProvider extends ProviderInterface {
 
     // some interactives, like the full-screen wrapper always report they are in runtime
     // mode, even when loaded in a report which does not define the interactive member
-    let interactiveId = initInteractiveMessage.interactive?.id
+    let interactiveId: string | undefined = initInteractiveMessage.interactive?.id
 
     const interactiveStateAvailable = !!interactiveState
     const {allLinkedStates} = initInteractiveMessage
@@ -217,7 +217,7 @@ class InteractiveApiProvider extends ProviderInterface {
       let mostRecentLinkedState: IInteractiveStateProps<{}>
       if (directlyLinkedState.updatedAt) {
         mostRecentLinkedState = allLinkedStates.slice().sort((a, b) => {
-          return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+          return new Date(b.updatedAt ?? 0).getTime() - new Date(a.updatedAt ?? 0).getTime()
         })[0]
       } else {
         // currently the AP doesn't make the updatedAt attribute available so just pick the directly linked state
@@ -237,8 +237,8 @@ class InteractiveApiProvider extends ProviderInterface {
         })
 
         interactiveId = interactiveState === mostRecentLinkedState.interactiveState
-          ? mostRecentLinkedState.interactive.id
-          : initInteractiveMessage.interactive.id
+          ? mostRecentLinkedState.interactive?.id
+          : initInteractiveMessage.interactive?.id
 
         if (interactiveState === mostRecentLinkedState.interactiveState) {
           // remove existing interactive state, so the interactive will be initialized from the linked state next time (if it is not saved).
@@ -263,8 +263,8 @@ class InteractiveApiProvider extends ProviderInterface {
         })
 
         interactiveId = interactiveState === mostRecentLinkedState.interactiveState
-          ? mostRecentLinkedState.interactive.id
-          : directlyLinkedState.interactive.id
+          ? mostRecentLinkedState.interactive?.id
+          : directlyLinkedState.interactive?.id
 
           return {interactiveState, interactiveId}
       }
@@ -272,7 +272,7 @@ class InteractiveApiProvider extends ProviderInterface {
       // there's no current state, but the directly linked state is the most recent one.
       if (!interactiveStateAvailable && directlyLinkedState) {
         interactiveState = directlyLinkedState.interactiveState
-        interactiveId = directlyLinkedState.interactive.id
+        interactiveId = directlyLinkedState.interactive?.id
 
         // save the directly linked state so that it is available with the sharing plugin
         await setInteractiveState(interactiveState)
@@ -289,7 +289,10 @@ class InteractiveApiProvider extends ProviderInterface {
   async handleInitialInteractiveState(initInteractiveMessage: IInitInteractive) {
     let interactiveState: any
 
-    const {interactiveState: initialInteractiveState, interactiveId} = await this.getInitialInteractiveStateAndinteractiveId(initInteractiveMessage)
+    const result = await this.getInitialInteractiveStateAndinteractiveId(initInteractiveMessage)
+    if (!result) return
+
+    const {interactiveState: initialInteractiveState, interactiveId} = result
 
     try {
       interactiveState = await this.processRawInteractiveState(initialInteractiveState, interactiveId)
@@ -328,6 +331,7 @@ class InteractiveApiProvider extends ProviderInterface {
     if (params.interactiveApi !== undefined) {
       return true
     }
+    return false
   }
 
   // don't show in provider open/save dialogs
