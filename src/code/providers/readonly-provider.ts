@@ -19,7 +19,7 @@ import isArray from '../utils/is-array'
 
 import { CFMReadOnlyProviderOptions } from '../app-options'
 import { CloudFileManagerClient } from '../client'
-import { cloudContentFactory, CloudMetadata, ProviderInterface }  from './provider-interface'
+import { cloudContentFactory, CloudMetadata, ProviderInterface, ProviderOpenCallback }  from './provider-interface'
 import {reportError} from "../utils/report-error"
 
 class ReadOnlyProvider extends ProviderInterface {
@@ -94,13 +94,13 @@ class ReadOnlyProvider extends ProviderInterface {
 
   canOpenSaved() { return true }
 
-  openSaved(openSavedParams: any, callback: (err: string | null, content: any, metadata: CloudMetadata) => void) {
-    const metadata = new CloudMetadata({
+  openSaved(openSavedParams: any, callback?: ProviderOpenCallback): void {
+    const metadata: CloudMetadata = new CloudMetadata({
       name: unescape(openSavedParams),
       type: CloudMetadata.File,
-      provider: this
+      provider: this as ProviderInterface
     })
-    return this.load(metadata, (err: string | null, content: any) => callback(err, content, metadata))
+    this.load(metadata, (err: string | null, content?: any) => callback?.(err, content, metadata))
   }
 
   getOpenSavedParams(metadata: CloudMetadata) {
@@ -190,7 +190,7 @@ class ReadOnlyProvider extends ProviderInterface {
           content: ((item as any).content != null) ? cloudContentFactory.createEnvelopedCloudContent((item as any).content) : undefined,
           url,
           parent,
-          provider: this,
+          provider: this as ProviderInterface,
           providerData: {
             children: null
           }
@@ -244,7 +244,7 @@ class ReadOnlyProvider extends ProviderInterface {
           type,
           content: cloudContentFactory.createEnvelopedCloudContent(itemContent),
           parent,
-          provider: this,
+          provider: this as ProviderInterface,
           providerData: {
             children: null
           }
@@ -285,7 +285,7 @@ class ReadOnlyProvider extends ProviderInterface {
       type: CloudMetadata.Label,
       content: "",
       parent: iParent,
-      provider: this,
+      provider: this as ProviderInterface,
       providerData: {
         children: null
       }

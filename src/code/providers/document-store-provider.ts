@@ -23,7 +23,7 @@ import tr  from '../utils/translate'
 import pako  from 'pako'
 
 import { CFMDocumentStoreProviderOptions } from '../app-options'
-import { ECapabilities, ProviderInterface, ProviderOpenCallback }  from './provider-interface'
+import { ECapabilities, ProviderInterface, ProviderListCallback, ProviderOpenCallback }  from './provider-interface'
 import { cloudContentFactory }  from './provider-interface'
 import { CloudMetadata }  from './provider-interface'
 
@@ -295,7 +295,7 @@ class DocumentStoreProvider extends ProviderInterface {
     }
   }
 
-  list(metadata: CloudMetadata, callback: (err: string | null, list: CloudMetadata[]) => void) {
+  list(metadata: CloudMetadata, callback?: ProviderListCallback) {
     return $.ajax({
       dataType: 'json',
       url: this.docStoreUrl.listDocuments(),
@@ -317,10 +317,10 @@ class DocumentStoreProvider extends ProviderInterface {
             )
           }
         }
-        return callback(null, list)
+        return callback?.(null, list)
       },
       error() {
-        return callback(null, [])
+        return callback?.(null, [])
       },
       statusCode: {
         403: () => {

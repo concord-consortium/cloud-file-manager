@@ -561,9 +561,9 @@ class CloudFileManagerClient {
     return this.confirm(tr("~CONFIRM.AUTHORIZE_OPEN"), () => {
         return provider.authorize(() => {
           this._event('willOpenFile', {op: "confirmAuthorizeAndOpen"})
-          return provider.openSaved(providerParams, (err: string | null, content: any, metadata: CloudMetadata) => {
-            if (err) {
-              return this.alert(err)
+          return provider.openSaved(providerParams, (err: string | null, content?: any, metadata?: CloudMetadata) => {
+            if (err || !content || !metadata) {
+              return this.alert(err || 'No content or metadata returned')
             }
             content = this._filterLoadedContent(content)
             this._fileOpened(content, metadata, {openedContent: content.clone()}, this._getHashParams(metadata))
@@ -586,9 +586,9 @@ class CloudFileManagerClient {
         // we can open the document without authorization in some cases
         if (isAuthorized || !provider.isAuthorizationRequired()) {
           this._event('willOpenFile', {op: "openProviderFile"})
-          return provider.openSaved(providerParams, (err: string | null, content: any, metadata: CloudMetadata) => {
-            if (err) {
-              return this.alert(err, () => this.ready())
+          return provider.openSaved(providerParams, (err: string | null, content?: any, metadata?: CloudMetadata) => {
+            if (err || !content || !metadata) {
+              return this.alert(err || 'No content or metadata returned', () => this.ready())
             }
             // if we just opened the file, it doesn't need to be saved until the contents are changed unless
             // it requires conversion from an older version
@@ -607,10 +607,10 @@ class CloudFileManagerClient {
   }
 
   openUrlFile(url: string) {
-    return this.urlProvider.openFileFromUrl(url, (err: string | null, content: any, metadata: CloudMetadata) => {
+    return this.urlProvider.openFileFromUrl(url, (err: string | null, content?: any, metadata?: CloudMetadata) => {
       this._event('willOpenFile', {op: "openUrlFile"})
-      if (err) {
-        return this.alert(err, () => this.ready())
+      if (err || !content || !metadata) {
+        return this.alert(err || 'No content or metadata returned', () => this.ready())
       }
       content = this._filterLoadedContent(content)
       return this._fileOpened(content, metadata, {openedContent: content.clone()}, this._getHashParams(metadata))
@@ -1078,9 +1078,9 @@ class CloudFileManagerClient {
     }
     if (newName !== (this.state.metadata != null ? this.state.metadata.name : undefined)) {
       if (metadata?.provider?.can(ECapabilities.rename, metadata)) {
-        return this.state.metadata?.provider?.rename(this.state.metadata, newName, (err: string | null, metadata: CloudMetadata) => {
-          if (err) {
-            return this.alert(err)
+        return this.state.metadata?.provider?.rename(this.state.metadata, newName, (err: string | null, metadata?: CloudMetadata) => {
+          if (err || !metadata) {
+            return this.alert(err || 'Rename failed')
           }
           return _rename(metadata)
         })

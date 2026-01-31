@@ -21,7 +21,7 @@ class DocumentStoreUrl {
     const kvp = []
     for (let key in params) {
       const value = params[key]
-      kvp.push([key, value].map(encodeURI).join("="))
+      kvp.push(`${encodeURI(key)}=${encodeURI(String(value))}`)
     }
     return url + "?" + kvp.join("&")
   }
