@@ -4,6 +4,7 @@
     "sourceMap": true,
     "noImplicitAny": true,
     "strictNullChecks": true,
+    "noImplicitThis": true,
     "module": "commonjs",
     "esModuleInterop": true,
     "moduleResolution": "node",

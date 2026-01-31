@@ -181,7 +181,8 @@ const FileDialogTab = createReactClass({
     this.props.provider.onAuthorizationChange?.((authorized: any) => {
       // reset rendering when de-authorized
       if (this._isAuthorized && !authorized) {
-        this.setState(this.getInitialState())
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        this.setState(this.getInitialState!())
       }
 
       setAuthorization(authorized)
