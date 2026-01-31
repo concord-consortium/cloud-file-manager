@@ -108,7 +108,7 @@ const DropDown = createReactClass({
     }
   },
 
-  checkClose(evt: any) {
+  checkClose(evt: MouseEvent | TouchEvent) {
     if (!this.state.showingMenu) { return }
     // if the click is inside the open menu, do nothing
     if (evt.target instanceof Element) {

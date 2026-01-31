@@ -40,7 +40,7 @@ export default createReactClass({
     }
   },
 
-  importUrl(url: string, via: any) {
+  importUrl(url: string, via: string) {
     return this.props.dialog.callback?.({url, via})
   },
 
