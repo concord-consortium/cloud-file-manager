@@ -221,7 +221,7 @@ class CloudFileManagerUI {
     return this.listenerCallback(new CloudFileManagerUIEvent('showImportDialog', {callback}))
   }
 
-  downloadDialog(filename: string, content: any, callback: UIEventCallback) {
+  downloadDialog(filename: string, content: any, callback?: UIEventCallback) {
     return this.listenerCallback(new CloudFileManagerUIEvent('showDownloadDialog', { filename, content, callback }))
   }
 
