@@ -1,12 +1,3 @@
-// TODO: This file was created by bulk-decaffeinate.
-// Sanity-check the conversion and remove this comment.
-/*
- * decaffeinate suggestions:
- * DS001: Remove Babel/TypeScript constructor workaround
- * DS102: Remove unnecessary code created because of implicit returns
- * DS207: Consider shorter variations of null checks
- * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
- */
 import $ from 'jquery'
 import { ReactFactory } from '../create-react-factory'
 import { CFMLaraProviderLogData, CFMLaraProviderOptions } from '../app-options'
@@ -131,7 +122,7 @@ class LaraProvider extends ProviderInterface {
   logLaraData(laraData: CFMLaraProviderLogData) {
     if (this.collaboratorUrls?.length) { laraData.collaboratorUrls = this.collaboratorUrls }
     if (this.options.logLaraData) { this.options.logLaraData(laraData) }
-    return this.client.log('logLaraData', laraData)
+    this.client.log('logLaraData', laraData)
   }
 
   // don't show in provider open/save dialogs
@@ -168,7 +159,7 @@ class LaraProvider extends ProviderInterface {
       accessKey = `RW::${metadata.providerData.accessKeys.readWrite}`
     }
 
-    return $.ajax({
+    $.ajax({
       type: method,
       url,
       dataType: 'json',
@@ -195,11 +186,11 @@ class LaraProvider extends ProviderInterface {
           content.addMetadata({docName: metadata.filename ?? undefined})
         }
 
-        return callback(null, content)
+        callback(null, content)
       },
 
       error(jqXHR) {
-        return callback(`Unable to load ${metadata.name || metadata.providerData?.recordid || 'file'}`)
+        callback(`Unable to load ${metadata.name || metadata.providerData?.recordid || 'file'}`)
       }
     })
   }
@@ -242,7 +233,7 @@ class LaraProvider extends ProviderInterface {
     }
     this.client.log('save', logData)
 
-    return $.ajax({
+    $.ajax({
       dataType: 'json',
       type: method,
       url,
@@ -250,31 +241,31 @@ class LaraProvider extends ProviderInterface {
       contentType: patchResults.mimeType,
       processData: false,
       beforeSend(xhr) {
-        return xhr.setRequestHeader('Content-Encoding', 'deflate')
+        xhr.setRequestHeader('Content-Encoding', 'deflate')
       },
       context: this,
       success(data) {
         this.savedContent.updateContent(this.options.patch ? _.cloneDeep(content) : null)
         if (data.recordid) { metadata.providerData.recordid = data.recordid }
 
-        return callback(null, data)
+        callback(null, data)
       },
 
       error(jqXHR) {
         // if patch fails, try a full save
         if (patchResults.shouldPatch) {
-          return this.save(cloudContent, metadata, callback, true)
+          this.save(cloudContent, metadata, callback, true)
         // if full save fails, return error message
         } else {
           try {
             const responseJson = JSON.parse(jqXHR.responseText)
             if (responseJson.message === 'error.duplicate') {
-              return callback(`Unable to create ${metadata.name}. File already exists.`)
+              callback(`Unable to create ${metadata.name}. File already exists.`)
             } else {
-              return callback(`Unable to save ${metadata.name}: [${responseJson.message}]`)
+              callback(`Unable to save ${metadata.name}: [${responseJson.message}]`)
             }
           } catch (error) {
-            return callback(`Unable to save ${metadata.name}`)
+            callback(`Unable to save ${metadata.name}`)
           }
         }
       }
@@ -297,7 +288,7 @@ class LaraProvider extends ProviderInterface {
 
     const loadProviderFile = (providerData: any, callback: ProviderLoadCallback) => {
       metadata.providerData = providerData
-      return this.load(metadata, (err: string | null, content: any) => {
+      this.load(metadata, (err: string | null, content: any) => {
         this.client.removeQueryParams(this.removableQueryParams)
         callback(err, content, metadata)
       })
@@ -337,9 +328,9 @@ class LaraProvider extends ProviderInterface {
           })
           .done(function(data, status, jqXHR) {
             if (data?.success === false) {
-              return done(`Could not open the specified document because an error occurred [updateState] (${data.message})`)
+              done(`Could not open the specified document because an error occurred [updateState] (${data.message})`)
             } else {
-              return done(null)
+              done(null)
             }}).fail((jqXHR, status, error) => done("Could not open the specified document because an error occurred [updateState]"))
 
 
@@ -385,7 +376,7 @@ class LaraProvider extends ProviderInterface {
         }
         const encodedLaraParams = this.encodeParams(reportUrlLaraParams)
         if (existingRunState.lara_options == null) { existingRunState.lara_options = {} }
-        return existingRunState.lara_options.reporting_url = `${codapUrl}?launchFromLara=${encodedLaraParams}`
+        existingRunState.lara_options.reporting_url = `${codapUrl}?launchFromLara=${encodedLaraParams}`
       }
 
       // Check if we have a document associated with this run state already (2a) or not (2b)
@@ -396,7 +387,7 @@ class LaraProvider extends ProviderInterface {
           if (docStore.recordid) createParams.source = docStore.recordid
           if (docStore.accessKeys?.readOnly) createParams.accessKey = `RO::${docStore.accessKeys.readOnly}`
           const {method, url} = this.docStoreUrl.v2CreateDocument(createParams)
-          return $.ajax({
+          $.ajax({
             type: method,
             url,
             dataType: 'json'
@@ -407,46 +398,46 @@ class LaraProvider extends ProviderInterface {
               documentID: docStore.recordid,
               documentUrl: url
             }
-            if ((existingRunState != null ? existingRunState.run_remote_endpoint : undefined) != null) { (laraData as any).run_remote_endpoint = existingRunState.run_remote_endpoint }
+            if (existingRunState?.run_remote_endpoint != null) { (laraData as any).run_remote_endpoint = existingRunState.run_remote_endpoint }
             this.logLaraData(laraData)
             processCreateResponse(createResponse)
-            return callback(null)
+            callback(null)
         }).fail((jqXHR, status, error) => callback("Could not open the specified document because an error occurred [createCopy]"))
         }
 
         const setFollowers = (err: string | null, callback: (err: string | null) => void) => {
           if (err) {
-            return callback(err)
+            callback(err)
           } else {
             const collaboratorParams = _.cloneDeep(docStore)
             collaboratorParams.collaborator = 'follower'
-            return updateInteractiveRunStates(this.collaboratorUrls, collaboratorParams, callback)
+            updateInteractiveRunStates(this.collaboratorUrls, collaboratorParams, callback)
           }
         }
 
         const becomeLeader = function(err: string | null, callback: (err: string | null) => void) {
           if (err) {
-            return callback(err)
+            callback(err)
           } else {
             docStore.collaborator = 'leader'
-            return updateInteractiveRunStates([runStateUrl], docStore, callback)
+            updateInteractiveRunStates([runStateUrl], docStore, callback)
           }
         }
 
         const removeCollaborator = function(err: string | null, callback: (err: string | null) => void) {
           if (err) {
-            return callback(err)
+            callback(err)
           } else {
             delete docStore.collaborator
-            return updateInteractiveRunStates([runStateUrl], docStore, callback)
+            updateInteractiveRunStates([runStateUrl], docStore, callback)
           }
         }
 
         const finished = function(err?: string | null) {
           if (err) {
-            return callback(err)
+            callback(err)
           } else {
-            return loadProviderFile(_.cloneDeep(docStore), callback)
+            loadProviderFile(_.cloneDeep(docStore), callback)
           }
         }
 
@@ -496,20 +487,20 @@ class LaraProvider extends ProviderInterface {
         const updateFinished = () => loadProviderFile(providerData, callback)
 
         // update the owners interactive run state
-        return updateInteractiveRunStates([runStateUrl], docStore, (err: any) => {
+        updateInteractiveRunStates([runStateUrl], docStore, (err: any) => {
           if (err) {
-            return callback(err)
+            callback(err)
           } else if (haveCollaborators) {
             docStore.collaborator = 'follower'
-            return updateInteractiveRunStates(this.collaboratorUrls, docStore, function(err: any) {
+            updateInteractiveRunStates(this.collaboratorUrls, docStore, function(err: any) {
               if (err) {
-                return callback(err)
+                callback(err)
               } else {
-                return updateFinished()
+                updateFinished()
               }
             })
           } else {
-            return updateFinished()
+            updateFinished()
           }
         })
       }
@@ -534,14 +525,14 @@ class LaraProvider extends ProviderInterface {
         .done((data) => {
           const {method, url} = this.docStoreUrl.v2CreateDocument({})
           const dataJson = typeof(data) === "string" ? data : JSON.stringify(data)
-          return $.ajax({
+          $.ajax({
             type: method,
             dataType: 'json',
             contentType: 'application/json', // Document Store requires JSON currently
             processData: false, // https://api.jquery.com/jquery.ajax/
             data: pako.deflate(dataJson),
             beforeSend(xhr) {
-              return xhr.setRequestHeader('Content-Encoding', 'deflate')
+              xhr.setRequestHeader('Content-Encoding', 'deflate')
             },
             url
           })
@@ -562,7 +553,7 @@ class LaraProvider extends ProviderInterface {
           (createParams as any).accessKey = `RO::${readOnlyKey}`
         }
         const {method, url} = this.docStoreUrl.v2CreateDocument(createParams)
-        return $.ajax({
+        $.ajax({
           type: method,
           url,
           dataType: 'json'
