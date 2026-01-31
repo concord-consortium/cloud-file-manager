@@ -5,6 +5,7 @@
     "noImplicitAny": true,
     "strictNullChecks": true,
     "noImplicitThis": true,
+    "strictBindCallApply": true,
     "module": "commonjs",
     "esModuleInterop": true,
     "moduleResolution": "node",

@@ -1,5 +1,4 @@
-import React from 'react'
-import { createReactFactory } from "../create-react-factory"
+import { createReactFactory, ReactFactory } from "../create-react-factory"
 import tr  from '../utils/translate'
 import { CFMBaseProviderOptions } from "../app-options"
 import {
@@ -37,7 +36,7 @@ class LocalFileProvider extends ProviderInterface {
     this.client = client
   }
 
-  filterTabComponent(capability: ECapabilities, defaultComponent: React.Component): React.Component | null {
+  filterTabComponent(capability: ECapabilities, defaultComponent: ReactFactory): ReactFactory | null {
     if (capability === 'list') {
       return LocalFileListTab
     } else if ((capability === 'save') || (capability === 'export')) {

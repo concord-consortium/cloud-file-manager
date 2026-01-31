@@ -1,6 +1,6 @@
 import queryString from 'query-string'
 import { cloneDeep } from 'lodash'
-import React from 'react'
+import { ReactFactory } from '../create-react-factory'
 import { CFMLaraProviderOptions, CFMLaraProviderLogData } from '../app-options'
 import { CloudFileManagerClient } from '../client'
 import {
@@ -335,7 +335,7 @@ class InteractiveApiProvider extends ProviderInterface {
   }
 
   // don't show in provider open/save dialogs
-  filterTabComponent(capability: ECapabilities, defaultComponent: React.Component): React.Component | null {
+  filterTabComponent(capability: ECapabilities, defaultComponent: ReactFactory): ReactFactory | null {
     return null
   }
 

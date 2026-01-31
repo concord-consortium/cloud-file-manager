@@ -12,7 +12,7 @@
  */
 import $ from 'jquery'
 import _ from 'lodash'
-import React from 'react'
+import { ReactFactory } from '../create-react-factory'
 import ReactDOMFactories from 'react-dom-factories'
 import { createReactClassFactory } from '../create-react-factory'
 const {div, button, span} = ReactDOMFactories
@@ -250,7 +250,7 @@ class DocumentStoreProvider extends ProviderInterface {
     }
   }
 
-  filterTabComponent(capability: ECapabilities, defaultComponent: React.Component): React.Component | null {
+  filterTabComponent(capability: ECapabilities, defaultComponent: ReactFactory): ReactFactory | null {
     // allow the save elsewhere button to hide the document provider tab in save
     if ((capability === 'save') && this.disableForNextSave) {
       this.disableForNextSave = false

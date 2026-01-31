@@ -25,21 +25,23 @@ export default createReactClass({
   displayName: 'ProviderTabbedDialog',
 
   render() {
-    const [capability, TabComponent] = Array.from((() => { switch (this.props.dialog.action) {
-      case 'openFile': return ['list', FileDialogTab]
-      case 'saveFile': case 'saveFileAs': return ['save', FileDialogTab]
-      case 'saveSecondaryFileAs': return ['export', FileDialogTab]
-      case 'createCopy': return ['save', FileDialogTab]
-      case 'selectProvider': return [null, SelectProviderDialogTab]
-      default: return [null, FileDialogTab]
-    } })())
+    const result = (() => { switch (this.props.dialog.action) {
+      case 'openFile': return ['list', FileDialogTab] as const
+      case 'saveFile': case 'saveFileAs': return ['save', FileDialogTab] as const
+      case 'saveSecondaryFileAs': return ['export', FileDialogTab] as const
+      case 'createCopy': return ['save', FileDialogTab] as const
+      case 'selectProvider': return [null, SelectProviderDialogTab] as const
+      default: return [null, FileDialogTab] as const
+    } })()
+    const capability = result[0]
+    const TabComponent = result[1]
 
     const tabs = []
     let selectedTabIndex = 0
     for (let i = 0; i < this.props.client.state.availableProviders.length; i++) {
       const provider = this.props.client.state.availableProviders[i]
       if (!capability || provider.capabilities[capability]) {
-        const filteredTabComponent = provider.filterTabComponent(capability, TabComponent)
+        const filteredTabComponent = provider.filterTabComponent(capability as any, TabComponent)
         if (filteredTabComponent) {
           const component = filteredTabComponent({
             client: this.props.client,

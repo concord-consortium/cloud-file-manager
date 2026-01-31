@@ -1,6 +1,7 @@
 import React from "react"
 import isString  from '../utils/is-string'
 import _ from 'lodash'
+import { ReactFactory } from "../create-react-factory"
 
 const FILE_EXTENSION_DELIMITER = "."
 
@@ -437,7 +438,7 @@ abstract class ProviderInterface implements IProviderInterfaceOpts {
     console.warn('renderUser not implemented')
   }
 
-  filterTabComponent(capability: ECapabilities, defaultComponent: React.Component): React.Component | null {
+  filterTabComponent(capability: ECapabilities, defaultComponent: ReactFactory): ReactFactory | null {
     return defaultComponent
   }
 

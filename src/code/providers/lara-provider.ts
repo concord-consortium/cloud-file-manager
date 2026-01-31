@@ -8,7 +8,7 @@
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
  */
 import $ from 'jquery'
-import React from 'react'
+import { ReactFactory } from '../create-react-factory'
 import { CFMLaraProviderLogData, CFMLaraProviderOptions } from '../app-options'
 import {
   cloudContentFactory, CloudMetadata, ECapabilities, ProviderInterface,
@@ -135,7 +135,7 @@ class LaraProvider extends ProviderInterface {
   }
 
   // don't show in provider open/save dialogs
-  filterTabComponent(capability: ECapabilities, defaultComponent: React.Component): React.Component | null {
+  filterTabComponent(capability: ECapabilities, defaultComponent: ReactFactory): ReactFactory | null {
     return null
   }
 
