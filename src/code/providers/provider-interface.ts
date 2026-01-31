@@ -57,7 +57,7 @@ class CloudMetadata {
   sharedContentId?: string
   sharedContentSecretKey?: string
   mimeType?: string
-  filename: string|null
+  filename!: string|null
   extension?: string
   _permissions?: number
   shareEditKey?: string

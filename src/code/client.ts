@@ -96,18 +96,18 @@ export type ClientEventListener = (event: CloudFileManagerClientEvent) => void
 export type OpenSaveCallback = (content: any, metadata: CloudMetadata, savedContent?: any) => void
 
 class CloudFileManagerClient {
-  _autoSaveInterval: number
+  _autoSaveInterval!: number
   _listeners: ClientEventListener[]
   _ui: CloudFileManagerUI
-  appOptions: CFMAppOptions
+  appOptions!: CFMAppOptions
   iframe: any
-  newFileAddsNewToQuery: boolean
-  newFileOpensInNewTab: boolean
+  newFileAddsNewToQuery!: boolean
+  newFileOpensInNewTab!: boolean
   providers: Record<string, ProviderInterface>
   state: IClientState
   urlProvider: URLProvider
   connectedPromise: Promise<void>
-  connectedPromiseResolver: { resolve: () => void, reject: () => void } | null
+  connectedPromiseResolver!: { resolve: () => void, reject: () => void } | null
 
   constructor(options?: any) {
     this.shouldAutoSave = this.shouldAutoSave.bind(this)

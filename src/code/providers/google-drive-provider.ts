@@ -352,9 +352,9 @@ class GoogleDriveProvider extends ProviderInterface {
   static gisLoadPromise: Promise<unknown> | null = null
   static gapiLoadPromise: Promise<unknown> | null = null
   static apiLoadPromise: Promise<unknown> | null = null
-  _autoRenewTimeout: number
+  _autoRenewTimeout!: number
   apiKey: string
-  authCallback: (authorized: boolean) => void
+  authCallback!: (authorized: boolean) => void
   authToken: any
   tokenClient: any
   client: CloudFileManagerClient
@@ -364,12 +364,12 @@ class GoogleDriveProvider extends ProviderInterface {
   mimeType: string
   options?: CFMGoogleDriveProviderOptions
   readableMimetypes: string[] = []
-  extension: string
-  readableExtensions: string[]
+  extension!: string
+  readableExtensions!: string[]
   scopes: string
   user: any
   onAuthorizationChangeCallback: OnAuthorizationChangeCallback | undefined
-  promptForConsent: boolean
+  promptForConsent!: boolean
 
   constructor(options: CFMGoogleDriveProviderOptions | undefined, client: CloudFileManagerClient) {
     super({

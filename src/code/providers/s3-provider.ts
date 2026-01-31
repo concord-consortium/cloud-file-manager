@@ -19,7 +19,7 @@ class S3Provider extends ProviderInterface {
   public static Name = 's3-provider'
   client: CloudFileManagerClient
   options: IProviderInterfaceOpts
-  provider: ProviderInterface
+  provider!: ProviderInterface
   constructor(client: CloudFileManagerClient) {
     const opts:IProviderInterfaceOpts = {
       urlDisplayName: 'S3 Provider',

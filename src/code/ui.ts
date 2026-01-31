@@ -134,7 +134,7 @@ class CloudFileManagerUI {
   listenerCallbacks: UIEventListenerCallback[]
   menu: CloudFileManagerUIMenu | null
   // set up promise to be resolved when initialization is complete
-  resolveIsInitialized: (isInitialized: boolean) => void
+  resolveIsInitialized!: (isInitialized: boolean) => void
   isInitialized = new Promise<boolean>((resolve, reject) => {
     this.resolveIsInitialized = resolve
   })

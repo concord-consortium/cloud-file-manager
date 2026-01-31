@@ -64,12 +64,12 @@ const DocumentStoreAuthorizationDialog = createReactClassFactory({
 
 class DocumentStoreProvider extends ProviderInterface {
   static Name = 'documentStore'
-  _docStoreLoaded: boolean
+  _docStoreLoaded!: boolean
   _loginWindow: any = null
-  authCallback: (authorized: boolean) => void
+  authCallback!: (authorized: boolean) => void
   client: CloudFileManagerClient
   disableForNextSave?: boolean
-  docStoreLoadedCallback: () => void
+  docStoreLoadedCallback!: () => void
   docStoreUrl: DocumentStoreUrl
   options: CFMDocumentStoreProviderOptions
   removableQueryParams: string[]

@@ -93,9 +93,9 @@ class InteractiveApiProvider extends ProviderInterface {
   static Name = 'interactiveApi'
   client: CloudFileManagerClient
   options: CFMLaraProviderOptions
-  initInteractivePromise: Promise<IInitInteractive>
-  readyPromise: Promise<boolean>
-  initInteractiveMessage: IInitInteractive
+  initInteractivePromise!: Promise<IInitInteractive>
+  readyPromise!: Promise<boolean>
+  initInteractiveMessage!: IInitInteractive
 
   constructor(options: CFMLaraProviderOptions, client: CloudFileManagerClient) {
     super({
