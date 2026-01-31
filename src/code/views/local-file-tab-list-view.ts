@@ -1,10 +1,3 @@
-// TODO: This file was created by bulk-decaffeinate.
-// Sanity-check the conversion and remove this comment.
-/*
- * decaffeinate suggestions:
- * DS102: Remove unnecessary code created because of implicit returns
- * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
- */
 import createReactClass from 'create-react-class'
 import ReactDOMFactories from 'react-dom-factories'
 const {div, input, button} = ReactDOMFactories
@@ -33,9 +26,9 @@ export default createReactClass({
     const { files } = e.target
     if (!files) return
     if (files.length > 1) {
-      return this.props.client.alert(tr("~LOCAL_FILE_DIALOG.MULTIPLE_FILES_SELECTED"))
+      this.props.client.alert(tr("~LOCAL_FILE_DIALOG.MULTIPLE_FILES_SELECTED"))
     } else if (files.length === 1) {
-      return this.openFile(files[0], 'select')
+      this.openFile(files[0], 'select')
     }
   },
 
@@ -48,24 +41,22 @@ export default createReactClass({
         file
       }
     })
-    if (typeof this.props.dialog.callback === 'function') {
-      this.props.dialog.callback(metadata, via)
-    }
-    return this.props.close()
+    this.props.dialog.callback?.(metadata, via)
+    this.props.close()
   },
 
   cancel() {
-    return this.props.close()
+    this.props.close()
   },
 
   dragEnter(e: React.DragEvent<HTMLDivElement>) {
     e.preventDefault()
-    return this.setState({hover: true})
+    this.setState({hover: true})
   },
 
   dragLeave(e: React.DragEvent<HTMLDivElement>) {
     e.preventDefault()
-    return this.setState({hover: false})
+    this.setState({hover: false})
   },
 
   drop(e: DragEvent) {
@@ -84,7 +75,7 @@ export default createReactClass({
     const dropClass = `dropArea${this.state.hover ? ' dropHover' : ''}`
     return (div({className: 'dialogTab localFileLoad'},
       // 'drop' event handler installed as DOM event handler in componentDidMount()
-      (div({ref: ((elt: any) => { return this.dropZoneRef = elt }), className: dropClass, onDragEnter: this.dragEnter, onDragLeave: this.dragLeave},
+      (div({ref: ((elt: any) => { this.dropZoneRef = elt }), className: dropClass, onDragEnter: this.dragEnter, onDragLeave: this.dragLeave},
         (tr("~LOCAL_FILE_DIALOG.DROP_FILE_HERE")),
         (input({type: 'file', onChange: this.changed}))
       )),

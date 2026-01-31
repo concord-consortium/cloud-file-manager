@@ -1,14 +1,3 @@
-// TODO: This file was created by bulk-decaffeinate.
-// Sanity-check the conversion and remove this comment.
-/*
- * decaffeinate suggestions:
- * DS101: Remove unnecessary use of Array.from
- * DS102: Remove unnecessary code created because of implicit returns
- * DS205: Consider reworking code to avoid use of IIFEs
- * DS207: Consider shorter variations of null checks
- * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
- */
-
 import $ from 'jquery'
 import _ from 'lodash'
 import createReactClass from 'create-react-class'
@@ -25,7 +14,7 @@ const FileListFile = createReactClassFactory({
   displayName: 'FileListFile',
 
   componentDidMount() {
-    return this.lastClick = 0
+    this.lastClick = 0
   },
 
   fileSelected(e: React.MouseEvent<HTMLDivElement>) {
@@ -36,7 +25,13 @@ const FileListFile = createReactClassFactory({
     if ((now - this.lastClick) <= 250) {
       this.props.fileConfirmed()
     }
-    return this.lastClick = now
+    this.lastClick = now
+  },
+
+  getIconClass() {
+    if (this.props.metadata.type === CloudMetadata.Folder) return 'icon-inspectorArrow-collapse'
+    if (this.props.metadata.type === CloudMetadata.File) return 'icon-noteTool'
+    return ''
   },
 
   render() {
@@ -46,9 +41,7 @@ const FileListFile = createReactClassFactory({
     return (div({className: `${selectableClass} ${selectedClass} ${subFolderClass}`
           , title: this.props.metadata.description || undefined
           , onClick: this.props.metadata.type !== CloudMetadata.Label ? this.fileSelected : undefined },
-      (italic({className: (() => {
-        if (this.props.metadata.type === CloudMetadata.Folder) { return 'icon-inspectorArrow-collapse' } else if (this.props.metadata.type === CloudMetadata.File) { return 'icon-noteTool' }
-      })()})),
+      (italic({className: this.getIconClass()})),
       this.props.metadata.name
     ))
   }
@@ -63,33 +56,36 @@ const FileList = createReactClassFactory({
 
   componentDidMount() {
     this._isMounted = true
-    return this.load(this.props.folder)
+    this.load(this.props.folder)
   },
 
   UNSAFE_componentWillReceiveProps(nextProps: any) {
     if (nextProps.folder !== this.props.folder) {
-      return this.load(nextProps.folder)
+      this.load(nextProps.folder)
     }
   },
 
   componentWillUnmount() {
-    return this._isMounted = false
+    this._isMounted = false
   },
 
   load(folder: CloudMetadata | null) {
     this.setState({ loading: true })
-    return this.props.provider.list(folder, (err: string | null, list: CloudMetadata[]) => {
+    this.props.provider.list(folder, (err: string | null, list: CloudMetadata[]) => {
       // asynchronous callback may be called after dialog has been dismissed
       if (this._isMounted) {
         this.setState({ loading: false })
       }
-      if (err) { return this.props.client.alert(err) }
-      return this.props.listLoaded(list)
+      if (err) {
+        this.props.client.alert(err)
+        return
+      }
+      this.props.listLoaded(list)
     }, this.props.listOptions)
   },
 
   parentSelected(e: React.MouseEvent<HTMLDivElement>) {
-    return this.props.fileSelected(this.props.folder?.parent)
+    this.props.fileSelected(this.props.folder?.parent)
   },
 
   fileSelected(metadata: CloudMetadata) {
@@ -105,16 +101,17 @@ const FileList = createReactClassFactory({
   },
 
   render() {
-    const list = []
-    const isSubFolder = (this.props.folder != null)
+    const isSubFolder = this.props.folder != null
+    let list: React.ReactNode[] = []
+
     if (!this.state.loading) {
       if (isSubFolder) {
         list.push((div({key: 'parent', className: 'selectable', onClick: this.parentSelected}, (italic({className: 'icon-paletteArrow-collapse'})), this.props.folder.name)))
       }
-      for (let i = 0; i < this.props.list.length; i++) {
-        const metadata = this.props.list[i]
-        list.push((FileListFile({key: i, metadata, selected: this.props.selectedFile === metadata, fileSelected: this.fileSelected, fileConfirmed: this.fileConfirmed, isSubFolder})))
-      }
+      const fileItems = this.props.list.map((metadata: CloudMetadata, i: number) =>
+        FileListFile({key: i, metadata, selected: this.props.selectedFile === metadata, fileSelected: this.fileSelected, fileConfirmed: this.fileConfirmed, isSubFolder})
+      )
+      list = list.concat(fileItems)
     }
 
     return (div({className: 'filelist'},
@@ -173,7 +170,7 @@ const FileDialogTab = createReactClass({
       this._isAuthorized = authorized
       // set the state if we can
       if (this._isMounted) {
-        return this.setState({authorized})
+        this.setState({authorized})
       }
     }
 
@@ -195,7 +192,7 @@ const FileDialogTab = createReactClass({
     // in componentDidMount(). Providers that require asynchronous checks
     // for authorization may return before or after the first render, so
     // code should be prepared for either eventuality.
-    return this.props.provider.authorized(setAuthorization)
+    this.props.provider.authorized(setAuthorization)
   },
 
   // NP 2020-04-23  Copied from authorize-mixin.js
@@ -203,14 +200,14 @@ const FileDialogTab = createReactClass({
     this._isMounted = true
     // synchronize state if necessary
     if (this.state.authorized !== this._isAuthorized) {
-      return this.setState({authorized: this._isAuthorized})
+      this.setState({authorized: this._isAuthorized})
     }
   },
 
   // NP 2020-04-23  Copied from authorize-mixin.js
   componentWillUnmount() {
     this.props.provider.onAuthorizationChange?.(null)
-    return this._isMounted = false
+    this._isMounted = false
   },
 
   // NP 2020-04-23 Copied from authorize-mixin.js
@@ -236,7 +233,7 @@ const FileDialogTab = createReactClass({
 
   searchChanged(e: React.ChangeEvent<HTMLInputElement>) {
     const search = e.target.value
-    return this.setState({
+    this.setState({
       search,
       filename: '',
       metadata: null
@@ -246,7 +243,7 @@ const FileDialogTab = createReactClass({
   listLoaded(list: CloudMetadata[]) {
     // asynchronous callback may be called after dialog has been dismissed
     if (this._isMounted) {
-      return this.setState({list})
+      this.setState({list})
     }
   },
 
@@ -295,15 +292,15 @@ const FileDialogTab = createReactClass({
 
   fileSelected(metadata: CloudMetadata) {
     if (metadata?.type === CloudMetadata.Folder) {
-      return this.setState(this.getStateForFolder(metadata))
+      this.setState(this.getStateForFolder(metadata))
     } else if (metadata?.type === CloudMetadata.File) {
       const newState: any = { filename: metadata.name, metadata }
       if (!this.isOpen()) {
         newState.search = newState.filename
       }
-      return this.setState(newState)
+      this.setState(newState)
     } else {
-      return this.setState(this.getStateForFolder(null))
+      this.setState(this.getStateForFolder(null))
     }
   },
 
@@ -315,11 +312,9 @@ const FileDialogTab = createReactClass({
       // if switching provider, then clear providerData
       metadata.providerData = {}
     }
-    if (typeof this.props.dialog.callback === 'function') {
-      this.props.dialog.callback(metadata)
-    }
+    this.props.dialog.callback?.(metadata)
     this.setState({metadata: metadata})
-    return this.props.close()
+    this.props.close()
   },
 
   confirm() {
@@ -335,35 +330,34 @@ const FileDialogTab = createReactClass({
 
     if (metadata) {
       if (this.isOpen()) {
-        return this.confirmed(metadata)
+        this.confirmed(metadata)
       } else if (existingMetadata) {
-        return this.props.client.confirm(`Are you sure you want to overwrite ${existingMetadata.name}?`, () => this.confirmed(existingMetadata))
+        this.props.client.confirm(`Are you sure you want to overwrite ${existingMetadata.name}?`, () => this.confirmed(existingMetadata))
       } else {
-        return this.confirmed(metadata)
+        this.confirmed(metadata)
       }
     } else if (this.isOpen()) {
-      return this.props.client.alert(`${filename} not found`)
+      this.props.client.alert(`${filename} not found`)
     } else {
-      return this.confirmed(new CloudMetadata({
+      this.confirmed(new CloudMetadata({
         name: filename,
         type: CloudMetadata.File,
         parent: this.state.folder || null,
         provider: this.props.provider
-      })
-      )
+      }))
     }
   },
 
   remove() {
     if (this.state.metadata && (this.state.metadata.type !== CloudMetadata.Folder)) {
-      return this.props.client.confirm(tr("~FILE_DIALOG.REMOVE_CONFIRM", {filename: this.state.metadata.name}), () => {
-        return this.props.provider.remove(this.state.metadata, (err: any) => {
+      this.props.client.confirm(tr("~FILE_DIALOG.REMOVE_CONFIRM", {filename: this.state.metadata.name}), () => {
+        this.props.provider.remove(this.state.metadata, (err: any) => {
           if (!err) {
             this.props.client.alert(tr("~FILE_DIALOG.REMOVED_MESSAGE", {filename: this.state.metadata.name}), tr("~FILE_DIALOG.REMOVED_TITLE"))
             const list = this.state.list.slice(0)
             const index = list.indexOf(this.state.metadata)
             list.splice(index, 1)
-            return this.setState({
+            this.setState({
               list,
               metadata: null,
               filename: '',
@@ -376,13 +370,13 @@ const FileDialogTab = createReactClass({
   },
 
   cancel() {
-    return this.props.close()
+    this.props.close()
   },
 
   findMetadata(filename: string, list: CloudMetadata[], extension?: string) {
     const checkExtension = extension !== undefined
     const filenameWithExtension = checkExtension && CloudMetadata.newExtension(filename, extension)
-    for (let metadata of Array.from(list)) {
+    for (const metadata of list) {
       const found = checkExtension
         ? metadata.filename === filenameWithExtension
         : metadata.name === filename
@@ -395,7 +389,7 @@ const FileDialogTab = createReactClass({
 
   watchForEnter(e: React.KeyboardEvent<HTMLInputElement>) {
     if ((e.keyCode === 13) && !this.confirmDisabled()) {
-      return this.confirm()
+      this.confirm()
     }
   },
 
@@ -434,7 +428,7 @@ const FileDialogTab = createReactClass({
     const listOptions: IListOptions | undefined = this.isExport() && this.props.dialog.data?.extension ? {extension: this.props.dialog.data.extension} : undefined
 
     return (div({className: 'dialogTab'},
-      (input({type: 'text', value: search, placeholder: (tr(isOpen ? "~FILE_DIALOG.FILTER" : "~FILE_DIALOG.FILENAME")), autoFocus: true, onChange: this.searchChanged, onKeyDown: this.watchForEnter, ref: (elt: any) => { return this.inputRef = elt }})),
+      (input({type: 'text', value: search, placeholder: (tr(isOpen ? "~FILE_DIALOG.FILTER" : "~FILE_DIALOG.FILENAME")), autoFocus: true, onChange: this.searchChanged, onKeyDown: this.watchForEnter, ref: (elt: any) => { this.inputRef = elt }})),
       (listFiltered && div({className: 'dialogClearFilter', onClick: this.clearListFilter}, "X")),
       (FileList({provider: this.props.provider, folder: this.state.folder, selectedFile: this.state.metadata, fileSelected: this.fileSelected, fileConfirmed: this.confirm, list, listLoaded: this.listLoaded, client: this.props.client, overrideMessage, listOptions})),
       (div({className: 'buttons'},
