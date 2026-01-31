@@ -49,7 +49,6 @@ class URLProvider extends ProviderInterface {
     const metadata = new CloudMetadata({
       type: ICloudFileTypes.File,
       url,
-      parent: null,
       provider: this
     })
 

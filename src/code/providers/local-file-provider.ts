@@ -58,6 +58,9 @@ class LocalFileProvider extends ProviderInterface {
   load(metadata: CloudMetadata, callback: ProviderLoadCallback) {
     const reader = new FileReader()
     reader.onload = loaded => {
+      if (!loaded.target?.result) {
+        return callback('Failed to read file: no content')
+      }
       const content = cloudContentFactory.createEnvelopedCloudContent(loaded.target.result as string)
       return callback(null, content)
     }
