@@ -25,7 +25,7 @@ export default class ModalView extends React.Component<IProps, IState> {
     }
   }
 
-  closeOnEscape = (e: any) => {
+  closeOnEscape = (e: JQuery.KeyUpEvent) => {
     if (e.keyCode === 27) {
       this.props.close?.()
     }

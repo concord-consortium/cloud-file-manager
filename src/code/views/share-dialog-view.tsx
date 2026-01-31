@@ -140,7 +140,7 @@ export default class ShareDialogView extends React.Component<IShareDialogProps, 
   }
 
   // adapted from https://github.com/sudodoki/copy-to-clipboard/blob/master/index.js
-  copy = (e: any) => {
+  copy = (e: React.MouseEvent) => {
     let mark, range, selection
     e.preventDefault()
     let copied = false

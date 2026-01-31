@@ -90,7 +90,7 @@ class AppView extends React.Component<IAppViewProps, IAppViewState> {
   displayName: string
   state: IAppViewState
 
-  constructor(props: any) {
+  constructor(props: IAppViewProps) {
     super(props)
     this.displayName = 'CloudFileManager'
     const client = this.props.client

@@ -19,7 +19,7 @@ const getIframeTransforms = (_window: Window, _screen: Screen) => {
   }
 }
 
-export function fullscreenSupport (iframe: any) {
+export function fullscreenSupport (iframe: JQuery<HTMLIFrameElement>) {
   // must check isEnabled before accessing other APIs
   // cf. https://github.com/sindresorhus/screenfull.js/issues/173#issuecomment-735226048
   const screenfull = _screenfull.isEnabled ? _screenfull : undefined
