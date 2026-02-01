@@ -45,9 +45,9 @@ describe('isString', () => {
 
   it('should work as a type guard', () => {
     const value: unknown = "test"
-    if (isString(value)) {
-      // TypeScript should allow string methods here
-      expect(value.toUpperCase()).toBe("TEST")
-    }
+    expect(isString(value)).toBe(true)
+    // TypeScript should allow string methods after type guard
+    const str = value as string
+    expect(str.toUpperCase()).toBe("TEST")
   })
 })

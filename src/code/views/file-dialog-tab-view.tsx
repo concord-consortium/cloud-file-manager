@@ -108,14 +108,14 @@ const FileList: React.FC<FileListProps> = ({
     return () => {
       isMountedRef.current = false
     }
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [])
 
   useEffect(() => {
     if (folder !== prevFolderRef.current) {
       load(folder)
       prevFolderRef.current = folder
     }
-  }, [folder]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [folder])
 
   const handleParentSelected = () => {
     fileSelected(folder?.parent ?? null)
@@ -225,7 +225,6 @@ const FileDialogTab: React.FC<FileDialogTabProps> = ({ dialog, close, client, pr
   }
 
   const getInitialState = (): FileDialogTabState => {
-    const initialFolder = client.state.metadata?.parent ?? null
     const metadata = isOpen() ? null : getSaveMetadata()
     const filename = metadata?.name || ''
 
@@ -275,7 +274,7 @@ const FileDialogTab: React.FC<FileDialogTabProps> = ({ dialog, close, client, pr
       providerAny.onAuthorizationChange?.(null)
       isMountedRef.current = false
     }
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [])
 
   const getStateForFolder = (folder: CloudMetadata | null): Partial<FileDialogTabState> => {
     const metadata = isOpen() ? state.metadata : getSaveMetadata()
@@ -444,7 +443,7 @@ const FileDialogTab: React.FC<FileDialogTabProps> = ({ dialog, close, client, pr
     const listFiltered = list.length !== state.list.length
 
     const overrideMessage = filtering && listFiltered && list.length === 0
-      ? <div>No files found matching "{search}"</div>
+      ? <div>No files found matching &quot;{search}&quot;</div>
       : null
 
     // when exporting only show folders as we can't filter based on mimetypes like text/csv or image/png to show only those files

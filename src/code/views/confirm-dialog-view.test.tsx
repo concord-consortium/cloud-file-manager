@@ -97,6 +97,8 @@ describe('ConfirmDialogView', () => {
     )
 
     // Should not throw when clicking buttons
-    await userEvent.click(screen.getByText('Yes'))
+    const yesButton = screen.getByText('Yes')
+    expect(yesButton).toBeInTheDocument()
+    await userEvent.click(yesButton)
   })
 })

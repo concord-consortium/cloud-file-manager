@@ -48,10 +48,10 @@ describe('isArray', () => {
 
   it('should work as a type guard', () => {
     const value: unknown = [1, 2, 3]
-    if (isArray(value)) {
-      // TypeScript should allow array methods here
-      expect(value.length).toBe(3)
-      expect(value[0]).toBe(1)
-    }
+    expect(isArray(value)).toBe(true)
+    // TypeScript should allow array methods after type guard
+    const arr = value as unknown[]
+    expect(arr.length).toBe(3)
+    expect(arr[0]).toBe(1)
   })
 })

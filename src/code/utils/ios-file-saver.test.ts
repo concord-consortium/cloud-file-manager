@@ -122,7 +122,7 @@ describe('ios-file-saver', () => {
   })
 
   describe('downloadViaDataUrl', () => {
-    let mockLink: { href: string; download: string; style: { display: string }; click: jest.Mock }
+    let mockLink: { href: string, download: string, style: { display: string }, click: jest.Mock }
     let appendChildSpy: jest.SpyInstance
     let removeChildSpy: jest.SpyInstance
     let createElementSpy: jest.SpyInstance
@@ -170,7 +170,7 @@ describe('ios-file-saver', () => {
       })
     }
 
-    let mockLink: { href: string; download: string; style: { display: string }; click: jest.Mock }
+    let mockLink: { href: string, download: string, style: { display: string }, click: jest.Mock }
     let createElementSpy: jest.SpyInstance
     let appendChildSpy: jest.SpyInstance
     let removeChildSpy: jest.SpyInstance
