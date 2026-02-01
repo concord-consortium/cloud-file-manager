@@ -1,6 +1,7 @@
 import React from "react"
 import isString  from '../utils/is-string'
 import _ from 'lodash'
+import { ReactFactory } from "../create-react-factory"
 
 const FILE_EXTENSION_DELIMITER = "."
 
@@ -18,7 +19,7 @@ export type ProviderRemoveCallback = (err: string) => void
 export type ProviderCloseCallback = (err: string) => void
 
 // TODO: When the document is shared, this is the callback signature
-export type ProviderShareCallback = (err: string, data?: string) => void
+export type ProviderShareCallback = (err: string | null, data?: string) => void
 
 export enum ICloudFileTypes {
   File = "file",
@@ -42,21 +43,21 @@ class CloudFile {
 }
 
 class CloudMetadata {
-  name: string
+  name?: string
   docName?: string  // TODO: why is this used?
-  description: string
-  content: CloudContent | string  // string is used in special cases; cf. ReadOnlyProvider
+  description?: string
+  content?: CloudContent | string  // string is used in special cases; cf. ReadOnlyProvider
   contentType?: string
-  url: string
-  type: ICloudFileTypes
-  provider: ProviderInterface
-  parent: CloudMetadata
+  url?: string
+  type?: ICloudFileTypes
+  provider?: ProviderInterface | null
+  parent?: CloudMetadata
   providerData: any
   overwritable: boolean
-  sharedContentId: string
-  sharedContentSecretKey: string
-  mimeType: string
-  filename: string|null
+  sharedContentId?: string
+  sharedContentSecretKey?: string
+  mimeType?: string
+  filename!: string|null
   extension?: string
   _permissions?: number
   shareEditKey?: string
@@ -124,10 +125,10 @@ class CloudMetadata {
 
   path() {
     const _path = []
-    let { parent } = this
-    while (parent !== null) {
+    let parent = this.parent
+    while (parent != null) {
       _path.unshift(parent);
-      ({ parent } = parent)
+      parent = parent.parent
     }
     return _path
   }
@@ -138,15 +139,16 @@ class CloudMetadata {
   }
 
   updateFilename() {
-    this.filename = this.name
-    if (((this.name != null ? this.name.substr : undefined) != null) && (CloudMetadata.Extension != null) && (this.type === ICloudFileTypes.File)) {
+    this.filename = this.name ?? null
+    const name = this.name
+    if (name != null && CloudMetadata.Extension != null && this.type === ICloudFileTypes.File) {
       const extLen = CloudMetadata.Extension.length
       if (extLen > 0) {
         // at this point the filename and name are the same so we now check for a file extension
-        const hasCurrentExtension = this.name.substr(-extLen-1) === `.${CloudMetadata.Extension}`
+        const hasCurrentExtension = name.substr(-extLen-1) === `.${CloudMetadata.Extension}`
         if (hasCurrentExtension) {
           // remove extension from name for display purposes
-          return this.name = this.name.substr(0, this.name.length - (extLen+1))
+          return this.name = name.substr(0, name.length - (extLen+1))
         } else {
           // add extension to filename for saving purposes
           return this.filename += `.${CloudMetadata.Extension}`
@@ -254,7 +256,7 @@ class CloudContent {
   // property indicates an unwrapped client document (e.g. CODAP v2). Clients can
   // override this assumption with the `isClientContent` configuration option.
   static isClientContent = (content: unknown) => {
-    return typeof content === "object" && "metadata" in content && !!content.metadata
+    return typeof content === "object" && content !== null && "metadata" in content && !!content.metadata
   }
 
   // TODO: These should probably be private, but there is some refactoring
@@ -262,8 +264,8 @@ class CloudContent {
   cfmVersion?: string
   metadata?: CloudMetadata
   content: any
-  contentFormat: CloudContentFormat
-  constructor(content: any, contentFormat: CloudContentFormat) {
+  contentFormat?: CloudContentFormat
+  constructor(content: any, contentFormat?: CloudContentFormat) {
     this.content = content ?? {}
     this.contentFormat = contentFormat
   }
@@ -436,7 +438,7 @@ abstract class ProviderInterface implements IProviderInterfaceOpts {
     console.warn('renderUser not implemented')
   }
 
-  filterTabComponent(capability: ECapabilities, defaultComponent: React.Component): React.Component | null {
+  filterTabComponent(capability: ECapabilities, defaultComponent: ReactFactory): ReactFactory | null {
     return defaultComponent
   }
 

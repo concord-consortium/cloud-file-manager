@@ -1,8 +1,6 @@
-import React from 'react'
-import ReactDOMFactories from 'react-dom-factories'
+import React, { useState, useEffect, useRef } from 'react'
 import { CFMLegacyGoogleDriveProviderOptions } from '../app-options'
 import { CloudFileManagerClient } from '../client'
-import { createReactClassFactory } from '../create-react-factory'
 import tr  from '../utils/translate'
 import {
   AuthorizedOptions,
@@ -30,65 +28,70 @@ type OnAuthorizationChangeCallback = (authorized: boolean) => void
 
 let setGoogleDriveAuthorizationDialogState: undefined | ((newState: any) => void) = undefined
 
-const {div, button, span, strong} = ReactDOMFactories
-const GoogleDriveAuthorizationDialog = createReactClassFactory({
-  displayName: 'GoogleDriveAuthorizationDialog',
+interface GoogleDriveAuthorizationDialogProps {
+  provider: LegacyGoogleDriveProvider
+}
 
-  getInitialState() {
-    return {apiLoadState: this.props.provider.apiLoadState}
-  },
+const GoogleDriveAuthorizationDialog: React.FC<GoogleDriveAuthorizationDialogProps> = ({ provider }) => {
+  const [apiLoadState, setApiLoadState] = useState(provider.apiLoadState)
+  const isMountedRef = useRef(true)
 
-  // See comments in AuthorizeMixin for detailed description of the issues here.
-  // The short version is that we need to maintain synchronized instance variable
-  // and state to track authorization status while avoiding calling setState on
-  // unmounted components, which doesn't work and triggers a React warning.
+  useEffect(() => {
+    isMountedRef.current = true
 
-  UNSAFE_componentWillMount() {
-    return this.props.provider.waitForAPILoad().then(() => {
-      if (this._isMounted) {
-        return this.setState({apiLoadState: this.props.provider.apiLoadState})
+    // Set up global state setter
+    setGoogleDriveAuthorizationDialogState = (newState: any) => {
+      if (newState.apiLoadState !== undefined) {
+        setApiLoadState(newState.apiLoadState)
+      }
+    }
+
+    // Wait for API load
+    provider.waitForAPILoad().then(() => {
+      if (isMountedRef.current) {
+        setApiLoadState(provider.apiLoadState)
       }
     })
-  },
 
-  componentDidMount() {
-    this._isMounted = true
-    this.setState({apiLoadState: this.props.provider.apiLoadState})
-    setGoogleDriveAuthorizationDialogState = (newState: any) => {
-      this.setState(newState)
+    return () => {
+      isMountedRef.current = false
     }
-  },
+  }, [provider])
 
-  componentWillUnmount() {
-    // setGoogleDriveAuthorizationDialogState = undefined
-    return this._isMounted = false
-  },
-
-  authenticate() {
-    // we rely on the fact that the prior call to authorized has set the callback
-    // we need here
-    return this.props.provider.authorize(this.props.provider.authCallback)
-  },
-
-  render() {
-    const messageMap: Record<ELoadState, React.ReactChild> = {
-      [ELoadState.notLoaded]: tr("~GOOGLE_DRIVE.CONNECTING_MESSAGE"),
-      [ELoadState.loaded]: button({onClick: this.authenticate}, (tr("~GOOGLE_DRIVE.LOGIN_BUTTON_LABEL"))),
-      [ELoadState.errored]: tr("~GOOGLE_DRIVE.ERROR_CONNECTING_MESSAGE"),
-      [ELoadState.missingScopes]: div({className: 'google-drive-missing-scopes'},
-        div({}, tr("~GOOGLE_DRIVE.MISSING_SCOPES_MESSAGE")),
-        div({}, button({onClick: this.authenticate}, (tr("~GOOGLE_DRIVE.LOGIN_BUTTON_LABEL"))))
-      ),
-    }
-    const contents = messageMap[this.state.apiLoadState as ELoadState] || "An unknown error occurred!"
-    return (div({className: 'google-drive-auth'},
-      (div({className: 'google-drive-concord-logo'}, '')),
-      (div({className: 'google-drive-footer'},
-        contents
-      ))
-    ))
+  const authenticate = () => {
+    // we rely on the fact that the prior call to authorized has set the callback we need here
+    provider.authorize(provider.authCallback)
   }
-})
+
+  const getContents = (): React.ReactNode => {
+    switch (apiLoadState) {
+      case ELoadState.notLoaded:
+        return tr("~GOOGLE_DRIVE.CONNECTING_MESSAGE")
+      case ELoadState.loaded:
+        return <button onClick={authenticate}>{tr("~GOOGLE_DRIVE.LOGIN_BUTTON_LABEL")}</button>
+      case ELoadState.errored:
+        return tr("~GOOGLE_DRIVE.ERROR_CONNECTING_MESSAGE")
+      case ELoadState.missingScopes:
+        return (
+          <div className="google-drive-missing-scopes">
+            <div>{tr("~GOOGLE_DRIVE.MISSING_SCOPES_MESSAGE")}</div>
+            <div><button onClick={authenticate}>{tr("~GOOGLE_DRIVE.LOGIN_BUTTON_LABEL")}</button></div>
+          </div>
+        )
+      default:
+        return "An unknown error occurred!"
+    }
+  }
+
+  return (
+    <div className="google-drive-auth">
+      <div className="google-drive-concord-logo" />
+      <div className="google-drive-footer">
+        {getContents()}
+      </div>
+    </div>
+  )
+}
 
 declare global {
   // loaded dynamically in waitForGAPILoad
@@ -103,24 +106,24 @@ class LegacyGoogleDriveProvider extends ProviderInterface {
                                               (typeof options?.apiKey === 'string')
   static IMMEDIATE = true
   static SHOW_POPUP = false
-  static gisLoadPromise: Promise<unknown> = null
-  static gapiLoadPromise: Promise<unknown> = null
-  static apiLoadPromise: Promise<unknown> = null
-  _autoRenewTimeout: number
+  static gisLoadPromise: Promise<unknown> | null = null
+  static gapiLoadPromise: Promise<unknown> | null = null
+  static apiLoadPromise: Promise<unknown> | null = null
+  _autoRenewTimeout!: number
   apiKey: string
-  authCallback: (authorized: boolean) => void
+  authCallback!: (authorized: boolean) => void
   authToken: any
   tokenClient: any
   client: CloudFileManagerClient
   clientId: string
   apiLoadState: ELoadState
   mimeType: string
-  options: CFMLegacyGoogleDriveProviderOptions
-  readableMimetypes: string[]
+  options?: CFMLegacyGoogleDriveProviderOptions
+  readableMimetypes: string[] = []
   scopes: string
   user: any
   onAuthorizationChangeCallback: OnAuthorizationChangeCallback|undefined
-  promptForConsent: boolean
+  promptForConsent!: boolean
 
   constructor(options: CFMLegacyGoogleDriveProviderOptions | undefined, client: CloudFileManagerClient) {
     super({
@@ -143,22 +146,22 @@ class LegacyGoogleDriveProvider extends ProviderInterface {
     this.client = client
     this.authToken = null
     this.user = null
-    this.apiKey = this.options.apiKey
-    this.clientId = this.options.clientId
+    this.apiKey = this.options?.apiKey ?? ''
+    this.clientId = this.options?.clientId ?? ''
     if (!this.apiKey) {
       throw new Error((tr("~GOOGLE_DRIVE.ERROR_MISSING_APIKEY")))
     }
     if (!this.clientId) {
       throw new Error((tr("~GOOGLE_DRIVE.ERROR_MISSING_CLIENTID")))
     }
-    this.scopes = (this.options.scopes || [
+    this.scopes = (this.options?.scopes || [
       'https://www.googleapis.com/auth/drive',
       'https://www.googleapis.com/auth/drive.install',
       'https://www.googleapis.com/auth/drive.file',
       'https://www.googleapis.com/auth/userinfo.profile'
     ]).join(" ")
-    this.mimeType = this.options.mimeType || "text/plain"
-    this.readableMimetypes = this.options.readableMimetypes
+    this.mimeType = this.options?.mimeType || "text/plain"
+    this.readableMimetypes = this.options?.readableMimetypes ?? []
 
     this.apiLoadState = ELoadState.notLoaded
     this.waitForAPILoad()
@@ -238,12 +241,12 @@ class LegacyGoogleDriveProvider extends ProviderInterface {
   }
 
   renderAuthorizationDialog() {
-    return (GoogleDriveAuthorizationDialog({provider: this}))
+    return <GoogleDriveAuthorizationDialog provider={this} />
   }
 
   renderUser() {
     if (this.user) {
-      return (span({className: 'gdrive-user'}, (span({className: 'gdrive-icon'})), this.user.name))
+      return <span className="gdrive-user"><span className="gdrive-icon" />{this.user.name}</span>
     } else {
       return null
     }
@@ -483,10 +486,10 @@ class LegacyGoogleDriveProvider extends ProviderInterface {
   getFileDialogMessage() {
     if (this.user) {
       return (
-        div({className: "provider-message"},
-          div({}, span({style: {marginRight: 5}}, tr("~GOOGLE_DRIVE.USERNAME_LABEL")), strong({}, this.user.name)),
-          div({className: "provider-message-action", onClick: this.logout.bind(this)}, tr("~GOOGLE_DRIVE.SELECT_DIFFERENT_ACCOUNT"))
-        )
+        <div className="provider-message">
+          <div><span style={{marginRight: 5}}>{tr("~GOOGLE_DRIVE.USERNAME_LABEL")}</span><strong>{this.user.name}</strong></div>
+          <div className="provider-message-action" onClick={this.logout.bind(this)}>{tr("~GOOGLE_DRIVE.SELECT_DIFFERENT_ACCOUNT")}</div>
+        </div>
       )
     }
   }
@@ -605,7 +608,7 @@ class LegacyGoogleDriveProvider extends ProviderInterface {
     const driveId = metadata.parent?.providerData.driveId
 
     if (!isUpdate) {
-      const parentId = metadata.parent.providerData.shortcutDetails?.targetId || metadata.parent.providerData.id
+      const parentId = metadata.parent?.providerData.shortcutDetails?.targetId || metadata.parent?.providerData.id
       headerContents.parents = [parentId || "root"]
     }
     if (driveId) {
@@ -671,7 +674,7 @@ class LegacyGoogleDriveProvider extends ProviderInterface {
       new CloudMetadata({name: tr("~GOOGLE_DRIVE.MY_DRIVE"), type: CloudMetadata.Folder, provider: this, providerData: {driveType: EDriveType.myDrive}}),
       new CloudMetadata({name: tr("~GOOGLE_DRIVE.SHARED_WITH_ME"), type: CloudMetadata.Folder, provider: this, providerData: {driveType: EDriveType.sharedWithMe}}),
     ]
-    if (!this.options.disableSharedDrives) {
+    if (!this.options?.disableSharedDrives) {
       drives.push(new CloudMetadata({name: tr("~GOOGLE_DRIVE.SHARED_DRIVES"), type: CloudMetadata.Folder, provider: this, providerData: {driveType: EDriveType.sharedDrives}}))
     }
     return drives

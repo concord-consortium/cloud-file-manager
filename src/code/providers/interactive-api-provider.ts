@@ -1,6 +1,6 @@
 import queryString from 'query-string'
 import { cloneDeep } from 'lodash'
-import React from 'react'
+import { ReactFactory } from '../create-react-factory'
 import { CFMLaraProviderOptions, CFMLaraProviderLogData } from '../app-options'
 import { CloudFileManagerClient } from '../client'
 import {
@@ -29,7 +29,7 @@ export const shouldSaveAsAttachment = (content: any) => {
 }
 
 const getInteractiveState = () => cloneDeep(_getInteractiveState())
-export const setInteractiveState = async (_newState: any): Promise<{error: string}> => {
+export const setInteractiveState = async (_newState: any): Promise<{error: string | null}> => {
   let savedInteractiveState: any
   const newState = cloneDeep(_newState)
   if (shouldSaveAsAttachment(newState)) {
@@ -93,9 +93,9 @@ class InteractiveApiProvider extends ProviderInterface {
   static Name = 'interactiveApi'
   client: CloudFileManagerClient
   options: CFMLaraProviderOptions
-  initInteractivePromise: Promise<IInitInteractive>
-  readyPromise: Promise<boolean>
-  initInteractiveMessage: IInitInteractive
+  initInteractivePromise!: Promise<IInitInteractive>
+  readyPromise!: Promise<boolean>
+  initInteractiveMessage!: IInitInteractive
 
   constructor(options: CFMLaraProviderOptions, client: CloudFileManagerClient) {
     super({
@@ -192,7 +192,7 @@ class InteractiveApiProvider extends ProviderInterface {
     })
   }
 
-  async getInitialInteractiveStateAndinteractiveId(initInteractiveMessage: IInitInteractive): Promise<{interactiveState: {}, interactiveId?: string}> {
+  async getInitialInteractiveStateAndinteractiveId(initInteractiveMessage: IInitInteractive): Promise<{interactiveState: any, interactiveId?: string} | null> {
     if ((initInteractiveMessage.mode === "authoring") || (initInteractiveMessage.mode === "reportItem")) {
       return null
     }
@@ -204,20 +204,20 @@ class InteractiveApiProvider extends ProviderInterface {
 
     // some interactives, like the full-screen wrapper always report they are in runtime
     // mode, even when loaded in a report which does not define the interactive member
-    let interactiveId = initInteractiveMessage.interactive?.id
+    let interactiveId: string | undefined = initInteractiveMessage.interactive?.id
 
     const interactiveStateAvailable = !!interactiveState
     const {allLinkedStates} = initInteractiveMessage
 
     // this is adapted from the existing autolaunch.ts file
-    if (interactiveId && allLinkedStates?.length > 0) {
+    if (interactiveId && allLinkedStates && allLinkedStates.length > 0) {
       // find linked state which is directly linked to this one along with the most recent linked state.
       const directlyLinkedState = allLinkedStates[0]
 
       let mostRecentLinkedState: IInteractiveStateProps<{}>
       if (directlyLinkedState.updatedAt) {
         mostRecentLinkedState = allLinkedStates.slice().sort((a, b) => {
-          return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+          return new Date(b.updatedAt ?? 0).getTime() - new Date(a.updatedAt ?? 0).getTime()
         })[0]
       } else {
         // currently the AP doesn't make the updatedAt attribute available so just pick the directly linked state
@@ -237,8 +237,8 @@ class InteractiveApiProvider extends ProviderInterface {
         })
 
         interactiveId = interactiveState === mostRecentLinkedState.interactiveState
-          ? mostRecentLinkedState.interactive.id
-          : initInteractiveMessage.interactive.id
+          ? mostRecentLinkedState.interactive?.id
+          : initInteractiveMessage.interactive?.id
 
         if (interactiveState === mostRecentLinkedState.interactiveState) {
           // remove existing interactive state, so the interactive will be initialized from the linked state next time (if it is not saved).
@@ -263,8 +263,8 @@ class InteractiveApiProvider extends ProviderInterface {
         })
 
         interactiveId = interactiveState === mostRecentLinkedState.interactiveState
-          ? mostRecentLinkedState.interactive.id
-          : directlyLinkedState.interactive.id
+          ? mostRecentLinkedState.interactive?.id
+          : directlyLinkedState.interactive?.id
 
           return {interactiveState, interactiveId}
       }
@@ -272,7 +272,7 @@ class InteractiveApiProvider extends ProviderInterface {
       // there's no current state, but the directly linked state is the most recent one.
       if (!interactiveStateAvailable && directlyLinkedState) {
         interactiveState = directlyLinkedState.interactiveState
-        interactiveId = directlyLinkedState.interactive.id
+        interactiveId = directlyLinkedState.interactive?.id
 
         // save the directly linked state so that it is available with the sharing plugin
         await setInteractiveState(interactiveState)
@@ -289,7 +289,10 @@ class InteractiveApiProvider extends ProviderInterface {
   async handleInitialInteractiveState(initInteractiveMessage: IInitInteractive) {
     let interactiveState: any
 
-    const {interactiveState: initialInteractiveState, interactiveId} = await this.getInitialInteractiveStateAndinteractiveId(initInteractiveMessage)
+    const result = await this.getInitialInteractiveStateAndinteractiveId(initInteractiveMessage)
+    if (!result) return
+
+    const {interactiveState: initialInteractiveState, interactiveId} = result
 
     try {
       interactiveState = await this.processRawInteractiveState(initialInteractiveState, interactiveId)
@@ -328,10 +331,11 @@ class InteractiveApiProvider extends ProviderInterface {
     if (params.interactiveApi !== undefined) {
       return true
     }
+    return false
   }
 
   // don't show in provider open/save dialogs
-  filterTabComponent(capability: ECapabilities, defaultComponent: React.Component): React.Component | null {
+  filterTabComponent(capability: ECapabilities, defaultComponent: ReactFactory): ReactFactory | null {
     return null
   }
 
@@ -345,7 +349,7 @@ class InteractiveApiProvider extends ProviderInterface {
       callback(null, content, metadata)
     }
     catch(e) {
-      callback(e.message)
+      callback(e instanceof Error ? e.message : String(e))
     }
   }
 
