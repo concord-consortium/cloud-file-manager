@@ -172,7 +172,8 @@ describe("CloudFileManagerClient", () => {
       client = new CloudFileManagerClient()
     })
     afterAll(() => {
-      window.location = location
+      const win = window as any
+      win.location = location
     })
     test("without query or hash string", () => {
       window.location = {

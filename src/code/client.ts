@@ -1012,11 +1012,11 @@ class CloudFileManagerClient {
   }
 
   getDownloadBlob(content: any, includeShareInfo: boolean, mimeType: string) {
-    let contentToSave
+    let contentToSave: BlobPart
     if (mimeType == null) { mimeType = 'text/plain' }
     if (typeof content === "string") {
       if (mimeType.indexOf("image") >= 0) {
-        contentToSave = base64Array.toByteArray(content)
+        contentToSave = base64Array.toByteArray(content) as BlobPart
       } else {
         contentToSave = content
       }
