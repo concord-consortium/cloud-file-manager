@@ -1,6 +1,3 @@
-import React from "react"
-
-
 export const Spinner = ({size=100, fill="#000"}) => {
   return(
     <svg

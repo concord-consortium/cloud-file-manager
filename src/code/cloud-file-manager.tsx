@@ -1,4 +1,3 @@
-import React from 'react'
 import ReactDOM from 'react-dom'
 import AppView from './views/app-view'
 import { CFMAppOptions, CFMMenu } from './app-options'

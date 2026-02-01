@@ -1,5 +1,3 @@
-import React from "react"
-
 const DefaultAnchor = (
   // Hamburger icon
   <svg className="default-anchor" version="1.1" width={33} height={18} viewBox="0 0 33 18" enableBackground="new 0 0 33 18">
