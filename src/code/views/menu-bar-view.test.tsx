@@ -35,7 +35,7 @@ const MenuBarView = MenuBarViewComponent as unknown as React.ComponentType<{
     info?: string
     onInfoClick?: () => void
     languageMenu?: {
-      options: Array<{ langCode: string; label?: string; flag?: string }>
+      options: Array<{ langCode: string, label?: string, flag?: string }>
       onLangChanged?: () => void
       withBorder?: boolean
     }

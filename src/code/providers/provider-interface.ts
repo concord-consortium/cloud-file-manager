@@ -1,4 +1,3 @@
-import React from "react"
 import isString  from '../utils/is-string'
 import _ from 'lodash'
 import { ReactFactory } from "../create-react-factory"
@@ -127,7 +126,7 @@ class CloudMetadata {
     const _path = []
     let parent = this.parent
     while (parent != null) {
-      _path.unshift(parent);
+      _path.unshift(parent)
       parent = parent.parent
     }
     return _path

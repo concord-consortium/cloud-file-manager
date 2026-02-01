@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react'
-import ReactDOM from 'react-dom'
 import $ from 'jquery'
 import { DefaultAnchor } from './dropdown-anchors'
 import { getCurrentLanguage, getSpecialLangFontClassName } from '../utils/translate'

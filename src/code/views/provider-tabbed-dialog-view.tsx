@@ -40,7 +40,7 @@ const ProviderTabbedDialog: React.FC<ProviderTabbedDialogProps> = ({ dialog, clo
     switch (dialog.action) {
       case 'openFile': return [ECapabilities.list, FileDialogTabFactory] as const
       case 'saveFile': case 'saveFileAs': return [ECapabilities.save, FileDialogTabFactory] as const
-      case 'saveSecondaryFileAs': return [ECapabilities.export, FileDialogTabFactory] as const
+      case 'saveSecondaryFileAs': return [ECapabilities["export"], FileDialogTabFactory] as const
       case 'createCopy': return [ECapabilities.save, FileDialogTabFactory] as const
       case 'selectProvider': return [null, SelectProviderDialogTabFactory] as const
       default: return [null, FileDialogTabFactory] as const

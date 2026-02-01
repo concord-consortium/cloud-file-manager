@@ -39,7 +39,7 @@ const TabbedPanelViewBase: React.FC<TabbedPanelViewProps> = ({ tabs, selectedTab
   useEffect(() => {
     const tab = tabs[selectedTabIndex]
     tab?.onSelected?.(tab.capability)
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [])
 
   const handleTabSelected = (index: number) => {
     const tab = tabs[index]

@@ -5,7 +5,7 @@ describe('getHashParam', () => {
 
   const mockWindowLocation = (newLocation: Location | URL) => {
     delete (window as any).location
-    window.location = newLocation as Location
+    ;(window as any).location = newLocation
   }
 
   const setHash = (hash: string) => {
