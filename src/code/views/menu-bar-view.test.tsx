@@ -2,7 +2,7 @@ import { fireEvent, render, screen } from '@testing-library/react'
 import React from 'react'
 import MenuBarViewComponent from './menu-bar-view'
 
-// Cast to accept props since createReactClass components don't have proper TypeScript types
+// Cast to override the inferred props type for testing
 const MenuBarView = MenuBarViewComponent as unknown as React.ComponentType<{
   client: {
     appOptions: {

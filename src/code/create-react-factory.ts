@@ -1,4 +1,3 @@
-import createReactClass from "create-react-class"
 import React from "react"
 
 // Factory function type that accepts any props - proper typing deferred to Phase 4 React modernization
@@ -10,6 +9,3 @@ export type ReactFactory<P = any> = (props?: (React.Attributes & P) | null, ...c
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const createReactFactory = <P = any>(type: any): ReactFactory<P> =>
   (props, ...children) => React.createElement(type, props, ...children)
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const createReactClassFactory = <P = any, S = {}>(classDef: React.ComponentSpec<P, S>): ReactFactory<P> =>
-  createReactFactory(createReactClass<P, S>(classDef))

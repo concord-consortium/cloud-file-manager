@@ -1,9 +1,7 @@
 import $ from 'jquery'
 import _ from 'lodash'
+import React, { useState, useEffect } from 'react'
 import { ReactFactory } from '../create-react-factory'
-import ReactDOMFactories from 'react-dom-factories'
-import { createReactClassFactory } from '../create-react-factory'
-const {div, button, span} = ReactDOMFactories
 
 import getQueryParam  from '../utils/get-query-param'
 import getHashParam  from '../utils/get-hash-param'
@@ -20,35 +18,37 @@ import DocumentStoreUrl  from './document-store-url'
 import PatchableContent  from './patchable-content'
 import { reportError } from '../utils/report-error'
 
-const DocumentStoreAuthorizationDialog = createReactClassFactory({
-  displayName: 'DocumentStoreAuthorizationDialog',
+interface DocumentStoreAuthorizationDialogProps {
+  provider: DocumentStoreProvider
+  authCallback?: (authorized: boolean) => void
+}
 
-  getInitialState() {
-    return {docStoreAvailable: false}
-  },
+const DocumentStoreAuthorizationDialog: React.FC<DocumentStoreAuthorizationDialogProps> = ({ provider }) => {
+  const [docStoreAvailable, setDocStoreAvailable] = useState(false)
 
-  UNSAFE_componentWillMount() {
-    this.props.provider._onDocStoreLoaded(() => {
-      this.setState({docStoreAvailable: true})
+  useEffect(() => {
+    provider._onDocStoreLoaded(() => {
+      setDocStoreAvailable(true)
     })
-  },
+  }, [provider])
 
-  authenticate() {
-    this.props.provider.authorize()
-  },
-
-  render() {
-    return (div({className: 'document-store-auth'},
-      (div({className: 'document-store-concord-logo'}, '')),
-      (div({className: 'document-store-footer'},
-        this.state.docStoreAvailable ?
-          (button({onClick: this.authenticate}, 'Login to Concord'))
-        :
-          'Trying to log into Concord...'
-      ))
-    ))
+  const authenticate = () => {
+    provider.authorize(() => {})
   }
-})
+
+  return (
+    <div className="document-store-auth">
+      <div className="document-store-concord-logo" />
+      <div className="document-store-footer">
+        {docStoreAvailable ? (
+          <button onClick={authenticate}>Login to Concord</button>
+        ) : (
+          'Trying to log into Concord...'
+        )}
+      </div>
+    </div>
+  )
+}
 
 class DocumentStoreProvider extends ProviderInterface {
   static Name = 'documentStore'
@@ -228,12 +228,12 @@ class DocumentStoreProvider extends ProviderInterface {
   }
 
   renderAuthorizationDialog() {
-    return (DocumentStoreAuthorizationDialog({provider: this, authCallback: this.authCallback}))
+    return <DocumentStoreAuthorizationDialog provider={this} authCallback={this.authCallback} />
   }
 
   renderUser() {
     if (this.user) {
-      return (span({}, (span({className: 'document-store-icon'})), this.user.name))
+      return <span><span className="document-store-icon" />{this.user.name}</span>
     } else {
       return null
     }

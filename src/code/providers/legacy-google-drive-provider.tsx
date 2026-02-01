@@ -1,8 +1,6 @@
-import React from 'react'
-import ReactDOMFactories from 'react-dom-factories'
+import React, { useState, useEffect, useRef } from 'react'
 import { CFMLegacyGoogleDriveProviderOptions } from '../app-options'
 import { CloudFileManagerClient } from '../client'
-import { createReactClassFactory } from '../create-react-factory'
 import tr  from '../utils/translate'
 import {
   AuthorizedOptions,
@@ -30,65 +28,70 @@ type OnAuthorizationChangeCallback = (authorized: boolean) => void
 
 let setGoogleDriveAuthorizationDialogState: undefined | ((newState: any) => void) = undefined
 
-const {div, button, span, strong} = ReactDOMFactories
-const GoogleDriveAuthorizationDialog = createReactClassFactory({
-  displayName: 'GoogleDriveAuthorizationDialog',
+interface GoogleDriveAuthorizationDialogProps {
+  provider: LegacyGoogleDriveProvider
+}
 
-  getInitialState() {
-    return {apiLoadState: this.props.provider.apiLoadState}
-  },
+const GoogleDriveAuthorizationDialog: React.FC<GoogleDriveAuthorizationDialogProps> = ({ provider }) => {
+  const [apiLoadState, setApiLoadState] = useState(provider.apiLoadState)
+  const isMountedRef = useRef(true)
 
-  // See comments in AuthorizeMixin for detailed description of the issues here.
-  // The short version is that we need to maintain synchronized instance variable
-  // and state to track authorization status while avoiding calling setState on
-  // unmounted components, which doesn't work and triggers a React warning.
+  useEffect(() => {
+    isMountedRef.current = true
 
-  UNSAFE_componentWillMount() {
-    return this.props.provider.waitForAPILoad().then(() => {
-      if (this._isMounted) {
-        return this.setState({apiLoadState: this.props.provider.apiLoadState})
+    // Set up global state setter
+    setGoogleDriveAuthorizationDialogState = (newState: any) => {
+      if (newState.apiLoadState !== undefined) {
+        setApiLoadState(newState.apiLoadState)
+      }
+    }
+
+    // Wait for API load
+    provider.waitForAPILoad().then(() => {
+      if (isMountedRef.current) {
+        setApiLoadState(provider.apiLoadState)
       }
     })
-  },
 
-  componentDidMount() {
-    this._isMounted = true
-    this.setState({apiLoadState: this.props.provider.apiLoadState})
-    setGoogleDriveAuthorizationDialogState = (newState: any) => {
-      this.setState(newState)
+    return () => {
+      isMountedRef.current = false
     }
-  },
+  }, [provider])
 
-  componentWillUnmount() {
-    // setGoogleDriveAuthorizationDialogState = undefined
-    return this._isMounted = false
-  },
-
-  authenticate() {
-    // we rely on the fact that the prior call to authorized has set the callback
-    // we need here
-    return this.props.provider.authorize(this.props.provider.authCallback)
-  },
-
-  render() {
-    const messageMap: Record<ELoadState, React.ReactChild> = {
-      [ELoadState.notLoaded]: tr("~GOOGLE_DRIVE.CONNECTING_MESSAGE"),
-      [ELoadState.loaded]: button({onClick: this.authenticate}, (tr("~GOOGLE_DRIVE.LOGIN_BUTTON_LABEL"))),
-      [ELoadState.errored]: tr("~GOOGLE_DRIVE.ERROR_CONNECTING_MESSAGE"),
-      [ELoadState.missingScopes]: div({className: 'google-drive-missing-scopes'},
-        div({}, tr("~GOOGLE_DRIVE.MISSING_SCOPES_MESSAGE")),
-        div({}, button({onClick: this.authenticate}, (tr("~GOOGLE_DRIVE.LOGIN_BUTTON_LABEL"))))
-      ),
-    }
-    const contents = messageMap[this.state.apiLoadState as ELoadState] || "An unknown error occurred!"
-    return (div({className: 'google-drive-auth'},
-      (div({className: 'google-drive-concord-logo'}, '')),
-      (div({className: 'google-drive-footer'},
-        contents
-      ))
-    ))
+  const authenticate = () => {
+    // we rely on the fact that the prior call to authorized has set the callback we need here
+    provider.authorize(provider.authCallback)
   }
-})
+
+  const getContents = (): React.ReactNode => {
+    switch (apiLoadState) {
+      case ELoadState.notLoaded:
+        return tr("~GOOGLE_DRIVE.CONNECTING_MESSAGE")
+      case ELoadState.loaded:
+        return <button onClick={authenticate}>{tr("~GOOGLE_DRIVE.LOGIN_BUTTON_LABEL")}</button>
+      case ELoadState.errored:
+        return tr("~GOOGLE_DRIVE.ERROR_CONNECTING_MESSAGE")
+      case ELoadState.missingScopes:
+        return (
+          <div className="google-drive-missing-scopes">
+            <div>{tr("~GOOGLE_DRIVE.MISSING_SCOPES_MESSAGE")}</div>
+            <div><button onClick={authenticate}>{tr("~GOOGLE_DRIVE.LOGIN_BUTTON_LABEL")}</button></div>
+          </div>
+        )
+      default:
+        return "An unknown error occurred!"
+    }
+  }
+
+  return (
+    <div className="google-drive-auth">
+      <div className="google-drive-concord-logo" />
+      <div className="google-drive-footer">
+        {getContents()}
+      </div>
+    </div>
+  )
+}
 
 declare global {
   // loaded dynamically in waitForGAPILoad
@@ -238,12 +241,12 @@ class LegacyGoogleDriveProvider extends ProviderInterface {
   }
 
   renderAuthorizationDialog() {
-    return (GoogleDriveAuthorizationDialog({provider: this}))
+    return <GoogleDriveAuthorizationDialog provider={this} />
   }
 
   renderUser() {
     if (this.user) {
-      return (span({className: 'gdrive-user'}, (span({className: 'gdrive-icon'})), this.user.name))
+      return <span className="gdrive-user"><span className="gdrive-icon" />{this.user.name}</span>
     } else {
       return null
     }
@@ -483,10 +486,10 @@ class LegacyGoogleDriveProvider extends ProviderInterface {
   getFileDialogMessage() {
     if (this.user) {
       return (
-        div({className: "provider-message"},
-          div({}, span({style: {marginRight: 5}}, tr("~GOOGLE_DRIVE.USERNAME_LABEL")), strong({}, this.user.name)),
-          div({className: "provider-message-action", onClick: this.logout.bind(this)}, tr("~GOOGLE_DRIVE.SELECT_DIFFERENT_ACCOUNT"))
-        )
+        <div className="provider-message">
+          <div><span style={{marginRight: 5}}>{tr("~GOOGLE_DRIVE.USERNAME_LABEL")}</span><strong>{this.user.name}</strong></div>
+          <div className="provider-message-action" onClick={this.logout.bind(this)}>{tr("~GOOGLE_DRIVE.SELECT_DIFFERENT_ACCOUNT")}</div>
+        </div>
       )
     }
   }
