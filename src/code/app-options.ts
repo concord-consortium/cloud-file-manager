@@ -138,4 +138,10 @@ export interface CFMAppOptions {
   contentLoadFilter?: ContentLoadFilterFn;
   contentSaveFilter?: ContentSaveFilterFn;
   iframeAllow?: string;
+  /**
+   * URL to a JSON file containing banner configuration.
+   * If provided, CFM will fetch and display a banner above the menu bar.
+   * Must be an absolute HTTPS URL or a same-origin relative URL.
+   */
+  banner?: string;
 }

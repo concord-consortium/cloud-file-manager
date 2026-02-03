@@ -39,6 +39,8 @@ import { CFMMenuBarOptions, CFMMenuItem, CFMShareDialogSettings, CFMUIOptions } 
 import { CloudFileManagerClient, CloudFileManagerClientEvent } from "../client"
 import { CloudFileManagerUIEvent } from "../ui"
 import { SelectInteractiveStateDialogProps } from "./select-interactive-state-dialog-view"
+import { BannerView } from './banner-view'
+import { BannerConfig, fetchBannerConfig } from '../utils/banner-utils'
 
 const {div, iframe} = ReactDOMFactories
 
@@ -66,6 +68,7 @@ interface IAppViewProps {
   usingIframe?: boolean;
   app?: string;   // src url for <iframe>
   iframeAllow?: string;
+  banner?: string;  // URL to banner configuration JSON
 }
 
 interface IAppViewState {
@@ -84,11 +87,13 @@ interface IAppViewState {
   selectInteractiveStateDialog: null | SelectInteractiveStateDialogProps
   fileStatus?: { message: string, type: string };
   dirty: boolean;
+  bannerConfig: BannerConfig | null;
 }
 
 class AppView extends React.Component<IAppViewProps, IAppViewState> {
   displayName: string;
   state: IAppViewState;
+  private _isMounted = false
 
   constructor(props: any) {
     super(props)
@@ -107,7 +112,8 @@ class AppView extends React.Component<IAppViewProps, IAppViewState> {
       confirmDialog: null,
       importDialog: null,
       selectInteractiveStateDialog: null,
-      dirty: false
+      dirty: false,
+      bannerConfig: null
     }
   }
 
@@ -116,6 +122,19 @@ class AppView extends React.Component<IAppViewProps, IAppViewState> {
   }
 
   componentDidMount() {
+    this._isMounted = true
+
+    // Fetch banner config if URL provided
+    const bannerUrl = this.props.banner
+    if (bannerUrl) {
+      fetchBannerConfig(bannerUrl).then(config => {
+        // Guard against setState on unmounted component
+        if (this._isMounted && config) {
+          this.setState({ bannerConfig: config })
+        }
+      })
+    }
+
     this.props.client.listen((event: CloudFileManagerClientEvent) => {
       const fileStatus = (() => {
         let message
@@ -217,6 +236,10 @@ class AppView extends React.Component<IAppViewProps, IAppViewState> {
     })
   }
 
+  componentWillUnmount() {
+    this._isMounted = false
+  }
+
   _getMenuItemIndex = (key: string) => {
     let index
     if (isString(key)) {
@@ -299,9 +322,16 @@ class AppView extends React.Component<IAppViewProps, IAppViewState> {
 
   render() {
     const menuItems = !this.props.hideMenuBar ? this.state.menuItems : []
+    const { bannerConfig } = this.state
     if (this.props.appOrMenuElemId) {
       // CSS class depends on whether we're in app (iframe) or view (menubar-only) mode
       return (div({className: this.props.usingIframe ? 'app' : 'view' },
+        bannerConfig && (
+          <BannerView
+            config={bannerConfig}
+            onDismiss={() => this.setState({ bannerConfig: null })}
+          />
+        ),
         (MenuBar({client: this.props.client, filename: this.state.filename, provider: this.state.provider, fileStatus: this.state.fileStatus, items: menuItems, options: this.state.menuOptions})),
         // only render the wrapped client app in app (iframe) mode
         this.props.usingIframe ?

@@ -1,0 +1,72 @@
+.cfm-banner
+  display flex
+  align-items center
+  justify-content space-between
+  padding 10px 16px
+  background-color #1a73e8
+  color #ffffff
+  font-family 'Roboto', Arial, sans-serif
+  font-size 14px
+  gap 16px
+
+  .cfm-banner-message
+    flex 1
+    line-height 1.4
+
+  .cfm-banner-actions
+    display flex
+    align-items center
+    gap 12px
+    flex-shrink 0
+
+  .cfm-banner-button
+    background-color #ffffff
+    color #1a73e8
+    padding 6px 12px
+    border-radius 4px
+    text-decoration none
+    font-weight 500
+    font-size 13px
+    white-space nowrap
+
+    &:hover
+      background-color #f1f3f4
+
+    &:focus
+      outline 2px solid #ffffff
+      outline-offset 2px
+
+  .cfm-banner-dont-show
+    background transparent
+    border 1px solid rgba(255, 255, 255, 0.6)
+    color #ffffff
+    padding 5px 10px
+    border-radius 4px
+    cursor pointer
+    font-size 12px
+    white-space nowrap
+
+    &:hover
+      background-color rgba(255, 255, 255, 0.1)
+      border-color #ffffff
+
+    &:focus
+      outline 2px solid #ffffff
+      outline-offset 2px
+
+  .cfm-banner-close
+    background transparent
+    border none
+    color #ffffff
+    font-size 20px
+    line-height 1
+    padding 4px 8px
+    cursor pointer
+    opacity 0.8
+
+    &:hover
+      opacity 1
+
+    &:focus
+      outline 2px solid #ffffff
+      outline-offset 2px
