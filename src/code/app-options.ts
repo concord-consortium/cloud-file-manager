@@ -172,4 +172,10 @@ export interface CFMAppOptions {
   renderRoot?: (content: React.ReactNode, container: HTMLElement) => void
   // when usingIframe, specifies the `allow` property of the iframe (permissions policy)
   iframeAllow?: string
+  /**
+   * URL to a JSON file containing banner configuration.
+   * If provided, CFM will fetch and display a banner above the menu bar.
+   * Must be an absolute HTTPS URL or a same-origin relative URL.
+   */
+  banner?: string
 }
