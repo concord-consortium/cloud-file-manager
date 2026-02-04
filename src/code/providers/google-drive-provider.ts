@@ -652,16 +652,19 @@ class GoogleDriveProvider extends ProviderInterface {
     const params: any = {
       fileId,
       fields: "id, mimeType, name, parents, capabilities(canEdit)",
+      supportsAllDrives: true,
     }
     const driveId = metadata.providerData.driveId
     if (driveId) {
       params.driveId = driveId
-      params.supportsAllDrives = true
     }
     const request = gapi.client.drive.files.get(params)
     return request.execute((file: any) => {
+      if (!file || file.error) {
+        return callback(this.apiError(file, tr("~GOOGLE_DRIVE.UNABLE_TO_LOAD")))
+      }
       metadata.rename(file.name)
-      metadata.overwritable = file.capabilities.canEdit
+      metadata.overwritable = file.capabilities?.canEdit ?? false
       metadata.providerData = { id: file.id }
       if (driveId) {
         metadata.providerData.driveId = driveId
