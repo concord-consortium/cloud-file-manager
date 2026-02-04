@@ -68,7 +68,6 @@ interface IAppViewProps {
   usingIframe?: boolean
   app?: string   // src url for <iframe>
   iframeAllow?: string
-  banner?: string  // URL to banner configuration JSON
 }
 
 interface IAppViewState {
@@ -125,7 +124,7 @@ class AppView extends React.Component<IAppViewProps, IAppViewState> {
     this._isMounted = true
 
     // Fetch banner config if URL provided
-    const bannerUrl = this.props.banner
+    const bannerUrl = this.props.client?.appOptions?.banner
     if (bannerUrl) {
       fetchBannerConfig(bannerUrl).then(config => {
         // Guard against setState on unmounted component
