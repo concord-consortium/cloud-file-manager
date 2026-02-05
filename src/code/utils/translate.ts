@@ -102,14 +102,14 @@ export function setCurrentLanguage(lang: string) {
 const varRegExp = /%\{\s*([^}\s]*)\s*\}/g
 
 const translate = function(key: string, vars?: Record<string, string>, lang?: string) {
-  if (vars == null) { vars = {} }
+  const varsMap = vars ?? {}
   if (lang == null) { lang = gCurrentLanguage }
   lang = lang.toLowerCase()
   let translation = translations[lang] != null ? translations[lang][key] : undefined
   if ((translation == null)) { translation = key }
   return translation.replace(varRegExp, function(match: string, key: string) {
-    return Object.prototype.hasOwnProperty.call(vars, key)
-            ? vars[key]
+    return Object.prototype.hasOwnProperty.call(varsMap, key)
+            ? varsMap[key]
             : `'** UNKNOWN KEY: ${key} **`
   })
 }

@@ -95,7 +95,7 @@ export default createReactClass({
     }
   },
 
-  confirm(e: any, simulateClick: boolean) {
+  confirm(e: MouseEvent | null, simulateClick: boolean) {
     if (this.confirmDisabled()) {
       if (e != null) {
         e.preventDefault()
@@ -145,14 +145,13 @@ export default createReactClass({
     const metadata = new CloudMetadata({
       name: this.state.downloadFilename.split('.')[0],
       type: CloudMetadata.File,
-      parent: null,
       provider: this.props.provider
     })
     this.props.dialog.callback(metadata)
     this.props.close()
   },
 
-  contextMenu(e: any) {
+  contextMenu(e: React.MouseEvent<HTMLAnchorElement>) {
     this.downloadRef.href = this.props.client.getDownloadUrl(this.state.content, this.state.includeShareInfo, this.state.mimeType)
   },
 
@@ -160,7 +159,7 @@ export default createReactClass({
     this.props.close()
   },
 
-  watchForEnter(e: any) {
+  watchForEnter(e: React.KeyboardEvent<HTMLInputElement>) {
     if ((e.keyCode === 13) && !this.confirmDisabled()) {
       e.preventDefault()
       e.stopPropagation()

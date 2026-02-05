@@ -12,7 +12,7 @@ describe("S3ShareProvider", () => {
       it('should return a legacy url', () => {
         const contentId = "1234"
         const metadata = new CloudMetadata({filename: "test", sharedContentId: contentId})
-        const callback = (err:string, content: any) => true
+        const callback = (err: string | null, content?: any) => { return }
         provider.loadFromUrl = (string) => { expect(string).toMatch("legacy-document-store/1234") }
         provider.load(metadata, callback)
       })
@@ -22,7 +22,7 @@ describe("S3ShareProvider", () => {
       it('should return the url', () => {
         const urlToContent = "https://somethingcool/1234sdfsf/foo.txt"
         const metadata = new CloudMetadata({filename: "test", sharedContentId: urlToContent})
-        const callback = (err:string, content: any) => true
+        const callback = (err: string | null, content?: any) => { return }
         provider.loadFromUrl = (string) => { expect(string).toBe(urlToContent) }
         provider.load(metadata, callback)
       })

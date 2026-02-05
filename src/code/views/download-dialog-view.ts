@@ -50,7 +50,7 @@ export default createReactClass({
     return s.replace(/^\s+|\s+$/, '')
   },
 
-  download(e: any, simulateClick: boolean) {
+  download(e: React.MouseEvent<HTMLAnchorElement> | null, simulateClick: boolean) {
     if (!this.downloadDisabled()) {
       this.downloadRef.setAttribute('href', this.props.client.getDownloadUrl(this.props.content, this.state.includeShareInfo))
       if (simulateClick) { this.downloadRef.click() }
@@ -67,7 +67,7 @@ export default createReactClass({
     return this.state.trimmedFilename.length === 0
   },
 
-  watchForEnter(e: any) {
+  watchForEnter(e: React.KeyboardEvent<HTMLInputElement>) {
     if ((e.keyCode === 13) && !this.downloadDisabled()) {
       e.preventDefault()
       e.stopPropagation()

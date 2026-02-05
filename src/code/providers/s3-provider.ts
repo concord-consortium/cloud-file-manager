@@ -19,7 +19,7 @@ class S3Provider extends ProviderInterface {
   public static Name = 's3-provider'
   client: CloudFileManagerClient
   options: IProviderInterfaceOpts
-  provider: ProviderInterface
+  provider!: ProviderInterface
   constructor(client: CloudFileManagerClient) {
     const opts:IProviderInterfaceOpts = {
       urlDisplayName: 'S3 Provider',
@@ -82,7 +82,7 @@ class S3Provider extends ProviderInterface {
                 || data.content?.name
               metadata.rename(name)
               if (metadata.name) {
-                content.addMetadata({ docName: metadata.filename })
+                content.addMetadata({ docName: metadata.filename ?? undefined })
               }
               return callback(null, content)
             })
@@ -108,6 +108,10 @@ class S3Provider extends ProviderInterface {
 
   load(metadata: CloudMetadata, callback: ProviderLoadCallback) {
     const id = metadata.sharedContentId
+    if (!id) {
+      callback(`Unable to load: no sharedContentId`)
+      return
+    }
     const loadUrl = this.getLoadUrlFromSharedContentId(id)
     if(loadUrl !== null) {
       this.loadFromUrl(loadUrl, metadata, callback)

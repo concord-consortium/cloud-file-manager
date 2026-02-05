@@ -1,1 +1,1 @@
-export default (arg: any): arg is string => typeof arg === "string"
+export default (arg: unknown): arg is string => typeof arg === "string"

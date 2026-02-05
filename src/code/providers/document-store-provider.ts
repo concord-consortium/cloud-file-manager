@@ -12,7 +12,7 @@
  */
 import $ from 'jquery'
 import _ from 'lodash'
-import React from 'react'
+import { ReactFactory } from '../create-react-factory'
 import ReactDOMFactories from 'react-dom-factories'
 import { createReactClassFactory } from '../create-react-factory'
 const {div, button, span} = ReactDOMFactories
@@ -23,7 +23,7 @@ import tr  from '../utils/translate'
 import pako  from 'pako'
 
 import { CFMDocumentStoreProviderOptions } from '../app-options'
-import { ECapabilities, ProviderInterface, ProviderOpenCallback }  from './provider-interface'
+import { ECapabilities, ProviderInterface, ProviderListCallback, ProviderOpenCallback }  from './provider-interface'
 import { cloudContentFactory }  from './provider-interface'
 import { CloudMetadata }  from './provider-interface'
 
@@ -64,17 +64,17 @@ const DocumentStoreAuthorizationDialog = createReactClassFactory({
 
 class DocumentStoreProvider extends ProviderInterface {
   static Name = 'documentStore'
-  _docStoreLoaded: boolean
-  _loginWindow: any = null
-  authCallback: (authorized: boolean) => void
+  _docStoreLoaded!: boolean
+  _loginWindow: Window | null = null
+  authCallback!: (authorized: boolean) => void
   client: CloudFileManagerClient
   disableForNextSave?: boolean
-  docStoreLoadedCallback: () => void
+  docStoreLoadedCallback!: () => void
   docStoreUrl: DocumentStoreUrl
   options: CFMDocumentStoreProviderOptions
   removableQueryParams: string[]
   savedContent: any
-  urlParams: Record<string, string>
+  urlParams: Record<string, string | null>
   user: any
 
   static get deprecationPhase() {
@@ -219,16 +219,17 @@ class DocumentStoreProvider extends ProviderInterface {
       this._loginWindow = window.open(this.docStoreUrl.authorize(), 'auth', windowFeatures.join())
 
       if (this._loginWindow) {
+        const loginWindow = this._loginWindow
         const pollAction = () => {
           try {
-            if (this._loginWindow.location.host === window.location.host) {
+            if (loginWindow.location.host === window.location.host) {
               clearInterval(poll)
-              this._loginWindow.close()
+              loginWindow.close()
               this._checkLogin()
               if (completionCallback) { return completionCallback() }
             }
           } catch (e) {
-            reportError(e)
+            reportError(e instanceof Error ? e : String(e))
           }
         }
         var poll = setInterval(pollAction, 200)
@@ -250,7 +251,7 @@ class DocumentStoreProvider extends ProviderInterface {
     }
   }
 
-  filterTabComponent(capability: ECapabilities, defaultComponent: React.Component): React.Component | null {
+  filterTabComponent(capability: ECapabilities, defaultComponent: ReactFactory): ReactFactory | null {
     // allow the save elsewhere button to hide the document provider tab in save
     if ((capability === 'save') && this.disableForNextSave) {
       this.disableForNextSave = false
@@ -295,7 +296,7 @@ class DocumentStoreProvider extends ProviderInterface {
     }
   }
 
-  list(metadata: CloudMetadata, callback: (err: string | null, list: CloudMetadata[]) => void) {
+  list(metadata: CloudMetadata, callback?: ProviderListCallback) {
     return $.ajax({
       dataType: 'json',
       url: this.docStoreUrl.listDocuments(),
@@ -317,10 +318,10 @@ class DocumentStoreProvider extends ProviderInterface {
             )
           }
         }
-        return callback(null, list)
+        return callback?.(null, list)
       },
       error() {
-        return callback(null, [])
+        return callback?.(null, [])
       },
       statusCode: {
         403: () => {
@@ -359,7 +360,7 @@ class DocumentStoreProvider extends ProviderInterface {
         metadata.rename(metadata.name || metadata.providerData.name ||
                         data.docName || data.name || data.content?.name)
         if (metadata.name) {
-          content.addMetadata({docName: metadata.filename})
+          content.addMetadata({docName: metadata.filename ?? undefined})
         }
 
         return callback(null, content)
@@ -450,7 +451,7 @@ class DocumentStoreProvider extends ProviderInterface {
       statusCode: {
         403: () => {
           this.user = null
-          return callback(tr("~DOCSTORE.SAVE_403_ERROR", {filename: metadata.name}), 403)
+          return callback(tr("~DOCSTORE.SAVE_403_ERROR", {filename: metadata.name ?? 'the file'}), 403)
         }
       },
       error(jqXHR) {
@@ -458,12 +459,12 @@ class DocumentStoreProvider extends ProviderInterface {
           if (jqXHR.status === 403) { return } // let statusCode handler deal with it
           const responseJson = JSON.parse(jqXHR.responseText)
           if (responseJson.message === 'error.duplicate') {
-            return callback(tr("~DOCSTORE.SAVE_DUPLICATE_ERROR", {filename: metadata.name}))
+            return callback(tr("~DOCSTORE.SAVE_DUPLICATE_ERROR", {filename: metadata.name ?? 'the file'}))
           } else {
-            return callback(tr("~DOCSTORE.SAVE_ERROR_WITH_MESSAGE", {filename: metadata.name, message: responseJson.message}))
+            return callback(tr("~DOCSTORE.SAVE_ERROR_WITH_MESSAGE", {filename: metadata.name ?? 'the file', message: responseJson.message}))
           }
         } catch (error) {
-          return callback(tr("~DOCSTORE.SAVE_ERROR", {filename: metadata.name}))
+          return callback(tr("~DOCSTORE.SAVE_ERROR", {filename: metadata.name ?? 'the file'}))
         }
       }})
   }
@@ -484,12 +485,12 @@ class DocumentStoreProvider extends ProviderInterface {
       statusCode: {
         403: () => {
           this.user = null
-          return callback(tr("~DOCSTORE.REMOVE_403_ERROR", {filename: metadata.name}), 403)
+          return callback(tr("~DOCSTORE.REMOVE_403_ERROR", {filename: metadata.name ?? 'the file'}), 403)
         }
       },
       error(jqXHR) {
         if (jqXHR.status === 403) { return } // let statusCode handler deal with it
-        return callback(tr("~DOCSTORE.REMOVE_ERROR", {filename: metadata.name}))
+        return callback(tr("~DOCSTORE.REMOVE_ERROR", {filename: metadata.name ?? 'the file'}))
       }})
   }
 
@@ -511,12 +512,12 @@ class DocumentStoreProvider extends ProviderInterface {
       statusCode: {
         403: () => {
           this.user = null
-          return callback(tr("~DOCSTORE.RENAME_403_ERROR", {filename: metadata.name}), 403)
+          return callback(tr("~DOCSTORE.RENAME_403_ERROR", {filename: metadata.name ?? 'the file'}), 403)
         }
       },
       error(jqXHR) {
         if (jqXHR.status === 403) { return } // let statusCode handler deal with it
-        return callback(tr("~DOCSTORE.RENAME_ERROR", {filename: metadata.name}))
+        return callback(tr("~DOCSTORE.RENAME_ERROR", {filename: metadata.name ?? 'the file'}))
       }})
   }
 
@@ -558,7 +559,7 @@ class DocumentStoreProvider extends ProviderInterface {
       },
       rejectCallback: () => {
         if (deprecationPhase > 1) {
-          this.client.appOptions.autoSaveInterval = null
+          this.client.appOptions.autoSaveInterval = undefined
         }
       }
     })

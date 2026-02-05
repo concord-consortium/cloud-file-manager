@@ -119,7 +119,7 @@ export default class ShareDialogView extends React.Component<IShareDialogProps, 
     //  1: Get the resource URL (S3 shared document public URL)
     //  2: Get the URL for the autoLaunch page (hosted here ...)
     //  3: Construct a URL to <AutolaunchPage
-    const documentId = encodeURIComponent(this.getShareUrl())
+    const documentId = encodeURIComponent(this.getShareUrl() ?? '')
     const server = this.getEncodedServerUrl(this.state.laraServerUrl)
     // Other params are handled by document server itself:
     const fullscreenScaling = this.state.fullscreenScaling ? '&scaling' : ''
@@ -129,7 +129,7 @@ export default class ShareDialogView extends React.Component<IShareDialogProps, 
   // TODO: Consider using queryparams to make URL construction less janky⬆
 
   getInteractiveApiLink() {
-    const documentId = encodeURIComponent(this.getShareUrl())
+    const documentId = encodeURIComponent(this.getShareUrl() ?? '')
     const separator = this.state.interactiveApiServerUrl.includes('?') ? '&' : '?'
     const togglesParam = this.state.graphVisToggles ? 'app=is&' : ''
     let url = `${this.state.interactiveApiServerUrl}${separator}${togglesParam}interactiveApi&documentId=${documentId}`
@@ -140,7 +140,7 @@ export default class ShareDialogView extends React.Component<IShareDialogProps, 
   }
 
   // adapted from https://github.com/sudodoki/copy-to-clipboard/blob/master/index.js
-  copy = (e: any) => {
+  copy = (e: React.MouseEvent) => {
     let mark, range, selection
     e.preventDefault()
     let copied = false
@@ -169,11 +169,11 @@ export default class ShareDialogView extends React.Component<IShareDialogProps, 
       document.body.appendChild(mark)
 
       selection = document.getSelection()
-      selection.removeAllRanges()
+      selection?.removeAllRanges()
 
       range = document.createRange()
       range.selectNode(mark)
-      selection.addRange(range)
+      selection?.addRange(range)
 
       return copied = document.execCommand('copy')
     } catch (error) {
@@ -185,7 +185,7 @@ export default class ShareDialogView extends React.Component<IShareDialogProps, 
       }
     }
     finally {
-      if (selection) {
+      if (selection && range) {
         if (typeof selection.removeRange === 'function') {
           selection.removeRange(range)
         } else {
@@ -250,15 +250,15 @@ export default class ShareDialogView extends React.Component<IShareDialogProps, 
           <div className='share-top-dialog'>
             {isLoadingShared
               ? <ShareLoadingView />
-              : <ShareDialogStatusView isSharing={sharing} previewLink={shareUrl}
+              : <ShareDialogStatusView isSharing={sharing} previewLink={shareUrl ?? ''}
                   onToggleShare={this.toggleShare} onUpdateShare={this.updateShare}/>}
           </div>
 
           {sharing &&
             <ShareDialogTabsView
               tabSelected={this.state.tabSelected}
-              linkUrl={shareUrl}
-              embedUrl={embedUrl}
+              linkUrl={shareUrl ?? ''}
+              embedUrl={embedUrl ?? ''}
               interactiveApi={this.props.enableLaraSharing
                 ? {
                     linkUrl: this.getInteractiveApiLink(),

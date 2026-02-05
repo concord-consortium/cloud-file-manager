@@ -28,7 +28,7 @@ const FileListFile = createReactClassFactory({
     return this.lastClick = 0
   },
 
-  fileSelected(e: any) {
+  fileSelected(e: React.MouseEvent<HTMLDivElement>) {
     e.preventDefault()
     e.stopPropagation()
     const now = (new Date()).getTime()
@@ -76,7 +76,7 @@ const FileList = createReactClassFactory({
     return this._isMounted = false
   },
 
-  load(folder: any) {
+  load(folder: CloudMetadata | null) {
     this.setState({ loading: true })
     return this.props.provider.list(folder, (err: string | null, list: CloudMetadata[]) => {
       // asynchronous callback may be called after dialog has been dismissed
@@ -88,11 +88,11 @@ const FileList = createReactClassFactory({
     }, this.props.listOptions)
   },
 
-  parentSelected(e: any) {
+  parentSelected(e: React.MouseEvent<HTMLDivElement>) {
     return this.props.fileSelected(this.props.folder?.parent)
   },
 
-  fileSelected(metadata: any) {
+  fileSelected(metadata: CloudMetadata) {
     if (!this.state.loading) {
       this.props.fileSelected(metadata)
     }
@@ -168,7 +168,7 @@ const FileDialogTab = createReactClass({
   // authorization status, and re-render when authorization status changes.
 
   UNSAFE_componentWillMount() {
-    const setAuthorization = (authorized: any) => {
+    const setAuthorization = (authorized: boolean) => {
       // always set the instance variable
       this._isAuthorized = authorized
       // set the state if we can
@@ -178,10 +178,11 @@ const FileDialogTab = createReactClass({
     }
 
     // listen for logouts (Google Drive provider)
-    this.props.provider.onAuthorizationChange?.((authorized: any) => {
+    this.props.provider.onAuthorizationChange?.((authorized: boolean) => {
       // reset rendering when de-authorized
       if (this._isAuthorized && !authorized) {
-        this.setState(this.getInitialState())
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        this.setState(this.getInitialState!())
       }
 
       setAuthorization(authorized)
@@ -233,7 +234,7 @@ const FileDialogTab = createReactClass({
     return this.props.dialog.action === 'saveSecondaryFileAs'
   },
 
-  searchChanged(e: any) {
+  searchChanged(e: React.ChangeEvent<HTMLInputElement>) {
     const search = e.target.value
     return this.setState({
       search,
@@ -267,7 +268,7 @@ const FileDialogTab = createReactClass({
     return saveMetadata
   },
 
-  getStateForFolder(folder: CloudMetadata, initialFolder: any) {
+  getStateForFolder(folder: CloudMetadata | null, initialFolder?: boolean) {
     const metadata = this.isOpen() ? this.state?.metadata || null : this.getSaveMetadata()
 
     if (initialFolder) {
@@ -392,7 +393,7 @@ const FileDialogTab = createReactClass({
     return null
   },
 
-  watchForEnter(e: any) {
+  watchForEnter(e: React.KeyboardEvent<HTMLInputElement>) {
     if ((e.keyCode === 13) && !this.confirmDisabled()) {
       return this.confirm()
     }
@@ -421,7 +422,7 @@ const FileDialogTab = createReactClass({
     const lowerSearch = search.toLowerCase()
     const filtering = isOpen && search.length > 0
     const list = filtering
-      ? this.state.list.filter((item: any) => item.name.toLowerCase().indexOf(lowerSearch) !== -1)
+      ? this.state.list.filter((item: CloudMetadata) => item.name?.toLowerCase().indexOf(lowerSearch) !== -1)
       : this.state.list
     const listFiltered = list.length !== this.state.list.length
 
@@ -430,7 +431,7 @@ const FileDialogTab = createReactClass({
       : null
 
     // when exporting only show folders as we can't filter based on mimetypes like text/csv or image/png to show only those files
-    const listOptions: IListOptions = this.isExport() && this.props.dialog.data?.extension ? {extension: this.props.dialog.data.extension} : undefined
+    const listOptions: IListOptions | undefined = this.isExport() && this.props.dialog.data?.extension ? {extension: this.props.dialog.data.extension} : undefined
 
     return (div({className: 'dialogTab'},
       (input({type: 'text', value: search, placeholder: (tr(isOpen ? "~FILE_DIALOG.FILTER" : "~FILE_DIALOG.FILENAME")), autoFocus: true, onChange: this.searchChanged, onKeyDown: this.watchForEnter, ref: (elt: any) => { return this.inputRef = elt }})),

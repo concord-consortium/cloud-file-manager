@@ -29,7 +29,7 @@ export default createReactClass({
           const data = {
             file: {
               name: metadata.providerData.file.name,
-              content: loaded.target.result,
+              content: loaded.target?.result,
               object: metadata.providerData.file
             },
             via
@@ -40,7 +40,7 @@ export default createReactClass({
     }
   },
 
-  importUrl(url: string, via: any) {
+  importUrl(url: string, via: string) {
     return this.props.dialog.callback?.({url, via})
   },
 

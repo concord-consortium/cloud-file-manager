@@ -40,11 +40,11 @@ export default createReactClass({
     })
   },
 
-  trim(s: any) {
+  trim(s: string) {
     return s.replace(/^\s+|\s+$/, '')
   },
 
-  rename(e: any) {
+  rename(e: React.MouseEvent<HTMLButtonElement>) {
     if (this.state.trimmedFilename.length > 0) {
       if (typeof this.props.callback === 'function') {
         this.props.callback(this.state.filename)

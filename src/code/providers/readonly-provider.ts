@@ -19,13 +19,13 @@ import isArray from '../utils/is-array'
 
 import { CFMReadOnlyProviderOptions } from '../app-options'
 import { CloudFileManagerClient } from '../client'
-import { cloudContentFactory, CloudMetadata, ProviderInterface }  from './provider-interface'
+import { cloudContentFactory, CloudMetadata, ProviderInterface, ProviderOpenCallback }  from './provider-interface'
 import {reportError} from "../utils/report-error"
 
 class ReadOnlyProvider extends ProviderInterface {
   static Name = 'readOnly'
   client: CloudFileManagerClient
-  options: CFMReadOnlyProviderOptions
+  options?: CFMReadOnlyProviderOptions
   promises: Promise<unknown>[]
   tree: any
 
@@ -67,13 +67,14 @@ class ReadOnlyProvider extends ProviderInterface {
         })
 
       } else if (metadata?.name != null) {
+        const metadataName = metadata.name
         return this._loadTree((err: string | null, tree: any) => {
           if (err) { return callback(err) }
-          const file = this._findFile(tree, metadata.name)
+          const file = this._findFile(tree, metadataName)
           if (file != null) {
             this.load(file, callback)          // call load again with found file, as it may be remote
           } else {
-            callback(`Unable to load '${metadata.name}'`)
+            callback(`Unable to load '${metadataName}'`)
           }
         })
       }
@@ -93,14 +94,13 @@ class ReadOnlyProvider extends ProviderInterface {
 
   canOpenSaved() { return true }
 
-  openSaved(openSavedParams: any, callback: (err: string | null, content: any, metadata: CloudMetadata) => void) {
-    const metadata = new CloudMetadata({
+  openSaved(openSavedParams: any, callback?: ProviderOpenCallback): void {
+    const metadata: CloudMetadata = new CloudMetadata({
       name: unescape(openSavedParams),
       type: CloudMetadata.File,
-      parent: null,
-      provider: this
+      provider: this as ProviderInterface
     })
-    return this.load(metadata, (err: string | null, content: any) => callback(err, content, metadata))
+    this.load(metadata, (err: string | null, content?: any) => callback?.(err, content, metadata))
   }
 
   getOpenSavedParams(metadata: CloudMetadata) {
@@ -127,19 +127,19 @@ class ReadOnlyProvider extends ProviderInterface {
 
     if (this.tree !== null) {
       return complete(this.tree)
-    } else if (this.options.json) {
+    } else if (this.options?.json) {
       this.tree = this._convertJSONToMetadataTree(this.options.json)
       return complete(this.tree)
-    } else if (this.options.jsonCallback) {
+    } else if (this.options?.jsonCallback) {
       return this.options.jsonCallback((err: string | null, json: any) => {
         if (err) {
           return callback(err)
         } else {
-          this.tree = this._convertJSONToMetadataTree(this.options.json)
+          this.tree = this._convertJSONToMetadataTree(this.options?.json)
           return complete(this.tree)
         }
       })
-    } else if (this.options.src) {
+    } else if (this.options?.src) {
       const baseUrl = this.options.src.replace(/\/[^/]*$/, '/')
       return $.ajax({
         dataType: 'json',
@@ -147,17 +147,19 @@ class ReadOnlyProvider extends ProviderInterface {
         success: iResponse => {
           this.tree = this._convertJSONToMetadataTree(iResponse, baseUrl)
           // alphabetize remotely loaded folder contents if requested
-          if (this.options.alphabetize) {
+          if (this.options?.alphabetize) {
             this.tree.sort(function(iMeta1: CloudMetadata, iMeta2: CloudMetadata) {
-              if (iMeta1.name < iMeta2.name) { return -1 }
-              if (iMeta1.name > iMeta2.name) { return  1 }
+              const name1 = iMeta1.name ?? ''
+              const name2 = iMeta2.name ?? ''
+              if (name1 < name2) { return -1 }
+              if (name1 > name2) { return  1 }
               return  0
             })
           }
           return complete(this.tree)
         },
         error: (jqXHR, textStatus, errorThrown) => {
-          const errorMetadata = this._createErrorMetadata(null)
+          const errorMetadata = this._createErrorMetadata()
           this.tree = [ errorMetadata ]
           return complete(this.tree)
         }
@@ -188,7 +190,7 @@ class ReadOnlyProvider extends ProviderInterface {
           content: ((item as any).content != null) ? cloudContentFactory.createEnvelopedCloudContent((item as any).content) : undefined,
           url,
           parent,
-          provider: this,
+          provider: this as ProviderInterface,
           providerData: {
             children: null
           }
@@ -206,10 +208,12 @@ class ReadOnlyProvider extends ProviderInterface {
                   success: iResponse => {
                     iMetadata.providerData.children = this._convertJSONToMetadataTree(iResponse, baseUrl, iMetadata)
                     // alphabetize remotely loaded folder contents if requested
-                    if (this.options.alphabetize || iItem.alphabetize) {
+                    if (this.options?.alphabetize || iItem.alphabetize) {
                       iMetadata.providerData.children.sort(function(iMeta1: CloudMetadata, iMeta2: CloudMetadata) {
-                        if (iMeta1.name < iMeta2.name) { return -1 }
-                        if (iMeta1.name > iMeta2.name) { return  1 }
+                        const name1 = iMeta1.name ?? ''
+                        const name2 = iMeta2.name ?? ''
+                        if (name1 < name2) { return -1 }
+                        if (name1 > name2) { return  1 }
                         return  0
                       })
                     }
@@ -240,7 +244,7 @@ class ReadOnlyProvider extends ProviderInterface {
           type,
           content: cloudContentFactory.createEnvelopedCloudContent(itemContent),
           parent,
-          provider: this,
+          provider: this as ProviderInterface,
           providerData: {
             children: null
           }
@@ -275,13 +279,13 @@ class ReadOnlyProvider extends ProviderInterface {
   // Therefore, we put an item in the returned results which indicates
   // the error and which is non-selectable, but resolve the promise
   // so that the open can proceed without the missing folder contents.
-  _createErrorMetadata(iParent: CloudMetadata) {
+  _createErrorMetadata(iParent?: CloudMetadata) {
     return new CloudMetadata({
       name: tr("~FILE_DIALOG.LOAD_FOLDER_ERROR"),
       type: CloudMetadata.Label,
       content: "",
       parent: iParent,
-      provider: this,
+      provider: this as ProviderInterface,
       providerData: {
         children: null
       }

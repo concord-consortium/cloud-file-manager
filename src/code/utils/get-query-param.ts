@@ -10,7 +10,7 @@ export default function(param: string) {
   const regexS = `[\\?&]${param}=([^&#]*)`
   const regex = new RegExp(regexS)
   const results = regex.exec(window.location.href)
-  if ((results != null ? results.length : undefined) > 1) {
+  if (results != null && results.length > 1) {
     return decodeURIComponent(results[1])
   } else {
     return null

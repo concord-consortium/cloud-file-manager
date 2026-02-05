@@ -10,7 +10,7 @@ export type DocumentStoreUrlParams = Record<string, string | number | boolean>
 class DocumentStoreUrl {
   docStoreUrl: string
 
-  constructor(docStoreUrl: string) {
+  constructor(docStoreUrl?: string | null) {
     this.docStoreUrl = docStoreUrl || defaultDocStoreUrl
     // eliminate trailing slashes
     this.docStoreUrl = this.docStoreUrl.replace(/\/+$/, '')
@@ -21,7 +21,7 @@ class DocumentStoreUrl {
     const kvp = []
     for (let key in params) {
       const value = params[key]
-      kvp.push([key, value].map(encodeURI).join("="))
+      kvp.push(`${encodeURI(key)}=${encodeURI(String(value))}`)
     }
     return url + "?" + kvp.join("&")
   }

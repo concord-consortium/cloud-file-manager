@@ -52,7 +52,6 @@ const GoogleFileDialogTabView = createReactClassFactory({
     const metadata = new CloudMetadata({
       name: filename,
       type: ICloudFileTypes.File,
-      parent: null,
       overwritable: true,
       provider: this.props.provider,
       providerData: {
@@ -169,7 +168,7 @@ const GoogleFileDialogTabView = createReactClassFactory({
         providerData: {
           id: parentId
         }
-      }) : null
+      }) : undefined
 
       const pickedMetadata = new CloudMetadata({
         name,
@@ -350,12 +349,12 @@ class GoogleDriveProvider extends ProviderInterface {
     (typeof options?.apiKey === 'string')
   static IMMEDIATE = true
   static SHOW_POPUP = false
-  static gisLoadPromise: Promise<unknown> = null
-  static gapiLoadPromise: Promise<unknown> = null
-  static apiLoadPromise: Promise<unknown> = null
-  _autoRenewTimeout: number
+  static gisLoadPromise: Promise<unknown> | null = null
+  static gapiLoadPromise: Promise<unknown> | null = null
+  static apiLoadPromise: Promise<unknown> | null = null
+  _autoRenewTimeout!: number
   apiKey: string
-  authCallback: (authorized: boolean) => void
+  authCallback!: (authorized: boolean) => void
   authToken: any
   tokenClient: any
   client: CloudFileManagerClient
@@ -363,14 +362,14 @@ class GoogleDriveProvider extends ProviderInterface {
   appId: string
   apiLoadState: ELoadState
   mimeType: string
-  options: CFMGoogleDriveProviderOptions
-  readableMimetypes: string[]
-  extension: string
-  readableExtensions: string[]
+  options?: CFMGoogleDriveProviderOptions
+  readableMimetypes: string[] = []
+  extension!: string
+  readableExtensions!: string[]
   scopes: string
   user: any
   onAuthorizationChangeCallback: OnAuthorizationChangeCallback | undefined
-  promptForConsent: boolean
+  promptForConsent!: boolean
 
   constructor(options: CFMGoogleDriveProviderOptions | undefined, client: CloudFileManagerClient) {
     super({
@@ -393,9 +392,9 @@ class GoogleDriveProvider extends ProviderInterface {
     this.client = client
     this.authToken = null
     this.user = null
-    this.apiKey = this.options.apiKey
-    this.clientId = this.options.clientId
-    this.appId = this.options.appId
+    this.apiKey = this.options?.apiKey ?? ''
+    this.clientId = this.options?.clientId ?? ''
+    this.appId = this.options?.appId ?? ''
     if (!this.apiKey) {
       throw new Error((tr("~GOOGLE_DRIVE.ERROR_MISSING_APIKEY")))
     }
@@ -405,13 +404,13 @@ class GoogleDriveProvider extends ProviderInterface {
     if (!this.appId) {
       throw new Error((tr("~GOOGLE_DRIVE.ERROR_MISSING_APPID")))
     }
-    this.scopes = (this.options.scopes || [
+    this.scopes = (this.options?.scopes || [
       'https://www.googleapis.com/auth/drive.install',
       'https://www.googleapis.com/auth/drive.file',
       'https://www.googleapis.com/auth/userinfo.profile'
     ]).join(" ")
-    this.mimeType = this.options.mimeType || "text/plain"
-    this.readableMimetypes = this.options.readableMimetypes
+    this.mimeType = this.options?.mimeType || "text/plain"
+    this.readableMimetypes = this.options?.readableMimetypes ?? []
 
     this.apiLoadState = ELoadState.notLoaded
     this.waitForAPILoad()
@@ -780,7 +779,7 @@ class GoogleDriveProvider extends ProviderInterface {
       new CloudMetadata({ name: tr("~GOOGLE_DRIVE.MY_DRIVE"), type: CloudMetadata.Folder, provider: this, providerData: { driveType: EDriveType.myDrive } }),
       new CloudMetadata({ name: tr("~GOOGLE_DRIVE.SHARED_WITH_ME"), type: CloudMetadata.Folder, provider: this, providerData: { driveType: EDriveType.sharedWithMe } }),
     ]
-    if (!this.options.disableSharedDrives) {
+    if (!this.options?.disableSharedDrives) {
       drives.push(new CloudMetadata({ name: tr("~GOOGLE_DRIVE.SHARED_DRIVES"), type: CloudMetadata.Folder, provider: this, providerData: { driveType: EDriveType.sharedDrives } }))
     }
     return drives

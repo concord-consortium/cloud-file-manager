@@ -34,7 +34,9 @@ const DropdownItem = createReactClassFactory({
 
   showSubMenu() {
     if (this.props.item.items) {
-      const menuItem = $(ReactDOM.findDOMNode(this.itemRef))
+      const domNode = ReactDOM.findDOMNode(this.itemRef) as Element | null
+      if (!domNode) return
+      const menuItem = $(domNode)
       const menu = menuItem.parent().parent()
 
       return this.props.setSubMenu({
@@ -106,7 +108,7 @@ const DropDown = createReactClass({
     }
   },
 
-  checkClose(evt: any) {
+  checkClose(evt: MouseEvent | TouchEvent) {
     if (!this.state.showingMenu) { return }
     // if the click is inside the open menu, do nothing
     if (evt.target instanceof Element) {

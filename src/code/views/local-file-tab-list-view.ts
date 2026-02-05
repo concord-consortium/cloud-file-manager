@@ -29,8 +29,9 @@ export default createReactClass({
     return {hover: false}
   },
 
-  changed(e: any) {
+  changed(e: React.ChangeEvent<HTMLInputElement>) {
     const { files } = e.target
+    if (!files) return
     if (files.length > 1) {
       return this.props.client.alert(tr("~LOCAL_FILE_DIALOG.MULTIPLE_FILES_SELECTED"))
     } else if (files.length === 1) {
@@ -38,11 +39,10 @@ export default createReactClass({
     }
   },
 
-  openFile(file: any, via: any) {
+  openFile(file: File, via: string) {
     const metadata = new CloudMetadata({
       name: file.name.split('.')[0],
       type: CloudMetadata.File,
-      parent: null,
       provider: this.props.provider,
       providerData: {
         file
@@ -58,20 +58,21 @@ export default createReactClass({
     return this.props.close()
   },
 
-  dragEnter(e: any) {
+  dragEnter(e: React.DragEvent<HTMLDivElement>) {
     e.preventDefault()
     return this.setState({hover: true})
   },
 
-  dragLeave(e: any) {
+  dragLeave(e: React.DragEvent<HTMLDivElement>) {
     e.preventDefault()
     return this.setState({hover: false})
   },
 
-  drop(e: any) {
+  drop(e: DragEvent) {
     e.preventDefault()
     e.stopPropagation()
-    const droppedFiles = e.dataTransfer ? e.dataTransfer.files : e.target.files
+    const droppedFiles = e.dataTransfer?.files
+    if (!droppedFiles) return
     if (droppedFiles.length > 1) {
       this.props.client.alert(tr("~LOCAL_FILE_DIALOG.MULTIPLE_FILES_DROPPED"))
     } else if (droppedFiles.length === 1) {

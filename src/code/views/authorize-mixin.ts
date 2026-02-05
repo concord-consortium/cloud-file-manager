@@ -6,7 +6,7 @@
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
  */
 const AuthorizeMixin = {
-  getInitialState() {
+  getInitialState(this: any) {
     this._isAuthorized = false
     return {authorized: false}
   },
@@ -29,7 +29,7 @@ const AuthorizeMixin = {
   // and the state to track the authorization status, render the appropriate
   // authorization status, and re-render when authorization status changes.
 
-  UNSAFE_componentWillMount() {
+  UNSAFE_componentWillMount(this: any) {
     // Check for authorization before the first render. Providers that
     // don't require authorization or are already authorized will respond
     // immediately, but since the component isn't mounted yet we can't
@@ -37,7 +37,7 @@ const AuthorizeMixin = {
     // in componentDidMount(). Providers that require asynchronous checks
     // for authorization may return before or after the first render, so
     // code should be prepared for either eventuality.
-    return this.props.provider.authorized((authorized: any) => {
+    return this.props.provider.authorized((authorized: boolean) => {
       // always set the instance variable
       this._isAuthorized = authorized
       // set the state if we can
@@ -47,7 +47,7 @@ const AuthorizeMixin = {
     })
   },
 
-  componentDidMount() {
+  componentDidMount(this: any) {
     this._isMounted = true
     // synchronize state if necessary
     if (this.state.authorized !== this._isAuthorized) {
@@ -55,11 +55,11 @@ const AuthorizeMixin = {
     }
   },
 
-  componentWillUnmount() {
+  componentWillUnmount(this: any) {
     return this._isMounted = false
   },
 
-  render() {
+  render(this: any) {
     if (this._isAuthorized || this.state.authorized) {
       return this.renderWhenAuthorized()
     } else {

@@ -73,7 +73,7 @@ export default createReactClass({
     })
   },
 
-  filenameClicked(e: any) {
+  filenameClicked(e: React.MouseEvent<HTMLSpanElement>) {
     e.preventDefault()
     e.stopPropagation()
     this.setState({
@@ -127,7 +127,7 @@ export default createReactClass({
     }
   },
 
-  watchForEnter(e: any) {
+  watchForEnter(e: React.KeyboardEvent<HTMLInputElement>) {
     if (e.keyCode === 13) {
       return this.rename()
     } else if (e.keyCode === 27) {
@@ -140,11 +140,11 @@ export default createReactClass({
   },
 
   // CODAP eats the click events in the main workspace which causes the blur event not to fire so we need to check for a non-bubbling global click event when editing
-  checkBlur(e: any) {
+  checkBlur(e: MouseEvent | TouchEvent) {
     if (this.state.editingFilename && (e.target !== this.filename())) { return this.filenameBlurred() }
   },
 
-  langChanged(langCode: any) {
+  langChanged(langCode: string) {
     const {client, options} = this.props
     const {onLangChanged} = options.languageMenu
     if (onLangChanged != null) {
@@ -237,7 +237,7 @@ export default createReactClass({
             this.state.editingFilename
             ? (input({ref: ((elt: any) => { return this.filenameRef = elt }), value: this.state.editableFilename,
                 onChange: this.filenameChanged, onKeyDown: this.watchForEnter,
-                onMouseEnter: (e: any) => e.stopPropagation(), onMouseMove: (e: any) => e.stopPropagation()
+                onMouseEnter: (e: React.MouseEvent) => e.stopPropagation(), onMouseMove: (e: React.MouseEvent) => e.stopPropagation()
               }))
             : (span({className: 'content-filename', onClick: this.filenameClicked}, this.state.filename)),
                 this.props.fileStatus

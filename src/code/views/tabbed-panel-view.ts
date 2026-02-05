@@ -29,7 +29,7 @@ const Tab = createReactClassFactory({
 
   displayName: 'TabbedPanelTab',
 
-  clicked(e: any) {
+  clicked(e: React.MouseEvent<HTMLLIElement>) {
     e.preventDefault()
     return this.props.onSelected(this.props.index)
   },
@@ -56,14 +56,14 @@ export default createReactClass({
     Tab(settings: any) { return new TabInfo(settings) }
   },
 
-  selectedTab(index: any) {
+  selectedTab(index: number) {
     if (typeof this.props.tabs[index].onSelected === 'function') {
       this.props.tabs[index].onSelected(this.props.tabs[index].capability)
     }
     return this.setState({selectedTabIndex: index})
   },
 
-  renderTab(tab: any, index: any) {
+  renderTab(tab: TabInfo, index: number) {
     return (Tab({
       label: tab.label,
       key: index,

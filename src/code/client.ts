@@ -63,13 +63,13 @@ export type CloudFileManagerEventType = "connected" | "getContent" | "importedDa
               "rendered" | "requiresUserInteraction" | "stateChanged" | CFMFileEventType
 
 class CloudFileManagerClientEvent {
-  callback: ClientEventCallback
+  callback?: ClientEventCallback
   data: any
   id: number
   state: Partial<IClientState>
   type: CloudFileManagerEventType
 
-  constructor(type: CloudFileManagerEventType, data?: any, callback: ClientEventCallback = null, state?: Partial<IClientState>) {
+  constructor(type: CloudFileManagerEventType, data?: any, callback?: ClientEventCallback, state?: Partial<IClientState>) {
     this.type = type
     if (data == null) { data = {} }
     this.data = data
@@ -96,18 +96,18 @@ export type ClientEventListener = (event: CloudFileManagerClientEvent) => void
 export type OpenSaveCallback = (content: any, metadata: CloudMetadata, savedContent?: any) => void
 
 class CloudFileManagerClient {
-  _autoSaveInterval: number
+  _autoSaveInterval!: number
   _listeners: ClientEventListener[]
   _ui: CloudFileManagerUI
-  appOptions: CFMAppOptions
+  appOptions!: CFMAppOptions
   iframe: any
-  newFileAddsNewToQuery: boolean
-  newFileOpensInNewTab: boolean
+  newFileAddsNewToQuery!: boolean
+  newFileOpensInNewTab!: boolean
   providers: Record<string, ProviderInterface>
   state: IClientState
   urlProvider: URLProvider
   connectedPromise: Promise<void>
-  connectedPromiseResolver: { resolve: () => void, reject: () => void }
+  connectedPromiseResolver!: { resolve: () => void, reject: () => void } | null
 
   constructor(options?: any) {
     this.shouldAutoSave = this.shouldAutoSave.bind(this)
@@ -171,17 +171,19 @@ class CloudFileManagerClient {
     if (!this.appOptions.providers) {
       this.appOptions.providers = []
       for (providerName of Object.keys(allProviders || {})) {
-        appOptions.providers.push(providerName)
+        this.appOptions.providers.push(providerName)
       }
     }
 
     // preset the extension if Available
-    CloudMetadata.Extension = this.appOptions.extension
+    CloudMetadata.Extension = this.appOptions.extension ?? null
     CloudMetadata.ReadableExtensions = this.appOptions.readableExtensions || []
     if (CloudMetadata.Extension) { CloudMetadata.ReadableExtensions.push(CloudMetadata.Extension) }
 
     const readableMimetypes = this.appOptions.readableMimeTypes || []
-    readableMimetypes.push(this.appOptions.mimeType)
+    if (this.appOptions.mimeType) {
+      readableMimetypes.push(this.appOptions.mimeType)
+    }
 
     // check the providers
     const requestedProviders = this.appOptions.providers.slice()
@@ -263,7 +265,7 @@ class CloudFileManagerClient {
     })
 
     this.newFileOpensInNewTab = this.appOptions.ui?.newFileOpensInNewTab ?? true
-    this.newFileAddsNewToQuery = this.appOptions.ui?.newFileAddsNewToQuery
+    this.newFileAddsNewToQuery = this.appOptions.ui?.newFileAddsNewToQuery ?? false
 
     if (this.appOptions.ui?.confirmCloseIfDirty) {
       this._setupConfirmOnClose()
@@ -300,10 +302,10 @@ class CloudFileManagerClient {
   processUrlParams() {
     // process the hash params
     let providerName
-    const { hashParams } = this.appOptions
-    if (hashParams.sharedContentId) {
+    const hashParams = this.appOptions.hashParams
+    if (hashParams?.sharedContentId) {
       return this.openSharedContent(hashParams.sharedContentId)
-    } else if (hashParams.fileParams) {
+    } else if (hashParams?.fileParams) {
       if (hashParams.fileParams.indexOf("http") === 0) {
         return this.openUrlFile(hashParams.fileParams)
       } else {
@@ -311,9 +313,9 @@ class CloudFileManagerClient {
         [providerName, providerParams] = hashParams.fileParams.split(':')
         return this.openProviderFile(providerName, providerParams)
       }
-    } else if (hashParams.copyParams) {
+    } else if (hashParams?.copyParams) {
       return this.openCopiedFile(hashParams.copyParams)
-    } else if (hashParams.newInFolderParams) {
+    } else if (hashParams?.newInFolderParams) {
       let folder;
       [providerName, folder] = hashParams.newInFolderParams.split(':')
       return this.createNewInFolder(providerName, folder)
@@ -338,7 +340,7 @@ class CloudFileManagerClient {
     return this._event('rendered', {client: this})
   }
 
-  listen(listener: ClientEventListener) {
+  listen(listener?: ClientEventListener) {
     if (listener) {
       return this._listeners.push(listener)
     }
@@ -394,16 +396,16 @@ class CloudFileManagerClient {
     return this._ui.updateMenuBar(bar)
   }
 
-  newFile(callback: ClientEventCallback = null) {
+  newFile(callback?: ClientEventCallback) {
     this._closeCurrentFile()
     this._resetState()
     window.location.hash = ""
     return this._event('newedFile', {content: ""}, callback)
   }
 
-  newFileDialog(callback: ClientEventCallback = null) {
+  newFileDialog(callback?: ClientEventCallback) {
     if (this.newFileOpensInNewTab) {
-      return window.open(this.getCurrentUrl(this.newFileAddsNewToQuery ? "#new" : null), '_blank')
+      return window.open(this.getCurrentUrl(this.newFileAddsNewToQuery ? "#new" : undefined), '_blank')
     } else if (this.state.dirty) {
       if (this._autoSaveInterval && this.state.metadata) {
         this.save()
@@ -416,7 +418,7 @@ class CloudFileManagerClient {
     }
   }
 
-  openFile(metadata: CloudMetadata, callback: OpenSaveCallback = null) {
+  openFile(metadata: CloudMetadata, callback?: OpenSaveCallback) {
     if (metadata?.provider?.can(ECapabilities.load, metadata)) {
       this._event('willOpenFile', {op: "openFile"})
       return metadata.provider.load(metadata, (err: string | null, content: any) => {
@@ -427,17 +429,15 @@ class CloudFileManagerClient {
         this._closeCurrentFile()
         content = this._filterLoadedContent(content)
         this._fileOpened(content, metadata, {openedContent: content.clone()}, this._getHashParams(metadata))
-        if (typeof callback === 'function') {
-          callback(content, metadata)
-        }
-        return metadata.provider.fileOpened(content, metadata)
+        callback?.(content, metadata)
+        return metadata.provider?.fileOpened(content, metadata)
       })
     } else {
       return this.openFileDialog(callback)
     }
   }
 
-  openFileDialog(callback: OpenSaveCallback = null): any {
+  openFileDialog(callback?: OpenSaveCallback): any {
     const showDialog = () => {
       return this._ui.openFileDialog((metadata: CloudMetadata) => {
         return this.openFile(metadata, callback)
@@ -450,15 +450,15 @@ class CloudFileManagerClient {
     }
   }
 
-  closeFile(callback: () => void = null) {
+  closeFile(callback?: () => void) {
     this._closeCurrentFile()
     this._resetState()
     window.location.hash = ""
     this._event('closedFile', {content: ""})
-    return (typeof callback === 'function' ? callback() : undefined)
+    return callback?.()
   }
 
-  closeFileDialog(callback: () => void = null) {
+  closeFileDialog(callback?: () => void) {
     if (!this.state.dirty) {
       return this.closeFile(callback)
     } else {
@@ -466,24 +466,24 @@ class CloudFileManagerClient {
     }
   }
 
-  importData(data: any, callback: (data: any) => void = null) {
+  importData(data: any, callback?: (data: any) => void) {
     this._event('importedData', data)
-    return (typeof callback === 'function' ? callback(data) : undefined)
+    return callback?.(data)
   }
 
-  importDataDialog(callback: (data: any) => void = null) {
+  importDataDialog(callback?: (data: any) => void) {
     return this._ui.importDataDialog((data: any) => {
       return this.importData(data, callback)
     })
   }
 
-  readLocalFile(file: any, callback: (args: { name: string, content: any }) => void = null) {
+  readLocalFile(file: any, callback?: (args: { name: string, content: any }) => void) {
     const reader = new FileReader()
-    reader.onload = loaded => typeof callback === 'function' ? callback({name: file.name, content: loaded.target.result}) : undefined
+    reader.onload = loaded => callback?.({name: file.name, content: loaded.target?.result})
     return reader.readAsText(file)
   }
 
-  openLocalFile(file: any, callback: OpenSaveCallback = null) {
+  openLocalFile(file: any, callback?: OpenSaveCallback) {
     this._event('willOpenFile', {op: "openLocalFile"})
     return this.readLocalFile(file, (data: any) => {
       let content = cloudContentFactory.createEnvelopedCloudContent(data.content)
@@ -493,11 +493,11 @@ class CloudFileManagerClient {
         type: CloudMetadata.File
       })
       this._fileOpened(content, metadata, {openedContent: content.clone()})
-      return (typeof callback === 'function' ? callback(content, metadata) : undefined)
+      return callback?.(content, metadata)
     })
   }
 
-  openLocalFileWithConfirmation(file: any, callback: OpenSaveCallback = null) {
+  openLocalFileWithConfirmation(file: any, callback?: OpenSaveCallback) {
     const openFile = () => this.openLocalFile(file, callback)
     if (!this.state.dirty) {
       return openFile()
@@ -506,7 +506,7 @@ class CloudFileManagerClient {
     }
   }
 
-  importLocalFile(file: any, callback: (data: any) => void = null) {
+  importLocalFile(file: any, callback?: (data: any) => void) {
     return this.readLocalFile(file, (data: any) => {
       return this.importData(data, callback)
     })
@@ -550,7 +550,7 @@ class CloudFileManagerClient {
   disconnectCurrentFile() {
     console.warn('Closing file (rejected reauth)')
     if (this.state.metadata) { this.state.metadata.provider = null }
-    this._setState({saving: null, saved: null})
+    this._setState({saving: undefined, saved: undefined})
     window.location.hash = ""
     this._event('ready')
   }
@@ -561,9 +561,9 @@ class CloudFileManagerClient {
     return this.confirm(tr("~CONFIRM.AUTHORIZE_OPEN"), () => {
         return provider.authorize(() => {
           this._event('willOpenFile', {op: "confirmAuthorizeAndOpen"})
-          return provider.openSaved(providerParams, (err: string | null, content: any, metadata: CloudMetadata) => {
-            if (err) {
-              return this.alert(err)
+          return provider.openSaved(providerParams, (err: string | null, content?: any, metadata?: CloudMetadata) => {
+            if (err || !content || !metadata) {
+              return this.alert(err || 'No content or metadata returned')
             }
             content = this._filterLoadedContent(content)
             this._fileOpened(content, metadata, {openedContent: content.clone()}, this._getHashParams(metadata))
@@ -586,9 +586,9 @@ class CloudFileManagerClient {
         // we can open the document without authorization in some cases
         if (isAuthorized || !provider.isAuthorizationRequired()) {
           this._event('willOpenFile', {op: "openProviderFile"})
-          return provider.openSaved(providerParams, (err: string | null, content: any, metadata: CloudMetadata) => {
-            if (err) {
-              return this.alert(err, () => this.ready())
+          return provider.openSaved(providerParams, (err: string | null, content?: any, metadata?: CloudMetadata) => {
+            if (err || !content || !metadata) {
+              return this.alert(err || 'No content or metadata returned', () => this.ready())
             }
             // if we just opened the file, it doesn't need to be saved until the contents are changed unless
             // it requires conversion from an older version
@@ -607,10 +607,10 @@ class CloudFileManagerClient {
   }
 
   openUrlFile(url: string) {
-    return this.urlProvider.openFileFromUrl(url, (err: string | null, content: any, metadata: CloudMetadata) => {
+    return this.urlProvider.openFileFromUrl(url, (err: string | null, content?: any, metadata?: CloudMetadata) => {
       this._event('willOpenFile', {op: "openUrlFile"})
-      if (err) {
-        return this.alert(err, () => this.ready())
+      if (err || !content || !metadata) {
+        return this.alert(err || 'No content or metadata returned', () => this.ready())
       }
       content = this._filterLoadedContent(content)
       return this._fileOpened(content, metadata, {openedContent: content.clone()}, this._getHashParams(metadata))
@@ -640,7 +640,7 @@ class CloudFileManagerClient {
   }
 
   setInitialFilename(filename: string) {
-    this.state.metadata.rename(filename)
+    this.state.metadata?.rename(filename)
     return this.save()
   }
 
@@ -652,26 +652,31 @@ class CloudFileManagerClient {
     let rejectCallback = () => {this.disconnectCurrentFile()}
     // trigger authorize() from confirmation dialog to avoid popup blockers
     return this.confirm(tr("~CONFIRM.AUTHORIZE_SAVE"), () => {
-      return this.state.metadata.provider.authorize(() => {
-        return this.saveFile(stringContent, this.state.metadata, callback)
+      return this.state.metadata?.provider?.authorize(() => {
+        if (this.state.metadata) {
+          return this.saveFile(stringContent, this.state.metadata, callback)
+        }
       })
     },
     rejectCallback)
   }
 
-  save(callback: OpenSaveCallback = null) {
+  save(callback?: OpenSaveCallback) {
     return this._event('getContent', { shared: this._sharedMetadata() }, (stringContent: any) => {
       return this.saveContent(stringContent, callback)
     })
   }
 
-  saveContent(stringContent: any, callback: OpenSaveCallback = null) {
+  saveContent(stringContent: any, callback?: OpenSaveCallback) {
     const provider = this.state.metadata?.provider || this.autoProvider(ECapabilities.save)
     if (provider != null) {
       return provider.authorized((isAuthorized: boolean) => {
         // we can save the document without authorization in some cases
         if (isAuthorized || !provider.isAuthorizationRequired()) {
-          return this.saveFile(stringContent, this.state.metadata, callback)
+          if (this.state.metadata) {
+            return this.saveFile(stringContent, this.state.metadata, callback)
+          }
+          return this.saveFileDialog(stringContent, callback)
         } else {
           return this.confirmAuthorizeAndSave(stringContent, callback)
         }
@@ -681,7 +686,7 @@ class CloudFileManagerClient {
     }
   }
 
-  saveFile(stringContent: any, metadata: CloudMetadata, callback: OpenSaveCallback = null) {
+  saveFile(stringContent: any, metadata: CloudMetadata, callback?: OpenSaveCallback) {
     const readonly = metadata && !metadata.overwritable // only check if metadata exists
     const resaveable = metadata?.provider?.can(ECapabilities.resave, metadata)
 
@@ -693,22 +698,22 @@ class CloudFileManagerClient {
     }
   }
 
-  saveFileNoDialog(stringContent: any, metadata: CloudMetadata, callback: OpenSaveCallback = null) {
+  saveFileNoDialog(stringContent: any, metadata: CloudMetadata, callback?: OpenSaveCallback) {
     this._setState({
       saving: metadata})
     let currentContent = this._createOrUpdateCurrentContent(stringContent, metadata)
     currentContent = this.appOptions.contentSaveFilter?.(currentContent) || currentContent
 
-    return metadata.provider.save(currentContent, metadata, (err, statusCode, savedContent) => {
+    return metadata.provider?.save(currentContent, metadata, (err, statusCode, savedContent) => {
       let failures
       if (err) {
         if (statusCode === 401 || statusCode === 403 || statusCode === 404) {
           // disable autosave while the confirmation dialog is showing
           metadata.autoSaveDisabled = true
-          this._setState({ metadata, saving: null })
+          this._setState({ metadata, saving: undefined })
           return this.confirmAuthorizeAndSave(stringContent, callback)
         } else {
-          this._setState({ saving: null })
+          this._setState({ saving: undefined })
           failures = this.state.failures
           if (!failures) {
             failures = 1
@@ -741,29 +746,29 @@ class CloudFileManagerClient {
           delete metadata.autoSaveDisabled
         }
         this._fileChanged('savedFile', currentContent, metadata, {saved: true}, this._getHashParams(metadata))
-        return (typeof callback === 'function' ? callback(currentContent, metadata, savedContent) : undefined)
+        return callback?.(currentContent, metadata, savedContent)
       }
     })
   }
 
-  saveFileDialog(stringContent: any = null, callback: OpenSaveCallback = null) {
+  saveFileDialog(stringContent?: any, callback?: OpenSaveCallback) {
     return this._ui.saveFileDialog((metadata: CloudMetadata) => {
       return this._dialogSave(stringContent, metadata, callback)
     })
   }
 
-  saveFileAsDialog(stringContent: any = null, callback: OpenSaveCallback = null) {
+  saveFileAsDialog(stringContent?: any, callback?: OpenSaveCallback) {
     return this._ui.saveFileAsDialog((metadata: CloudMetadata) => {
       return this._dialogSave(stringContent, metadata, callback)
     })
   }
 
-  createCopy(stringContent: any = null, callback: (errOrCopyParams?: number | string) => void = null) {
+  createCopy(stringContent?: any, callback?: (errOrCopyParams?: number | string) => void) {
     const saveAndOpenCopy = (stringContent: any) => {
       return this.saveCopiedFile(stringContent, this.state.metadata?.name, (err: string | null, copyParams?: number) => {
-        if (err) { return (typeof callback === 'function' ? callback(err) : undefined) }
+        if (err) { return callback?.(err) }
         window.open(this.getCurrentUrl(`#copy=${copyParams}`))
-        return (typeof callback === 'function' ? callback(copyParams) : undefined)
+        return callback?.(copyParams)
       })
     }
     if (stringContent == null) {
@@ -789,7 +794,7 @@ class CloudFileManagerClient {
         stringContent
       })
       window.localStorage.setItem(`${prefix}${maxCopyNumber}`, value)
-      return (typeof callback === 'function' ? callback(null, maxCopyNumber) : undefined)
+      return callback?.(null, maxCopyNumber)
     } catch (e) {
       // CODAP style overrides
       const divStyle = "text-align: left"
@@ -817,7 +822,7 @@ class CloudFileManagerClient {
     this._event('willOpenFile', {op: "openCopiedFile"})
     try {
       const key = `cfm-copy::${copyParams}`
-      const copied = JSON.parse(window.localStorage.getItem(key))
+      const copied = JSON.parse(window.localStorage.getItem(key) ?? '{}')
       let content = cloudContentFactory.createEnvelopedCloudContent(copied.stringContent)
       content = this._filterLoadedContent(content)
       const metadata = new CloudMetadata({
@@ -835,7 +840,7 @@ class CloudFileManagerClient {
   haveTempFile() {
     try {
       const key = "cfm-tempfile"
-      return !!(JSON.parse(window.localStorage.getItem(key)))
+      return !!(JSON.parse(window.localStorage.getItem(key) ?? 'null'))
     } catch (e) {
       return false
     }
@@ -865,7 +870,7 @@ class CloudFileManagerClient {
     this._event('willOpenFile', {op: "openAndClearTempFile"})
     try {
       const key = "cfm-tempfile"
-      const { name, stringContent } = JSON.parse(window.localStorage.getItem(key))
+      const { name, stringContent } = JSON.parse(window.localStorage.getItem(key) ?? '{}')
       let content = cloudContentFactory.createEnvelopedCloudContent(stringContent)
       content = this._filterLoadedContent(content)
       const metadata = new CloudMetadata({
@@ -960,19 +965,23 @@ class CloudFileManagerClient {
       })
     }
     return this.setShareState(true, (err: string | null, sharedContentId: string, currentContent: any) => {
-      this._fileChanged('sharedFile', currentContent, this.state.metadata)
+      if (this.state.metadata) {
+        this._fileChanged('sharedFile', currentContent, this.state.metadata)
+      }
       return callback?.(null, sharedContentId)
     })
   }
 
   unshare(callback?: (err: string | null) => void) {
     return this.setShareState(false, (err: string | null, sharedContentId: string, currentContent: any) => {
-      this._fileChanged('unsharedFile', currentContent, this.state.metadata)
+      if (this.state.metadata) {
+        this._fileChanged('unsharedFile', currentContent, this.state.metadata)
+      }
       return callback?.(null)
     })
   }
 
-  revertToShared(callback: (err: string | null) => void = null) {
+  revertToShared(callback?: (err: string | null) => void) {
     // Look for sharedDocumentUrl or Url first:
     const id = this.state.currentContent?.get("sharedDocumentUrl")
             || this.state.currentContent?.get("url")
@@ -995,20 +1004,20 @@ class CloudFileManagerClient {
     }
   }
 
-  revertToSharedDialog(callback: (err: string | null) => void = null) {
+  revertToSharedDialog(callback?: (err: string | null) => void) {
     if ((this.state.currentContent != null ? this.state.currentContent.get("sharedDocumentId") : undefined) && (this.state.shareProvider != null)) {
       return this.confirm(tr("~CONFIRM.REVERT_TO_SHARED_VIEW"), () => this.revertToShared(callback))
     }
   }
 
-  downloadDialog(callback: UIEventCallback = null) {
+  downloadDialog(callback?: UIEventCallback) {
     // should share metadata be included in downloaded local files?
     return this._event('getContent', { shared: this._sharedMetadata() }, (content: any) => {
       const envelopedContent = cloudContentFactory.createEnvelopedCloudContent(content)
       if (this.state.currentContent != null) {
         this.state.currentContent.copyMetadataTo(envelopedContent)
       }
-      return this._ui.downloadDialog(this.state.metadata?.name, envelopedContent, callback)
+      return this._ui.downloadDialog(this.state.metadata?.name ?? '', envelopedContent, callback)
     })
   }
 
@@ -1069,9 +1078,9 @@ class CloudFileManagerClient {
     }
     if (newName !== (this.state.metadata != null ? this.state.metadata.name : undefined)) {
       if (metadata?.provider?.can(ECapabilities.rename, metadata)) {
-        return this.state.metadata.provider.rename(this.state.metadata, newName, (err: string | null, metadata: CloudMetadata) => {
-          if (err) {
-            return this.alert(err)
+        return this.state.metadata?.provider?.rename(this.state.metadata, newName, (err: string | null, metadata?: CloudMetadata) => {
+          if (err || !metadata) {
+            return this.alert(err || 'Rename failed')
           }
           return _rename(metadata)
         })
@@ -1089,24 +1098,26 @@ class CloudFileManagerClient {
     }
   }
 
-  renameDialog(callback: (newName: string) => void = null) {
-    return this._ui.renameDialog(this.state.metadata != null ? this.state.metadata.name : undefined, (newName: any) => {
-      return this.rename(this.state.metadata, newName, callback)
+  renameDialog(callback?: (newName: string) => void) {
+    return this._ui.renameDialog(this.state.metadata?.name ?? '', (newName: any) => {
+      if (this.state.metadata) {
+        return this.rename(this.state.metadata, newName, callback)
+      }
     })
   }
 
-  revertToLastOpened(callback: (err: string | null) => void = null) {
+  revertToLastOpened(callback?: (err: string | null) => void) {
     this._event('willOpenFile', {op: "revertToLastOpened"})
     if ((this.state.openedContent != null) && this.state.metadata) {
       return this._fileOpened(this.state.openedContent, this.state.metadata, {openedContent: this.state.openedContent.clone()})
     }
   }
 
-  revertToLastOpenedDialog(callback: (err: string | null) => void = null) {
+  revertToLastOpenedDialog(callback?: (err: string | null) => void) {
     if ((this.state.openedContent != null) && this.state.metadata) {
       return this.confirm(tr('~CONFIRM.REVERT_TO_LAST_OPENED'), () => this.revertToLastOpened(callback))
     } else {
-      return (typeof callback === 'function' ? callback('No initial opened version was found for the currently active file') : undefined)
+      return callback?.('No initial opened version was found for the currently active file')
     }
   }
 
@@ -1125,7 +1136,7 @@ class CloudFileManagerClient {
       const data = { content: stringContent, extension, mimeType }
       return this._ui.saveSecondaryFileAsDialog(data, (metadata: CloudMetadata) => {
         // replace defaults
-        if (extension) {
+        if (extension && metadata.filename) {
           metadata.filename = CloudMetadata.newExtension(metadata.filename, extension)
         }
         if (mimeType) {
@@ -1139,7 +1150,7 @@ class CloudFileManagerClient {
 
   // Saves a file to backend, but does not update current metadata.
   // Used e.g. when exporting .csv files from CODAP
-  saveSecondaryFile(stringContent: any, metadata: CloudMetadata, callback: OpenSaveCallback = null) {
+  saveSecondaryFile(stringContent: any, metadata: CloudMetadata, callback?: OpenSaveCallback) {
     if (metadata?.provider?.can(ECapabilities["export"], metadata)) {
       return metadata.provider.saveAsExport(stringContent, metadata, (err: string | null, statusCode?: number) => {
         return err ? this.alert(err) : callback?.(stringContent, metadata)
@@ -1255,7 +1266,7 @@ class CloudFileManagerClient {
   alert(message: string, titleOrCallback?: string | (() => void), callback?: () => void) {
     if (_.isFunction(titleOrCallback)) {
       callback = titleOrCallback
-      titleOrCallback = null
+      titleOrCallback = undefined
     }
     return this._ui.alertDialog(message, ((titleOrCallback as string) || tr("~CLIENT_ERROR.TITLE")), callback)
   }
@@ -1283,14 +1294,14 @@ class CloudFileManagerClient {
           })
         } else {
           // signal that nothing needs to be saved
-          resolve(undefined)
+          resolve({})
         }
       })
     }
-    return Promise.resolve(undefined)
+    return Promise.resolve({})
   }
 
-  _dialogSave(stringContent: any, metadata: CloudMetadata, callback: OpenSaveCallback) {
+  _dialogSave(stringContent: any, metadata: CloudMetadata, callback?: OpenSaveCallback) {
     if (stringContent != null) {
       return this.saveFileNoDialog(stringContent, metadata, callback)
     } else {
@@ -1309,7 +1320,7 @@ class CloudFileManagerClient {
     }
   }
 
-  _fileChanged(type: CFMFileChangedEventType, content: any, metadata: CloudMetadata, additionalState?: any, hashParams: string = null) {
+  _fileChanged(type: CFMFileChangedEventType, content: any, metadata: CloudMetadata, additionalState?: any, hashParams?: string) {
     if (additionalState == null) { additionalState = {} }
 
     this._updateMetaDataOverwritable(metadata)
@@ -1317,7 +1328,7 @@ class CloudFileManagerClient {
     return this._event(type, { content: (content != null ? content.getClientContent() : undefined), shared: this._sharedMetadata() })
   }
 
-  _fileOpened(content: any, metadata: CloudMetadata, additionalState?: any, hashParams: string = null) {
+  _fileOpened(content: any, metadata: CloudMetadata, additionalState?: any, hashParams?: string) {
     if (additionalState == null) { additionalState = {} }
 
     const eventData = { content: content?.getClientContent?.() ?? content }
@@ -1342,23 +1353,23 @@ class CloudFileManagerClient {
     })
   }
 
-  _updateState(content: any, metadata: CloudMetadata, additionalState: Partial<IClientState> = {}, hashParams: string = null) {
+  _updateState(content: any, metadata: CloudMetadata, additionalState: Partial<IClientState> = {}, hashParams?: string) {
     const state: Partial<IClientState> = {
       currentContent: content,
       metadata,
-      saving: null,
+      saving: undefined,
       saved: false,
       dirty: !additionalState.saved && content?.requiresConversion(),
       ...additionalState
     }
     this._setWindowTitle(metadata?.name)
-    if (hashParams !== null) {
+    if (hashParams !== undefined) {
       window.location.hash = hashParams
     }
     return this._setState(state)
   }
 
-  _event(type: CloudFileManagerEventType, data?: any, eventCallback: ClientEventCallback = null) {
+  _event(type: CloudFileManagerEventType, data?: any, eventCallback?: ClientEventCallback) {
     if (data == null) { data = {} }
     const event = new CloudFileManagerClientEvent(type, data, eventCallback, this.state)
     for (let listener of this._listeners) {
@@ -1382,11 +1393,11 @@ class CloudFileManagerClient {
 
   _resetState() {
     return this._setState({
-      openedContent: null,
-      currentContent: null,
-      metadata: null,
+      openedContent: undefined,
+      currentContent: undefined,
+      metadata: undefined,
       dirty: false,
-      saving: null,
+      saving: undefined,
       saved: false,
       failures: 0
     })
@@ -1399,7 +1410,7 @@ class CloudFileManagerClient {
     }
   }
 
-  _createOrUpdateCurrentContent(stringContent: any, metadata: CloudMetadata = null) {
+  _createOrUpdateCurrentContent(stringContent: any, metadata?: CloudMetadata) {
     let currentContent: CloudContent
     if (this.state.currentContent != null) {
       ({ currentContent } = this.state)
@@ -1433,7 +1444,7 @@ class CloudFileManagerClient {
     const canOpenSaved = metadata?.provider?.canOpenSaved() || false
     let openSavedParams = canOpenSaved ? metadata?.provider?.getOpenSavedParams(metadata) : null
     if (canOpenSaved && (openSavedParams != null) && (typeof openSavedParams === "string")) {
-      return `#file=${metadata.provider.urlDisplayName || metadata.provider.name}:${encodeURIComponent(openSavedParams)}`
+      return `#file=${metadata.provider?.urlDisplayName || metadata.provider?.name}:${encodeURIComponent(openSavedParams)}`
     } else if (metadata?.provider instanceof URLProvider && (window.location.hash.indexOf("#file=http") === 0)) {
       return window.location.hash    // leave it alone
     } else { return "" }

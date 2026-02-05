@@ -90,13 +90,14 @@ class AppView extends React.Component<IAppViewProps, IAppViewState> {
   displayName: string
   state: IAppViewState
 
-  constructor(props: any) {
+  constructor(props: IAppViewProps) {
     super(props)
     this.displayName = 'CloudFileManager'
+    const client = this.props.client
     this.state = {
-      filename: this.getFilename(this.props.client.state.metadata),
-      provider: this.props.client.state.metadata?.provider,
-      menuItems: this.props.client._ui.menu?.items || [],
+      filename: this.getFilename(client?.state.metadata),
+      provider: client?.state.metadata?.provider,
+      menuItems: client?._ui.menu?.items || [],
       menuOptions: this.props.ui?.menuBar || {},
       providerDialog: null,
       downloadDialog: null,
@@ -111,18 +112,21 @@ class AppView extends React.Component<IAppViewProps, IAppViewState> {
     }
   }
 
-  getFilename(metadata: CloudMetadata) {
+  getFilename(metadata?: CloudMetadata) {
     return metadata?.name || null
   }
 
   componentDidMount() {
-    this.props.client.listen((event: CloudFileManagerClientEvent) => {
-      const fileStatus = (() => {
+    const { client } = this.props
+    if (!client) return
+
+    client.listen((event: CloudFileManagerClientEvent) => {
+      const fileStatus: { message: string, type: string } | undefined = (() => {
         let message
         if (event.state.saving) {
           return {message: tr('~FILE_STATUS.SAVING'), type: 'saving-info'}
         } else if (event.state.saved) {
-          const providerName = event.state.metadata.provider?.displayName
+          const providerName = event.state.metadata?.provider?.displayName
           message = providerName
             ? tr('~FILE_STATUS.SAVED_TO_PROVIDER', { providerName })
             : tr('~FILE_STATUS.SAVED')
@@ -132,7 +136,7 @@ class AppView extends React.Component<IAppViewProps, IAppViewState> {
         } else if (event.state.dirty) {
           return {message: tr('~FILE_STATUS.UNSAVED'), type: 'alert'}
         } else {
-          return null
+          return undefined
         }
       })()
       this.setState({
@@ -143,11 +147,11 @@ class AppView extends React.Component<IAppViewProps, IAppViewState> {
 
       switch (event.type) {
         case 'connected':
-          return this.setState({menuItems: (this.props.client._ui.menu != null ? this.props.client._ui.menu.items : undefined) || []})
+          return this.setState({menuItems: (client._ui.menu != null ? client._ui.menu.items : undefined) || []})
       }
     })
 
-    this.props.client._ui.listen((event: CloudFileManagerUIEvent) => {
+    client._ui.listen((event: CloudFileManagerUIEvent) => {
       const {menuOptions} = this.state
       switch (event.type) {
         case 'showProviderDialog':
@@ -173,7 +177,7 @@ class AppView extends React.Component<IAppViewProps, IAppViewState> {
         case 'showSelectInteractiveStateDialog':
           return this.setState({selectInteractiveStateDialog: event.data})
         case 'replaceMenu':
-          return this.setState({ menuItems: this.props.client._ui.menu.items })
+          return this.setState({ menuItems: client._ui.menu?.items || [] })
         case 'appendMenuItem':
           this.state.menuItems.push(event.data)
           return this.setState({menuItems: this.state.menuItems})
@@ -220,7 +224,7 @@ class AppView extends React.Component<IAppViewProps, IAppViewState> {
       }
     })
 
-    this.props.client._ui.resolveIsInitialized(true)
+    client._ui.resolveIsInitialized(true)
   }
 
   _getMenuItemIndex = (key: string) => {
@@ -279,6 +283,7 @@ class AppView extends React.Component<IAppViewProps, IAppViewState> {
         return (ImportTabbedDialog({client: this.props.client, dialog: this.state.importDialog, close: this.closeDialogs}))
       } else if (this.state.shareDialog) {
         const { client, enableLaraSharing, ui } = this.props
+        if (!client) return null
         return (
           <ShareDialogView currentBaseUrl={client.getCurrentUrl()} isShared={client.isShared()}
             sharedDocumentId={client.state?.currentContent?.get('sharedDocumentId')}
