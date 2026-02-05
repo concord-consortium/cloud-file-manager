@@ -100,6 +100,108 @@ describe('BannerView', () => {
     expect(banner.style.color).toBe('')
   })
 
+  it('applies custom button colors when valid', () => {
+    const config = {
+      ...defaultConfig,
+      buttonBackgroundColor: '#333333',
+      buttonTextColor: '#ffffff'
+    }
+    render(<BannerView config={config} onDismiss={mockOnDismiss} />)
+    const button = screen.getByTestId('cfm-banner-button')
+    expect(button).toHaveStyle({ backgroundColor: '#333333', color: '#ffffff' })
+  })
+
+  it('applies custom close button color when valid', () => {
+    const config = {
+      ...defaultConfig,
+      closeButtonColor: '#444444'
+    }
+    render(<BannerView config={config} onDismiss={mockOnDismiss} />)
+    const closeButton = screen.getByTestId('cfm-banner-close')
+    const dontShowButton = screen.getByTestId('cfm-banner-dont-show')
+    expect(closeButton).toHaveStyle({ color: '#444444', borderColor: '#444444' })
+    expect(dontShowButton).toHaveStyle({ color: '#444444', borderColor: '#444444' })
+  })
+
+  it('does not apply invalid button colors', () => {
+    const config: BannerConfig = {
+      ...defaultConfig,
+      buttonBackgroundColor: 'url(evil)',
+      buttonTextColor: 'expression(alert(1))',
+      closeButtonColor: '<script>bad</script>'
+    }
+    render(<BannerView config={config} onDismiss={mockOnDismiss} />)
+    const button = screen.getByTestId('cfm-banner-button')
+    const closeButton = screen.getByTestId('cfm-banner-close')
+    expect(button.style.backgroundColor).toBe('')
+    expect(button.style.color).toBe('')
+    expect(closeButton.style.color).toBe('')
+    expect(closeButton.style.borderColor).toBe('')
+  })
+
+  it('applies custom padding when valid', () => {
+    const config = {
+      ...defaultConfig,
+      paddingX: 20,
+      paddingY: 8
+    }
+    render(<BannerView config={config} onDismiss={mockOnDismiss} />)
+    const banner = screen.getByTestId('cfm-banner')
+    expect(banner).toHaveStyle({
+      paddingTop: '8px',
+      paddingBottom: '8px',
+      paddingLeft: '20px',
+      paddingRight: '20px'
+    })
+  })
+
+  it('does not apply invalid padding values', () => {
+    const config = {
+      ...defaultConfig,
+      paddingX: -10,
+      paddingY: NaN
+    }
+    render(<BannerView config={config} onDismiss={mockOnDismiss} />)
+    const banner = screen.getByTestId('cfm-banner')
+    expect(banner.style.paddingTop).toBe('')
+    expect(banner.style.paddingLeft).toBe('')
+  })
+
+  it('applies custom button padding when valid', () => {
+    const config = {
+      ...defaultConfig,
+      buttonPaddingX: 10,
+      buttonPaddingY: 5
+    }
+    render(<BannerView config={config} onDismiss={mockOnDismiss} />)
+    const button = screen.getByTestId('cfm-banner-button')
+    const dontShowButton = screen.getByTestId('cfm-banner-dont-show')
+    expect(button).toHaveStyle({
+      paddingTop: '5px',
+      paddingBottom: '5px',
+      paddingLeft: '10px',
+      paddingRight: '10px'
+    })
+    expect(dontShowButton).toHaveStyle({
+      paddingTop: '5px',
+      paddingBottom: '5px',
+      paddingLeft: '10px',
+      paddingRight: '10px'
+    })
+  })
+
+  it('does not apply invalid button padding values', () => {
+    const config = {
+      ...defaultConfig,
+      buttonPaddingX: -5,
+      buttonPaddingY: Infinity
+    }
+    render(<BannerView config={config} onDismiss={mockOnDismiss} />)
+    const button = screen.getByTestId('cfm-banner-button')
+    expect(button.style.paddingTop).toBe('')
+    expect(button.style.paddingLeft).toBe('')
+  })
+
   it('has correct ARIA attributes', () => {
     render(<BannerView config={defaultConfig} onDismiss={mockOnDismiss} />)
     const banner = screen.getByTestId('cfm-banner')

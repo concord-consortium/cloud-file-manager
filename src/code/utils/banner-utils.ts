@@ -12,6 +12,13 @@ export interface BannerConfig {
   endDate?: number
   backgroundColor?: string
   textColor?: string
+  buttonBackgroundColor?: string
+  buttonTextColor?: string
+  closeButtonColor?: string
+  paddingX?: number
+  paddingY?: number
+  buttonPaddingX?: number
+  buttonPaddingY?: number
 }
 
 /**
