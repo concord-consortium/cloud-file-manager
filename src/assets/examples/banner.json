@@ -1,10 +1,17 @@
 {
-  "message": "We’re retiring this CODAP version soon.",
+  "message": "We are retiring this version of CODAP soon and updating to a new version.",
   "id": "codap3-example-1",
-  "buttonText": "Test the new one here",
+  "buttonText": "Test the new version here",
   "buttonUrl": "https://codap3.concord.org/beta",
   "buttonTarget": "_blank",
   "enabled": true,
-  "backgroundColor": "#1a73e8",
-  "textColor": "#ffffff"
+  "backgroundColor": "#fbe5b3",
+  "textColor": "#242424",
+  "buttonBackgroundColor": "#242424",
+  "buttonTextColor": "#ffffff",
+  "closeButtonColor": "#242424",
+  "paddingX": 8,
+  "paddingY": 4,
+  "buttonPaddingX": 8,
+  "buttonPaddingY": 4
 }

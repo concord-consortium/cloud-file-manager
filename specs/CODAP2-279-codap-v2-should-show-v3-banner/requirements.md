@@ -285,3 +285,73 @@ When the banner appears, should focus move to it? When dismissed, where should f
 The banner should have `role="banner"` or `role="alert"` (if urgent) and appropriate `aria-label`. The spec should specify the semantic role.
 
 **Resolution:** Added technical note: use `role="status"` with `aria-label="Announcement"` — appropriate for informational content that isn't urgent.
+
+---
+
+## Addendum: Extended Styling Configuration (2026-02-05)
+
+After initial implementation, additional styling configuration options were added to support banners with custom color schemes where the default button colors (white buttons with blue text) don't work well.
+
+### New Configuration Options
+
+The banner JSON configuration now supports these additional optional properties:
+
+- `buttonBackgroundColor` (optional): CSS color for the action button background. Default: `#ffffff` (white).
+- `buttonTextColor` (optional): CSS color for the action button text. Default: `#1a73e8` (blue).
+- `closeButtonColor` (optional): CSS color for the close "×" button and "Don't show again" button text/border. Default: `#ffffff` (white).
+- `paddingX` (optional): Horizontal padding of the banner in pixels. Default: `16`.
+- `paddingY` (optional): Vertical padding of the banner in pixels. Default: `10`.
+- `buttonPaddingX` (optional): Horizontal padding inside buttons in pixels. Applies to action button and "Don't show again" button. Default: `12`.
+- `buttonPaddingY` (optional): Vertical padding inside buttons in pixels. Applies to action button and "Don't show again" button. Default: `6`.
+
+### Updated Banner JSON Schema
+
+```typescript
+interface BannerConfig {
+  message: string;              // Required: banner text
+  id: string;                   // Required: unique ID for dismissal tracking
+  buttonText?: string;          // Optional: action button label (default: "Learn More")
+  buttonUrl?: string;           // Optional: action button URL (if omitted, no button shown)
+  buttonTarget?: string;        // Optional: target window/tab name (default: "_blank")
+  enabled?: boolean;            // Optional: global enable/disable (default: true)
+  startDate?: number;           // Optional: Unix timestamp (ms), show on or after (inclusive)
+  endDate?: number;             // Optional: Unix timestamp (ms), show on or before (inclusive)
+  backgroundColor?: string;     // Optional: CSS color for background
+  textColor?: string;           // Optional: CSS color for text
+  buttonBackgroundColor?: string; // Optional: CSS color for action button background
+  buttonTextColor?: string;     // Optional: CSS color for action button text
+  closeButtonColor?: string;    // Optional: CSS color for close/dismiss buttons
+  paddingX?: number;            // Optional: horizontal banner padding in pixels
+  paddingY?: number;            // Optional: vertical banner padding in pixels
+  buttonPaddingX?: number;      // Optional: horizontal button padding in pixels
+  buttonPaddingY?: number;      // Optional: vertical button padding in pixels
+}
+```
+
+### Example: Light Background Banner
+
+When using a light background color, dark button colors provide better contrast:
+
+```json
+{
+  "message": "We are retiring this version of CODAP soon and updating to a new version.",
+  "id": "codap3-beta-2024-01",
+  "buttonText": "Test the new version here",
+  "buttonUrl": "https://codap3.concord.org/beta",
+  "enabled": true,
+  "backgroundColor": "#fbe5b3",
+  "textColor": "#242424",
+  "buttonBackgroundColor": "#242424",
+  "buttonTextColor": "#ffffff",
+  "closeButtonColor": "#242424",
+  "paddingX": 8,
+  "paddingY": 4,
+  "buttonPaddingX": 8,
+  "buttonPaddingY": 4
+}
+```
+
+### Validation
+
+- Color values are validated using the same `isValidCssColor()` function as `backgroundColor`/`textColor`, which accepts hex colors (#rgb, #rrggbb, #rrggbbaa), rgb()/rgba() functions, and named colors.
+- Padding values must be finite non-negative numbers. Invalid values are ignored and CSS defaults apply.

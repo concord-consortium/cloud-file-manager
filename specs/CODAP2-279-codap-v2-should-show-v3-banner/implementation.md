@@ -931,3 +931,96 @@ For testing the `enabled: false` flag:
 | `src/assets/examples/index.html` | 1 | 0 |
 | Tests | ~250 | 0 |
 | **Total** | **~582** | **~5** |
+
+---
+
+## Addendum: Extended Styling Configuration (2026-02-05)
+
+After initial implementation, additional styling configuration options were added to support banners with custom color schemes.
+
+### New BannerConfig Properties
+
+The `BannerConfig` interface in `src/code/utils/banner-utils.ts` was extended with:
+
+```typescript
+export interface BannerConfig {
+  // ... existing properties ...
+  buttonBackgroundColor?: string  // CSS color for action button background
+  buttonTextColor?: string        // CSS color for action button text
+  closeButtonColor?: string       // CSS color for close/dismiss buttons (text & border)
+  paddingX?: number               // Horizontal banner padding in pixels
+  paddingY?: number               // Vertical banner padding in pixels
+  buttonPaddingX?: number         // Horizontal button padding in pixels
+  buttonPaddingY?: number         // Vertical button padding in pixels
+}
+```
+
+### BannerView Component Changes
+
+The `BannerView` component (`src/code/views/banner-view.tsx`) was updated to:
+
+1. **Extract new config properties** from the destructured config object
+2. **Build style objects** for buttons with custom colors and padding:
+
+```typescript
+// Button styles (action button)
+const buttonStyles: React.CSSProperties = {}
+if (isValidCssColor(buttonBackgroundColor)) buttonStyles.backgroundColor = buttonBackgroundColor
+if (isValidCssColor(buttonTextColor)) buttonStyles.color = buttonTextColor
+if (typeof buttonPaddingY === 'number' && Number.isFinite(buttonPaddingY) && buttonPaddingY >= 0) {
+  buttonStyles.paddingTop = buttonPaddingY
+  buttonStyles.paddingBottom = buttonPaddingY
+}
+if (typeof buttonPaddingX === 'number' && Number.isFinite(buttonPaddingX) && buttonPaddingX >= 0) {
+  buttonStyles.paddingLeft = buttonPaddingX
+  buttonStyles.paddingRight = buttonPaddingX
+}
+
+// Close/dismiss button styles
+const closeStyles: React.CSSProperties = {}
+if (isValidCssColor(closeButtonColor)) {
+  closeStyles.color = closeButtonColor
+  closeStyles.borderColor = closeButtonColor
+}
+// Button padding also applies to "Don't show again" button
+if (typeof buttonPaddingY === 'number' && Number.isFinite(buttonPaddingY) && buttonPaddingY >= 0) {
+  closeStyles.paddingTop = buttonPaddingY
+  closeStyles.paddingBottom = buttonPaddingY
+}
+if (typeof buttonPaddingX === 'number' && Number.isFinite(buttonPaddingX) && buttonPaddingX >= 0) {
+  closeStyles.paddingLeft = buttonPaddingX
+  closeStyles.paddingRight = buttonPaddingX
+}
+```
+
+3. **Apply inline styles** to the button elements via the `style` prop
+
+### CSS Defaults
+
+When the new properties are not specified, the CSS defaults from `banner.styl` apply:
+
+| Property | CSS Default |
+|----------|-------------|
+| `buttonBackgroundColor` | `#ffffff` |
+| `buttonTextColor` | `#1a73e8` |
+| `closeButtonColor` | `#ffffff` |
+| `paddingX` | `16px` |
+| `paddingY` | `10px` |
+| `buttonPaddingX` | `12px` (action), `10px` (don't show) |
+| `buttonPaddingY` | `6px` (action), `5px` (don't show) |
+
+### Validation
+
+- **Color values**: Validated using `isValidCssColor()` which accepts hex (#rgb, #rrggbb, #rrggbbaa), rgb()/rgba(), and named colors
+- **Padding values**: Must be `typeof number`, `Number.isFinite()`, and `>= 0`; invalid values are silently ignored
+
+### New Tests
+
+Added tests in `banner-view.test.tsx`:
+- `applies custom button colors when valid`
+- `applies custom close button color when valid`
+- `does not apply invalid button colors`
+- `applies custom padding when valid`
+- `does not apply invalid padding values`
+- `applies custom button padding when valid`
+- `does not apply invalid button padding values`
