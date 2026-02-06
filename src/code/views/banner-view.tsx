@@ -1,5 +1,5 @@
 import React from 'react'
-import { BannerConfig, dismissBanner, isValidButtonUrl, isValidCssColor } from '../utils/banner-utils'
+import { BannerConfig, dismissBanner, isPositiveNumber, isValidButtonUrl, isValidCssColor } from '../utils/banner-utils'
 
 interface IBannerViewProps {
   config: BannerConfig
@@ -44,11 +44,11 @@ export const BannerView: React.FC<IBannerViewProps> = ({ config, onDismiss }) =>
   if (isValidCssColor(textColor)) customStyles.color = textColor
 
   // Apply custom padding (numbers only, converted to px)
-  if (typeof paddingY === 'number' && Number.isFinite(paddingY) && paddingY >= 0) {
+  if (isPositiveNumber(paddingY)) {
     customStyles.paddingTop = paddingY
     customStyles.paddingBottom = paddingY
   }
-  if (typeof paddingX === 'number' && Number.isFinite(paddingX) && paddingX >= 0) {
+  if (isPositiveNumber(paddingX)) {
     customStyles.paddingLeft = paddingX
     customStyles.paddingRight = paddingX
   }
@@ -57,11 +57,11 @@ export const BannerView: React.FC<IBannerViewProps> = ({ config, onDismiss }) =>
   const buttonStyles: React.CSSProperties = {}
   if (isValidCssColor(buttonBackgroundColor)) buttonStyles.backgroundColor = buttonBackgroundColor
   if (isValidCssColor(buttonTextColor)) buttonStyles.color = buttonTextColor
-  if (typeof buttonPaddingY === 'number' && Number.isFinite(buttonPaddingY) && buttonPaddingY >= 0) {
+  if (isPositiveNumber(buttonPaddingY)) {
     buttonStyles.paddingTop = buttonPaddingY
     buttonStyles.paddingBottom = buttonPaddingY
   }
-  if (typeof buttonPaddingX === 'number' && Number.isFinite(buttonPaddingX) && buttonPaddingX >= 0) {
+  if (isPositiveNumber(buttonPaddingX)) {
     buttonStyles.paddingLeft = buttonPaddingX
     buttonStyles.paddingRight = buttonPaddingX
   }
@@ -72,11 +72,11 @@ export const BannerView: React.FC<IBannerViewProps> = ({ config, onDismiss }) =>
     closeStyles.color = closeButtonColor
     closeStyles.borderColor = closeButtonColor
   }
-  if (typeof buttonPaddingY === 'number' && Number.isFinite(buttonPaddingY) && buttonPaddingY >= 0) {
+  if (isPositiveNumber(buttonPaddingY)) {
     closeStyles.paddingTop = buttonPaddingY
     closeStyles.paddingBottom = buttonPaddingY
   }
-  if (typeof buttonPaddingX === 'number' && Number.isFinite(buttonPaddingX) && buttonPaddingX >= 0) {
+  if (isPositiveNumber(buttonPaddingX)) {
     closeStyles.paddingLeft = buttonPaddingX
     closeStyles.paddingRight = buttonPaddingX
   }

@@ -2,6 +2,7 @@ import {
   isInIframe,
   isBannerDismissed,
   dismissBanner,
+  isPositiveNumber,
   isValidButtonUrl,
   isValidCssColor,
   isWithinDateRange,
@@ -50,6 +51,30 @@ describe('banner-utils', () => {
       expect(isValidCssColor('')).toBe(false)
       expect(isValidCssColor('url(evil)')).toBe(false)
       expect(isValidCssColor('#gg0000')).toBe(false)
+    })
+  })
+
+  describe('isPositiveNumber', () => {
+    it('returns true for zero and positive numbers', () => {
+      expect(isPositiveNumber(0)).toBe(true)
+      expect(isPositiveNumber(10)).toBe(true)
+      expect(isPositiveNumber(3.14)).toBe(true)
+    })
+
+    it('returns false for negative numbers', () => {
+      expect(isPositiveNumber(-1)).toBe(false)
+      expect(isPositiveNumber(-0.5)).toBe(false)
+    })
+
+    it('returns false for non-finite numbers', () => {
+      expect(isPositiveNumber(Infinity)).toBe(false)
+      expect(isPositiveNumber(NaN)).toBe(false)
+    })
+
+    it('returns false for non-numbers', () => {
+      expect(isPositiveNumber('10')).toBe(false)
+      expect(isPositiveNumber(undefined)).toBe(false)
+      expect(isPositiveNumber(null)).toBe(false)
     })
   })
 

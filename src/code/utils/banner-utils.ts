@@ -66,6 +66,13 @@ export function isValidButtonUrl(url: string | undefined): boolean {
 }
 
 /**
+ * Type guard: check if a value is a finite, non-negative number.
+ */
+export function isPositiveNumber(n: unknown): n is number {
+  return typeof n === 'number' && Number.isFinite(n) && n >= 0
+}
+
+/**
  * Validate CSS color value to prevent CSS injection.
  * Allows: hex (#rgb, #rrggbb, #rrggbbaa), rgb(), rgba(), and named colors.
  */
