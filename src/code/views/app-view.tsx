@@ -49,11 +49,12 @@ const InnerApp = createReactClassFactory({
   displayName: 'CloudFileManagerInnerApp',
 
   shouldComponentUpdate(nextProps: any) {
-    return nextProps.app !== this.props.app
+    return nextProps.app !== this.props.app ||
+           nextProps.style?.top !== this.props.style?.top
   },
 
   render() {
-    return (div({className: 'innerApp'},
+    return (div({className: 'innerApp', style: this.props.style},
       (iframe({src: this.props.app, allow: this.props.iframeAllow}))
     ))
   }
@@ -87,6 +88,7 @@ interface IAppViewState {
   fileStatus?: { message: string, type: string };
   dirty: boolean;
   bannerConfig: BannerConfig | null;
+  bannerHeight: number;
 }
 
 class AppView extends React.Component<IAppViewProps, IAppViewState> {
@@ -112,7 +114,8 @@ class AppView extends React.Component<IAppViewProps, IAppViewState> {
       importDialog: null,
       selectInteractiveStateDialog: null,
       dirty: false,
-      bannerConfig: null
+      bannerConfig: null,
+      bannerHeight: 0
     }
   }
 
@@ -261,6 +264,13 @@ class AppView extends React.Component<IAppViewProps, IAppViewState> {
     }
   }
 
+  bannerRef = (el: HTMLDivElement | null) => {
+    const height = el ? el.offsetHeight : 0
+    if (height !== this.state.bannerHeight) {
+      this.setState({ bannerHeight: height })
+    }
+  }
+
   closeDialogs = () => {
     return this.setState({
       providerDialog: null,
@@ -321,20 +331,25 @@ class AppView extends React.Component<IAppViewProps, IAppViewState> {
 
   render() {
     const menuItems = !this.props.hideMenuBar ? this.state.menuItems : []
-    const { bannerConfig } = this.state
+    const { bannerConfig, bannerHeight } = this.state
+    // .innerApp is absolutely positioned with top: 30px (menu-bar-height) via CSS.
+    // When the banner is visible, shift it down by the banner's height so it doesn't overlap.
+    const innerAppStyle = bannerHeight > 0 ? { top: 30 + bannerHeight } : undefined
     if (this.props.appOrMenuElemId) {
       // CSS class depends on whether we're in app (iframe) or view (menubar-only) mode
       return (div({className: this.props.usingIframe ? 'app' : 'view' },
-        bannerConfig && (
-          <BannerView
-            config={bannerConfig}
-            onDismiss={() => this.setState({ bannerConfig: null })}
-          />
-        ),
+        bannerConfig
+          ? <div ref={this.bannerRef}>
+              <BannerView
+                config={bannerConfig}
+                onDismiss={() => this.setState({ bannerConfig: null, bannerHeight: 0 })}
+              />
+            </div>
+          : null,
         (MenuBar({client: this.props.client, filename: this.state.filename, provider: this.state.provider, fileStatus: this.state.fileStatus, items: menuItems, options: this.state.menuOptions})),
         // only render the wrapped client app in app (iframe) mode
         this.props.usingIframe ?
-          (InnerApp({app: this.props.app, iframeAllow: this.props.iframeAllow})) : undefined,
+          (InnerApp({app: this.props.app, iframeAllow: this.props.iframeAllow, style: innerAppStyle})) : undefined,
         this.renderDialogs()
       ))
     } else if (this.state.providerDialog || this.state.downloadDialog) {
