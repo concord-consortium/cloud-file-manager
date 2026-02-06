@@ -2,7 +2,7 @@
   "name": "@concord-consortium/cloud-file-manager",
   "description": "Wrapper for providing file management for web applications",
   "author": "The Concord Consortium",
-  "version": "2.1.0-pre.16",
+  "version": "2.1.0-pre.17",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/concord-consortium/cloud-file-manager.git"
@@ -28,7 +28,7 @@
     "create-react-class": "^15.7.0",
     "diff": "^5.1.0",
     "file-saver": "^2.0.5",
-    "iframe-phone": "^1.3.1",
+    "iframe-phone": "^1.4.0",
     "jiff": "^0.7.3",
     "jquery": "^3.7.1",
     "js-base64": "^3.7.5",
@@ -104,8 +104,8 @@
     "build:codap": "npm run clean && cross-env-shell NODE_ENV=production dest=../codap/apps/dg/resources/cloud-file-manager codap=1 noGlobals=1 noMap=1 'webpack && mv $dest/js/app.js $dest/js/app.js.ignore'",
     "build:codap:development": "npm run clean && cross-env-shell NODE_ENV=development dest=../codap/apps/dg/resources/cloud-file-manager codap=1 noGlobals=1 noMap=1 'webpack && mv $dest/js/app.js $dest/js/app.js.ignore'",
     "prepublishOnly": "npm run build:all",
-    "publish:npm:latest": "npm publish --access public",
-    "publish:npm:latest:preview": "npm publish --access public --dry-run",
+    "publish:npm:latest": "npm publish --access public --tag latest",
+    "publish:npm:latest:preview": "npm publish --access public --tag latest --dry-run",
     "publish:npm:next": "npm publish --access public --tag next",
     "publish:npm:next:preview": "npm publish --access public --tag next --dry-run",
     "yalc:publish": "npx yalc publish --push",
