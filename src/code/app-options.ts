@@ -141,7 +141,8 @@ export interface CFMAppOptions {
   iframeAllow?: string;
   /**
    * Banner configuration. Can be either:
-   * - A URL string pointing to a JSON file containing banner configuration
+   * - A URL string pointing to a JSON file containing banner configuration.
+   *   Must be an absolute HTTPS URL or a same-origin relative URL.
    * - A BannerConfig object with the banner parameters directly
    */
   banner?: string | BannerConfig;

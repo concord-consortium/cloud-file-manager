@@ -101,6 +101,7 @@ class AppView extends React.Component<IAppViewProps, IAppViewState> {
   displayName: string;
   state: IAppViewState;
   private _isMounted = false
+  private _bannerRafId: number | null = null
 
   constructor(props: any) {
     super(props)
@@ -251,6 +252,10 @@ class AppView extends React.Component<IAppViewProps, IAppViewState> {
 
   componentWillUnmount() {
     this._isMounted = false
+    if (this._bannerRafId != null) {
+      cancelAnimationFrame(this._bannerRafId)
+      this._bannerRafId = null
+    }
   }
 
   _getMenuItemIndex = (key: string) => {
@@ -291,11 +296,18 @@ class AppView extends React.Component<IAppViewProps, IAppViewState> {
   }
 
   bannerRef = (el: HTMLDivElement | null) => {
+    // Cancel any pending measurement from a previous ref call
+    if (this._bannerRafId != null) {
+      cancelAnimationFrame(this._bannerRafId)
+      this._bannerRafId = null
+    }
+
     if (!el) return
 
     // Use requestAnimationFrame to defer measurement until after layout is complete.
     // This ensures the banner's CSS is fully applied before we measure its height.
-    requestAnimationFrame(() => {
+    this._bannerRafId = requestAnimationFrame(() => {
+      this._bannerRafId = null
       if (!this._isMounted) return
       const height = el.offsetHeight
       if (height !== this.state.bannerHeight) {

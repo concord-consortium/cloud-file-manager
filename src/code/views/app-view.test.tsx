@@ -194,13 +194,17 @@ describe('AppView', () => {
     })
   })
 
-  describe('unmount guard in bannerRef', () => {
-    it('does not call setState after unmount', () => {
-      // Use real requestAnimationFrame to test the unmount guard
-      const rafCallbacks: FrameRequestCallback[] = []
+  describe('RAF cleanup in bannerRef', () => {
+    it('cancels pending RAF on unmount', () => {
+      const rafCallbacks = new Map<number, FrameRequestCallback>()
+      let nextId = 1
       window.requestAnimationFrame = (cb: FrameRequestCallback) => {
-        rafCallbacks.push(cb)
-        return rafCallbacks.length
+        const id = nextId++
+        rafCallbacks.set(id, cb)
+        return id
+      }
+      window.cancelAnimationFrame = (id: number) => {
+        rafCallbacks.delete(id)
       }
 
       jest.spyOn(HTMLDivElement.prototype, 'offsetHeight', 'get').mockReturnValue(40)
@@ -210,14 +214,35 @@ describe('AppView', () => {
         <AppView client={client} appOrMenuElemId="app" />
       )
 
-      // Unmount before RAF fires
+      // There should be a pending RAF from the banner ref
+      expect(rafCallbacks.size).toBe(1)
+
+      // Unmount cancels the pending RAF
+      unmount()
+      expect(rafCallbacks.size).toBe(0)
+    })
+
+    it('does not call setState if RAF fires after unmount', () => {
+      const rafCallbacks: FrameRequestCallback[] = []
+      window.requestAnimationFrame = (cb: FrameRequestCallback) => {
+        rafCallbacks.push(cb)
+        return rafCallbacks.length
+      }
+      // cancelAnimationFrame is a no-op so the callbacks survive for manual firing
+      window.cancelAnimationFrame = () => {}
+
+      jest.spyOn(HTMLDivElement.prototype, 'offsetHeight', 'get').mockReturnValue(40)
+
+      const client = createMockClient({ banner: validConfig })
+      const { unmount } = render(
+        <AppView client={client} appOrMenuElemId="app" />
+      )
+
       unmount()
 
-      // Now fire the pending RAF callbacks - should not throw
+      // Manually fire pending RAF callbacks - should not throw or call setState
       const setStateSpy = jest.spyOn(React.Component.prototype, 'setState')
       rafCallbacks.forEach(cb => cb(0))
-
-      // setState should not have been called after unmount
       expect(setStateSpy).not.toHaveBeenCalled()
     })
   })
