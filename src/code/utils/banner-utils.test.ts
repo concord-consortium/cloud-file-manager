@@ -7,6 +7,7 @@ import {
   isValidCssColor,
   isWithinDateRange,
   isValidBannerConfig,
+  validateBannerConfig,
   fetchBannerConfig
 } from './banner-utils'
 
@@ -194,6 +195,63 @@ describe('banner-utils', () => {
     it('returns false when not in iframe', () => {
       // In test environment, window.self === window.top
       expect(isInIframe()).toBe(false)
+    })
+  })
+
+  describe('validateBannerConfig', () => {
+    beforeEach(() => {
+      jest.useFakeTimers()
+      jest.setSystemTime(new Date('2024-06-15T12:00:00Z'))
+      localStorage.clear()
+    })
+
+    afterEach(() => {
+      jest.useRealTimers()
+    })
+
+    it('returns config for a valid, active config', () => {
+      const config = { message: 'Hello', id: 'test-1' }
+      expect(validateBannerConfig(config)).toEqual(config)
+    })
+
+    it('returns config when enabled is true', () => {
+      const config = { message: 'Hello', id: 'test-1', enabled: true }
+      expect(validateBannerConfig(config)).toEqual(config)
+    })
+
+    it('returns null for invalid schema', () => {
+      expect(validateBannerConfig({ id: 'test-1' })).toBeNull()
+      expect(validateBannerConfig({ message: 'Hello' })).toBeNull()
+      expect(validateBannerConfig(null)).toBeNull()
+      expect(validateBannerConfig('string')).toBeNull()
+    })
+
+    it('returns null when enabled is false', () => {
+      expect(validateBannerConfig({ message: 'Hello', id: 'test-1', enabled: false })).toBeNull()
+    })
+
+    it('returns null when outside date range', () => {
+      const config = {
+        message: 'Hello',
+        id: 'test-1',
+        startDate: new Date('2024-07-01').getTime()
+      }
+      expect(validateBannerConfig(config)).toBeNull()
+    })
+
+    it('returns null when banner was dismissed', () => {
+      dismissBanner('test-1')
+      expect(validateBannerConfig({ message: 'Hello', id: 'test-1' })).toBeNull()
+    })
+
+    it('returns config when within date range', () => {
+      const config = {
+        message: 'Hello',
+        id: 'test-1',
+        startDate: new Date('2024-01-01').getTime(),
+        endDate: new Date('2024-12-31').getTime()
+      }
+      expect(validateBannerConfig(config)).toEqual(config)
     })
   })
 

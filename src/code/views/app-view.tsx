@@ -38,11 +38,16 @@ import { CloudMetadata } from "../providers/provider-interface"
 import { CFMMenuBarOptions, CFMMenuItem, CFMShareDialogSettings, CFMUIOptions } from "../app-options"
 import { CloudFileManagerClient, CloudFileManagerClientEvent } from "../client"
 import { CloudFileManagerUIEvent } from "../ui"
+import {
+  BannerConfig, fetchBannerConfig, validateBannerConfig, isInIframe
+} from "../utils/banner-utils"
 import { SelectInteractiveStateDialogProps } from "./select-interactive-state-dialog-view"
-import { BannerView } from './banner-view'
-import { BannerConfig, fetchBannerConfig } from '../utils/banner-utils'
+import { BannerView } from "./banner-view"
 
 const {div, iframe} = ReactDOMFactories
+
+// Height of the menu bar in pixels (matches menu-bar-height in metrics.styl)
+const kMenuBarHeight = 30
 
 const InnerApp = createReactClassFactory({
 
@@ -69,6 +74,7 @@ interface IAppViewProps {
   usingIframe?: boolean;
   app?: string;   // src url for <iframe>
   iframeAllow?: string;
+  onHeightChange?: (height: number) => void;
 }
 
 interface IAppViewState {
@@ -126,15 +132,20 @@ class AppView extends React.Component<IAppViewProps, IAppViewState> {
   componentDidMount() {
     this._isMounted = true
 
-    // Fetch banner config if URL provided
-    const bannerUrl = this.props.client?.appOptions?.banner
-    if (bannerUrl) {
-      fetchBannerConfig(bannerUrl).then(config => {
-        // Guard against setState on unmounted component
-        if (this._isMounted && config) {
-          this.setState({ bannerConfig: config })
-        }
-      })
+    // Handle banner config - can be a URL string or a direct config object
+    const bannerOption = this.props.client?.appOptions?.banner
+    if (bannerOption) {
+      if (typeof bannerOption === 'string') {
+        // It's a URL - fetch the config
+        fetchBannerConfig(bannerOption).then(config => {
+          if (this._isMounted && config) {
+            this.setState({ bannerConfig: config })
+          }
+        })
+      } else {
+        // It's a direct config object - validate and use it
+        this.initBannerFromConfig(bannerOption)
+      }
     }
 
     this.props.client.listen((event: CloudFileManagerClientEvent) => {
@@ -264,11 +275,35 @@ class AppView extends React.Component<IAppViewProps, IAppViewState> {
     }
   }
 
-  bannerRef = (el: HTMLDivElement | null) => {
-    const height = el ? el.offsetHeight : 0
-    if (height !== this.state.bannerHeight) {
-      this.setState({ bannerHeight: height })
+  /**
+   * Initialize banner from a direct config object (not fetched from URL).
+   * Applies the same validation as fetchBannerConfig.
+   */
+  initBannerFromConfig(config: BannerConfig) {
+    if (isInIframe()) {
+      return
     }
+
+    const validated = validateBannerConfig(config)
+    if (validated) {
+      this.setState({ bannerConfig: validated })
+    }
+  }
+
+  bannerRef = (el: HTMLDivElement | null) => {
+    if (!el) return
+
+    // Use requestAnimationFrame to defer measurement until after layout is complete.
+    // This ensures the banner's CSS is fully applied before we measure its height.
+    requestAnimationFrame(() => {
+      if (!this._isMounted) return
+      const height = el.offsetHeight
+      if (height !== this.state.bannerHeight) {
+        this.setState({ bannerHeight: height })
+        // Notify parent of total CFM UI height change (menu bar + banner)
+        this.props.onHeightChange?.(kMenuBarHeight + height)
+      }
+    })
   }
 
   closeDialogs = () => {
@@ -332,9 +367,9 @@ class AppView extends React.Component<IAppViewProps, IAppViewState> {
   render() {
     const menuItems = !this.props.hideMenuBar ? this.state.menuItems : []
     const { bannerConfig, bannerHeight } = this.state
-    // .innerApp is absolutely positioned with top: 30px (menu-bar-height) via CSS.
+    // .innerApp is absolutely positioned with top: kMenuBarHeight via CSS.
     // When the banner is visible, shift it down by the banner's height so it doesn't overlap.
-    const innerAppStyle = bannerHeight > 0 ? { top: 30 + bannerHeight } : undefined
+    const innerAppStyle = bannerHeight > 0 ? { top: kMenuBarHeight + bannerHeight } : undefined
     if (this.props.appOrMenuElemId) {
       // CSS class depends on whether we're in app (iframe) or view (menubar-only) mode
       return (div({className: this.props.usingIframe ? 'app' : 'view' },
@@ -342,7 +377,11 @@ class AppView extends React.Component<IAppViewProps, IAppViewState> {
           ? <div ref={this.bannerRef}>
               <BannerView
                 config={bannerConfig}
-                onDismiss={() => this.setState({ bannerConfig: null, bannerHeight: 0 })}
+                onDismiss={() => {
+                  this.setState({ bannerConfig: null, bannerHeight: 0 })
+                  // Notify parent that banner is dismissed, height is now just menu bar
+                  this.props.onHeightChange?.(kMenuBarHeight)
+                }}
               />
             </div>
           : null,

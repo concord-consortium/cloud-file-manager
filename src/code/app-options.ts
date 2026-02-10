@@ -1,4 +1,5 @@
 import { CloudContent } from "./providers/provider-interface"
+import { BannerConfig } from "./utils/banner-utils"
 
 export interface CFMMenuItemObject {
   name?: string;
@@ -139,9 +140,14 @@ export interface CFMAppOptions {
   contentSaveFilter?: ContentSaveFilterFn;
   iframeAllow?: string;
   /**
-   * URL to a JSON file containing banner configuration.
-   * If provided, CFM will fetch and display a banner above the menu bar.
-   * Must be an absolute HTTPS URL or a same-origin relative URL.
+   * Banner configuration. Can be either:
+   * - A URL string pointing to a JSON file containing banner configuration
+   * - A BannerConfig object with the banner parameters directly
    */
-  banner?: string;
+  banner?: string | BannerConfig;
+  /**
+   * Callback invoked when the CFM UI height changes (e.g., when banner is shown/hidden).
+   * The height parameter is the total height of the CFM UI (menu bar + banner if visible).
+   */
+  onHeightChange?: (height: number) => void;
 }

@@ -119,6 +119,31 @@ export function isValidBannerConfig(data: unknown): data is BannerConfig {
 }
 
 /**
+ * Validate a banner config and check whether it should be shown.
+ * Returns the config if valid and active, null otherwise.
+ * Checks: schema validation, enabled flag, date range, and dismissal.
+ */
+export function validateBannerConfig(data: unknown): BannerConfig | null {
+  if (!isValidBannerConfig(data)) {
+    return null
+  }
+
+  if (data.enabled === false) {
+    return null
+  }
+
+  if (!isWithinDateRange(data)) {
+    return null
+  }
+
+  if (isBannerDismissed(data.id)) {
+    return null
+  }
+
+  return data
+}
+
+/**
  * Fetch and validate banner configuration.
  * Returns null if fetch fails, JSON is invalid, or banner should not be shown.
  *
@@ -139,28 +164,7 @@ export async function fetchBannerConfig(url: string): Promise<BannerConfig | nul
     }
 
     const data = await response.json()
-
-    // Validate schema
-    if (!isValidBannerConfig(data)) {
-      return null
-    }
-
-    // Check enabled flag
-    if (data.enabled === false) {
-      return null
-    }
-
-    // Check date range
-    if (!isWithinDateRange(data)) {
-      return null
-    }
-
-    // Check dismissal
-    if (isBannerDismissed(data.id)) {
-      return null
-    }
-
-    return data
+    return validateBannerConfig(data)
   } catch {
     // Fetch error, JSON parse error, etc. - silent failure
     return null
