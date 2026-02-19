@@ -101,7 +101,7 @@ export const BannerView: React.FC<IBannerViewProps> = ({ config, onDismiss }) =>
           segment.url
             ? <a key={i} href={segment.url} target="_blank"
                 rel="noopener noreferrer" style={linkStyles}>{segment.text}</a>
-            : segment.text
+            : <React.Fragment key={i}>{segment.text}</React.Fragment>
         )}
       </span>
 
