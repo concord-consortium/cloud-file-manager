@@ -8,7 +8,8 @@ import {
   isWithinDateRange,
   isValidBannerConfig,
   validateBannerConfig,
-  fetchBannerConfig
+  fetchBannerConfig,
+  parseMessageWithLinks
 } from './banner-utils'
 
 describe('banner-utils', () => {
@@ -52,6 +53,72 @@ describe('banner-utils', () => {
       expect(isValidCssColor('')).toBe(false)
       expect(isValidCssColor('url(evil)')).toBe(false)
       expect(isValidCssColor('#gg0000')).toBe(false)
+    })
+  })
+
+  describe('parseMessageWithLinks', () => {
+    it('returns single text segment for plain text', () => {
+      expect(parseMessageWithLinks('Hello world')).toEqual([
+        { text: 'Hello world' }
+      ])
+    })
+
+    it('returns single text segment for empty string', () => {
+      expect(parseMessageWithLinks('')).toEqual([
+        { text: '' }
+      ])
+    })
+
+    it('parses a single link', () => {
+      expect(parseMessageWithLinks('[Click here](https://example.com)')).toEqual([
+        { text: 'Click here', url: 'https://example.com' }
+      ])
+    })
+
+    it('parses text before and after a link', () => {
+      expect(parseMessageWithLinks('Visit [our site](https://example.com) for more.')).toEqual([
+        { text: 'Visit ' },
+        { text: 'our site', url: 'https://example.com' },
+        { text: ' for more.' }
+      ])
+    })
+
+    it('parses multiple links', () => {
+      expect(parseMessageWithLinks('[One](https://one.com) and [Two](https://two.com)')).toEqual([
+        { text: 'One', url: 'https://one.com' },
+        { text: ' and ' },
+        { text: 'Two', url: 'https://two.com' }
+      ])
+    })
+
+    it('renders non-https URLs as plain text', () => {
+      expect(parseMessageWithLinks('[bad](http://evil.com)')).toEqual([
+        { text: '[bad](http://evil.com)' }
+      ])
+    })
+
+    it('renders javascript: URLs as plain text', () => {
+      expect(parseMessageWithLinks('[xss](javascript:alert(1))')).toEqual([
+        { text: '[xss](javascript:alert(1))' }
+      ])
+    })
+
+    it('handles URLs with paths, query params, and fragments', () => {
+      expect(parseMessageWithLinks('[link](https://example.com/path?q=1#hash)')).toEqual([
+        { text: 'link', url: 'https://example.com/path?q=1#hash' }
+      ])
+    })
+
+    it('handles unmatched brackets as plain text', () => {
+      expect(parseMessageWithLinks('Use [brackets] for grouping')).toEqual([
+        { text: 'Use [brackets] for grouping' }
+      ])
+    })
+
+    it('handles empty link text', () => {
+      expect(parseMessageWithLinks('[](https://example.com)')).toEqual([
+        { text: '[](https://example.com)' }
+      ])
     })
   })
 

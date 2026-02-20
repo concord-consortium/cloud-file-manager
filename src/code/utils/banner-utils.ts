@@ -19,6 +19,7 @@ export interface BannerConfig {
   paddingY?: number
   buttonPaddingX?: number
   buttonPaddingY?: number
+  linkColor?: string
 }
 
 /**
@@ -81,6 +82,40 @@ export function isValidCssColor(value: string | undefined): boolean {
   return /^#[0-9a-fA-F]{3,8}$/.test(value) ||
          /^rgba?\(\s*\d+\s*,\s*\d+\s*,\s*\d+\s*(,\s*[\d.]+\s*)?\)$/.test(value) ||
          /^[a-zA-Z]+$/.test(value)
+}
+
+/**
+ * A segment of a parsed banner message: plain text or a link.
+ */
+export type MessageSegment = { text: string; url?: string }
+
+/**
+ * Parse markdown-style [text](url) links in a message string.
+ * Returns an array of text and link segments.
+ * Only https:// URLs are allowed; invalid URLs are rendered as plain text.
+ * Empty link text is treated as plain text.
+ */
+export function parseMessageWithLinks(message: string): MessageSegment[] {
+  const linkRegex = /\[([^\]]+)\]\((https:\/\/[^)]+)\)/g
+  const segments: MessageSegment[] = []
+  let lastIndex = 0
+  let match: RegExpExecArray | null
+
+  while ((match = linkRegex.exec(message)) !== null) {
+    // Add text before this match
+    if (match.index > lastIndex) {
+      segments.push({ text: message.slice(lastIndex, match.index) })
+    }
+    segments.push({ text: match[1], url: match[2] })
+    lastIndex = match.index + match[0].length
+  }
+
+  // Add remaining text (or entire message if no matches)
+  if (lastIndex < message.length || segments.length === 0) {
+    segments.push({ text: message.slice(lastIndex) })
+  }
+
+  return segments
 }
 
 /**

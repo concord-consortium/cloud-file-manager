@@ -25,6 +25,62 @@ describe('BannerView', () => {
     expect(screen.getByText('Test banner message')).toBeInTheDocument()
   })
 
+  it('renders links in the message as anchor tags', () => {
+    const config: BannerConfig = {
+      ...defaultConfig,
+      message: 'Visit [our site](https://example.com) for more.'
+    }
+    render(<BannerView config={config} onDismiss={mockOnDismiss} />)
+    const link = screen.getByRole('link', { name: 'our site' })
+    expect(link).toHaveAttribute('href', 'https://example.com')
+    expect(link).toHaveAttribute('target', '_blank')
+    expect(link).toHaveAttribute('rel', 'noopener noreferrer')
+    expect(screen.getByText(/Visit/)).toBeInTheDocument()
+    expect(screen.getByText(/for more\./)).toBeInTheDocument()
+  })
+
+  it('renders multiple links in the message', () => {
+    const config: BannerConfig = {
+      ...defaultConfig,
+      message: '[One](https://one.com) and [Two](https://two.com)'
+    }
+    render(<BannerView config={config} onDismiss={mockOnDismiss} />)
+    expect(screen.getByRole('link', { name: 'One' })).toHaveAttribute('href', 'https://one.com')
+    expect(screen.getByRole('link', { name: 'Two' })).toHaveAttribute('href', 'https://two.com')
+  })
+
+  it('renders non-https links as plain text', () => {
+    const config: BannerConfig = {
+      ...defaultConfig,
+      message: 'Visit [bad link](http://evil.com) here.'
+    }
+    render(<BannerView config={config} onDismiss={mockOnDismiss} />)
+    expect(screen.queryByRole('link', { name: 'bad link' })).not.toBeInTheDocument()
+    expect(screen.getByText(/\[bad link\]/)).toBeInTheDocument()
+  })
+
+  it('applies linkColor to message links', () => {
+    const config: BannerConfig = {
+      ...defaultConfig,
+      message: 'Visit [our site](https://example.com) today.',
+      linkColor: '#ff0000'
+    }
+    render(<BannerView config={config} onDismiss={mockOnDismiss} />)
+    const link = screen.getByRole('link', { name: 'our site' })
+    expect(link).toHaveStyle({ color: '#ff0000' })
+  })
+
+  it('does not apply invalid linkColor', () => {
+    const config: BannerConfig = {
+      ...defaultConfig,
+      message: 'Visit [our site](https://example.com) today.',
+      linkColor: 'url(evil)'
+    }
+    render(<BannerView config={config} onDismiss={mockOnDismiss} />)
+    const link = screen.getByRole('link', { name: 'our site' })
+    expect(link.style.color).toBe('')
+  })
+
   it('renders action button when buttonUrl is valid https', () => {
     render(<BannerView config={defaultConfig} onDismiss={mockOnDismiss} />)
     const button = screen.getByTestId('cfm-banner-button')

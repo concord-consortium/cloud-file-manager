@@ -1,5 +1,7 @@
 import React from 'react'
-import { BannerConfig, dismissBanner, isPositiveNumber, isValidButtonUrl, isValidCssColor } from '../utils/banner-utils'
+import {
+  BannerConfig, dismissBanner, isPositiveNumber, isValidButtonUrl, isValidCssColor, parseMessageWithLinks
+} from '../utils/banner-utils'
 
 interface IBannerViewProps {
   config: BannerConfig
@@ -21,6 +23,7 @@ export const BannerView: React.FC<IBannerViewProps> = ({ config, onDismiss }) =>
     buttonBackgroundColor,
     buttonTextColor,
     closeButtonColor,
+    linkColor,
     paddingX,
     paddingY,
     buttonPaddingX,
@@ -81,6 +84,10 @@ export const BannerView: React.FC<IBannerViewProps> = ({ config, onDismiss }) =>
     closeStyles.paddingRight = buttonPaddingX
   }
 
+  // Link styles
+  const linkStyles: React.CSSProperties = {}
+  if (isValidCssColor(linkColor)) linkStyles.color = linkColor
+
   return (
     <div
       className="cfm-banner"
@@ -89,7 +96,14 @@ export const BannerView: React.FC<IBannerViewProps> = ({ config, onDismiss }) =>
       style={customStyles}
       data-testid="cfm-banner"
     >
-      <span className="cfm-banner-message">{message}</span>
+      <span className="cfm-banner-message">
+        {parseMessageWithLinks(message).map((segment, i) =>
+          segment.url
+            ? <a key={i} href={segment.url} target="_blank"
+                rel="noopener noreferrer" style={linkStyles}>{segment.text}</a>
+            : <React.Fragment key={i}>{segment.text}</React.Fragment>
+        )}
+      </span>
 
       <div className="cfm-banner-actions">
         {showButton && (
