@@ -1,4 +1,5 @@
 import { getLegacyUrl, createFile, updateFile, deleteFile } from './s3-share-provider-token-service-helper'
+import { DEFAULT_MAX_AGE_SECONDS } from './config'
 
 const getTokenServiceEnvMock = jest.fn()
 jest.mock('./config', () => {
@@ -127,7 +128,7 @@ describe("s3-share-provider-token-service-helper", () => {
         Body: fileContent,
         ContentType: 'text/html',
         ContentEncoding: 'UTF-8',
-        CacheControl: 'max-age=60'
+        CacheControl: `max-age=${DEFAULT_MAX_AGE_SECONDS}`
       })
       expect(mockSend).toHaveBeenCalled()
 
@@ -185,7 +186,7 @@ describe("s3-share-provider-token-service-helper", () => {
         Body: newFileContent,
         ContentType: 'text/html',
         ContentEncoding: 'UTF-8',
-        CacheControl: 'max-age=60'
+        CacheControl: `max-age=${DEFAULT_MAX_AGE_SECONDS}`
       })
       expect(mockSend).toHaveBeenCalled()
     })

@@ -1,6 +1,6 @@
 # Phase 1: Foundation Implementation Plan
 
-> **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
+> Implementation note: Execute this plan task-by-task.
 
 **Goal:** Modernize TypeScript configuration to ES2020, migrate AWS SDK v2 to v3, and update dependencies.
 
