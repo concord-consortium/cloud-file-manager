@@ -1,5 +1,5 @@
 import { TokenServiceClient, S3Resource } from "@concord-consortium/token-service"
-import S3 from "aws-sdk/clients/s3"
+import { S3Client, PutObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3"
 import {
   DEFAULT_MAX_AGE_SECONDS,
   getTokenServiceEnv,
@@ -35,10 +35,13 @@ export const createFile = async ({ fileContent }: ICreateFileArgs) => {
   // S3 configuration is based both on resource and credentials info.
   const { bucket, region } = resource
   const { accessKeyId, secretAccessKey, sessionToken } = credentials
-  const s3 = new S3({ region, accessKeyId, secretAccessKey, sessionToken })
+  const s3 = new S3Client({
+    region,
+    credentials: { accessKeyId, secretAccessKey, sessionToken }
+  })
   const publicPath = client.getPublicS3Path(resource, FILENAME)
 
-  await s3.upload({
+  await s3.send(new PutObjectCommand({
     Bucket: bucket,
     Key: publicPath,
     Body: fileContent,
@@ -46,7 +49,7 @@ export const createFile = async ({ fileContent }: ICreateFileArgs) => {
     ContentEncoding: "UTF-8",
     // Remember to update "~SHARE_UPDATE.MESSAGE" message when caching time is updated.
     CacheControl: `max-age=${DEFAULT_MAX_AGE_SECONDS}`
-  }).promise()
+  }))
 
   return {
     publicUrl: client.getPublicS3Url(resource, FILENAME),
@@ -67,10 +70,13 @@ export const updateFile = async ({ newFileContent, resourceId, readWriteToken }:
   // S3 configuration is based both on resource and credentials info.
   const { bucket, region } = resource
   const { accessKeyId, secretAccessKey, sessionToken } = credentials
-  const s3 = new S3({ region, accessKeyId, secretAccessKey, sessionToken })
+  const s3 = new S3Client({
+    region,
+    credentials: { accessKeyId, secretAccessKey, sessionToken }
+  })
   const publicPath = client.getPublicS3Path(resource, FILENAME)
 
-  await s3.upload({
+  await s3.send(new PutObjectCommand({
     Bucket: bucket,
     Key: publicPath,
     Body: newFileContent,
@@ -78,7 +84,7 @@ export const updateFile = async ({ newFileContent, resourceId, readWriteToken }:
     ContentEncoding: "UTF-8",
     // Remember to update "~SHARE_UPDATE.MESSAGE" message when caching time is updated.
     CacheControl: `max-age=${DEFAULT_MAX_AGE_SECONDS}`
-  }).promise()
+  }))
 }
 
 interface IDeleteFileArgs {
@@ -92,13 +98,16 @@ export const deleteFile = async ({ resourceId, readWriteToken }: IDeleteFileArgs
   // S3 configuration is based both on resource and credentials info.
   const { bucket, region } = resource
   const { accessKeyId, secretAccessKey, sessionToken } = credentials
-  const s3 = new S3({ region, accessKeyId, secretAccessKey, sessionToken })
+  const s3 = new S3Client({
+    region,
+    credentials: { accessKeyId, secretAccessKey, sessionToken }
+  })
   const publicPath = client.getPublicS3Path(resource, FILENAME)
 
-  await s3.deleteObject({
+  await s3.send(new DeleteObjectCommand({
     Bucket: bucket,
     Key: publicPath,
-  }).promise()
+  }))
 }
 
 const getBaseDocumentUrl = () => {
