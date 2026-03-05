@@ -1,12 +1,3 @@
-// TODO: This file was created by bulk-decaffeinate.
-// Sanity-check the conversion and remove this comment.
-/*
- * decaffeinate suggestions:
- * DS101: Remove unnecessary use of Array.from
- * DS102: Remove unnecessary code created because of implicit returns
- * DS207: Consider shorter variations of null checks
- * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
- */
 import urlParams from './url-params'
 import de from './lang/de.json'
 import el from './lang/el.json'
@@ -66,7 +57,7 @@ const getPageLanguage = function() {
 const getFirstBrowserLanguage = function() {
   const nav = window.navigator
   const languages = nav ? (nav.languages || []).concat([nav.language, (nav as any).browserLanguage, (nav as any).systemLanguage, (nav as any).userLanguage]) : []
-  for (let language of Array.from(languages)) {
+  for (const language of languages) {
     if (language) { return language }
   }
   return undefined
@@ -103,10 +94,10 @@ const varRegExp = /%\{\s*([^}\s]*)\s*\}/g
 
 const translate = function(key: string, vars?: Record<string, string>, lang?: string) {
   const varsMap = vars ?? {}
-  if (lang == null) { lang = gCurrentLanguage }
+  lang = lang ?? gCurrentLanguage
   lang = lang.toLowerCase()
-  let translation = translations[lang] != null ? translations[lang][key] : undefined
-  if ((translation == null)) { translation = key }
+  let translation = translations[lang]?.[key]
+  if (!translation) { translation = key }
   return translation.replace(varRegExp, function(match: string, key: string) {
     return Object.prototype.hasOwnProperty.call(varsMap, key)
             ? varsMap[key]

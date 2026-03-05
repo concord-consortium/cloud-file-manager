@@ -1,11 +1,3 @@
-// TODO: This file was created by bulk-decaffeinate.
-// Sanity-check the conversion and remove this comment.
-/*
- * decaffeinate suggestions:
- * DS102: Remove unnecessary code created because of implicit returns
- * DS207: Consider shorter variations of null checks
- * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
- */
 import $ from 'jquery'
 import pako from 'pako'
 import { CloudFileManagerClient } from '../client'
@@ -36,7 +28,7 @@ class DocumentStoreShareProvider {
       type: CloudMetadata.File,
       overwritable: false
     })
-    return this.provider.load(sharedMetadata, (err: string | null, content: any) => callback(err, content, sharedMetadata))
+    this.provider.load(sharedMetadata, (err: string | null, content: any) => callback(err, content, sharedMetadata))
   }
 
   getSharingMetadata(shared: boolean) {
@@ -65,7 +57,7 @@ class DocumentStoreShareProvider {
     // then we must be updating an existing shared document
     if (documentID && accessKey) {
       ({method, url} = this.docStoreUrl.v2SaveDocument(documentID, params))
-      return $.ajax({
+      $.ajax({
         dataType: 'json',
         type: method,
         url,
@@ -73,7 +65,7 @@ class DocumentStoreShareProvider {
         data: pako.deflate(sharedContent.getContentAsJSON()),
         processData: false,
         beforeSend(xhr) {
-          return xhr.setRequestHeader('Content-Encoding', 'deflate')
+          xhr.setRequestHeader('Content-Encoding', 'deflate')
         },
         context: this,
         xhrFields: {
@@ -85,11 +77,11 @@ class DocumentStoreShareProvider {
             masterContent.addMetadata({
               accessKeys: { readWrite: runKey }})
           }
-          return callback(null, data.id)
+          callback(null, data.id)
         },
         error(jqXHR) {
           const docName = metadata?.filename || 'document'
-          return callback(`Unable to update shared '${docName}'`)
+          callback(`Unable to update shared '${docName}'`)
         }
       })
 
@@ -98,7 +90,7 @@ class DocumentStoreShareProvider {
     } else if (shared) {
       params.shared = true;
       ({method, url} = this.docStoreUrl.v2CreateDocument(params))
-      return $.ajax({
+      $.ajax({
         dataType: 'json',
         type: method,
         url,
@@ -106,7 +98,7 @@ class DocumentStoreShareProvider {
         data: pako.deflate(sharedContent.getContentAsJSON()),
         processData: false,
         beforeSend(xhr) {
-          return xhr.setRequestHeader('Content-Encoding', 'deflate')
+          xhr.setRequestHeader('Content-Encoding', 'deflate')
         },
         context: this,
         xhrFields: {
@@ -117,16 +109,16 @@ class DocumentStoreShareProvider {
           masterContent.addMetadata({
             sharedDocumentId: data.id,
             accessKeys: { readOnly: data.readAccessKey, readWrite: data.readWriteAccessKey }})
-          return callback(null, data.id)
+          callback(null, data.id)
         },
         error(jqXHR) {
           const docName = metadata?.filename || 'document'
-          return callback(`Unable to share '${docName}'`)
+          callback(`Unable to share '${docName}'`)
         }
       })
     } else {
       const docName = metadata?.filename || 'document'
-      return callback(`Unable to unshare '${docName}'`)
+      callback(`Unable to unshare '${docName}'`)
     }
   }
 }

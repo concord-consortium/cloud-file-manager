@@ -1,11 +1,3 @@
-// TODO: This file was created by bulk-decaffeinate.
-// Sanity-check the conversion and remove this comment.
-/*
- * decaffeinate suggestions:
- * DS102: Remove unnecessary code created because of implicit returns
- * DS207: Consider shorter variations of null checks
- * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
- */
 import $ from 'jquery'
 import _ from 'lodash'
 import mime from 'mime'
@@ -71,11 +63,9 @@ class CloudFileManagerClientEvent {
 
   constructor(type: CloudFileManagerEventType, data?: any, callback?: ClientEventCallback, state?: Partial<IClientState>) {
     this.type = type
-    if (data == null) { data = {} }
-    this.data = data
+    this.data = data ?? {}
     this.callback = callback
-    if (state == null) { state = {} }
-    this.state = state
+    this.state = state ?? {}
     CLOUDFILEMANAGER_EVENT_ID++
     this.id = CLOUDFILEMANAGER_EVENT_ID
   }
@@ -88,7 +78,7 @@ class CloudFileManagerClientEvent {
     const eventData = _.clone(this.data)
     delete eventData.client
     const message = {type: "cfm::event", eventId: this.id, eventType: this.type, eventData}
-    return iframe.postMessage(message, "*")
+    iframe.postMessage(message, "*")
   }
 }
 
@@ -271,7 +261,7 @@ class CloudFileManagerClient {
       this._setupConfirmOnClose()
     }
 
-    return this._startPostMessageListener()
+    this._startPostMessageListener()
   }
 
   _getShareProvider() {
@@ -289,7 +279,7 @@ class CloudFileManagerClient {
 
   connect() {
     this.connectedPromiseResolver?.resolve()
-    return this._event('connected', {client: this})
+    this._event('connected', {client: this})
   }
 
   //
@@ -333,23 +323,23 @@ class CloudFileManagerClient {
   }
 
   ready() {
-    return this._event('ready')
+    this._event('ready')
   }
 
   rendered() {
-    return this._event('rendered', {client: this})
+    this._event('rendered', {client: this})
   }
 
   listen(listener?: ClientEventListener) {
     if (listener) {
-      return this._listeners.push(listener)
+      this._listeners.push(listener)
     }
   }
 
   log(event: string, eventData: any) {
     this._event('log', {logEvent: event, logEventData: eventData})
     if (this.appOptions.log) {
-      return this.appOptions.log(event, eventData)
+      this.appOptions.log(event, eventData)
     }
   }
 
@@ -389,18 +379,18 @@ class CloudFileManagerClient {
   }
 
   setMenuBarInfo(info: string) {
-    return this._ui.setMenuBarInfo(info)
+    this._ui.setMenuBarInfo(info)
   }
 
   updateMenuBar(bar: CFMMenuBarOptions) {
-    return this._ui.updateMenuBar(bar)
+    this._ui.updateMenuBar(bar)
   }
 
   newFile(callback?: ClientEventCallback) {
     this._closeCurrentFile()
     this._resetState()
     window.location.hash = ""
-    return this._event('newedFile', {content: ""}, callback)
+    this._event('newedFile', {content: ""}, callback)
   }
 
   newFileDialog(callback?: ClientEventCallback) {
@@ -455,7 +445,7 @@ class CloudFileManagerClient {
     this._resetState()
     window.location.hash = ""
     this._event('closedFile', {content: ""})
-    return callback?.()
+    callback?.()
   }
 
   closeFileDialog(callback?: () => void) {
@@ -468,7 +458,7 @@ class CloudFileManagerClient {
 
   importData(data: any, callback?: (data: any) => void) {
     this._event('importedData', data)
-    return callback?.(data)
+    callback?.(data)
   }
 
   importDataDialog(callback?: (data: any) => void) {
@@ -480,7 +470,7 @@ class CloudFileManagerClient {
   readLocalFile(file: any, callback?: (args: { name: string, content: any }) => void) {
     const reader = new FileReader()
     reader.onload = loaded => callback?.({name: file.name, content: loaded.target?.result})
-    return reader.readAsText(file)
+    reader.readAsText(file)
   }
 
   openLocalFile(file: any, callback?: OpenSaveCallback) {
@@ -620,7 +610,7 @@ class CloudFileManagerClient {
   createNewInFolder(providerName: string, folder: string) {
     const provider = this.providers[providerName]
     if (provider && provider.can(ECapabilities.setFolder, this.state.metadata)) {
-      if ((this.state.metadata == null)) {
+      if (!this.state.metadata) {
         this.state.metadata = new CloudMetadata({
           type: CloudMetadata.File,
           provider
@@ -662,8 +652,8 @@ class CloudFileManagerClient {
   }
 
   save(callback?: OpenSaveCallback) {
-    return this._event('getContent', { shared: this._sharedMetadata() }, (stringContent: any) => {
-      return this.saveContent(stringContent, callback)
+    this._event('getContent', { shared: this._sharedMetadata() }, (stringContent: any) => {
+      this.saveContent(stringContent, callback)
     })
   }
 
@@ -918,9 +908,9 @@ class CloudFileManagerClient {
   }
 
   canEditShared() {
-    const accessKeys = (this.state.currentContent != null ? this.state.currentContent.get("accessKeys") : undefined) || {}
-    const shareEditKey = this.state.currentContent != null ? this.state.currentContent.get("shareEditKey") : undefined
-    return (shareEditKey || accessKeys.readWrite) && !(this.state.currentContent != null ? this.state.currentContent.get("isUnshared") : undefined)
+    const accessKeys = this.state.currentContent?.get("accessKeys") || {}
+    const shareEditKey = this.state.currentContent?.get("shareEditKey")
+    return (shareEditKey || accessKeys.readWrite) && !this.state.currentContent?.get("isUnshared")
   }
 
   setShareState(shared: boolean, callback?: (err: string | null, sharedContentId: string, currentContent: any) => void) {
@@ -1005,8 +995,8 @@ class CloudFileManagerClient {
   }
 
   revertToSharedDialog(callback?: (err: string | null) => void) {
-    if ((this.state.currentContent != null ? this.state.currentContent.get("sharedDocumentId") : undefined) && (this.state.shareProvider != null)) {
-      return this.confirm(tr("~CONFIRM.REVERT_TO_SHARED_VIEW"), () => this.revertToShared(callback))
+    if (this.state.currentContent?.get("sharedDocumentId") && this.state.shareProvider) {
+      this.confirm(tr("~CONFIRM.REVERT_TO_SHARED_VIEW"), () => this.revertToShared(callback))
     }
   }
 
@@ -1165,7 +1155,7 @@ class CloudFileManagerClient {
     })
     if (window.self !== window.top) {
       // post to parent and not top window (not a bug even though we test for self inst top above)
-      return window.parent.postMessage({type: "cfm::setDirty", isDirty}, "*")
+      window.parent.postMessage({type: "cfm::setDirty", isDirty}, "*")
     }
   }
 
@@ -1220,11 +1210,11 @@ class CloudFileManagerClient {
   }
 
   showBlockingModal(modalProps: any) {
-    return this._ui.showBlockingModal(modalProps)
+    this._ui.showBlockingModal(modalProps)
   }
 
   hideBlockingModal() {
-    return this._ui.hideBlockingModal()
+    this._ui.hideBlockingModal()
   }
 
   getCurrentUrl(hashString?: string) {
@@ -1250,17 +1240,17 @@ class CloudFileManagerClient {
     url = hash[0] + ((hash[1] != null) ? `#${hash[1]}` : '')
 
     if (url !== window.location.href) {
-      return history.pushState({ originalUrl: window.location.href }, '', url)
+      history.pushState({ originalUrl: window.location.href }, '', url)
     }
   }
 
   confirm(message: any, callback: any, rejectCallback?: any) {
-    return this.confirmDialog({ message, callback, rejectCallback })
+    this.confirmDialog({ message, callback, rejectCallback })
   }
 
   confirmDialog(params: any) {
     this._event("requiresUserInteraction")
-    return this._ui.confirmDialog(params)
+    this._ui.confirmDialog(params)
   }
 
   alert(message: string, titleOrCallback?: string | (() => void), callback?: () => void) {
@@ -1268,7 +1258,7 @@ class CloudFileManagerClient {
       callback = titleOrCallback
       titleOrCallback = undefined
     }
-    return this._ui.alertDialog(message, ((titleOrCallback as string) || tr("~CLIENT_ERROR.TITLE")), callback)
+    this._ui.alertDialog(message, ((titleOrCallback as string) || tr("~CLIENT_ERROR.TITLE")), callback)
   }
 
   hideAlert() {
@@ -1321,26 +1311,23 @@ class CloudFileManagerClient {
   }
 
   _fileChanged(type: CFMFileChangedEventType, content: any, metadata: CloudMetadata, additionalState?: any, hashParams?: string) {
-    if (additionalState == null) { additionalState = {} }
-
     this._updateMetaDataOverwritable(metadata)
-    this._updateState(content, metadata, additionalState, hashParams)
-    return this._event(type, { content: (content != null ? content.getClientContent() : undefined), shared: this._sharedMetadata() })
+    this._updateState(content, metadata, additionalState ?? {}, hashParams)
+    this._event(type, { content: content?.getClientContent(), shared: this._sharedMetadata() })
   }
 
   _fileOpened(content: any, metadata: CloudMetadata, additionalState?: any, hashParams?: string) {
-    if (additionalState == null) { additionalState = {} }
-
     const eventData = { content: content?.getClientContent?.() ?? content }
     // update state before sending 'openedFile' events so that 'openedFile' listeners that
     // reference state have the updated state values
-    this._updateState(content, metadata, additionalState, hashParams)
+    this._updateState(content, metadata, additionalState ?? {}, hashParams)
     // add metadata contentType to event for CODAP to load via postMessage API (for SageModeler standalone)
     const contentType = metadata.mimeType || metadata.contentType;
     (eventData as any).metadata = {contentType, url: metadata.url, filename: metadata.filename}
-    return this._event('openedFile', eventData, (iError: string | null, iSharedMetadata: any) => {
+    this._event('openedFile', eventData, (iError: string | null, iSharedMetadata: any) => {
       if (iError) {
-        return this.alert(iError, () => this.ready())
+        this.alert(iError, () => this.ready())
+        return
       }
 
       this._updateMetaDataOverwritable(metadata)
@@ -1348,8 +1335,8 @@ class CloudFileManagerClient {
         content.addMetadata(iSharedMetadata)
       }
       // and then update state again for the metadata and content changes
-      this._updateState(content, metadata, additionalState, hashParams)
-      return this.ready()
+      this._updateState(content, metadata, additionalState ?? {}, hashParams)
+      this.ready()
     })
   }
 
@@ -1366,12 +1353,11 @@ class CloudFileManagerClient {
     if (hashParams !== undefined) {
       window.location.hash = hashParams
     }
-    return this._setState(state)
+    this._setState(state)
   }
 
   _event(type: CloudFileManagerEventType, data?: any, eventCallback?: ClientEventCallback) {
-    if (data == null) { data = {} }
-    const event = new CloudFileManagerClientEvent(type, data, eventCallback, this.state)
+    const event = new CloudFileManagerClientEvent(type, data ?? {}, eventCallback, this.state)
     for (let listener of this._listeners) {
       listener(event)
     }
@@ -1382,17 +1368,17 @@ class CloudFileManagerClient {
     // A permanent fix for this would be to send the new filename outside of the state metadata.
     const skipPostMessage = type === "renamedFile"
     if (this.appOptions?.sendPostMessageClientEvents && this.iframe && !skipPostMessage) {
-      return event.postMessage(this.iframe.contentWindow)
+      event.postMessage(this.iframe.contentWindow)
     }
   }
 
   _setState(newState: Partial<IClientState>) {
     this.state = { ...this.state, ...newState }
-    return this._event('stateChanged')
+    this._event('stateChanged')
   }
 
   _resetState() {
-    return this._setState({
+    this._setState({
       openedContent: undefined,
       currentContent: undefined,
       metadata: undefined,
@@ -1406,7 +1392,7 @@ class CloudFileManagerClient {
   _closeCurrentFile() {
     const { metadata } = this.state
     if (metadata?.provider?.can(ECapabilities.close, metadata)) {
-      return metadata.provider.close(metadata)
+      metadata.provider.close(metadata)
     }
   }
 
@@ -1451,7 +1437,7 @@ class CloudFileManagerClient {
   }
 
   _startPostMessageListener() {
-    return $(window).on('message', e => {
+    $(window).on('message', e => {
       const oe = e.originalEvent
       const data = (oe as any).data || {}
       const reply = function(type: any, params: any) {
@@ -1488,11 +1474,11 @@ class CloudFileManagerClient {
   }
 
   _setupConfirmOnClose() {
-    return $(window).on('beforeunload', e => {
+    $(window).on('beforeunload', e => {
       if (this.state.dirty) {
         // different browsers trigger the confirm in different ways
-        e.preventDefault()
-        return (e as any).returnValue = true
+        e.preventDefault();
+        (e as any).returnValue = true
       }
     })
   }
