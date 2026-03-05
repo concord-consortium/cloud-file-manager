@@ -1,14 +1,6 @@
 import { fireEvent, render, screen } from '@testing-library/react'
 import React from 'react'
-import BlockingModalViewComponent from './blocking-modal-view'
-
-// Cast to accept props since createReactClass components don't have proper TypeScript types
-const BlockingModalView = BlockingModalViewComponent as React.ComponentType<{
-  title?: string
-  message?: string
-  close?: () => void
-  onDrop?: (e: React.DragEvent) => void
-}>
+import BlockingModalView from './blocking-modal-view'
 
 describe('BlockingModalView', () => {
   it('should render with default title', () => {

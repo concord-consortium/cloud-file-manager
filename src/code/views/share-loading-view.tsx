@@ -1,4 +1,3 @@
-import React from 'react'
 import translate  from '../utils/translate'
 import { Spinner } from './icons/spin'
 

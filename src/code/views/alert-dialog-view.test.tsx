@@ -1,15 +1,7 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import React from 'react'
-import AlertDialogViewComponent from './alert-dialog-view'
-
-// Cast to accept props since createReactClass components don't have proper TypeScript types
-const AlertDialogView = AlertDialogViewComponent as React.ComponentType<{
-  title?: string
-  message?: string
-  close?: () => void
-  callback?: () => void
-}>
+import AlertDialogView from './alert-dialog-view'
 
 describe('AlertDialogView', () => {
   it('should render with default title', () => {

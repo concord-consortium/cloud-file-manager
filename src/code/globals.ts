@@ -14,14 +14,9 @@ import _ from 'lodash'
 import $ from 'jquery'
 import React from 'react'
 import ReactDOM from 'react-dom'
-import ReactDOMFactories from 'react-dom-factories'
-import createReactClass from 'create-react-class'
 
 const g = global as any
 g._ = _
 g.$ = $
 g.React = React
 g.ReactDOM = ReactDOM
-g.ReactDOMFactories = ReactDOMFactories
-// https://reactjs.org/docs/react-without-es6.html
-g.createReactClass = createReactClass

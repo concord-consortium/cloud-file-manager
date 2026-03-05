@@ -1,27 +1,15 @@
 import _ from "lodash"
 import React from "react"
-import ReactDOMFactories from "react-dom-factories"
-import { createReactFactory, createReactClassFactory } from "../create-react-factory"
-import menuBarView from './menu-bar-view'
-import providerTabbedDialogView from './provider-tabbed-dialog-view'
-import downloadDialogView from './download-dialog-view'
-import renameDialogView from './rename-dialog-view'
+import MenuBar from './menu-bar-view'
+import ProviderTabbedDialog from './provider-tabbed-dialog-view'
+import DownloadDialog from './download-dialog-view'
+import RenameDialog from './rename-dialog-view'
 import ShareDialogView from './share-dialog-view'
-import blockingModalView from './blocking-modal-view'
-import alterDialogView from './alert-dialog-view'
-import confirmDialogView from './confirm-dialog-view'
-import importTabbedDialogView from './import-tabbed-dialog-view'
-import selectInteractiveStateDialog from './select-interactive-state-dialog-view'
-
-const MenuBar = createReactFactory(menuBarView)
-const ProviderTabbedDialog = createReactFactory(providerTabbedDialogView)
-const DownloadDialog = createReactFactory(downloadDialogView)
-const RenameDialog = createReactFactory(renameDialogView)
-const BlockingModal = createReactFactory(blockingModalView)
-const AlertDialog = createReactFactory(alterDialogView)
-const ConfirmDialog = createReactFactory(confirmDialogView)
-const ImportTabbedDialog = createReactFactory(importTabbedDialogView)
-const SelectInteractiveStateDialog = createReactFactory(selectInteractiveStateDialog)
+import BlockingModal from './blocking-modal-view'
+import AlertDialog from './alert-dialog-view'
+import ConfirmDialog from './confirm-dialog-view'
+import ImportTabbedDialog from './import-tabbed-dialog-view'
+import SelectInteractiveStateDialog from './select-interactive-state-dialog-view'
 
 import tr from '../utils/translate'
 import isString from '../utils/is-string'
@@ -31,22 +19,19 @@ import { CloudFileManagerClient, CloudFileManagerClientEvent } from "../client"
 import { CloudFileManagerUIEvent } from "../ui"
 import { SelectInteractiveStateDialogProps } from "./select-interactive-state-dialog-view"
 
-const {div, iframe} = ReactDOMFactories
+interface InnerAppProps {
+  app?: string
+  iframeAllow?: string
+}
 
-const InnerApp = createReactClassFactory({
-
-  displayName: 'CloudFileManagerInnerApp',
-
-  shouldComponentUpdate(nextProps: any) {
-    return nextProps.app !== this.props.app
-  },
-
-  render() {
-    return (div({className: 'innerApp'},
-      (iframe({src: this.props.app, allow: this.props.iframeAllow}))
-    ))
-  }
+const InnerApp: React.FC<InnerAppProps> = React.memo(({ app, iframeAllow }) => {
+  return (
+    <div className="innerApp">
+      <iframe src={app} allow={iframeAllow} />
+    </div>
+  )
 })
+InnerApp.displayName = 'CloudFileManagerInnerApp'
 
 interface IAppViewProps {
   client?: CloudFileManagerClient
@@ -283,60 +268,111 @@ class AppView extends React.Component<IAppViewProps, IAppViewState> {
   }
 
   renderDialogs = () => {
-    return (div({},
-      (() => {
-      if (this.state.blockingModalProps) {
-        return (BlockingModal(this.state.blockingModalProps))
-      } else if (this.state.providerDialog) {
-        return (ProviderTabbedDialog({client: this.props.client, dialog: this.state.providerDialog, close: this.closeDialogs}))
-      } else if (this.state.downloadDialog) {
-        return (DownloadDialog({client: this.props.client, filename: this.state.downloadDialog.filename, mimeType: this.state.downloadDialog.mimeType, content: this.state.downloadDialog.content, close: this.closeDialogs}))
-      } else if (this.state.renameDialog) {
-        return (RenameDialog({filename: this.state.renameDialog.filename, callback: this.state.renameDialog.callback, close: this.closeDialogs}))
-      } else if (this.state.importDialog) {
-        return (ImportTabbedDialog({client: this.props.client, dialog: this.state.importDialog, close: this.closeDialogs}))
-      } else if (this.state.shareDialog) {
-        const { client, enableLaraSharing, ui } = this.props
-        if (!client) return null
-        return (
-          <ShareDialogView currentBaseUrl={client.getCurrentUrl()} isShared={client.isShared()}
-            sharedDocumentId={client.state?.currentContent?.get('sharedDocumentId')}
-            sharedDocumentUrl={client.state?.currentContent?.get('sharedDocumentUrl')}
-            settings={ui?.shareDialog || {}}
-            enableLaraSharing={enableLaraSharing}
-            onAlert={(message: string, title?: string) => client.alert(message, title)}
-            onToggleShare={(callback: (err: string | null, sharedContentId?: string) => void) => client.toggleShare(callback)}
-            onUpdateShare={() => client.shareUpdate()}
-            close={this.closeDialogs} />
-        )
-      } else if (this.state.selectInteractiveStateDialog) {
-        return <SelectInteractiveStateDialog {...this.state.selectInteractiveStateDialog} close={this.closeDialogs} />
-      }
-    })(),
+    const { client, enableLaraSharing, ui } = this.props
+    const {
+      blockingModalProps,
+      providerDialog,
+      downloadDialog,
+      renameDialog,
+      importDialog,
+      shareDialog,
+      selectInteractiveStateDialog,
+      alertDialog,
+      confirmDialog
+    } = this.state
 
-      // alert and confirm dialogs can be overlayed on other dialogs
-      this.state.alertDialog ?
-        (AlertDialog({title: this.state.alertDialog.title, message: this.state.alertDialog.message, callback: this.state.alertDialog.callback, close: this.closeAlert})) : undefined,
-      this.state.confirmDialog ?
-        (ConfirmDialog(_.merge({}, this.state.confirmDialog, { close: this.closeConfirm }))) : undefined
-    ))
+    let mainDialog: React.ReactNode = null
+
+    if (blockingModalProps) {
+      mainDialog = <BlockingModal {...blockingModalProps} />
+    } else if (providerDialog) {
+      mainDialog = <ProviderTabbedDialog client={client as any} dialog={providerDialog as any} close={this.closeDialogs} />
+    } else if (downloadDialog) {
+      mainDialog = (
+        <DownloadDialog
+          client={client as any}
+          filename={downloadDialog.filename}
+          content={downloadDialog.content}
+          close={this.closeDialogs}
+        />
+      )
+    } else if (renameDialog) {
+      mainDialog = (
+        <RenameDialog
+          filename={renameDialog.filename}
+          callback={renameDialog.callback}
+          close={this.closeDialogs}
+        />
+      )
+    } else if (importDialog) {
+      mainDialog = <ImportTabbedDialog client={client as any} dialog={importDialog} close={this.closeDialogs} />
+    } else if (shareDialog && client) {
+      mainDialog = (
+        <ShareDialogView
+          currentBaseUrl={client.getCurrentUrl()}
+          isShared={client.isShared()}
+          sharedDocumentId={client.state?.currentContent?.get('sharedDocumentId')}
+          sharedDocumentUrl={client.state?.currentContent?.get('sharedDocumentUrl')}
+          settings={ui?.shareDialog || {}}
+          enableLaraSharing={enableLaraSharing}
+          onAlert={(message: string, title?: string) => client.alert(message, title)}
+          onToggleShare={(callback: (err: string | null, sharedContentId?: string) => void) => client.toggleShare(callback)}
+          onUpdateShare={() => client.shareUpdate()}
+          close={this.closeDialogs}
+        />
+      )
+    } else if (selectInteractiveStateDialog) {
+      mainDialog = <SelectInteractiveStateDialog {...selectInteractiveStateDialog} close={this.closeDialogs} />
+    }
+
+    return (
+      <div>
+        {mainDialog}
+        {/* alert and confirm dialogs can be overlayed on other dialogs */}
+        {alertDialog && (
+          <AlertDialog
+            title={alertDialog.title}
+            message={alertDialog.message}
+            callback={alertDialog.callback}
+            close={this.closeAlert}
+          />
+        )}
+        {confirmDialog && (
+          <ConfirmDialog {...(_.merge({}, confirmDialog, { close: this.closeConfirm }) as any)} />
+        )}
+      </div>
+    )
   }
 
   render() {
-    const menuItems = !this.props.hideMenuBar ? this.state.menuItems : []
-    if (this.props.appOrMenuElemId) {
+    const { client, appOrMenuElemId, usingIframe, app, iframeAllow, hideMenuBar } = this.props
+    const { filename, provider, fileStatus, menuItems, menuOptions, providerDialog, downloadDialog } = this.state
+
+    const items = !hideMenuBar ? menuItems : []
+
+    if (appOrMenuElemId) {
       // CSS class depends on whether we're in app (iframe) or view (menubar-only) mode
-      return (div({className: this.props.usingIframe ? 'app' : 'view' },
-        (MenuBar({client: this.props.client, filename: this.state.filename, provider: this.state.provider, fileStatus: this.state.fileStatus, items: menuItems, options: this.state.menuOptions})),
-        // only render the wrapped client app in app (iframe) mode
-        this.props.usingIframe ?
-          (InnerApp({app: this.props.app, iframeAllow: this.props.iframeAllow})) : undefined,
-        this.renderDialogs()
-      ))
-    } else if (this.state.providerDialog || this.state.downloadDialog) {
-      return (div({className: 'app'},
-        this.renderDialogs()
-      ))
+      return (
+        <div className={usingIframe ? 'app' : 'view'}>
+          <MenuBar
+            client={client as any}
+            filename={filename ?? undefined}
+            provider={provider}
+            fileStatus={fileStatus}
+            items={items as any}
+            options={menuOptions as any}
+          />
+          {/* only render the wrapped client app in app (iframe) mode */}
+          {usingIframe && <InnerApp app={app} iframeAllow={iframeAllow} />}
+          {this.renderDialogs()}
+        </div>
+      )
+    } else if (providerDialog || downloadDialog) {
+      return (
+        <div className="app">
+          {this.renderDialogs()}
+        </div>
+      )
     } else {
       return null
     }
