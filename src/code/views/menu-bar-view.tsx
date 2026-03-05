@@ -286,7 +286,7 @@ const MenuBar: React.FC<MenuBarProps> = ({
               onMouseMove={(e) => e.stopPropagation()}
             />
           ) : (
-            <span className="content-filename" onClick={filenameClicked}>{filename}</span>
+            <span className="content-filename" tabIndex={0} onClick={filenameClicked}>{filename}</span>
           )}
           {fileStatus && (
             <span className={`menu-bar-file-status ${fileStatus.type} ${langClass}`}>{fileStatus.message}</span>
@@ -294,7 +294,7 @@ const MenuBar: React.FC<MenuBarProps> = ({
         </div>
       </div>
       <div className="menu-bar-center">
-        <img className="app-logo" src={client.appOptions.appIcon} alt="CODAP Logo" onClick={infoClicked} />
+        <img className="app-logo" src={client.appOptions.appIcon} alt="CODAP Logo" tabIndex={0} onClick={infoClicked} />
         {options.info && (
           <span className="menu-bar-info">{options.info}</span>
         )}
