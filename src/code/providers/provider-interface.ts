@@ -436,7 +436,7 @@ abstract class ProviderInterface implements IProviderInterfaceOpts {
     console.warn('renderUser not implemented')
   }
 
-  filterTabComponent(capability: ECapabilities, defaultComponent: React.Component): React.Component | null {
+  filterTabComponent(capability: ECapabilities, defaultComponent: any): any {
     return defaultComponent
   }
 
