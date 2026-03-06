@@ -21,6 +21,7 @@ const FileListFile: React.FC<FileListFileProps> = ({
   fileConfirmed
 }) => {
   const lastClickRef = useRef(0)
+  const isSelectable = metadata.type !== CloudMetadata.Label
 
   const handleFileSelected = (e: React.MouseEvent<HTMLDivElement>) => {
     e.preventDefault()
@@ -33,13 +34,23 @@ const FileListFile: React.FC<FileListFileProps> = ({
     lastClickRef.current = now
   }
 
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key === 'Enter') {
+      fileSelected(metadata)
+      fileConfirmed()
+    } else if (e.key === ' ') {
+      e.preventDefault()
+      fileSelected(metadata)
+    }
+  }
+
   const getIconClass = () => {
     if (metadata.type === CloudMetadata.Folder) return 'icon-inspectorArrow-collapse'
     if (metadata.type === CloudMetadata.File) return 'icon-noteTool'
     return ''
   }
 
-  const selectableClass = metadata.type !== CloudMetadata.Label ? 'selectable' : ''
+  const selectableClass = isSelectable ? 'selectable' : ''
   const selectedClass = selected ? 'selected' : ''
   const subFolderClass = isSubFolder ? 'subfolder' : ''
 
@@ -47,7 +58,11 @@ const FileListFile: React.FC<FileListFileProps> = ({
     <div
       className={`${selectableClass} ${selectedClass} ${subFolderClass}`}
       title={metadata.description || undefined}
-      onClick={metadata.type !== CloudMetadata.Label ? handleFileSelected : undefined}
+      role={isSelectable ? 'option' : undefined}
+      aria-selected={isSelectable ? selected : undefined}
+      tabIndex={isSelectable ? 0 : undefined}
+      onClick={isSelectable ? handleFileSelected : undefined}
+      onKeyDown={isSelectable ? handleKeyDown : undefined}
     >
       <i className={getIconClass()} />
       {metadata.name}
@@ -139,7 +154,20 @@ const FileList: React.FC<FileListProps> = ({
   if (!loading) {
     if (isSubFolder && folder) {
       listContent.push(
-        <div key="parent" className="selectable" onClick={handleParentSelected}>
+        <div
+          key="parent"
+          className="selectable"
+          role="option"
+          aria-selected={false}
+          tabIndex={0}
+          onClick={handleParentSelected}
+          onKeyDown={(e: React.KeyboardEvent<HTMLDivElement>) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault()
+              handleParentSelected()
+            }
+          }}
+        >
           <i className="icon-paletteArrow-collapse" />
           {folder.name}
         </div>
@@ -159,7 +187,7 @@ const FileList: React.FC<FileListProps> = ({
   }
 
   return (
-    <div className="filelist">
+    <div className="filelist" role="listbox" aria-label={tr("~FILE_DIALOG.FILENAME")}>
       {loading ? (
         <div key="loading">{tr("~FILE_DIALOG.LOADING")}</div>
       ) : (
@@ -462,7 +490,12 @@ const FileDialogTab: React.FC<FileDialogTabProps> = ({ dialog, close, client, pr
           ref={inputRef}
         />
         {listFiltered && (
-          <div className="dialogClearFilter" onClick={clearListFilter}>X</div>
+          <button
+            className="dialogClearFilter"
+            title={tr("~FILE_DIALOG.CLEAR_FILTER")}
+            aria-label={tr("~FILE_DIALOG.CLEAR_FILTER")}
+            onClick={clearListFilter}
+          >X</button>
         )}
         <FileList
           provider={provider}

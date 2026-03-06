@@ -64,6 +64,7 @@
   "~FILE_DIALOG.LOAD_FOLDER_ERROR": "*** Error loading folder contents ***",
   "~FILE_DIALOG.DOWNLOAD": "Download",
   "~FILE_DIALOG.FILTER": "Filter results...",
+  "~FILE_DIALOG.CLEAR_FILTER": "Clear filter",
   "~FILE_DIALOG.OVERWRITE_CONFIRM": "Are you sure you want to overwrite %{filename}?",
 
   "~DOWNLOAD_DIALOG.DOWNLOAD": "Download",

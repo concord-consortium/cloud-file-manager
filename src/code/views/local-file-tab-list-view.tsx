@@ -90,7 +90,7 @@ const LocalFileListTab: React.FC<LocalFileListTabProps> = ({ dialog, close, clie
         onDragLeave={handleDragLeave}
       >
         {tr("~LOCAL_FILE_DIALOG.DROP_FILE_HERE")}
-        <input type="file" onChange={handleChange} />
+        <input type="file" aria-label={tr("~LOCAL_FILE_DIALOG.DROP_FILE_HERE")} onChange={handleChange} />
       </div>
       <div className="buttons">
         <button onClick={handleCancel}>{tr("~FILE_DIALOG.CANCEL")}</button>
