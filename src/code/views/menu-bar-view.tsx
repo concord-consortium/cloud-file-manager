@@ -145,12 +145,23 @@ const MenuBar: React.FC<MenuBarProps> = ({
     }
   }, [checkBlur, client._ui, focusFilename])
 
-  const filenameClicked = (e: React.MouseEvent<HTMLSpanElement>) => {
-    e.preventDefault()
-    e.stopPropagation()
+  const startEditing = () => {
     setEditingFilename(true)
     setEditingInitialFilename(false)
     setTimeout(() => focusFilename(), 10)
+  }
+
+  const filenameClicked = (e: React.MouseEvent<HTMLSpanElement>) => {
+    e.preventDefault()
+    e.stopPropagation()
+    startEditing()
+  }
+
+  const filenameKeyDown = (e: React.KeyboardEvent<HTMLSpanElement>) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault()
+      startEditing()
+    }
   }
 
   const filenameChanged = () => {
@@ -160,15 +171,22 @@ const MenuBar: React.FC<MenuBarProps> = ({
   }
 
   const watchForEnter = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.keyCode === 13) {
+    if (e.key === 'Enter') {
       rename()
-    } else if (e.keyCode === 27) {
+    } else if (e.key === 'Escape') {
       cancelEdit()
     }
   }
 
   const infoClicked = () => {
     options.onInfoClick?.()
+  }
+
+  const infoKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault()
+      infoClicked()
+    }
   }
 
   const langChanged = (langCode: string) => {
@@ -284,7 +302,16 @@ const MenuBar: React.FC<MenuBarProps> = ({
               onMouseMove={(e) => e.stopPropagation()}
             />
           ) : (
-            <span className="content-filename" tabIndex={0} onClick={filenameClicked}>{filename}</span>
+            <span
+              className="content-filename"
+              tabIndex={0}
+              role="button"
+              aria-label={`Rename ${filename}`}
+              onClick={filenameClicked}
+              onKeyDown={filenameKeyDown}
+            >
+              {filename}
+            </span>
           )}
           {fileStatus && (
             <span className={`menu-bar-file-status ${fileStatus.type} ${langClass}`}>{fileStatus.message}</span>
@@ -292,7 +319,14 @@ const MenuBar: React.FC<MenuBarProps> = ({
         </div>
       </div>
       <div className="menu-bar-center">
-        <div className="app-logo-wrapper" tabIndex={0} onClick={infoClicked} role="button" aria-label="CODAP Logo">
+        <div
+          className="app-logo-wrapper"
+          tabIndex={0}
+          role="button"
+          aria-label="CODAP Logo"
+          onClick={infoClicked}
+          onKeyDown={infoKeyDown}
+        >
           <img className="app-logo" src={client.appOptions.appIcon} alt="" />
           <LogoFocusRing />
         </div>

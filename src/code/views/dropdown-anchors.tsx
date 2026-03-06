@@ -1,6 +1,6 @@
 const DefaultAnchor = (
   // Hamburger icon
-  <svg className="default-anchor" version="1.1" width={33} height={18} viewBox="0 0 33 18" enableBackground="new 0 0 33 18">
+  <svg className="default-anchor" version="1.1" width={33} height={18} viewBox="0 0 33 18" enableBackground="new 0 0 33 18" aria-hidden="true">
     <g>
       <rect x={2} y={3} width={16} height={2} />
       <rect x={2} y={8} width={16} height={2} />
@@ -11,7 +11,7 @@ const DefaultAnchor = (
 )
 
 const TriangleOnlyAnchor = (
-  <svg className="triangle-only-anchor" version="1.1" width={8} height={18} viewBox="0 0 8 18" enableBackground="new 0 0 33 18">
+  <svg className="triangle-only-anchor" version="1.1" width={8} height={18} viewBox="0 0 8 18" enableBackground="new 0 0 33 18" aria-hidden="true">
     <polygon points="0,7 4,13 8,7" />
   </svg>
 )
