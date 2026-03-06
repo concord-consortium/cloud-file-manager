@@ -41,7 +41,7 @@ const RenameDialogView: React.FC<RenameDialogViewProps> = ({ filename: initialFi
         <input
           ref={inputRef}
           aria-label={tr("~FILE_DIALOG.FILENAME")}
-          placeholder="Filename"
+          placeholder={tr("~FILE_DIALOG.FILENAME")}
           value={filename}
           onChange={handleFilenameChange}
           onKeyDown={handleKeyDown}
