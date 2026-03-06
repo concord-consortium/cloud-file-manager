@@ -37,6 +37,7 @@ const RenameDialogView: React.FC<RenameDialogViewProps> = ({ filename: initialFi
       <div className="rename-dialog">
         <input
           ref={inputRef}
+          aria-label={tr("~FILE_DIALOG.FILENAME")}
           placeholder="Filename"
           value={filename}
           onChange={handleFilenameChange}
@@ -44,6 +45,7 @@ const RenameDialogView: React.FC<RenameDialogViewProps> = ({ filename: initialFi
         <div className="buttons">
           <button
             className={trimmedFilename.length === 0 ? 'disabled' : ''}
+            disabled={trimmedFilename.length === 0}
             onClick={handleRename}
           >
             {tr('~RENAME_DIALOG.RENAME')}

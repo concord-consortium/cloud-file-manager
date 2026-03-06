@@ -171,7 +171,7 @@ const LocalFileSaveTab: React.FC<LocalFileSaveTabProps> = ({ dialog, close, clie
   }
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.keyCode === 13 && !confirmDisabled) {
+    if (e.key === 'Enter' && !confirmDisabled) {
       e.preventDefault()
       e.stopPropagation()
       confirm(null, true)
@@ -206,6 +206,7 @@ const LocalFileSaveTab: React.FC<LocalFileSaveTabProps> = ({ dialog, close, clie
       <input
         type="text"
         ref={filenameRef}
+        aria-label={tr("~FILE_DIALOG.FILENAME")}
         value={filename}
         placeholder={tr("~FILE_DIALOG.FILENAME")}
         onChange={handleFilenameChange}
@@ -213,14 +214,14 @@ const LocalFileSaveTab: React.FC<LocalFileSaveTabProps> = ({ dialog, close, clie
       />
       <div className="saveArea">
         {shared && !hasPropsContent && (
-          <div className="shareCheckbox">
+          <label className="shareCheckbox">
             <input
               type="checkbox"
               checked={includeShareInfo}
               onChange={handleIncludeShareInfoChange}
             />
             {tr('~DOWNLOAD_DIALOG.INCLUDE_SHARE_INFO')}
-          </div>
+          </label>
         )}
       </div>
       <div className="buttons">
