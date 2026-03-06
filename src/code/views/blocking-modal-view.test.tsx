@@ -80,6 +80,18 @@ describe('BlockingModalView', () => {
     expect(dialog).toBeInTheDocument()
   })
 
+  it('should have aria-label from title', () => {
+    render(<BlockingModalView title="Please Wait" message="Loading..." />)
+    const dialog = screen.getByRole('dialog')
+    expect(dialog).toHaveAttribute('aria-label', 'Please Wait')
+  })
+
+  it('should have aria-label from message when no title', () => {
+    render(<BlockingModalView message="Loading..." />)
+    const dialog = screen.getByRole('dialog')
+    expect(dialog).toHaveAttribute('aria-label', 'Loading...')
+  })
+
   it('should have correct structure', () => {
     render(
       <BlockingModalView title="Title" message="Message" />
