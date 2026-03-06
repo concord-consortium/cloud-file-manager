@@ -65,15 +65,6 @@ const MenuBarView = MenuBarViewComponent as unknown as React.ComponentType<{
   }
 }>
 
-// Mock console.log to suppress the language log message
-const originalConsoleLog = console.log
-beforeAll(() => {
-  console.log = jest.fn()
-})
-afterAll(() => {
-  console.log = originalConsoleLog
-})
-
 // Use fake timers to handle setTimeout in focusFilename
 beforeEach(() => {
   jest.useFakeTimers()
@@ -227,7 +218,7 @@ describe('MenuBarView', () => {
     fireEvent.change(input, { target: { value: 'new-name' } })
 
     // Press Enter
-    fireEvent.keyDown(input, { keyCode: 13 })
+    fireEvent.keyDown(input, { key: 'Enter' })
 
     expect(mockClient.rename).toHaveBeenCalledWith(
       mockClient.state.metadata,
@@ -257,7 +248,7 @@ describe('MenuBarView', () => {
     fireEvent.change(input, { target: { value: 'changed-name' } })
 
     // Press Escape
-    fireEvent.keyDown(input, { keyCode: 27 })
+    fireEvent.keyDown(input, { key: 'Escape' })
 
     // Should exit edit mode and show original name
     expect(screen.getByText('original-name')).toBeInTheDocument()
@@ -435,7 +426,7 @@ describe('MenuBarView', () => {
     fireEvent.change(input, { target: { value: '' } })
 
     // Press Enter with empty value
-    fireEvent.keyDown(input, { keyCode: 13 })
+    fireEvent.keyDown(input, { key: 'Enter' })
 
     // Should not call rename
     expect(mockClient.rename).not.toHaveBeenCalled()

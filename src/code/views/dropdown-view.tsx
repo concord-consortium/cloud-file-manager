@@ -56,7 +56,7 @@ function renderMenuItems(items: DropdownItemData[], subMenuExpandIcon?: string) 
           </MenuItem>
           <Popover className="sub-menu cfm-menu dg-wants-touch menu-showing">
             <Menu className="menu-list-container" onAction={(key: Key) => {
-              const subItem = item.items?.[key as number]
+              const subItem = item.items?.[Number(key)]
               subItem?.action?.()
             }}>
               {renderMenuItems(item.items, subMenuExpandIcon)}
