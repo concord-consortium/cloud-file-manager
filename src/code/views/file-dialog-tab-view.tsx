@@ -513,7 +513,7 @@ const FileDialogTab: React.FC<FileDialogTabProps> = ({ dialog, close, client, pr
           <button
             onClick={confirm}
             disabled={disabled}
-            className={disabled ? 'disabled' : ''}
+            className={disabled ? 'disabled' : 'default'}
           >
             {isOpenAction ? tr("~FILE_DIALOG.OPEN") : tr("~FILE_DIALOG.SAVE")}
           </button>
