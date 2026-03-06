@@ -30,21 +30,21 @@ const LocalFileListTab: React.FC<LocalFileListTabProps> = ({ dialog, close, clie
     close()
   }
 
-  const handleDrop = (e: DragEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
-    const droppedFiles = e.dataTransfer?.files
-    if (!droppedFiles) return
-    if (droppedFiles.length > 1) {
-      client.alert(tr("~LOCAL_FILE_DIALOG.MULTIPLE_FILES_DROPPED"))
-    } else if (droppedFiles.length === 1) {
-      openFile(droppedFiles[0], 'drop')
-    }
-  }
-
   // Standard React 'drop' event handlers are triggered after client 'drop' event handlers.
   // By explicitly installing DOM event handlers we get first crack at the 'drop' event.
   useEffect(() => {
+    const handleDrop = (e: DragEvent) => {
+      e.preventDefault()
+      e.stopPropagation()
+      const droppedFiles = e.dataTransfer?.files
+      if (!droppedFiles) return
+      if (droppedFiles.length > 1) {
+        client.alert(tr("~LOCAL_FILE_DIALOG.MULTIPLE_FILES_DROPPED"))
+      } else if (droppedFiles.length === 1) {
+        openFile(droppedFiles[0], 'drop')
+      }
+    }
+
     const dropZone = dropZoneRef.current
     if (dropZone) {
       dropZone.addEventListener('drop', handleDrop)
@@ -52,7 +52,7 @@ const LocalFileListTab: React.FC<LocalFileListTabProps> = ({ dialog, close, clie
         dropZone.removeEventListener('drop', handleDrop)
       }
     }
-  })
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { files } = e.target

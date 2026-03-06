@@ -131,6 +131,14 @@ const MenuBar: React.FC<MenuBarProps> = ({
     window.addEventListener('mousedown', checkBlur, true)
     window.addEventListener('touchstart', checkBlur, true)
 
+    return () => {
+      window.removeEventListener('mousedown', checkBlur, true)
+      window.removeEventListener('touchstart', checkBlur, true)
+    }
+  }, [checkBlur])
+
+  // Register UI listener once on mount
+  useEffect(() => {
     client._ui.listen((event: any) => {
       if (event.type === 'editInitialFilename') {
         setEditingFilename(true)
@@ -138,12 +146,7 @@ const MenuBar: React.FC<MenuBarProps> = ({
         setTimeout(() => focusFilename(), 10)
       }
     })
-
-    return () => {
-      window.removeEventListener('mousedown', checkBlur, true)
-      window.removeEventListener('touchstart', checkBlur, true)
-    }
-  }, [checkBlur, client._ui, focusFilename])
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const startEditing = () => {
     setEditingFilename(true)
@@ -281,7 +284,6 @@ const MenuBar: React.FC<MenuBarProps> = ({
   }
 
   const currentLang = getCurrentLanguage()
-  console.log(`MenuBar: current language is ${currentLang}`)
   const langClass = getSpecialLangFontClassName(currentLang)
   // Note: authorized() is typed as void but actually returns a boolean when called without a callback
   const providerAny = provider as any

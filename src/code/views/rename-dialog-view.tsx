@@ -24,7 +24,7 @@ const RenameDialogView: React.FC<RenameDialogViewProps> = ({ filename: initialFi
 
   const handleRename = (e: React.MouseEvent<HTMLButtonElement>) => {
     if (trimmedFilename.length > 0) {
-      callback?.(filename)
+      callback?.(trimmedFilename)
       close?.()
     } else {
       e.preventDefault()

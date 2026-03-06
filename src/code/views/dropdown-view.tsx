@@ -96,7 +96,7 @@ const Dropdown: React.FC<DropdownProps> = ({
   }
 
   const handleAction = (key: Key) => {
-    const item = items[key as number]
+    const item = items[Number(key)]
     item?.action?.()
   }
 

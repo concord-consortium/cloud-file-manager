@@ -119,9 +119,11 @@ const LocalFileSaveTab: React.FC<LocalFileSaveTabProps> = ({ dialog, close, clie
     return supportsDownloadAttribute
   }
 
-  // Wrapper for DOM event listener (passes event, no simulateClick)
-  const handleClickEvent = (e: MouseEvent) => confirm(e, false)
+  // Use a ref for the click handler so the DOM listener always calls the latest version
+  const confirmRef = useRef(confirm)
+  confirmRef.current = confirm
 
+  // Fetch content on mount if not provided via props
   useEffect(() => {
     if (!hasPropsContent) {
       client._event('getContent', { shared: client._sharedMetadata() }, (receivedContent: any) => {
@@ -131,19 +133,22 @@ const LocalFileSaveTab: React.FC<LocalFileSaveTabProps> = ({ dialog, close, clie
         setContent(envelopedContent)
       })
     }
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
-    // Using the React onClick handler for the download button yielded odd behaviors
-    // in which the onClick handler got triggered multiple times and the default
-    // handler could not be prevented, presumably due to React's SyntheticEvent system.
-    // The solution here is to use standard browser event handlers.
+  // Using the React onClick handler for the download button yielded odd behaviors
+  // in which the onClick handler got triggered multiple times and the default
+  // handler could not be prevented, presumably due to React's SyntheticEvent system.
+  // The solution here is to use standard browser event handlers.
+  useEffect(() => {
     const downloadEl = downloadRef.current
     if (downloadEl) {
+      const handleClickEvent = (e: MouseEvent) => confirmRef.current(e, false)
       downloadEl.addEventListener('click', handleClickEvent)
       return () => {
         downloadEl.removeEventListener('click', handleClickEvent)
       }
     }
-  })
+  }, [])
 
   const handleFilenameChange = () => {
     const newFilename = filenameRef.current?.value ?? ''
