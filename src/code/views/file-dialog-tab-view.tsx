@@ -419,7 +419,7 @@ const FileDialogTab: React.FC<FileDialogTabProps> = ({ dialog, close, client, pr
   }
 
   const watchForEnter = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.keyCode === 13 && !confirmDisabled()) {
+    if (e.key === 'Enter' && !confirmDisabled()) {
       confirm()
     }
   }
@@ -454,6 +454,7 @@ const FileDialogTab: React.FC<FileDialogTabProps> = ({ dialog, close, client, pr
         <input
           type="text"
           value={search}
+          aria-label={tr(isOpenAction ? "~FILE_DIALOG.FILTER" : "~FILE_DIALOG.FILENAME")}
           placeholder={tr(isOpenAction ? "~FILE_DIALOG.FILTER" : "~FILE_DIALOG.FILENAME")}
           autoFocus
           onChange={searchChanged}
