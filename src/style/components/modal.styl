@@ -4,17 +4,26 @@ dialog-tab-width = 247px
 tab-border-radius = 5px
 
 .modal
+  position fixed
+  top 0
+  left 0
+  width 100vw
+  height 100vh
   z-index 200
-
-  .modal-background
-    absolute(0, 0, 0, 0)
-    background-color #777
-    opacity 0.5
-    z-index 200
+  background-color rgba(119, 119, 119, 0.5)
 
   .modal-content
+    position fixed
+    top 0
+    left 0
+    width 100vw
+    height 100vh
     z-index 201
-    absolute(0, 0, 0, 0)
+
+    .modal-dialog-container
+      outline none
+      width 100%
+      height 100%
 
     .modal-dialog
       absolute(0, 0, 0, 0)
