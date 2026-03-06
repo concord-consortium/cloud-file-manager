@@ -100,6 +100,57 @@ describe('RenameDialogView', () => {
     expect(mockClose).toHaveBeenCalledTimes(1)
   })
 
+  it('should submit when Enter pressed with valid filename', async () => {
+    const mockCallback = jest.fn()
+    const mockClose = jest.fn()
+    render(
+      <RenameDialogView
+        filename="test.json"
+        callback={mockCallback}
+        close={mockClose}
+      />
+    )
+
+    const input = screen.getByPlaceholderText('Filename')
+    await userEvent.type(input, '{Enter}')
+    expect(mockCallback).toHaveBeenCalledWith('test.json')
+    expect(mockClose).toHaveBeenCalledTimes(1)
+  })
+
+  it('should not submit when Enter pressed with empty filename', async () => {
+    const mockCallback = jest.fn()
+    const mockClose = jest.fn()
+    render(
+      <RenameDialogView
+        filename=""
+        callback={mockCallback}
+        close={mockClose}
+      />
+    )
+
+    const input = screen.getByPlaceholderText('Filename')
+    await userEvent.type(input, '{Enter}')
+    expect(mockCallback).not.toHaveBeenCalled()
+    expect(mockClose).not.toHaveBeenCalled()
+  })
+
+  it('should have aria-label on filename input', () => {
+    render(<RenameDialogView />)
+    expect(screen.getByLabelText('Filename')).toBeInTheDocument()
+  })
+
+  it('should have disabled attribute on Rename button when filename is empty', () => {
+    render(<RenameDialogView filename="" />)
+    const renameButton = document.querySelector('.rename-dialog .buttons button:first-child') as HTMLButtonElement
+    expect(renameButton).toBeDisabled()
+  })
+
+  it('should have default class on Rename button when filename is valid', () => {
+    render(<RenameDialogView filename="test.json" />)
+    const renameButton = document.querySelector('.rename-dialog .buttons button:first-child')
+    expect(renameButton).toHaveClass('default')
+  })
+
   it('should have disabled class on Rename button when filename is empty', () => {
     render(
       <RenameDialogView filename="" />
