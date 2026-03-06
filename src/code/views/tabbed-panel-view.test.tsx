@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { act, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import React from 'react'
 import TabbedPanelView from './tabbed-panel-view'
@@ -80,11 +80,11 @@ describe('TabbedPanelView', () => {
       <TabbedPanelView tabs={createTabs()} selectedTabIndex={0} />
     )
 
-    const content1Container = screen.getByText('Content 1').parentElement
-    const content2Container = screen.getByText('Content 2').parentElement
-
-    expect(content1Container).toHaveStyle({ display: 'block' })
-    expect(content2Container).toHaveStyle({ display: 'none' })
+    // Selected panel is visible and has tabpanel role
+    expect(screen.getByRole('tabpanel')).toHaveTextContent('Content 1')
+    // Non-selected panels are force-mounted but inert
+    const content2 = screen.getByText('Content 2')
+    expect(content2.closest('[data-inert]')).toBeTruthy()
   })
 
   it('should have correct structure', () => {
@@ -95,6 +95,35 @@ describe('TabbedPanelView', () => {
     expect(document.querySelector('.tabbed-panel')).toBeInTheDocument()
     expect(document.querySelector('.workspace-tabs')).toBeInTheDocument()
     expect(document.querySelector('.workspace-tab-component')).toBeInTheDocument()
+  })
+
+  it('should have tab roles', () => {
+    render(<TabbedPanelView tabs={createTabs()} />)
+    expect(screen.getAllByRole('tab')).toHaveLength(3)
+    expect(screen.getByRole('tablist')).toBeInTheDocument()
+    expect(screen.getByRole('tabpanel')).toBeInTheDocument()
+  })
+
+  it('should navigate tabs with arrow keys', async () => {
+    const user = userEvent.setup()
+    render(<TabbedPanelView tabs={createTabs()} />)
+
+    // Focus the first tab
+    await act(async () => {
+      await user.click(screen.getByText('Tab 1'))
+    })
+
+    // Arrow down to second tab (vertical orientation)
+    await act(async () => {
+      await user.keyboard('{ArrowDown}')
+    })
+    expect(screen.getByText('Tab 2').closest('[role="tab"]')).toHaveAttribute('aria-selected', 'true')
+  })
+
+  it('should have aria-selected on active tab', () => {
+    render(<TabbedPanelView tabs={createTabs()} />)
+    expect(screen.getByText('Tab 1').closest('[role="tab"]')).toHaveAttribute('aria-selected', 'true')
+    expect(screen.getByText('Tab 2').closest('[role="tab"]')).toHaveAttribute('aria-selected', 'false')
   })
 
   it('should work with tabs that have no onSelected callback', async () => {
