@@ -37,7 +37,9 @@ const FileListFile: React.FC<FileListFileProps> = ({
   const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
     if (e.key === 'Enter') {
       fileSelected(metadata)
-      fileConfirmed()
+      if (metadata.type === CloudMetadata.File) {
+        fileConfirmed()
+      }
     } else if (e.key === ' ') {
       e.preventDefault()
       fileSelected(metadata)
