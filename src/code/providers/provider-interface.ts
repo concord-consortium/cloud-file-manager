@@ -1,4 +1,3 @@
-import React from "react"
 import isString  from '../utils/is-string'
 import _ from 'lodash'
 

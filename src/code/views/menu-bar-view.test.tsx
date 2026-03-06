@@ -1,5 +1,4 @@
 import { fireEvent, render, screen } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import React from 'react'
 import MenuBarViewComponent from './menu-bar-view'
 
@@ -36,7 +35,7 @@ const MenuBarView = MenuBarViewComponent as unknown as React.ComponentType<{
     info?: string
     onInfoClick?: () => void
     languageMenu?: {
-      options: Array<{ langCode: string; label?: string; flag?: string }>
+      options: Array<{ langCode: string, label?: string, flag?: string }>
       onLangChanged?: () => void
       withBorder?: boolean
     }

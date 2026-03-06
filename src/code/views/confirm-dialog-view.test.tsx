@@ -98,5 +98,6 @@ describe('ConfirmDialogView', () => {
 
     // Should not throw when clicking buttons
     await userEvent.click(screen.getByText('Yes'))
+    expect(screen.getByText('Test')).toBeInTheDocument()
   })
 })
