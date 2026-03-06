@@ -1,4 +1,5 @@
 import { fireEvent, render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import React from 'react'
 import MenuBarViewComponent from './menu-bar-view'
 
@@ -167,7 +168,7 @@ describe('MenuBarView', () => {
     expect(screen.getByText('Untitled Document')).toBeInTheDocument()
   })
 
-  it('should render file menu with items', () => {
+  it('should render file menu with items', async () => {
     render(
       <MenuBarView
         client={createMockClient()}
@@ -176,7 +177,10 @@ describe('MenuBarView', () => {
       />
     )
 
-    expect(screen.getByText('File')).toBeInTheDocument()
+    // Open the menu to see items (React Aria renders menu items on demand)
+    const fileButton = screen.getByRole('button', { name: /File/i })
+    expect(fileButton).toBeInTheDocument()
+    fireEvent.click(fileButton)
     expect(screen.getByText('New')).toBeInTheDocument()
     expect(screen.getByText('Open')).toBeInTheDocument()
     expect(screen.getByText('Save')).toBeInTheDocument()

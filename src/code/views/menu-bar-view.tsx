@@ -3,6 +3,7 @@ import { CFMUIMenuOptions } from '../app-options'
 import tr, { getCurrentLanguage, getSpecialLangFontClassName } from '../utils/translate'
 import DropdownView from './dropdown-view'
 import { ProviderInterface } from '../providers/provider-interface'
+import { LogoFocusRing } from './icons/logo-focus-ring'
 
 interface FileStatus {
   type: string
@@ -204,16 +205,17 @@ const MenuBar: React.FC<MenuBarProps> = ({
     const menuAnchor = flag ? (
       <div className={`flag flag-${flag}`} />
     ) : (
-      <button className={`menu-bar-button lang-menu-button ${withBorder} ${langClass}`}>
+      <>
         <img className="menu-icon lang-icon" src={options.languageAnchorIcon} alt="Language Icon" />
         <span className="lang-label">{label || defaultOption.label}</span>
-      </button>
+      </>
     )
+    const triggerClass = flag ? '' : `menu-bar-button lang-menu-button ${withBorder} ${langClass}`
 
     return (
       <DropdownView
         className="lang-menu"
-        menuAnchorClassName="menu-anchor-right"
+        triggerClassName={triggerClass}
         items={menuItems}
         menuAnchor={menuAnchor}
       />
@@ -225,17 +227,15 @@ const MenuBar: React.FC<MenuBarProps> = ({
     const langClass = getSpecialLangFontClassName(currentLang)
     const menuBarOptions = client.appOptions.ui.menuBar || {}
     const menuOptions = client._ui.menu.options || {}
-    const fileMenuAnchor = (
-      <button className={`menu-bar-button file-menu-button ${langClass}`}>
-        <img className="menu-icon" src={menuOptions.menuAnchorIcon} alt="Menu Icon" />
-        <span className="menu-label">{menuOptions.menuAnchorName}</span>
-      </button>
-    )
 
     return (
       <DropdownView
         items={items}
-        menuAnchor={fileMenuAnchor}
+        triggerClassName={`menu-bar-button file-menu-button ${langClass}`}
+        menuAnchor={<>
+          <img className="menu-icon" src={menuOptions.menuAnchorIcon} alt="Menu Icon" />
+          <span className="menu-label">{menuOptions.menuAnchorName}</span>
+        </>}
         subMenuExpandIcon={menuBarOptions.subMenuExpandIcon}
       />
     )
@@ -245,19 +245,17 @@ const MenuBar: React.FC<MenuBarProps> = ({
     const currentLang = getCurrentLanguage()
     const langClass = getSpecialLangFontClassName(currentLang)
     const menuBarOptions = client.appOptions.ui.menuBar || {}
-    const menuAnchor = (
-      <button className={`menu-bar-button other-menu-button ${langClass}`}>
-        <img className="menu-icon" src={menuOptions.menuAnchorIcon} alt="Menu Icon" />
-        <span className="menu-label">{menuOptions.menuAnchorName}</span>
-      </button>
-    )
     const menuKey = `other-menu-${menuOptions.className || ''}-${menuOptions.menuAnchorName || ''}`
 
     return (
       <DropdownView
         key={menuKey}
         items={(menuOptions.menu ?? []) as any}
-        menuAnchor={menuAnchor}
+        triggerClassName={`menu-bar-button other-menu-button ${langClass}`}
+        menuAnchor={<>
+          <img className="menu-icon" src={menuOptions.menuAnchorIcon} alt="Menu Icon" />
+          <span className="menu-label">{menuOptions.menuAnchorName}</span>
+        </>}
         className={menuOptions.className}
         subMenuExpandIcon={menuBarOptions.subMenuExpandIcon}
       />
@@ -294,7 +292,10 @@ const MenuBar: React.FC<MenuBarProps> = ({
         </div>
       </div>
       <div className="menu-bar-center">
-        <img className="app-logo" src={client.appOptions.appIcon} alt="CODAP Logo" tabIndex={0} onClick={infoClicked} />
+        <div className="app-logo-wrapper" tabIndex={0} onClick={infoClicked} role="button" aria-label="CODAP Logo">
+          <img className="app-logo" src={client.appOptions.appIcon} alt="" />
+          <LogoFocusRing />
+        </div>
         {options.info && (
           <span className="menu-bar-info">{options.info}</span>
         )}

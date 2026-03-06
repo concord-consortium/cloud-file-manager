@@ -163,14 +163,21 @@
     left 50%
     transform translateX(-15%)
     width max-content
-    .app-logo
-      cursor: pointer
-      border-radius 4px
-      outline 2px solid transparent
-      outline-offset 2px
-      &:focus-visible
-        outline 2px solid #0957d0
-        box-shadow 0 0 0 1px white
+    .app-logo-wrapper
+      position relative
+      cursor pointer
+      outline none
+      .app-logo
+        display block
+      .logo-focus-ring
+        display none
+        position absolute
+        top 50%
+        left 50%
+        transform translate(-50%, -50%)
+        pointer-events none
+      &:focus-visible .logo-focus-ring
+        display block
 
   .menu-bar-right
     margin-right 10px
