@@ -1,5 +1,6 @@
 import React, { useRef } from "react"
 import ModalView from "./modal-view"
+import tr from "../utils/translate"
 
 let idCounter = 0
 
@@ -19,7 +20,7 @@ const ModalDialogView: React.FC<IProps> = ({ title, zIndex = 10, close, children
             {close ? <button
                 className='modal-dialog-title-close icon-ex'
                 data-testid='modal-dialog-close'
-                aria-label='Close'
+                aria-label={tr("~ALERT_DIALOG.CLOSE")}
                 onClick={() => close?.()}
               /> : undefined}
             {title || 'Untitled Dialog'}
