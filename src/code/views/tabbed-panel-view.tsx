@@ -1,27 +1,11 @@
-import React, { useState, useEffect } from 'react'
+import React, { useEffect, Key } from 'react'
+import { Tabs, TabList, Tab, TabPanel } from 'react-aria-components'
 
 interface TabInfo {
   label: string
   component: React.ReactNode
   capability?: string
   onSelected?: (capability?: string) => void
-}
-
-interface TabProps {
-  label: string
-  index: number
-  selected: boolean
-  onSelected: (index: number) => void
-}
-
-const Tab: React.FC<TabProps> = ({ label, index, selected, onSelected }) => {
-  const handleClick = (e: React.MouseEvent<HTMLLIElement>) => {
-    e.preventDefault()
-    onSelected(index)
-  }
-
-  const className = selected ? 'tab-selected' : ''
-  return <li className={className} onClick={handleClick}>{label}</li>
 }
 
 interface TabbedPanelViewProps {
@@ -34,55 +18,47 @@ interface TabbedPanelViewComponent extends React.FC<TabbedPanelViewProps> {
 }
 
 const TabbedPanelViewBase: React.FC<TabbedPanelViewProps> = ({ tabs, selectedTabIndex: initialIndex = 0 }) => {
-  const [selectedTabIndex, setSelectedTabIndex] = useState(initialIndex)
-
+  // Call onSelected for the initial tab on mount
   useEffect(() => {
-    const tab = tabs[selectedTabIndex]
+    const tab = tabs[initialIndex]
     tab?.onSelected?.(tab.capability)
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
-  const handleTabSelected = (index: number) => {
+  const handleSelectionChange = (key: Key) => {
+    const index = Number(key)
     const tab = tabs[index]
     tab?.onSelected?.(tab.capability)
-    setSelectedTabIndex(index)
   }
 
-  const renderTab = (tab: TabInfo, index: number) => (
-    <Tab
-      key={index}
-      label={tab.label}
-      index={index}
-      selected={index === selectedTabIndex}
-      onSelected={handleTabSelected}
-    />
-  )
-
-  const renderTabs = () => (
-    <div className="workspace-tabs">
+  return (
+    <Tabs
+      className="tabbed-panel"
+      defaultSelectedKey={String(initialIndex)}
+      onSelectionChange={handleSelectionChange}
+      orientation="vertical"
+    >
+      <TabList className="workspace-tabs">
+        {tabs.map((tab, index) => (
+          <Tab
+            key={index}
+            id={String(index)}
+            className={({ isSelected }) => `workspace-tab ${isSelected ? 'tab-selected' : ''}`}
+          >
+            {tab.label}
+          </Tab>
+        ))}
+      </TabList>
       {tabs.map((tab, index) => (
-        <ul key={index}>{renderTab(tab, index)}</ul>
-      ))}
-    </div>
-  )
-
-  const renderSelectedPanel = () => (
-    <div className="workspace-tab-component">
-      {tabs.map((tab, index) => (
-        <div
+        <TabPanel
           key={index}
-          style={{ display: index === selectedTabIndex ? 'block' : 'none' }}
+          id={String(index)}
+          className="workspace-tab-component"
+          shouldForceMount
         >
           {tab.component}
-        </div>
+        </TabPanel>
       ))}
-    </div>
-  )
-
-  return (
-    <div className="tabbed-panel">
-      {renderTabs()}
-      {renderSelectedPanel()}
-    </div>
+    </Tabs>
   )
 }
 
