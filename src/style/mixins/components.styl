@@ -3,11 +3,15 @@ modal-button($thickness=15px)
   padding $thickness
   label-font(weight:bold, size:$thickness)
   color #fff
-  background-color #72bfca
+  background-color teal
   border-radius(10px)
   border 0
   &:hover
-    background-color darken(#72bfca, 30%)
+    background-color darken(teal, 30%)
+  &.default
+    background-color darken(teal, 20%)
+    &:hover
+      background-color darken(teal, 40%)
 
 .clickable
   cursor: pointer

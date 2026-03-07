@@ -14,7 +14,7 @@ const BlockingModalView: React.FC<BlockingModalViewProps> = ({ title, message, c
   }
 
   return (
-    <ModalView zIndex={500} close={close}>
+    <ModalView zIndex={500} close={close} ariaLabel={title || message || "Dialog"}>
       <div className="modal-dialog" onDrop={handleDrop}>
         <div className="modal-dialog-wrapper">
           <div className="modal-dialog-title">

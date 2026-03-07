@@ -1,4 +1,5 @@
-import { fireEvent, render, screen } from '@testing-library/react'
+import { act, fireEvent, render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import React from 'react'
 import BlockingModalView from './blocking-modal-view'
 
@@ -27,14 +28,20 @@ describe('BlockingModalView', () => {
     expect(messageDiv?.textContent).toBe('Processing your request')
   })
 
-  it('should call close when close is triggered', () => {
-    const mockClose = jest.fn()
-    render(
-      <BlockingModalView message="Test" close={mockClose} />
-    )
+  it('should have dialog role', () => {
+    render(<BlockingModalView title="Test" message="Loading..." />)
+    expect(screen.getByRole('dialog')).toBeInTheDocument()
+  })
 
-    // The modal-view component handles the close, we verify the prop is passed
-    expect(document.querySelector('.modal-dialog')).toBeInTheDocument()
+  it('should close on Escape key when dismissable', async () => {
+    const user = userEvent.setup()
+    const mockClose = jest.fn()
+    render(<BlockingModalView message="Test" close={mockClose} />)
+
+    await act(async () => {
+      await user.keyboard('{Escape}')
+    })
+    expect(mockClose).toHaveBeenCalledTimes(1)
   })
 
   it('should call onDrop when file is dropped', () => {
@@ -71,6 +78,18 @@ describe('BlockingModalView', () => {
     })
 
     expect(dialog).toBeInTheDocument()
+  })
+
+  it('should have aria-label from title', () => {
+    render(<BlockingModalView title="Please Wait" message="Loading..." />)
+    const dialog = screen.getByRole('dialog')
+    expect(dialog).toHaveAttribute('aria-label', 'Please Wait')
+  })
+
+  it('should have aria-label from message when no title', () => {
+    render(<BlockingModalView message="Loading..." />)
+    const dialog = screen.getByRole('dialog')
+    expect(dialog).toHaveAttribute('aria-label', 'Loading...')
   })
 
   it('should have correct structure', () => {
