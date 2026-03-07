@@ -17,7 +17,7 @@
     "gapi": false,
     "google": false
   },
-  "plugins": ["react", "@typescript-eslint", "babel", "jest"],
+  "plugins": ["react", "react-hooks", "@typescript-eslint", "babel", "jest"],
   "extends": [ "eslint:recommended", "plugin:react/recommended" ],
   "settings": {
     "react": {
@@ -96,7 +96,10 @@
     "quotes": "off",
     "semi": "off",
     "@typescript-eslint/semi": ["warn", "never"],
+    "react-hooks/rules-of-hooks": "error",
+    "react-hooks/exhaustive-deps": "warn",
     "react/display-name": "off",
+    "react/react-in-jsx-scope": "off",
     "react/prop-types": "off", // TODO: FIX THIS
     "react/no-find-dom-node": "off" // TODO: Fix this!!!
   },
