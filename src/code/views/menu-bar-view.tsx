@@ -160,7 +160,7 @@ const MenuBar: React.FC<MenuBarProps> = ({
     startEditing()
   }
 
-  const filenameKeyDown = (e: React.KeyboardEvent<HTMLSpanElement>) => {
+  const filenameKeyDown = (e: React.KeyboardEvent<HTMLButtonElement>) => {
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault()
       startEditing()
@@ -185,7 +185,7 @@ const MenuBar: React.FC<MenuBarProps> = ({
     options.onInfoClick?.()
   }
 
-  const infoKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+  const infoKeyDown = (e: React.KeyboardEvent<HTMLButtonElement>) => {
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault()
       infoClicked()
@@ -304,16 +304,14 @@ const MenuBar: React.FC<MenuBarProps> = ({
               onMouseMove={(e) => e.stopPropagation()}
             />
           ) : (
-            <span
+            <button
               className="content-filename"
-              tabIndex={0}
-              role="button"
               aria-label={`Rename ${filename}`}
               onClick={filenameClicked}
               onKeyDown={filenameKeyDown}
             >
               {filename}
-            </span>
+            </button>
           )}
           {fileStatus && (
             <span className={`menu-bar-file-status ${fileStatus.type} ${langClass}`}>{fileStatus.message}</span>
@@ -321,17 +319,15 @@ const MenuBar: React.FC<MenuBarProps> = ({
         </div>
       </div>
       <div className="menu-bar-center">
-        <div
+        <button
           className="app-logo-wrapper"
-          tabIndex={0}
-          role="button"
           aria-label="CODAP Logo"
           onClick={infoClicked}
           onKeyDown={infoKeyDown}
         >
           <img className="app-logo" src={client.appOptions.appIcon} alt="" />
           <LogoFocusRing />
-        </div>
+        </button>
         {options.info && (
           <span className="menu-bar-info">{options.info}</span>
         )}

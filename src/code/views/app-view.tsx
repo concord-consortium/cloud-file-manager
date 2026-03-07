@@ -27,7 +27,7 @@ interface InnerAppProps {
 const InnerApp: React.FC<InnerAppProps> = React.memo(({ app, iframeAllow }) => {
   return (
     <div className="innerApp">
-      <iframe src={app} allow={iframeAllow} />
+      <iframe src={app} allow={iframeAllow} title={tr("~MENUBAR.APP_IFRAME_TITLE")} />
     </div>
   )
 })
@@ -151,50 +151,47 @@ class AppView extends React.Component<IAppViewProps, IAppViewState> {
       case 'replaceMenu':
         this.setState({ menuItems: client._ui.menu?.items || [] })
         break
-      case 'appendMenuItem':
-        this.state.menuItems.push(event.data)
-        this.setState({menuItems: this.state.menuItems})
+      case 'appendMenuItem': {
+        const updatedMenuItems = [...this.state.menuItems, event.data]
+        this.setState({ menuItems: updatedMenuItems })
         break
-      case 'prependMenuItem':
-        this.state.menuItems.unshift(event.data)
-        this.setState({menuItems: this.state.menuItems})
+      }
+      case 'prependMenuItem': {
+        const updatedMenuItems = [event.data, ...this.state.menuItems]
+        this.setState({ menuItems: updatedMenuItems })
         break
+      }
       case 'replaceMenuItem': {
         const index = this._getMenuItemIndex(event.data.key)
         if (index !== -1) {
-          const {menuItems} = this.state
-          menuItems[index] = event.data.item
-          this.setState({menuItems})
+          const updatedMenuItems = [...this.state.menuItems]
+          updatedMenuItems[index] = event.data.item
+          this.setState({ menuItems: updatedMenuItems })
         }
         break
       }
       case 'insertMenuItemBefore': {
         const index = this._getMenuItemIndex(event.data.key)
         if (index !== -1) {
-          if (index === 0) {
-            this.state.menuItems.unshift(event.data.item)
-          } else {
-            this.state.menuItems.splice(index, 0, event.data.item)
-          }
-          this.setState({menuItems: this.state.menuItems})
+          const updatedMenuItems = [...this.state.menuItems]
+          updatedMenuItems.splice(index, 0, event.data.item)
+          this.setState({ menuItems: updatedMenuItems })
         }
         break
       }
       case 'insertMenuItemAfter': {
         const index = this._getMenuItemIndex(event.data.key)
         if (index !== -1) {
-          if (index === (this.state.menuItems.length - 1)) {
-            this.state.menuItems.push(event.data.item)
-          } else {
-            this.state.menuItems.splice(index + 1, 0, event.data.item)
-          }
-          this.setState({menuItems: this.state.menuItems})
+          const updatedMenuItems = [...this.state.menuItems]
+          updatedMenuItems.splice(index + 1, 0, event.data.item)
+          this.setState({ menuItems: updatedMenuItems })
         }
         break
       }
       case 'setMenuBarInfo':
-        menuOptions.info = event.data
-        this.setState({menuOptions})
+        this.setState(prevState => ({
+          menuOptions: { ...prevState.menuOptions, info: event.data }
+        }))
         break
       case 'updateMenuBar':
         this.setState({ menuOptions: { ...menuOptions, ...event.data } })

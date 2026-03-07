@@ -64,7 +64,7 @@ const DownloadDialogView: React.FC<DownloadDialogViewProps> = ({ filename: initi
         <input
           type="text"
           ref={filenameRef}
-          placeholder="Filename"
+          placeholder={tr('~FILE_DIALOG.FILENAME')}
           value={filename}
           onChange={handleFilenameChange}
           onKeyDown={handleKeyDown}
