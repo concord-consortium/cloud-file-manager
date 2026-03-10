@@ -497,7 +497,7 @@ const FileDialogTab: React.FC<FileDialogTabProps> = ({ dialog, close, client, pr
             title={tr("~FILE_DIALOG.CLEAR_FILTER")}
             aria-label={tr("~FILE_DIALOG.CLEAR_FILTER")}
             onClick={clearListFilter}
-          >X</button>
+          >×</button>
         )}
         <FileList
           provider={provider}

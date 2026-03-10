@@ -17,13 +17,13 @@ const ModalDialogView: React.FC<IProps> = ({ title, zIndex = 10, close, children
       <div className='modal-dialog' data-testid='modal-dialog'>
         <div className='modal-dialog-wrapper'>
           <div className='modal-dialog-title' data-testid='modal-dialog-title'>
+            <span id={titleId}>{title || 'Untitled Dialog'}</span>
             {close ? <button
                 className='modal-dialog-title-close icon-ex'
                 data-testid='modal-dialog-close'
                 aria-label={tr("~ALERT_DIALOG.CLOSE")}
                 onClick={() => close?.()}
               /> : undefined}
-            <span id={titleId}>{title || 'Untitled Dialog'}</span>
           </div>
           <div className='modal-dialog-workspace' data-testid='modal-dialog-workspace'>
             {children}
