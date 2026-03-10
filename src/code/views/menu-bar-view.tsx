@@ -213,10 +213,10 @@ const MenuBar: React.FC<MenuBarProps> = ({
     })
   }, [getToolbarButtons])
 
-  // Sync tabIndex when button count changes (e.g. filename button swaps with input)
+  // Sync tabIndex when button count or toolbar contents change
   useLayoutEffect(() => {
     syncTabIndex()
-  }, [editingFilename, syncTabIndex])
+  }, [editingFilename, items, options.otherMenus, options.languageMenu, syncTabIndex])
 
   const handleToolbarKeyDown = useCallback((e: React.KeyboardEvent) => {
     if ((e.target as HTMLElement).tagName === 'INPUT') return
@@ -381,7 +381,7 @@ const MenuBar: React.FC<MenuBarProps> = ({
             <button
               data-toolbar-item
               className="content-filename"
-              aria-label={`Rename ${filename}`}
+              aria-label={tr("~MENUBAR.RENAME_FILENAME", { filename })}
               onClick={filenameClicked}
               onKeyDown={filenameKeyDown}
             >

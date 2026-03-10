@@ -5,6 +5,7 @@
   "~MENUBAR.ABOUT_APP": "About %{appName}",
   "~MENUBAR.ABOUT": "About this application",
   "~MENUBAR.RENAME_DOCUMENT": "Document name",
+  "~MENUBAR.RENAME_FILENAME": "Rename %{filename}",
 
   "~MENU.NEW": "New",
   "~MENU.OPEN": "Open ...",
