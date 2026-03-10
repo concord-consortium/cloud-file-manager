@@ -315,6 +315,14 @@ describe('DropdownView', () => {
 
     await openMenu()
     expect(screen.getByText('Parent')).toBeInTheDocument()
+
+    // Navigate to parent item and open submenu with ArrowRight
+    await act(async () => {
+      await user.keyboard('{ArrowDown}')
+      await user.keyboard('{ArrowRight}')
+    })
+    expect(screen.getByText('Sub Item 1')).toBeInTheDocument()
+    expect(screen.getByText('Sub Item 2')).toBeInTheDocument()
   })
 
   it('should toggle menu closed when anchor clicked again', async () => {
