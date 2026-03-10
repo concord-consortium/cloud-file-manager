@@ -199,7 +199,7 @@ const MenuBar: React.FC<MenuBarProps> = ({
 
   const getToolbarButtons = useCallback((): HTMLElement[] => {
     if (!menuBarRef.current) return []
-    return Array.from(menuBarRef.current.querySelectorAll<HTMLElement>('button'))
+    return Array.from(menuBarRef.current.querySelectorAll<HTMLElement>('[data-toolbar-item]'))
   }, [])
 
   const syncTabIndex = useCallback(() => {
@@ -213,31 +213,40 @@ const MenuBar: React.FC<MenuBarProps> = ({
     })
   }, [getToolbarButtons])
 
-  // Sync tabIndex after every render to override React Aria defaults
+  // Sync tabIndex when button count changes (e.g. filename button swaps with input)
   useLayoutEffect(() => {
     syncTabIndex()
-  })
+  }, [editingFilename, syncTabIndex])
 
   const handleToolbarKeyDown = useCallback((e: React.KeyboardEvent) => {
     if ((e.target as HTMLElement).tagName === 'INPUT') return
-    if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return
 
     const buttons = getToolbarButtons()
+    if (buttons.length === 0) return
     const currentIndex = buttons.indexOf(e.target as HTMLElement)
     if (currentIndex === -1) return
 
-    e.preventDefault()
-    const nextIndex = e.key === 'ArrowRight'
-      ? (currentIndex + 1) % buttons.length
-      : (currentIndex - 1 + buttons.length) % buttons.length
+    let nextIndex: number
+    if (e.key === 'ArrowRight') {
+      nextIndex = (currentIndex + 1) % buttons.length
+    } else if (e.key === 'ArrowLeft') {
+      nextIndex = (currentIndex - 1 + buttons.length) % buttons.length
+    } else if (e.key === 'Home') {
+      nextIndex = 0
+    } else if (e.key === 'End') {
+      nextIndex = buttons.length - 1
+    } else {
+      return
+    }
 
+    e.preventDefault()
     activeIndexRef.current = nextIndex
     syncTabIndex()
     buttons[nextIndex].focus()
   }, [getToolbarButtons, syncTabIndex])
 
   const handleToolbarFocus = useCallback((e: React.FocusEvent) => {
-    if ((e.target as HTMLElement).tagName !== 'BUTTON') return
+    if (!(e.target as HTMLElement).hasAttribute('data-toolbar-item')) return
     const buttons = getToolbarButtons()
     const index = buttons.indexOf(e.target as HTMLElement)
     if (index !== -1) {
@@ -293,6 +302,7 @@ const MenuBar: React.FC<MenuBarProps> = ({
         triggerClassName={triggerClass}
         items={menuItems}
         menuAnchor={menuAnchor}
+        triggerProps={{ 'data-toolbar-item': true }}
       />
     )
   }
@@ -307,6 +317,7 @@ const MenuBar: React.FC<MenuBarProps> = ({
       <DropdownView
         items={items}
         triggerClassName={`menu-bar-button file-menu-button ${langClass}`}
+        triggerProps={{ 'data-toolbar-item': true }}
         menuAnchor={<>
           <img className="menu-icon" src={menuOptions.menuAnchorIcon} alt="Menu Icon" />
           <span className="menu-label">{menuOptions.menuAnchorName}</span>
@@ -327,6 +338,7 @@ const MenuBar: React.FC<MenuBarProps> = ({
         key={menuKey}
         items={(menuOptions.menu ?? []) as any}
         triggerClassName={`menu-bar-button other-menu-button ${langClass}`}
+        triggerProps={{ 'data-toolbar-item': true }}
         menuAnchor={<>
           <img className="menu-icon" src={menuOptions.menuAnchorIcon} alt="Menu Icon" />
           <span className="menu-label">{menuOptions.menuAnchorName}</span>
@@ -348,7 +360,7 @@ const MenuBar: React.FC<MenuBarProps> = ({
       ref={menuBarRef}
       className={`menu-bar ${options.clientToolBarPosition === "left" ? 'toolbar-position-left' : ''} ${langClass}`}
       role="toolbar"
-      aria-label="Menu bar"
+      aria-label={tr("~MENUBAR.TOOLBAR_LABEL")}
       onKeyDown={handleToolbarKeyDown}
       onFocus={handleToolbarFocus}
     >
@@ -358,6 +370,7 @@ const MenuBar: React.FC<MenuBarProps> = ({
           {editingFilename ? (
             <input
               ref={filenameRef}
+              aria-label={tr("~MENUBAR.RENAME_DOCUMENT")}
               value={editableFilename}
               onChange={filenameChanged}
               onKeyDown={watchForEnter}
@@ -366,6 +379,7 @@ const MenuBar: React.FC<MenuBarProps> = ({
             />
           ) : (
             <button
+              data-toolbar-item
               className="content-filename"
               aria-label={`Rename ${filename}`}
               onClick={filenameClicked}
@@ -382,7 +396,8 @@ const MenuBar: React.FC<MenuBarProps> = ({
       <div className="menu-bar-center">
         <button
           className={`app-logo-wrapper ${client.appOptions.appFocusRingIcon ? 'has-focus-ring-icon' : ''}`}
-          aria-label={client.appOptions.appName ? `${client.appOptions.appName} Logo` : 'Application Logo'}
+          data-toolbar-item
+          aria-label={client.appOptions.appName ? tr("~MENUBAR.ABOUT_APP", { appName: client.appOptions.appName }) : tr("~MENUBAR.ABOUT")}
           onClick={infoClicked}
           onKeyDown={infoKeyDown}
         >
