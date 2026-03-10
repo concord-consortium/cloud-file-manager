@@ -432,6 +432,148 @@ describe('MenuBarView', () => {
     expect(mockClient.rename).not.toHaveBeenCalled()
   })
 
+  it('should have toolbar role with aria-label', () => {
+    render(
+      <MenuBarView
+        client={createMockClient()}
+        options={createMockOptions()}
+        items={createMockItems()}
+      />
+    )
+
+    const toolbar = screen.getByRole('toolbar', { name: 'Menu bar' })
+    expect(toolbar).toBeInTheDocument()
+  })
+
+  it('should have only one button with tabIndex=0 (roving tabindex)', () => {
+    render(
+      <MenuBarView
+        client={createMockClient()}
+        options={createMockOptions()}
+        items={createMockItems()}
+        filename="test-doc"
+      />
+    )
+
+    const toolbar = screen.getByRole('toolbar')
+    const buttons = toolbar.querySelectorAll('button')
+    const tabbableButtons = Array.from(buttons).filter(b => b.tabIndex === 0)
+    expect(tabbableButtons).toHaveLength(1)
+    expect(tabbableButtons[0]).toBe(buttons[0])
+  })
+
+  it('should move focus right with ArrowRight', () => {
+    render(
+      <MenuBarView
+        client={createMockClient()}
+        options={createMockOptions()}
+        items={createMockItems()}
+        filename="test-doc"
+      />
+    )
+
+    const toolbar = screen.getByRole('toolbar')
+    const buttons = toolbar.querySelectorAll('button')
+
+    // Focus first button
+    ;(buttons[0] as HTMLElement).focus()
+    expect(document.activeElement).toBe(buttons[0])
+
+    // ArrowRight should move to second button
+    fireEvent.keyDown(buttons[0], { key: 'ArrowRight' })
+    expect(document.activeElement).toBe(buttons[1])
+    expect(buttons[0].tabIndex).toBe(-1)
+    expect(buttons[1].tabIndex).toBe(0)
+  })
+
+  it('should move focus left with ArrowLeft', () => {
+    render(
+      <MenuBarView
+        client={createMockClient()}
+        options={createMockOptions()}
+        items={createMockItems()}
+        filename="test-doc"
+      />
+    )
+
+    const toolbar = screen.getByRole('toolbar')
+    const buttons = toolbar.querySelectorAll('button')
+
+    // Focus second button
+    ;(buttons[1] as HTMLElement).focus()
+
+    // ArrowLeft should move to first button
+    fireEvent.keyDown(buttons[1], { key: 'ArrowLeft' })
+    expect(document.activeElement).toBe(buttons[0])
+    expect(buttons[0].tabIndex).toBe(0)
+    expect(buttons[1].tabIndex).toBe(-1)
+  })
+
+  it('should wrap focus from last to first on ArrowRight', () => {
+    render(
+      <MenuBarView
+        client={createMockClient()}
+        options={createMockOptions()}
+        items={createMockItems()}
+        filename="test-doc"
+      />
+    )
+
+    const toolbar = screen.getByRole('toolbar')
+    const buttons = toolbar.querySelectorAll('button')
+    const lastButton = buttons[buttons.length - 1] as HTMLElement
+
+    // Focus last button
+    lastButton.focus()
+
+    // ArrowRight should wrap to first
+    fireEvent.keyDown(lastButton, { key: 'ArrowRight' })
+    expect(document.activeElement).toBe(buttons[0])
+  })
+
+  it('should wrap focus from first to last on ArrowLeft', () => {
+    render(
+      <MenuBarView
+        client={createMockClient()}
+        options={createMockOptions()}
+        items={createMockItems()}
+        filename="test-doc"
+      />
+    )
+
+    const toolbar = screen.getByRole('toolbar')
+    const buttons = toolbar.querySelectorAll('button')
+
+    // Focus first button
+    ;(buttons[0] as HTMLElement).focus()
+
+    // ArrowLeft should wrap to last
+    fireEvent.keyDown(buttons[0], { key: 'ArrowLeft' })
+    expect(document.activeElement).toBe(buttons[buttons.length - 1])
+  })
+
+  it('should not intercept arrow keys when editing filename', () => {
+    render(
+      <MenuBarView
+        client={createMockClient()}
+        options={createMockOptions()}
+        items={createMockItems()}
+        filename="test-doc"
+      />
+    )
+
+    // Enter edit mode
+    fireEvent.click(screen.getByText('test-doc'))
+    jest.runAllTimers()
+
+    const input = document.querySelector('.menu-bar-content-filename input') as HTMLInputElement
+    expect(input).toBeInTheDocument()
+
+    // ArrowRight on input should not move focus away
+    fireEvent.keyDown(input, { key: 'ArrowRight' })
+    expect(document.activeElement).toBe(input)
+  })
+
   it('should register UI listener on mount', () => {
     const mockListen = jest.fn()
     const mockClient = createMockClient({

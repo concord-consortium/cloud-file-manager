@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react'
+import React, { useState, useEffect, useLayoutEffect, useRef, useCallback } from 'react'
 import { CFMUIMenuOptions } from '../app-options'
 import tr, { getCurrentLanguage, getSpecialLangFontClassName } from '../utils/translate'
 import DropdownView from './dropdown-view'
@@ -192,6 +192,59 @@ const MenuBar: React.FC<MenuBarProps> = ({
     }
   }
 
+  // Roving tabindex for single-tab-stop toolbar navigation
+  const menuBarRef = useRef<HTMLDivElement>(null)
+  const activeIndexRef = useRef(0)
+
+  const getToolbarButtons = useCallback((): HTMLElement[] => {
+    if (!menuBarRef.current) return []
+    return Array.from(menuBarRef.current.querySelectorAll<HTMLElement>('button'))
+  }, [])
+
+  const syncTabIndex = useCallback(() => {
+    const buttons = getToolbarButtons()
+    if (buttons.length === 0) return
+    if (activeIndexRef.current >= buttons.length) {
+      activeIndexRef.current = Math.max(0, buttons.length - 1)
+    }
+    buttons.forEach((btn, i) => {
+      btn.tabIndex = i === activeIndexRef.current ? 0 : -1
+    })
+  }, [getToolbarButtons])
+
+  // Sync tabIndex after every render to override React Aria defaults
+  useLayoutEffect(() => {
+    syncTabIndex()
+  })
+
+  const handleToolbarKeyDown = useCallback((e: React.KeyboardEvent) => {
+    if ((e.target as HTMLElement).tagName === 'INPUT') return
+    if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return
+
+    const buttons = getToolbarButtons()
+    const currentIndex = buttons.indexOf(e.target as HTMLElement)
+    if (currentIndex === -1) return
+
+    e.preventDefault()
+    const nextIndex = e.key === 'ArrowRight'
+      ? (currentIndex + 1) % buttons.length
+      : (currentIndex - 1 + buttons.length) % buttons.length
+
+    activeIndexRef.current = nextIndex
+    syncTabIndex()
+    buttons[nextIndex].focus()
+  }, [getToolbarButtons, syncTabIndex])
+
+  const handleToolbarFocus = useCallback((e: React.FocusEvent) => {
+    if ((e.target as HTMLElement).tagName !== 'BUTTON') return
+    const buttons = getToolbarButtons()
+    const index = buttons.indexOf(e.target as HTMLElement)
+    if (index !== -1) {
+      activeIndexRef.current = index
+      syncTabIndex()
+    }
+  }, [getToolbarButtons, syncTabIndex])
+
   const langChanged = (langCode: string) => {
     const { onLangChanged } = options.languageMenu ?? {}
     if (onLangChanged) {
@@ -290,7 +343,14 @@ const MenuBar: React.FC<MenuBarProps> = ({
   const isAuthorized = provider && provider.isAuthorizationRequired() && providerAny.authorized()
 
   return (
-    <div className={`menu-bar ${options.clientToolBarPosition === "left" ? 'toolbar-position-left' : ''} ${langClass}`}>
+    <div
+      ref={menuBarRef}
+      className={`menu-bar ${options.clientToolBarPosition === "left" ? 'toolbar-position-left' : ''} ${langClass}`}
+      role="toolbar"
+      aria-label="Menu bar"
+      onKeyDown={handleToolbarKeyDown}
+      onFocus={handleToolbarFocus}
+    >
       <div className="menu-bar-left">
         {renderFileMenu()}
         <div className={`menu-bar-content-filename ${langClass}`}>
