@@ -1,4 +1,5 @@
-import { render, screen } from '@testing-library/react'
+import { act, render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import React from 'react'
 import ModalTabbedDialogView from './modal-tabbed-dialog-view'
 
@@ -53,12 +54,15 @@ describe('ModalTabbedDialogView', () => {
     expect(screen.getByText('Second Tab')).toHaveClass('tab-selected')
   })
 
-  it('should pass close handler to modal', () => {
+  it('should call close handler when close button is clicked', async () => {
+    const user = userEvent.setup()
     const mockClose = jest.fn()
     render(
       <ModalTabbedDialogView title="Test" tabs={createTabs()} close={mockClose} />
     )
-    // Modal dialog is rendered with the close handler
-    expect(document.querySelector('.modal-dialog')).toBeInTheDocument()
+    await act(async () => {
+      await user.click(screen.getByTestId('modal-dialog-close'))
+    })
+    expect(mockClose).toHaveBeenCalledTimes(1)
   })
 })

@@ -22,13 +22,16 @@ const RenameDialogView: React.FC<RenameDialogViewProps> = ({ filename: initialFi
     setFilename(e.target.value)
   }
 
-  const handleRename = (e: React.MouseEvent<HTMLButtonElement>) => {
+  const handleRename = () => {
     if (trimmedFilename.length > 0) {
       callback?.(trimmedFilename)
       close?.()
-    } else {
-      e.preventDefault()
-      inputRef.current?.focus()
+    }
+  }
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      handleRename()
     }
   }
 
@@ -37,13 +40,16 @@ const RenameDialogView: React.FC<RenameDialogViewProps> = ({ filename: initialFi
       <div className="rename-dialog">
         <input
           ref={inputRef}
-          placeholder="Filename"
+          aria-label={tr("~FILE_DIALOG.FILENAME")}
+          placeholder={tr("~FILE_DIALOG.FILENAME")}
           value={filename}
           onChange={handleFilenameChange}
+          onKeyDown={handleKeyDown}
         />
         <div className="buttons">
           <button
-            className={trimmedFilename.length === 0 ? 'disabled' : ''}
+            className={trimmedFilename.length === 0 ? 'disabled' : 'default'}
+            disabled={trimmedFilename.length === 0}
             onClick={handleRename}
           >
             {tr('~RENAME_DIALOG.RENAME')}

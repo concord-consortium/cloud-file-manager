@@ -63,7 +63,7 @@ describe('ModalDialogView', () => {
     const dialog = screen.getByTestId('modal-dialog')
     expect(dialog).toBeInTheDocument()
 
-    fireEvent.keyUp(dialog, { charCode: "Escape", keyCode: 27 })
+    await userEvent.keyboard('{Escape}')
     expect(mockClose).toHaveBeenCalled()
   })
 })

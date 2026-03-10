@@ -63,4 +63,20 @@ describe('AlertDialogView', () => {
     await userEvent.click(screen.getByText('Close'))
     expect(screen.getByText('Test')).toBeInTheDocument()
   })
+
+  it('should have aria-labelledby linking to title', () => {
+    render(<AlertDialogView message="Test" />)
+    const dialog = screen.getByRole('dialog')
+    const titleId = dialog.getAttribute('aria-labelledby')
+    expect(titleId).toBeTruthy()
+    const titleEl = document.getElementById(titleId!)
+    expect(titleEl).toHaveTextContent('Alert')
+  })
+
+  it('should have accessible close button', () => {
+    const mockClose = jest.fn()
+    render(<AlertDialogView message="Test" close={mockClose} />)
+    const closeBtn = screen.getByLabelText('Close')
+    expect(closeBtn.tagName).toBe('BUTTON')
+  })
 })

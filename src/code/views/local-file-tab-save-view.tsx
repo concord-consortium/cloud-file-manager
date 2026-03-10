@@ -171,7 +171,7 @@ const LocalFileSaveTab: React.FC<LocalFileSaveTabProps> = ({ dialog, close, clie
   }
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.keyCode === 13 && !confirmDisabled) {
+    if (e.key === 'Enter' && !confirmDisabled) {
       e.preventDefault()
       e.stopPropagation()
       confirm(null, true)
@@ -183,7 +183,7 @@ const LocalFileSaveTab: React.FC<LocalFileSaveTabProps> = ({ dialog, close, clie
     <a
       href="#"
       ref={downloadRef as React.RefObject<HTMLAnchorElement>}
-      className={confirmDisabled ? 'disabled' : ''}
+      className={confirmDisabled ? 'disabled' : 'default'}
       download={downloadFilename}
       onContextMenu={handleContextMenu}
     >
@@ -195,7 +195,7 @@ const LocalFileSaveTab: React.FC<LocalFileSaveTabProps> = ({ dialog, close, clie
   const downloadButton = (
     <button
       ref={downloadRef as React.RefObject<HTMLButtonElement>}
-      className={confirmDisabled ? 'disabled' : ''}
+      className={confirmDisabled ? 'disabled' : 'default'}
     >
       {tr('~FILE_DIALOG.DOWNLOAD')}
     </button>
@@ -206,6 +206,7 @@ const LocalFileSaveTab: React.FC<LocalFileSaveTabProps> = ({ dialog, close, clie
       <input
         type="text"
         ref={filenameRef}
+        aria-label={tr("~FILE_DIALOG.FILENAME")}
         value={filename}
         placeholder={tr("~FILE_DIALOG.FILENAME")}
         onChange={handleFilenameChange}
@@ -213,14 +214,14 @@ const LocalFileSaveTab: React.FC<LocalFileSaveTabProps> = ({ dialog, close, clie
       />
       <div className="saveArea">
         {shared && !hasPropsContent && (
-          <div className="shareCheckbox">
+          <label className="shareCheckbox">
             <input
               type="checkbox"
               checked={includeShareInfo}
               onChange={handleIncludeShareInfoChange}
             />
             {tr('~DOWNLOAD_DIALOG.INCLUDE_SHARE_INFO')}
-          </div>
+          </label>
         )}
       </div>
       <div className="buttons">
