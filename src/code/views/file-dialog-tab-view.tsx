@@ -405,12 +405,12 @@ const FileDialogTab: React.FC<FileDialogTabProps> = ({ dialog, close, client, pr
       if (isOpen()) {
         confirmed(metadata)
       } else if (existingMetadata) {
-        client.confirm(`Are you sure you want to overwrite ${existingMetadata.name}?`, () => confirmed(existingMetadata))
+        client.confirm(tr("~FILE_DIALOG.OVERWRITE_CONFIRM", { filename: existingMetadata.name }), () => confirmed(existingMetadata))
       } else {
         confirmed(metadata)
       }
     } else if (isOpen()) {
-      client.alert(`${filename} not found`)
+      client.alert(tr("~FILE_DIALOG.FILE_NOT_FOUND", { filename }))
     } else {
       confirmed(new CloudMetadata({
         name: filename,
