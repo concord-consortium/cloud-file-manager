@@ -7,6 +7,8 @@ const MenuBarView = MenuBarViewComponent as unknown as React.ComponentType<{
   client: {
     appOptions: {
       appIcon?: string
+      appName?: string
+      appFocusRingIcon?: string
       ui: {
         menuBar?: {
           subMenuExpandIcon?: string
@@ -430,6 +432,269 @@ describe('MenuBarView', () => {
 
     // Should not call rename
     expect(mockClient.rename).not.toHaveBeenCalled()
+  })
+
+  it('should have toolbar role with translatable aria-label', () => {
+    render(
+      <MenuBarView
+        client={createMockClient()}
+        options={createMockOptions()}
+        items={createMockItems()}
+      />
+    )
+
+    const toolbar = screen.getByRole('toolbar')
+    expect(toolbar).toBeInTheDocument()
+    expect(toolbar).toHaveAttribute('aria-label', 'Menu bar')
+  })
+
+  it('should have only one button with tabIndex=0 (roving tabindex)', () => {
+    render(
+      <MenuBarView
+        client={createMockClient()}
+        options={createMockOptions()}
+        items={createMockItems()}
+        filename="test-doc"
+      />
+    )
+
+    const toolbar = screen.getByRole('toolbar')
+    const buttons = toolbar.querySelectorAll<HTMLElement>('[data-toolbar-item]')
+    const tabbableButtons = Array.from(buttons).filter(b => b.tabIndex === 0)
+    expect(tabbableButtons).toHaveLength(1)
+    expect(tabbableButtons[0]).toBe(buttons[0])
+  })
+
+  it('should move focus right with ArrowRight', () => {
+    render(
+      <MenuBarView
+        client={createMockClient()}
+        options={createMockOptions()}
+        items={createMockItems()}
+        filename="test-doc"
+      />
+    )
+
+    const toolbar = screen.getByRole('toolbar')
+    const buttons = toolbar.querySelectorAll<HTMLElement>('[data-toolbar-item]')
+
+    // Focus first button
+    ;(buttons[0] as HTMLElement).focus()
+    expect(document.activeElement).toBe(buttons[0])
+
+    // ArrowRight should move to second button
+    fireEvent.keyDown(buttons[0], { key: 'ArrowRight' })
+    expect(document.activeElement).toBe(buttons[1])
+    expect(buttons[0].tabIndex).toBe(-1)
+    expect(buttons[1].tabIndex).toBe(0)
+  })
+
+  it('should move focus left with ArrowLeft', () => {
+    render(
+      <MenuBarView
+        client={createMockClient()}
+        options={createMockOptions()}
+        items={createMockItems()}
+        filename="test-doc"
+      />
+    )
+
+    const toolbar = screen.getByRole('toolbar')
+    const buttons = toolbar.querySelectorAll<HTMLElement>('[data-toolbar-item]')
+
+    // Focus second button
+    ;(buttons[1] as HTMLElement).focus()
+
+    // ArrowLeft should move to first button
+    fireEvent.keyDown(buttons[1], { key: 'ArrowLeft' })
+    expect(document.activeElement).toBe(buttons[0])
+    expect(buttons[0].tabIndex).toBe(0)
+    expect(buttons[1].tabIndex).toBe(-1)
+  })
+
+  it('should wrap focus from last to first on ArrowRight', () => {
+    render(
+      <MenuBarView
+        client={createMockClient()}
+        options={createMockOptions()}
+        items={createMockItems()}
+        filename="test-doc"
+      />
+    )
+
+    const toolbar = screen.getByRole('toolbar')
+    const buttons = toolbar.querySelectorAll<HTMLElement>('[data-toolbar-item]')
+    const lastButton = buttons[buttons.length - 1] as HTMLElement
+
+    // Focus last button
+    lastButton.focus()
+
+    // ArrowRight should wrap to first
+    fireEvent.keyDown(lastButton, { key: 'ArrowRight' })
+    expect(document.activeElement).toBe(buttons[0])
+  })
+
+  it('should wrap focus from first to last on ArrowLeft', () => {
+    render(
+      <MenuBarView
+        client={createMockClient()}
+        options={createMockOptions()}
+        items={createMockItems()}
+        filename="test-doc"
+      />
+    )
+
+    const toolbar = screen.getByRole('toolbar')
+    const buttons = toolbar.querySelectorAll<HTMLElement>('[data-toolbar-item]')
+
+    // Focus first button
+    ;(buttons[0] as HTMLElement).focus()
+
+    // ArrowLeft should wrap to last
+    fireEvent.keyDown(buttons[0], { key: 'ArrowLeft' })
+    expect(document.activeElement).toBe(buttons[buttons.length - 1])
+  })
+
+  it('should not intercept arrow keys when editing filename', () => {
+    render(
+      <MenuBarView
+        client={createMockClient()}
+        options={createMockOptions()}
+        items={createMockItems()}
+        filename="test-doc"
+      />
+    )
+
+    // Enter edit mode
+    fireEvent.click(screen.getByText('test-doc'))
+    jest.runAllTimers()
+
+    const input = document.querySelector('.menu-bar-content-filename input') as HTMLInputElement
+    expect(input).toBeInTheDocument()
+
+    // ArrowRight on input should not move focus away
+    fireEvent.keyDown(input, { key: 'ArrowRight' })
+    expect(document.activeElement).toBe(input)
+  })
+
+  it('should move focus to first item on Home key', () => {
+    render(
+      <MenuBarView
+        client={createMockClient()}
+        options={createMockOptions()}
+        items={createMockItems()}
+        filename="test-doc"
+      />
+    )
+
+    const toolbar = screen.getByRole('toolbar')
+    const buttons = toolbar.querySelectorAll<HTMLElement>('[data-toolbar-item]')
+    const lastButton = buttons[buttons.length - 1] as HTMLElement
+
+    lastButton.focus()
+    fireEvent.keyDown(lastButton, { key: 'Home' })
+    expect(document.activeElement).toBe(buttons[0])
+  })
+
+  it('should move focus to last item on End key', () => {
+    render(
+      <MenuBarView
+        client={createMockClient()}
+        options={createMockOptions()}
+        items={createMockItems()}
+        filename="test-doc"
+      />
+    )
+
+    const toolbar = screen.getByRole('toolbar')
+    const buttons = toolbar.querySelectorAll<HTMLElement>('[data-toolbar-item]')
+
+    ;(buttons[0] as HTMLElement).focus()
+    fireEvent.keyDown(buttons[0], { key: 'End' })
+    expect(document.activeElement).toBe(buttons[buttons.length - 1])
+  })
+
+  it('should have aria-label on filename input when editing', () => {
+    render(
+      <MenuBarView
+        client={createMockClient()}
+        options={createMockOptions()}
+        items={createMockItems()}
+        filename="test-doc"
+      />
+    )
+
+    fireEvent.click(screen.getByText('test-doc'))
+    jest.runAllTimers()
+
+    const input = document.querySelector('.menu-bar-content-filename input') as HTMLInputElement
+    expect(input).toHaveAttribute('aria-label', 'Document name')
+  })
+
+  it('should use appName in logo button aria-label', () => {
+    render(
+      <MenuBarView
+        client={createMockClient({
+          appOptions: {
+            appIcon: '/test-icon.png',
+            appName: 'CODAP',
+            ui: { menuBar: {} }
+          }
+        })}
+        options={createMockOptions()}
+        items={createMockItems()}
+      />
+    )
+
+    expect(screen.getByRole('button', { name: 'About CODAP' })).toBeInTheDocument()
+  })
+
+  it('should use generic label when appName not provided', () => {
+    render(
+      <MenuBarView
+        client={createMockClient()}
+        options={createMockOptions()}
+        items={createMockItems()}
+      />
+    )
+
+    expect(screen.getByRole('button', { name: 'About this application' })).toBeInTheDocument()
+  })
+
+  it('should render custom focus ring icon when appFocusRingIcon provided', () => {
+    render(
+      <MenuBarView
+        client={createMockClient({
+          appOptions: {
+            appIcon: '/test-icon.png',
+            appFocusRingIcon: '/focus-ring.svg',
+            ui: { menuBar: {} }
+          }
+        })}
+        options={createMockOptions()}
+        items={createMockItems()}
+      />
+    )
+
+    const logoWrapper = document.querySelector('.app-logo-wrapper')
+    expect(logoWrapper).toHaveClass('has-focus-ring-icon')
+    const focusRing = document.querySelector('.logo-focus-ring') as HTMLImageElement
+    expect(focusRing).toBeInTheDocument()
+    expect(focusRing.src).toContain('focus-ring.svg')
+  })
+
+  it('should not render focus ring icon when appFocusRingIcon not provided', () => {
+    render(
+      <MenuBarView
+        client={createMockClient()}
+        options={createMockOptions()}
+        items={createMockItems()}
+      />
+    )
+
+    const logoWrapper = document.querySelector('.app-logo-wrapper')
+    expect(logoWrapper).not.toHaveClass('has-focus-ring-icon')
+    expect(document.querySelector('.logo-focus-ring')).not.toBeInTheDocument()
   })
 
   it('should register UI listener on mount', () => {

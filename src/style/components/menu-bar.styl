@@ -174,18 +174,25 @@
       padding 0
       position relative
       cursor pointer
-      outline none
       .app-logo
         display block
-      .logo-focus-ring
-        display none
-        position absolute
-        top 50%
-        left 50%
-        transform translate(-50%, -50%)
-        pointer-events none
-      &:focus-visible .logo-focus-ring
-        display block
+      // Standard CSS focus outline (used when no custom focus ring icon is provided)
+      &:focus-visible
+        outline 2px solid #0957D0
+        outline-offset 2px
+        border-radius 4px
+      // Custom focus ring icon overlay (provided by the client application)
+      &.has-focus-ring-icon
+        outline none
+        .logo-focus-ring
+          display none
+          position absolute
+          top 50%
+          left 50%
+          transform translate(-50%, -50%)
+          pointer-events none
+        &:focus-visible .logo-focus-ring
+          display block
 
   .menu-bar-right
     margin-right 10px

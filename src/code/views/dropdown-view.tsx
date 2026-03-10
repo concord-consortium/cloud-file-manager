@@ -22,6 +22,7 @@ interface DropdownProps {
   triggerClassName?: string
   menuAnchor?: React.ReactNode
   subMenuExpandIcon?: string
+  triggerProps?: Record<string, string | boolean>
 }
 
 function isEnabled(item: DropdownItemData): boolean {
@@ -85,7 +86,8 @@ const Dropdown: React.FC<DropdownProps> = ({
   className,
   triggerClassName,
   menuAnchor,
-  subMenuExpandIcon
+  subMenuExpandIcon,
+  triggerProps
 }) => {
   const dropdownClass = `menu ${className || ''}`
   const currentLang = getCurrentLanguage()
@@ -103,7 +105,7 @@ const Dropdown: React.FC<DropdownProps> = ({
   return (
     <div className={dropdownClass}>
       <MenuTrigger>
-        <Button className={`menu-anchor cfm-menu dg-wants-touch ${triggerClassName || ''} ${langClass}`}>
+        <Button className={`menu-anchor cfm-menu dg-wants-touch ${triggerClassName || ''} ${langClass}`} {...triggerProps}>
           {menuAnchor || DefaultAnchor}
         </Button>
         <Popover className="cfm-menu dg-wants-touch menu-showing">

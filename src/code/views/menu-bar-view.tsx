@@ -1,9 +1,8 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react'
+import React, { useState, useEffect, useLayoutEffect, useRef, useCallback } from 'react'
 import { CFMUIMenuOptions } from '../app-options'
 import tr, { getCurrentLanguage, getSpecialLangFontClassName } from '../utils/translate'
 import DropdownView from './dropdown-view'
 import { ProviderInterface } from '../providers/provider-interface'
-import { LogoFocusRing } from './icons/logo-focus-ring'
 
 interface FileStatus {
   type: string
@@ -14,6 +13,8 @@ interface MenuBarProps {
   client: {
     appOptions: {
       appIcon?: string
+      appName?: string
+      appFocusRingIcon?: string
       ui: {
         menuBar?: {
           subMenuExpandIcon?: string
@@ -192,6 +193,68 @@ const MenuBar: React.FC<MenuBarProps> = ({
     }
   }
 
+  // Roving tabindex for single-tab-stop toolbar navigation
+  const menuBarRef = useRef<HTMLDivElement>(null)
+  const activeIndexRef = useRef(0)
+
+  const getToolbarButtons = useCallback((): HTMLElement[] => {
+    if (!menuBarRef.current) return []
+    return Array.from(menuBarRef.current.querySelectorAll<HTMLElement>('[data-toolbar-item]'))
+  }, [])
+
+  const syncTabIndex = useCallback(() => {
+    const buttons = getToolbarButtons()
+    if (buttons.length === 0) return
+    if (activeIndexRef.current >= buttons.length) {
+      activeIndexRef.current = Math.max(0, buttons.length - 1)
+    }
+    buttons.forEach((btn, i) => {
+      btn.tabIndex = i === activeIndexRef.current ? 0 : -1
+    })
+  }, [getToolbarButtons])
+
+  // Sync tabIndex when button count or toolbar contents change
+  useLayoutEffect(() => {
+    syncTabIndex()
+  }, [editingFilename, items, options.otherMenus, options.languageMenu, syncTabIndex])
+
+  const handleToolbarKeyDown = useCallback((e: React.KeyboardEvent) => {
+    if ((e.target as HTMLElement).tagName === 'INPUT') return
+
+    const buttons = getToolbarButtons()
+    if (buttons.length === 0) return
+    const currentIndex = buttons.indexOf(e.target as HTMLElement)
+    if (currentIndex === -1) return
+
+    let nextIndex: number
+    if (e.key === 'ArrowRight') {
+      nextIndex = (currentIndex + 1) % buttons.length
+    } else if (e.key === 'ArrowLeft') {
+      nextIndex = (currentIndex - 1 + buttons.length) % buttons.length
+    } else if (e.key === 'Home') {
+      nextIndex = 0
+    } else if (e.key === 'End') {
+      nextIndex = buttons.length - 1
+    } else {
+      return
+    }
+
+    e.preventDefault()
+    activeIndexRef.current = nextIndex
+    syncTabIndex()
+    buttons[nextIndex].focus()
+  }, [getToolbarButtons, syncTabIndex])
+
+  const handleToolbarFocus = useCallback((e: React.FocusEvent) => {
+    if (!(e.target as HTMLElement).hasAttribute('data-toolbar-item')) return
+    const buttons = getToolbarButtons()
+    const index = buttons.indexOf(e.target as HTMLElement)
+    if (index !== -1) {
+      activeIndexRef.current = index
+      syncTabIndex()
+    }
+  }, [getToolbarButtons, syncTabIndex])
+
   const langChanged = (langCode: string) => {
     const { onLangChanged } = options.languageMenu ?? {}
     if (onLangChanged) {
@@ -239,6 +302,7 @@ const MenuBar: React.FC<MenuBarProps> = ({
         triggerClassName={triggerClass}
         items={menuItems}
         menuAnchor={menuAnchor}
+        triggerProps={{ 'data-toolbar-item': true }}
       />
     )
   }
@@ -253,6 +317,7 @@ const MenuBar: React.FC<MenuBarProps> = ({
       <DropdownView
         items={items}
         triggerClassName={`menu-bar-button file-menu-button ${langClass}`}
+        triggerProps={{ 'data-toolbar-item': true }}
         menuAnchor={<>
           <img className="menu-icon" src={menuOptions.menuAnchorIcon} alt="Menu Icon" />
           <span className="menu-label">{menuOptions.menuAnchorName}</span>
@@ -273,6 +338,7 @@ const MenuBar: React.FC<MenuBarProps> = ({
         key={menuKey}
         items={(menuOptions.menu ?? []) as any}
         triggerClassName={`menu-bar-button other-menu-button ${langClass}`}
+        triggerProps={{ 'data-toolbar-item': true }}
         menuAnchor={<>
           <img className="menu-icon" src={menuOptions.menuAnchorIcon} alt="Menu Icon" />
           <span className="menu-label">{menuOptions.menuAnchorName}</span>
@@ -290,13 +356,21 @@ const MenuBar: React.FC<MenuBarProps> = ({
   const isAuthorized = provider && provider.isAuthorizationRequired() && providerAny.authorized()
 
   return (
-    <div className={`menu-bar ${options.clientToolBarPosition === "left" ? 'toolbar-position-left' : ''} ${langClass}`}>
+    <div
+      ref={menuBarRef}
+      className={`menu-bar ${options.clientToolBarPosition === "left" ? 'toolbar-position-left' : ''} ${langClass}`}
+      role="toolbar"
+      aria-label={tr("~MENUBAR.TOOLBAR_LABEL")}
+      onKeyDown={handleToolbarKeyDown}
+      onFocus={handleToolbarFocus}
+    >
       <div className="menu-bar-left">
         {renderFileMenu()}
         <div className={`menu-bar-content-filename ${langClass}`}>
           {editingFilename ? (
             <input
               ref={filenameRef}
+              aria-label={tr("~MENUBAR.RENAME_DOCUMENT")}
               value={editableFilename}
               onChange={filenameChanged}
               onKeyDown={watchForEnter}
@@ -305,8 +379,9 @@ const MenuBar: React.FC<MenuBarProps> = ({
             />
           ) : (
             <button
+              data-toolbar-item
               className="content-filename"
-              aria-label={`Rename ${filename}`}
+              aria-label={tr("~MENUBAR.RENAME_FILENAME", { filename })}
               onClick={filenameClicked}
               onKeyDown={filenameKeyDown}
             >
@@ -320,13 +395,16 @@ const MenuBar: React.FC<MenuBarProps> = ({
       </div>
       <div className="menu-bar-center">
         <button
-          className="app-logo-wrapper"
-          aria-label="CODAP Logo"
+          className={`app-logo-wrapper ${client.appOptions.appFocusRingIcon ? 'has-focus-ring-icon' : ''}`}
+          data-toolbar-item
+          aria-label={client.appOptions.appName ? tr("~MENUBAR.ABOUT_APP", { appName: client.appOptions.appName }) : tr("~MENUBAR.ABOUT")}
           onClick={infoClicked}
           onKeyDown={infoKeyDown}
         >
           <img className="app-logo" src={client.appOptions.appIcon} alt="" />
-          <LogoFocusRing />
+          {client.appOptions.appFocusRingIcon && (
+            <img className="logo-focus-ring" src={client.appOptions.appFocusRingIcon} alt="" aria-hidden="true" />
+          )}
         </button>
         {options.info && (
           <span className="menu-bar-info">{options.info}</span>
