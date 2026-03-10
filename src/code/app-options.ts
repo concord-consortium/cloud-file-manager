@@ -132,6 +132,9 @@ export interface CFMAppOptions {
   appName?: string
   appVersion?: string
   appIcon?: string
+  // URL to an SVG image displayed as a focus ring around the app logo button.
+  // When not provided, a standard CSS focus outline is used instead.
+  appFocusRingIcon?: string
   appBuildNum?: string
   // If appOrMenuElemId is set and usingIframe is true, then the CFM presents
   // its UI and the wrapped client app within the specified element.

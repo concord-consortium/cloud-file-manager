@@ -7,6 +7,8 @@ const MenuBarView = MenuBarViewComponent as unknown as React.ComponentType<{
   client: {
     appOptions: {
       appIcon?: string
+      appName?: string
+      appFocusRingIcon?: string
       ui: {
         menuBar?: {
           subMenuExpandIcon?: string
@@ -572,6 +574,60 @@ describe('MenuBarView', () => {
     // ArrowRight on input should not move focus away
     fireEvent.keyDown(input, { key: 'ArrowRight' })
     expect(document.activeElement).toBe(input)
+  })
+
+  it('should render custom focus ring icon when appFocusRingIcon provided', () => {
+    render(
+      <MenuBarView
+        client={createMockClient({
+          appOptions: {
+            appIcon: '/test-icon.png',
+            appFocusRingIcon: '/focus-ring.svg',
+            ui: { menuBar: {} }
+          }
+        })}
+        options={createMockOptions()}
+        items={createMockItems()}
+      />
+    )
+
+    const logoWrapper = document.querySelector('.app-logo-wrapper')
+    expect(logoWrapper).toHaveClass('has-focus-ring-icon')
+    const focusRing = document.querySelector('.logo-focus-ring') as HTMLImageElement
+    expect(focusRing).toBeInTheDocument()
+    expect(focusRing.src).toContain('focus-ring.svg')
+  })
+
+  it('should not render focus ring icon when appFocusRingIcon not provided', () => {
+    render(
+      <MenuBarView
+        client={createMockClient()}
+        options={createMockOptions()}
+        items={createMockItems()}
+      />
+    )
+
+    const logoWrapper = document.querySelector('.app-logo-wrapper')
+    expect(logoWrapper).not.toHaveClass('has-focus-ring-icon')
+    expect(document.querySelector('.logo-focus-ring')).not.toBeInTheDocument()
+  })
+
+  it('should use appName in logo aria-label when provided', () => {
+    render(
+      <MenuBarView
+        client={createMockClient({
+          appOptions: {
+            appIcon: '/test-icon.png',
+            appName: 'CODAP',
+            ui: { menuBar: {} }
+          }
+        })}
+        options={createMockOptions()}
+        items={createMockItems()}
+      />
+    )
+
+    expect(screen.getByRole('button', { name: 'CODAP Logo' })).toBeInTheDocument()
   })
 
   it('should register UI listener on mount', () => {

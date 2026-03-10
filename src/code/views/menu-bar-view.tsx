@@ -3,7 +3,6 @@ import { CFMUIMenuOptions } from '../app-options'
 import tr, { getCurrentLanguage, getSpecialLangFontClassName } from '../utils/translate'
 import DropdownView from './dropdown-view'
 import { ProviderInterface } from '../providers/provider-interface'
-import { LogoFocusRing } from './icons/logo-focus-ring'
 
 interface FileStatus {
   type: string
@@ -14,6 +13,8 @@ interface MenuBarProps {
   client: {
     appOptions: {
       appIcon?: string
+      appName?: string
+      appFocusRingIcon?: string
       ui: {
         menuBar?: {
           subMenuExpandIcon?: string
@@ -380,13 +381,15 @@ const MenuBar: React.FC<MenuBarProps> = ({
       </div>
       <div className="menu-bar-center">
         <button
-          className="app-logo-wrapper"
-          aria-label="CODAP Logo"
+          className={`app-logo-wrapper ${client.appOptions.appFocusRingIcon ? 'has-focus-ring-icon' : ''}`}
+          aria-label={client.appOptions.appName ? `${client.appOptions.appName} Logo` : 'Application Logo'}
           onClick={infoClicked}
           onKeyDown={infoKeyDown}
         >
           <img className="app-logo" src={client.appOptions.appIcon} alt="" />
-          <LogoFocusRing />
+          {client.appOptions.appFocusRingIcon && (
+            <img className="logo-focus-ring" src={client.appOptions.appFocusRingIcon} alt="" aria-hidden="true" />
+          )}
         </button>
         {options.info && (
           <span className="menu-bar-info">{options.info}</span>
