@@ -1,4 +1,4 @@
-import { act, render, screen } from '@testing-library/react'
+import { act, render } from '@testing-library/react'
 import React from 'react'
 import ModalView from './modal-view'
 import * as focusTracker from '../utils/focus-tracker'
