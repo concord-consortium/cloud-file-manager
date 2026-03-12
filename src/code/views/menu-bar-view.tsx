@@ -228,9 +228,9 @@ const MenuBar: React.FC<MenuBarProps> = ({
 
     let nextIndex: number
     if (e.key === 'ArrowRight') {
-      nextIndex = (currentIndex + 1) % buttons.length
+      nextIndex = Math.min(currentIndex + 1, buttons.length - 1)
     } else if (e.key === 'ArrowLeft') {
-      nextIndex = (currentIndex - 1 + buttons.length) % buttons.length
+      nextIndex = Math.max(currentIndex - 1, 0)
     } else if (e.key === 'Home') {
       nextIndex = 0
     } else if (e.key === 'End') {

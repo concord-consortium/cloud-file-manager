@@ -36,7 +36,7 @@
     no-select()
 
     .content-filename
-      background none
+      background-color #a5e3f6
       border none
       font inherit
       color inherit
@@ -54,8 +54,10 @@
       &:hover
         background-color #d3f4ff
       &:focus-visible
-        border solid 2px white
+        border-color white
         outline 2px solid #0957d0
+        outline-offset 1px
+        box-shadow 0 0 0 4px white
         background-color white
 
     input
@@ -99,6 +101,7 @@
     display flex
     align-items center
     flex 0 0 auto
+    z-index 1
 
     .menu-bar-button
       display flex
@@ -117,7 +120,7 @@
       border solid 2px transparent
       outline 2px solid transparent
       outline-offset -1px
-      &:hover
+      &:hover, &[data-pressed]
         background-color #d3f4ff
       &:active
         background-color #eaf9ff
@@ -125,8 +128,9 @@
         border solid 2px transparent
         outline 2px solid transparent
       &:focus-visible
-        border solid 2px white
         outline 2px solid #0957d0
+        outline-offset -2px
+        box-shadow 0 0 0 1px white
         background-color #d3f4ff
       .menu-icon
         height 24px
@@ -164,16 +168,14 @@
     align-items center
     justify-content center
     flex 1 1 0%
-    position absolute
-    left 50%
-    transform translateX(-15%)
-    width max-content
+    min-width 0
     .app-logo-wrapper
       background none
       border none
       padding 0
       position relative
       cursor pointer
+      flex-shrink 0
       .app-logo
         display block
       // Standard CSS focus outline (used when no custom focus ring icon is provided)
@@ -189,10 +191,16 @@
           position absolute
           top 50%
           left 50%
+          max-width none
           transform translate(-50%, -50%)
           pointer-events none
         &:focus-visible .logo-focus-ring
           display block
+    .menu-bar-info
+      white-space nowrap
+      overflow hidden
+      text-overflow ellipsis
+      min-width 0
 
   .menu-bar-right
     margin-right 10px

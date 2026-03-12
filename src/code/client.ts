@@ -299,7 +299,7 @@ class CloudFileManagerClient {
   //
   processUrlParams() {
     // process the hash params
-    let providerName
+    let providerName, providerParams, folder
     const { hashParams } = this.appOptions
     if (hashParams.sharedContentId) {
       return this.openSharedContent(hashParams.sharedContentId)
@@ -307,14 +307,12 @@ class CloudFileManagerClient {
       if (hashParams.fileParams.indexOf("http") === 0) {
         return this.openUrlFile(hashParams.fileParams)
       } else {
-        let providerParams;
         [providerName, providerParams] = hashParams.fileParams.split(':')
         return this.openProviderFile(providerName, providerParams)
       }
     } else if (hashParams.copyParams) {
       return this.openCopiedFile(hashParams.copyParams)
     } else if (hashParams.newInFolderParams) {
-      let folder;
       [providerName, folder] = hashParams.newInFolderParams.split(':')
       return this.createNewInFolder(providerName, folder)
     } else if (this.haveTempFile()) {
