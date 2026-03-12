@@ -64,7 +64,7 @@ describe('ModalView', () => {
   })
 
   it('should not restore focus if no element was tracked', () => {
-    ;(focusTracker.getLastFocusedElement as jest.Mock).mockReturnValue(null)
+    (focusTracker.getLastFocusedElement as jest.Mock).mockReturnValue(null)
 
     const { unmount } = render(
       <ModalView ariaLabel="Test dialog">
@@ -75,5 +75,6 @@ describe('ModalView', () => {
     // Should not throw
     unmount()
     act(() => { jest.runAllTimers() })
+    expect(focusTracker.getLastFocusedElement).toHaveBeenCalled()
   })
 })
