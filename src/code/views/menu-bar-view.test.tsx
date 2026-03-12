@@ -512,7 +512,7 @@ describe('MenuBarView', () => {
     expect(buttons[1].tabIndex).toBe(-1)
   })
 
-  it('should wrap focus from last to first on ArrowRight', () => {
+  it('should stop at last item on ArrowRight (no wrap)', () => {
     render(
       <MenuBarView
         client={createMockClient()}
@@ -529,12 +529,12 @@ describe('MenuBarView', () => {
     // Focus last button
     lastButton.focus()
 
-    // ArrowRight should wrap to first
+    // ArrowRight should stay on last button
     fireEvent.keyDown(lastButton, { key: 'ArrowRight' })
-    expect(document.activeElement).toBe(buttons[0])
+    expect(document.activeElement).toBe(lastButton)
   })
 
-  it('should wrap focus from first to last on ArrowLeft', () => {
+  it('should stop at first item on ArrowLeft (no wrap)', () => {
     render(
       <MenuBarView
         client={createMockClient()}
@@ -550,9 +550,9 @@ describe('MenuBarView', () => {
     // Focus first button
     ;(buttons[0] as HTMLElement).focus()
 
-    // ArrowLeft should wrap to last
+    // ArrowLeft should stay on first button
     fireEvent.keyDown(buttons[0], { key: 'ArrowLeft' })
-    expect(document.activeElement).toBe(buttons[buttons.length - 1])
+    expect(document.activeElement).toBe(buttons[0])
   })
 
   it('should not intercept arrow keys when editing filename', () => {

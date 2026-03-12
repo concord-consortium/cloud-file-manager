@@ -108,7 +108,7 @@ const Dropdown: React.FC<DropdownProps> = ({
         <Button className={`menu-anchor cfm-menu dg-wants-touch ${triggerClassName || ''} ${langClass}`} {...triggerProps}>
           {menuAnchor || DefaultAnchor}
         </Button>
-        <Popover className="cfm-menu dg-wants-touch menu-showing">
+        <Popover className="cfm-menu dg-wants-touch menu-showing" offset={0}>
           <Menu className="menu-list-container" onAction={handleAction}>
             {renderMenuItems(items, subMenuExpandIcon)}
           </Menu>
