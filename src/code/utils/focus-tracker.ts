@@ -24,6 +24,13 @@ export function startFocusTracker() {
   }
 }
 
+export function stopFocusTracker() {
+  if (isListening) {
+    document.removeEventListener('focusin', handleFocusIn, true)
+    isListening = false
+  }
+}
+
 // Returns the most recently focused element that is still in the DOM.
 export function getLastFocusedElement(): HTMLElement | null {
   for (let i = recentlyFocused.length - 1; i >= 0; i--) {

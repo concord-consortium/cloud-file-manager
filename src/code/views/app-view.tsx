@@ -13,7 +13,7 @@ import SelectInteractiveStateDialog from './select-interactive-state-dialog-view
 
 import tr from '../utils/translate'
 import isString from '../utils/is-string'
-import { startFocusTracker } from '../utils/focus-tracker'
+import { startFocusTracker, stopFocusTracker } from '../utils/focus-tracker'
 import { CloudMetadata } from "../providers/provider-interface"
 import { CFMMenuBarOptions, CFMMenuItem, CFMShareDialogSettings, CFMUIOptions } from "../app-options"
 import { CloudFileManagerClient, CloudFileManagerClientEvent } from "../client"
@@ -342,6 +342,10 @@ class AppView extends React.Component<IAppViewProps, IAppViewState> {
         )}
       </div>
     )
+  }
+
+  componentWillUnmount() {
+    stopFocusTracker()
   }
 
   render() {
