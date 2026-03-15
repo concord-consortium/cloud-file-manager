@@ -10,7 +10,7 @@ interface FileListFileProps {
   selected: boolean
   isSubFolder: boolean
   fileSelected: (metadata: CloudMetadata) => void
-  fileConfirmed: () => void
+  fileConfirmed: (metadata?: CloudMetadata) => void
 }
 
 const FileListFile: React.FC<FileListFileProps> = ({
@@ -38,7 +38,7 @@ const FileListFile: React.FC<FileListFileProps> = ({
     if (e.key === 'Enter') {
       fileSelected(metadata)
       if (metadata.type === CloudMetadata.File) {
-        fileConfirmed()
+        fileConfirmed(metadata)
       }
     } else if (e.key === ' ') {
       e.preventDefault()
@@ -80,7 +80,7 @@ interface FileListProps {
   list: CloudMetadata[]
   listLoaded: (list: CloudMetadata[]) => void
   fileSelected: (metadata: CloudMetadata | null) => void
-  fileConfirmed: () => void
+  fileConfirmed: (metadata?: CloudMetadata) => void
   client: {
     alert: (message: string) => void
   }
@@ -144,9 +144,9 @@ const FileList: React.FC<FileListProps> = ({
     }
   }
 
-  const handleFileConfirmed = () => {
+  const handleFileConfirmed = (metadata?: CloudMetadata) => {
     if (!loading) {
-      fileConfirmed()
+      fileConfirmed(metadata)
     }
   }
 
@@ -390,10 +390,10 @@ const FileDialogTab: React.FC<FileDialogTabProps> = ({ dialog, close, client, pr
     return provider.fileDialogDisabled(state.folder as CloudMetadata) || (finalConfirmedFilename().length === 0) || (isOpen() && !state.metadata)
   }
 
-  const confirm = () => {
-    const filename = $.trim(finalConfirmedFilename())
+  const confirm = (confirmedMetadata?: CloudMetadata | null) => {
+    const filename = $.trim(confirmedMetadata?.name || finalConfirmedFilename())
     const existingMetadata = findMetadata(filename, state.list, dialog.data?.extension)
-    let metadata = state.metadata || existingMetadata
+    let metadata = confirmedMetadata || state.metadata || existingMetadata
 
     // a bit of a hack - on export clear the provider data if there is no matching file found so we don't
     // accidentally override the original saved file
@@ -513,7 +513,7 @@ const FileDialogTab: React.FC<FileDialogTabProps> = ({ dialog, close, client, pr
         />
         <div className="buttons">
           <button
-            onClick={confirm}
+            onClick={() => confirm()}
             disabled={disabled}
             className={disabled ? 'disabled' : 'default'}
           >
