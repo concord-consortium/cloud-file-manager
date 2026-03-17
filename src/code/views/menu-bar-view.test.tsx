@@ -406,6 +406,52 @@ describe('MenuBarView', () => {
     expect(document.querySelector('.menu-bar.toolbar-position-left')).toBeInTheDocument()
   })
 
+  it('should return focus to filename button after Enter confirms rename', () => {
+    const mockClient = createMockClient()
+    render(
+      <MenuBarView
+        client={mockClient}
+        options={createMockOptions()}
+        items={createMockItems()}
+        filename="my-doc"
+      />
+    )
+
+    fireEvent.click(screen.getByText('my-doc'))
+    jest.runAllTimers()
+
+    const input = document.querySelector('.menu-bar-content-filename input') as HTMLInputElement
+    fireEvent.change(input, { target: { value: 'new-name' } })
+    fireEvent.keyDown(input, { key: 'Enter' })
+    jest.runAllTimers()
+
+    const filenameButton = document.querySelector('.content-filename') as HTMLButtonElement
+    expect(filenameButton).toBeInTheDocument()
+    expect(document.activeElement).toBe(filenameButton)
+  })
+
+  it('should return focus to filename button after Escape cancels edit', () => {
+    render(
+      <MenuBarView
+        client={createMockClient()}
+        options={createMockOptions()}
+        items={createMockItems()}
+        filename="my-doc"
+      />
+    )
+
+    fireEvent.click(screen.getByText('my-doc'))
+    jest.runAllTimers()
+
+    const input = document.querySelector('.menu-bar-content-filename input') as HTMLInputElement
+    fireEvent.keyDown(input, { key: 'Escape' })
+    jest.runAllTimers()
+
+    const filenameButton = document.querySelector('.content-filename') as HTMLButtonElement
+    expect(filenameButton).toBeInTheDocument()
+    expect(document.activeElement).toBe(filenameButton)
+  })
+
   it('should not call rename when filename is empty after edit', () => {
     const mockClient = createMockClient()
     render(

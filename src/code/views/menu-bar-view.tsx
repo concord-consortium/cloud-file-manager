@@ -78,6 +78,7 @@ const MenuBar: React.FC<MenuBarProps> = ({
   const [initialEditableFilename] = useState(() => getFilename(propFilename))
 
   const filenameRef = useRef<HTMLInputElement>(null)
+  const filenameButtonRef = useRef<HTMLButtonElement>(null)
 
   // Update filename when prop changes
   useEffect(() => {
@@ -97,6 +98,7 @@ const MenuBar: React.FC<MenuBarProps> = ({
   const cancelEdit = useCallback(() => {
     setEditingFilename(false)
     setEditableFilename(filename.length > 0 ? filename : initialEditableFilename)
+    setTimeout(() => filenameButtonRef.current?.focus(), 0)
   }, [filename, initialEditableFilename])
 
   const rename = useCallback(() => {
@@ -110,6 +112,7 @@ const MenuBar: React.FC<MenuBarProps> = ({
       setEditingFilename(false)
       setFilename(trimmedFilename)
       setEditableFilename(trimmedFilename)
+      setTimeout(() => filenameButtonRef.current?.focus(), 0)
     } else {
       cancelEdit()
     }
@@ -379,6 +382,7 @@ const MenuBar: React.FC<MenuBarProps> = ({
             />
           ) : (
             <button
+              ref={filenameButtonRef}
               data-toolbar-item
               className="content-filename"
               aria-label={tr("~MENUBAR.RENAME_FILENAME", { filename })}
