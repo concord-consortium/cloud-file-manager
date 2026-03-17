@@ -49,9 +49,11 @@
     transition all 0.2
     outline 2px solid transparent
     outline-offset -2px
-    &:focus-visible, &[data-open]
+    &:focus-visible
       outline 2px solid #0957d0
       background #d3f4ff
+    &[data-open]
+      background #e9e9e9
     &.disabled
       color #222
       opacity: 0.35
