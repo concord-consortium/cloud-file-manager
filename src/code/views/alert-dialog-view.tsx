@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useRef, useEffect } from 'react'
 import ModalDialogView from './modal-dialog-view'
 import tr from '../utils/translate'
 
@@ -10,6 +10,12 @@ interface AlertDialogViewProps {
 }
 
 const AlertDialogView: React.FC<AlertDialogViewProps> = ({ title, message, callback, close }) => {
+  const closeButtonRef = useRef<HTMLButtonElement>(null)
+
+  useEffect(() => {
+    closeButtonRef.current?.focus()
+  }, [])
+
   const handleClose = () => {
     close?.()
     callback?.()
@@ -20,7 +26,7 @@ const AlertDialogView: React.FC<AlertDialogViewProps> = ({ title, message, callb
       <div className="alert-dialog">
         <div className="alert-dialog-message" dangerouslySetInnerHTML={{ __html: message }} />
         <div className="buttons">
-          <button onClick={handleClose}>{tr('~ALERT_DIALOG.CLOSE')}</button>
+          <button ref={closeButtonRef} onClick={handleClose}>{tr('~ALERT_DIALOG.CLOSE')}</button>
         </div>
       </div>
     </ModalDialogView>

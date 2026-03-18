@@ -100,4 +100,18 @@ describe('ConfirmDialogView', () => {
     await userEvent.click(screen.getByText('Yes'))
     expect(screen.getByText('Test')).toBeInTheDocument()
   })
+
+  it('should focus the No button on mount', () => {
+    render(
+      <ConfirmDialogView message="Confirm?" />
+    )
+    expect(screen.getByText('No')).toHaveFocus()
+  })
+
+  it('should focus the Yes button on mount when No button is hidden', () => {
+    render(
+      <ConfirmDialogView message="Acknowledge?" hideNoButton={true} />
+    )
+    expect(screen.getByText('Yes')).toHaveFocus()
+  })
 })

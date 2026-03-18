@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useRef, useEffect } from 'react'
 import classNames from 'classnames'
 import ModalDialogView from './modal-dialog-view'
 import tr from '../utils/translate'
@@ -26,6 +26,15 @@ const ConfirmDialogView: React.FC<ConfirmDialogViewProps> = ({
   rejectCallback,
   close
 }) => {
+  const noButtonRef = useRef<HTMLButtonElement>(null)
+  const yesButtonRef = useRef<HTMLButtonElement>(null)
+
+  useEffect(() => {
+    // Focus the "No"/reject button by default (safer action), or "Yes" if No is hidden
+    const focusTarget = hideNoButton ? yesButtonRef.current : noButtonRef.current
+    focusTarget?.focus()
+  }, [hideNoButton])
+
   const confirm = () => {
     callback?.()
     close?.()
@@ -43,9 +52,9 @@ const ConfirmDialogView: React.FC<ConfirmDialogViewProps> = ({
       <div className={dialogClassName}>
         <div className="confirm-dialog-message" dangerouslySetInnerHTML={{ __html: message }} />
         <div className="buttons">
-          <button onClick={confirm}>{yesTitle || tr('~CONFIRM_DIALOG.YES')}</button>
+          <button ref={yesButtonRef} onClick={confirm}>{yesTitle || tr('~CONFIRM_DIALOG.YES')}</button>
           {!hideNoButton && (
-            <button onClick={reject}>{noTitle || tr('~CONFIRM_DIALOG.NO')}</button>
+            <button ref={noButtonRef} onClick={reject}>{noTitle || tr('~CONFIRM_DIALOG.NO')}</button>
           )}
         </div>
       </div>

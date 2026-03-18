@@ -79,4 +79,9 @@ describe('AlertDialogView', () => {
     const closeBtn = screen.getByLabelText('Close')
     expect(closeBtn.tagName).toBe('BUTTON')
   })
+
+  it('should focus the Close button on mount', () => {
+    render(<AlertDialogView message="Test" />)
+    expect(screen.getByText('Close')).toHaveFocus()
+  })
 })
