@@ -32,6 +32,72 @@ let setGoogleDriveAuthorizationDialogState: undefined | ((newState: any) => void
 
 const { div, button, span, strong, input } = ReactDOMFactories
 
+/**
+ * Prevent React Aria's Modal from making the Google Picker inert.
+ *
+ * This is a known issue with React Aria modals and third-party overlays:
+ * https://github.com/adobe/react-spectrum/issues/8784
+ * A fix is in progress (https://github.com/adobe/react-spectrum/pull/8796)
+ * but not yet released, so we work around it here.
+ *
+ * IMPLEMENTATION NOTE: This workaround relies on internal implementation
+ * details of both React Aria and the Google Picker API that may change:
+ *
+ * - React Aria's ariaHideOutside (in @react-aria/overlays) uses a
+ *   MutationObserver to set `inert` on new elements added to the DOM
+ *   outside the modal scope. It exempts elements with the attribute
+ *   `data-react-aria-top-layer`, which is an internal mechanism for
+ *   React Aria's own overlay stacking (e.g. toasts, nested modals).
+ *
+ * - The Google Picker renders its overlay as direct children of <body>
+ *   with the CSS class "picker" (plus obfuscated classes). The more
+ *   recognizable classes "picker-dialog" and "picker-dialog-bg" are
+ *   added asynchronously after initial insertion, so we must match on
+ *   the "picker" class which is present from the start.
+ *
+ * We use our own MutationObserver (started before picker.setVisible) to
+ * catch picker elements the moment they appear, mark them with
+ * `data-react-aria-top-layer` (so React Aria's focus scope, interact-
+ * outside, and aria-hide logic treat them as part of the modal stack),
+ * and remove `inert` in case React Aria's observer fired first.
+ */
+function watchForGooglePickerOverlay(): MutationObserver {
+
+  const isPickerElement = (el: Element) =>
+    el.classList.contains('picker') && el.parentElement === document.body
+
+  const markElement = (el: Element) => {
+    el.setAttribute('data-react-aria-top-layer', 'true')
+    if (el instanceof HTMLElement) {
+      el.inert = false
+    }
+  }
+
+  // Mark any picker elements that already exist (e.g. reopen scenario).
+  document.body.querySelectorAll(':scope > .picker').forEach(markElement)
+
+  const observer = new MutationObserver(mutations => {
+    for (const mutation of mutations) {
+      for (const node of mutation.addedNodes) {
+        if (node instanceof HTMLElement) {
+          if (isPickerElement(node)) {
+            markElement(node)
+          }
+          // Also check children in case they're wrapped.
+          node.querySelectorAll('.picker').forEach(child => {
+            if (isPickerElement(child)) {
+              markElement(child)
+            }
+          })
+        }
+      }
+    }
+  })
+
+  observer.observe(document.body, { childList: true, subtree: true })
+  return observer
+}
+
 const GoogleFileDialogTabView = createReactClassFactory({
   displayName: 'GoogleFileDialogTabView',
 
@@ -125,7 +191,17 @@ const GoogleFileDialogTabView = createReactClassFactory({
       .addView(starredView)
       .setCallback(this.pickerCallback)
       .build()
+    // Must start watching BEFORE setVisible so our MutationObserver can
+    // mark picker elements before React Aria's observer sets `inert`.
+    this.pickerOverlayObserver?.disconnect()
+    this.pickerOverlayObserver = watchForGooglePickerOverlay()
+
     this.picker.setVisible(true)
+  },
+
+  cleanupPickerOverlayObserver() {
+    this.pickerOverlayObserver?.disconnect()
+    this.pickerOverlayObserver = null
   },
 
   pickerCallback(data: any) {
@@ -199,6 +275,8 @@ const GoogleFileDialogTabView = createReactClassFactory({
       // DON'T call cancel so we keep the outer dialog open
       // this.props.onCancel();
     }
+
+    this.cleanupPickerOverlayObserver()
   },
 
   componentDidMount() {
@@ -216,6 +294,7 @@ const GoogleFileDialogTabView = createReactClassFactory({
   componentWillUnmount() {
     this.picker?.setVisible(false)
     this.picker?.dispose()
+    this.cleanupPickerOverlayObserver()
     this.observer.unobserve(this.ref)
   },
 
