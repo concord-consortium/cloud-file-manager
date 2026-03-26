@@ -9,7 +9,8 @@ import {
 }  from './provider-interface'
 import {
   getInitInteractiveMessage, getInteractiveState as _getInteractiveState, IInitInteractive, IInteractiveStateProps,
-  readAttachment, setInteractiveState as _setInteractiveState, writeAttachment, flushStateUpdates
+  readAttachment, setInteractiveState as _setInteractiveState, writeAttachment, flushStateUpdates,
+  log
 } from '@concord-consortium/lara-interactive-api'
 import { SelectInteractiveStateDialogProps } from '../views/select-interactive-state-dialog-view'
 import { isEmptyObject } from '../utils/is-empty-object'
@@ -313,6 +314,14 @@ class InteractiveApiProvider extends ProviderInterface {
         // the second wait caused the tests to fail and this is needed when loading the provider
         // file to get the host domain
         this.initInteractiveMessage = initInteractiveMessage
+
+        console.log("interactive-api-provider: adding client.listen for log events")
+        this.client.listen((event) => {
+          if (event.type === "log") {
+            console.log("interactive-api-provider: received log event from client", event.data)
+            log(event.data.logEvent, event.data.logEventData)
+          }
+        })
 
         Promise.all([
           this.handleRunRemoteEndpoint(initInteractiveMessage),
