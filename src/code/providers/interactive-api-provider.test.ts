@@ -34,6 +34,7 @@ describe('InteractiveApiProvider', () => {
     mockApi.setInteractiveState.mockReset()
     mockApi.readAttachment.mockReset()
     mockApi.writeAttachment.mockReset()
+    mockApi.log.mockReset()
   })
 
   afterEach(() => {
@@ -155,6 +156,36 @@ describe('InteractiveApiProvider', () => {
     expect(mockApi.getInitInteractiveMessage).toHaveBeenCalledTimes(1)
     expect(mockApi.getInteractiveState).toHaveBeenCalledTimes(1)
     expect(mockApi.setInteractiveState).toHaveBeenCalledTimes(2)
+  })
+
+  it('should forward client log events to the interactive API log function', async () => {
+    const mockInitInteractiveMessage: Partial<IRuntimeInitInteractive> = {
+      version: 1,
+      mode: "runtime",
+      classInfoUrl: 'https://concord.org/classInfo',
+      interactive: {
+        id: "mw_interactive_100",
+        name: ""
+      }
+    }
+    mockApi.getInitInteractiveMessage
+      .mockImplementation(() => Promise.resolve(mockInitInteractiveMessage))
+    mockFetch.mockImplementation(() => ({ ok: true, json: () => Promise.resolve("foo") }))
+
+    const client = new CloudFileManagerClient()
+    client.setAppOptions({ providers: [] })
+    const provider = new InteractiveApiProvider({}, client)
+    await provider.isReady()
+
+    expect(mockApi.log).not.toHaveBeenCalled()
+
+    client.log('testEvent', { key: 'value' })
+    expect(mockApi.log).toHaveBeenCalledTimes(1)
+    expect(mockApi.log).toHaveBeenCalledWith('testEvent', { key: 'value' })
+
+    client.log('anotherEvent', 'simpleData')
+    expect(mockApi.log).toHaveBeenCalledTimes(2)
+    expect(mockApi.log).toHaveBeenCalledWith('anotherEvent', 'simpleData')
   })
 
   it('should use runRemoteEndpoint in initInteractive message if available', async () => {
