@@ -311,6 +311,7 @@ class AppView extends React.Component<IAppViewProps, IAppViewState> {
         <ShareDialogView
           currentBaseUrl={client.getCurrentUrl()}
           isShared={client.isShared()}
+          titleClassName="dialog-share"
           sharedDocumentId={client.state?.currentContent?.get('sharedDocumentId')}
           sharedDocumentUrl={client.state?.currentContent?.get('sharedDocumentUrl')}
           settings={ui?.shareDialog || {}}

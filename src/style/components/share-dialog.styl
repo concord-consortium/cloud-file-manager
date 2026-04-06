@@ -9,8 +9,8 @@
     padding 30px
 
   .share-status
-    margin 30px
-    font-size 32px
+    margin 0 30px 30px
+    font-size 22px
     text-align center
 
     a
@@ -22,7 +22,7 @@
     display flex
     flex-direction row
     gap 20px
-    justify-content space-evenly
+    justify-content center
     width 100%
 
     button
@@ -33,30 +33,38 @@
     .share-button-help-sharing
       line-height 16px
 
+  .share-dialog-tabs-view
+    padding 0 15px
+    
   .sharing-tabs
     clear both
-    margin 30px 0 5px 0
+    margin 10px 5px 2.5px
 
     li
+      font-weight 500
       list-style none
       margin 0
       display inline
-      border 1px solid #000
+      border 1px solid dark-blue
       border-bottom none
-      padding 5px
+      border-radius 4px 4px 0 0
+      margin-right 2px
+      padding 5px 10px
       cursor pointer
-    .sharing-tab-embed
-      border-left none
+      &:hover
+        background light-gray-2
+      &:active
+        background light-gray-2
     .sharing-tab-selected
-      background-color #ddd
-      border-bottom 1px solid #ddd
+      background-color light-gray-1
 
   .sharing-tab-contents
     clear both
+    margin 0 15px
     padding 20px
-    background-color #ddd
-    border-top 1px solid #000
-    border-bottom 1px solid #000
+    background-color light-gray-1
+    border 1px solid dark-blue
+    border-radius 0 0 4px 4px
 
     .share-url-container
       align-items center
@@ -65,15 +73,19 @@
       justify-content space-between
 
     .copy-button
-      background-color teal
-      border-radius 5px
-      color white
+      background light-blue-2
+      border 1px solid dark-blue
+      border-radius 4px
+      color dark-gray
+      font-size 14px
       font-weight bold
-      padding 5px 10px
+      padding 5px 15px
       margin-left 10px
 
       &:hover
-        background-color darken(teal, 30%)
+        background-color light-blue-3
+      &:active
+        background-color light-blue-1
 
     .social-icons
       margin-top 10px
@@ -113,16 +125,20 @@
           fill: #0f0b0b;
 
     input
+      border solid 1px dark-blue
+      border-radius 4px
+      font-size 14px
       margin-top 10px
       margin-bottom 10px
       padding 5px
       width 100%
     input[type="checkbox"]
       width unset !important
+      margin-right 5px
       margin-bottom unset
     textarea
-      border 1px solid rgb(118, 118, 118)
-      border-radius 3px
+      border 1px solid dark-blue
+      border-radius 4px
       border-style inset
       margin-top 5px
       width 100%
@@ -143,10 +159,10 @@
   .buttons
     clear both
     float right
-    margin 10px
+    margin 20px 15px 15px
 
     button
-      modal-button()
+      modal-button(14px)
       margin-left 10px
     button.disabled
       background-color #777

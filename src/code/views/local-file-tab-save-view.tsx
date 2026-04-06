@@ -225,8 +225,8 @@ const LocalFileSaveTab: React.FC<LocalFileSaveTabProps> = ({ dialog, close, clie
         )}
       </div>
       <div className="buttons">
+        <button className="cancel" onClick={handleCancel}>{tr("~FILE_DIALOG.CANCEL")}</button>
         {supportsDownloadAttribute ? downloadAnchor : downloadButton}
-        <button onClick={handleCancel}>{tr("~FILE_DIALOG.CANCEL")}</button>
       </div>
     </div>
   )

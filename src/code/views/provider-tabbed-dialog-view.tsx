@@ -35,6 +35,14 @@ interface ProviderTabbedDialogProps {
 
 type DialogConfig = readonly [ECapabilities | null, ReactFactory]
 
+const actionTitleClassMap: Record<string, string> = {
+  openFile: 'dialog-open',
+  saveFile: 'dialog-save',
+  saveFileAs: 'dialog-save',
+  saveSecondaryFileAs: 'dialog-export',
+  createCopy: 'dialog-save',
+}
+
 const ProviderTabbedDialog: React.FC<ProviderTabbedDialogProps> = ({ dialog, close, client }) => {
   const getDialogConfig = (): DialogConfig => {
     switch (dialog.action) {
@@ -80,6 +88,7 @@ const ProviderTabbedDialog: React.FC<ProviderTabbedDialogProps> = ({ dialog, clo
   return (
     <ModalTabbedDialog
       title={tr(dialog.title)}
+      titleClassName={actionTitleClassMap[dialog.action]}
       close={close}
       tabs={tabs}
       selectedTabIndex={selectedTabIndex}

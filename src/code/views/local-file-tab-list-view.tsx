@@ -93,7 +93,7 @@ const LocalFileListTab: React.FC<LocalFileListTabProps> = ({ dialog, close, clie
         <input id="drop-file-input" type="file" onChange={handleChange} />
       </div>
       <div className="buttons">
-        <button onClick={handleCancel}>{tr("~FILE_DIALOG.CANCEL")}</button>
+        <button className="cancel" onClick={handleCancel}>{tr("~FILE_DIALOG.CANCEL")}</button>
       </div>
     </div>
   )

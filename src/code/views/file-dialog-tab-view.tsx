@@ -48,7 +48,7 @@ const FileListFile: React.FC<FileListFileProps> = ({
 
   const getIconClass = () => {
     if (metadata.type === CloudMetadata.Folder) return 'icon-inspectorArrow-collapse'
-    if (metadata.type === CloudMetadata.File) return 'icon-noteTool'
+    if (metadata.type === CloudMetadata.File) return 'file-icon'
     return ''
   }
 
@@ -512,6 +512,7 @@ const FileDialogTab: React.FC<FileDialogTabProps> = ({ dialog, close, client, pr
           listOptions={listOptions}
         />
         <div className="buttons">
+          <button className="cancel" onClick={cancel}>{tr("~FILE_DIALOG.CANCEL")}</button>
           <button
             onClick={() => confirm()}
             disabled={disabled}
@@ -528,7 +529,6 @@ const FileDialogTab: React.FC<FileDialogTabProps> = ({ dialog, close, client, pr
               {tr("~FILE_DIALOG.REMOVE")}
             </button>
           )}
-          <button onClick={cancel}>{tr("~FILE_DIALOG.CANCEL")}</button>
         </div>
       </div>
     )
