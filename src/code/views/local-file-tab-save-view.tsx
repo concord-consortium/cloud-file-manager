@@ -183,7 +183,7 @@ const LocalFileSaveTab: React.FC<LocalFileSaveTabProps> = ({ dialog, close, clie
     <a
       href="#"
       ref={downloadRef as React.RefObject<HTMLAnchorElement>}
-      className={confirmDisabled ? 'disabled' : 'default'}
+      className={confirmDisabled ? 'disabled' : undefined}
       download={downloadFilename}
       onContextMenu={handleContextMenu}
     >
@@ -195,7 +195,7 @@ const LocalFileSaveTab: React.FC<LocalFileSaveTabProps> = ({ dialog, close, clie
   const downloadButton = (
     <button
       ref={downloadRef as React.RefObject<HTMLButtonElement>}
-      className={confirmDisabled ? 'disabled' : 'default'}
+      className={confirmDisabled ? 'disabled' : undefined}
     >
       {tr('~FILE_DIALOG.DOWNLOAD')}
     </button>

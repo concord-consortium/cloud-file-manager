@@ -49,7 +49,7 @@ const RenameDialogView: React.FC<RenameDialogViewProps> = ({ filename: initialFi
         <div className="buttons">
           <button className="cancel" onClick={close}>{tr('~RENAME_DIALOG.CANCEL')}</button>
           <button
-            className={trimmedFilename.length === 0 ? 'disabled' : 'default'}
+            className={trimmedFilename.length === 0 ? 'disabled' : undefined}
             disabled={trimmedFilename.length === 0}
             onClick={handleRename}
           >
