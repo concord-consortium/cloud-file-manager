@@ -38,8 +38,9 @@ tab-border-radius = 5px
 
         .modal-dialog-title
           align-items center
-          background url(../../img/file-open-icon.svg) no-repeat 5px 5px
           background-color light-blue-1
+          background-position 5px 5px
+          background-repeat no-repeat
           background-size 24px 24px
           border-radius 4px 4px 0 0
           color dark-gray
@@ -47,17 +48,24 @@ tab-border-radius = 5px
           label-font(weight: 500)
           line-height 1
           height 34px
-          padding 10px 10px 10px 34px
+          padding 10px
           text-align left
 
           &.dialog-import
             background-image url(../../img/file-import-icon.svg)
+            padding-left 34px
+          &.dialog-open
+            background-image url(../../img/file-open-icon.svg)
+            padding-left 34px
           &.dialog-rename
             background-image url(../../img/file-rename-icon.svg)
+            padding-left 34px
           &.dialog-save
             background-image url(../../img/file-save-icon.svg)
+            padding-left 34px
           &.dialog-share
             background-image url(../../img/file-shared-view-icon.svg)
+            padding-left 34px
 
           .modal-dialog-title-close
             background url(../../img/close-modal-icon.svg) no-repeat center

@@ -47,7 +47,7 @@ describe('RenameDialogView', () => {
       />
     )
 
-    const renameButton = document.querySelector('.rename-dialog .buttons button:last-child') as HTMLButtonElement
+    const renameButton = screen.getByRole('button', { name: /rename/i })
     await userEvent.click(renameButton)
     expect(mockCallback).toHaveBeenCalledWith('test.json')
     expect(mockClose).toHaveBeenCalledTimes(1)
@@ -64,7 +64,7 @@ describe('RenameDialogView', () => {
       />
     )
 
-    const renameButton = document.querySelector('.rename-dialog .buttons button:last-child') as HTMLButtonElement
+    const renameButton = screen.getByRole('button', { name: /rename/i })
     await userEvent.click(renameButton)
     expect(mockCallback).not.toHaveBeenCalled()
     expect(mockClose).not.toHaveBeenCalled()
@@ -81,7 +81,7 @@ describe('RenameDialogView', () => {
       />
     )
 
-    const renameButton = document.querySelector('.rename-dialog .buttons button:last-child') as HTMLButtonElement
+    const renameButton = screen.getByRole('button', { name: /rename/i })
     await userEvent.click(renameButton)
     expect(mockCallback).not.toHaveBeenCalled()
     expect(mockClose).not.toHaveBeenCalled()
@@ -141,13 +141,13 @@ describe('RenameDialogView', () => {
 
   it('should have disabled attribute on Rename button when filename is empty', () => {
     render(<RenameDialogView filename="" />)
-    const renameButton = document.querySelector('.rename-dialog .buttons button:last-child') as HTMLButtonElement
+    const renameButton = screen.getByRole('button', { name: /rename/i })
     expect(renameButton).toBeDisabled()
   })
 
   it('should have default class on Rename button when filename is valid', () => {
     render(<RenameDialogView filename="test.json" />)
-    const renameButton = document.querySelector('.rename-dialog .buttons button:last-child')
+    const renameButton = screen.getByRole('button', { name: /rename/i })
     expect(renameButton).toHaveClass('default')
   })
 
@@ -155,7 +155,7 @@ describe('RenameDialogView', () => {
     render(
       <RenameDialogView filename="" />
     )
-    const renameButton = document.querySelector('.rename-dialog .buttons button:last-child')
+    const renameButton = screen.getByRole('button', { name: /rename/i })
     expect(renameButton).toHaveClass('disabled')
   })
 
@@ -163,7 +163,7 @@ describe('RenameDialogView', () => {
     render(
       <RenameDialogView filename="test.json" />
     )
-    const renameButton = document.querySelector('.rename-dialog .buttons button:last-child')
+    const renameButton = screen.getByRole('button', { name: /rename/i })
     expect(renameButton).not.toHaveClass('disabled')
   })
 })
