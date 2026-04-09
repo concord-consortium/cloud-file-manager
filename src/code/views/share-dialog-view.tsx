@@ -277,7 +277,7 @@ export default class ShareDialogView extends React.Component<IShareDialogProps, 
             />}
 
           <div className='buttons'>
-            <button onClick={this.props.close}>
+            <button className="close" onClick={this.props.close}>
               {translate('~SHARE_DIALOG.CLOSE')}
             </button>
           </div>
