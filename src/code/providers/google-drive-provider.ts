@@ -399,7 +399,7 @@ const GoogleDriveAuthorizationDialog = createReactClassFactory({
   render() {
     const messageMap: Record<ELoadState, React.ReactChild> = {
       [ELoadState.notLoaded]: tr("~GOOGLE_DRIVE.CONNECTING_MESSAGE"),
-      [ELoadState.loaded]: button({ className: 'google-login-button', onClick: this.authenticate },
+      [ELoadState.loaded]: button({ className: 'google-login-button', autoFocus: true, onClick: this.authenticate },
         span({ className: 'google-g-logo', 'aria-hidden': true }),
         tr("~GOOGLE_DRIVE.LOGIN_BUTTON_LABEL")),
       [ELoadState.errored]: tr("~GOOGLE_DRIVE.ERROR_CONNECTING_MESSAGE"),

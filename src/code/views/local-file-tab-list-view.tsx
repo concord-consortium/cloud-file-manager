@@ -16,6 +16,7 @@ interface LocalFileListTabProps {
 const LocalFileListTab: React.FC<LocalFileListTabProps> = ({ dialog, close, client, provider }) => {
   const [hover, setHover] = useState(false)
   const dropZoneRef = useRef<HTMLDivElement>(null)
+  const dropFileInputRef = useRef<HTMLInputElement>(null)
 
   const openFile = (file: File, via: string) => {
     const metadata = new CloudMetadata({
@@ -54,6 +55,11 @@ const LocalFileListTab: React.FC<LocalFileListTabProps> = ({ dialog, close, clie
     }
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
+  useEffect(() => {
+    // focus file input on mount so user can immediately use keyboard to select file if desired
+    dropFileInputRef.current?.focus()
+  }, [])
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { files } = e.target
     if (!files) return
@@ -90,7 +96,7 @@ const LocalFileListTab: React.FC<LocalFileListTabProps> = ({ dialog, close, clie
         onDragLeave={handleDragLeave}
       >
         <label htmlFor="drop-file-input">{tr("~LOCAL_FILE_DIALOG.DROP_FILE_HERE")}</label>
-        <input id="drop-file-input" type="file" onChange={handleChange} />
+        <input ref={dropFileInputRef} id="drop-file-input" type="file" onChange={handleChange} />
       </div>
       <div className="buttons">
         <button className="cancel" onClick={handleCancel}>{tr("~FILE_DIALOG.CANCEL")}</button>
