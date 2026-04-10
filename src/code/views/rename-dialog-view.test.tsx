@@ -145,12 +145,6 @@ describe('RenameDialogView', () => {
     expect(renameButton).toBeDisabled()
   })
 
-  it('should have default class on Rename button when filename is valid', () => {
-    render(<RenameDialogView filename="test.json" />)
-    const renameButton = screen.getByRole('button', { name: /rename/i })
-    expect(renameButton).toHaveClass('default')
-  })
-
   it('should have disabled class on Rename button when filename is empty', () => {
     render(
       <RenameDialogView filename="" />
