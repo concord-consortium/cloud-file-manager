@@ -41,6 +41,7 @@
   .sharing-tabs
     clear both
     margin 10px 5px 2px
+    padding-left 10px
 
     li
       font-size 14px
@@ -58,6 +59,9 @@
         background light-gray-2
       &:active
         background light-gray-2
+      &:focus-visible
+        outline 2px solid focus-blue
+        outline-offset -2px
     .sharing-tab-selected
       background-color light-gray-1
 
@@ -105,6 +109,10 @@
         position: relative;
         overflow: hidden;
         vertical-align: middle;
+
+        &:focus-visible
+          outline none
+          box-shadow 0 0 0 2px focus-blue
 
         .social-container
           position: absolute;
