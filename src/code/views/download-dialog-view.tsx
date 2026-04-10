@@ -80,6 +80,7 @@ const DownloadDialogView: React.FC<DownloadDialogViewProps> = ({ filename: initi
           </div>
         )}
         <div className="buttons">
+          <button className="cancel" onClick={close}>{tr('~DOWNLOAD_DIALOG.CANCEL')}</button>
           <a
             href="#"
             ref={downloadRef}
@@ -89,7 +90,6 @@ const DownloadDialogView: React.FC<DownloadDialogViewProps> = ({ filename: initi
           >
             {tr('~DOWNLOAD_DIALOG.DOWNLOAD')}
           </a>
-          <button onClick={close}>{tr('~DOWNLOAD_DIALOG.CANCEL')}</button>
         </div>
       </div>
     </ModalDialogView>

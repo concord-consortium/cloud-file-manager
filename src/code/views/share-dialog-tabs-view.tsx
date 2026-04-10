@@ -153,24 +153,54 @@ interface IShareDialogTabsProps {
 export const ShareDialogTabsView: React.FC<IShareDialogTabsProps> = ({
               tabSelected, embedUrl, linkUrl, interactiveApi, onSelectTab, onCopyClick, ...others
 }) => {
+  const tabs: { id: ShareDialogTab, label: string, testId: string }[] = [
+    { id: 'link', label: translate("~SHARE_DIALOG.LINK_TAB"), testId: 'sharing-tab-link' },
+    { id: 'embed', label: translate("~SHARE_DIALOG.EMBED_TAB"), testId: 'sharing-tab-embed' },
+  ]
+  if (interactiveApi) {
+    tabs.push({ id: 'api', label: 'Activity Player', testId: 'sharing-tab-api' })
+  }
+
+  const handleTabKeyDown = (e: React.KeyboardEvent, tab: ShareDialogTab) => {
+    const currentIndex = tabs.findIndex(t => t.id === tab)
+    let newIndex = -1
+
+    if (e.key === 'ArrowRight') {
+      newIndex = (currentIndex + 1) % tabs.length
+    } else if (e.key === 'ArrowLeft') {
+      newIndex = (currentIndex - 1 + tabs.length) % tabs.length
+    } else if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault()
+      onSelectTab(tab)
+      return
+    }
+
+    if (newIndex >= 0) {
+      e.preventDefault()
+      onSelectTab(tabs[newIndex].id)
+      const tabEl = document.querySelector(`[data-testid='${tabs[newIndex].testId}']`) as HTMLElement
+      tabEl?.focus()
+    }
+  }
+
   return (
     <div data-testid='share-dialog-tabs-view'>
-      <ul className='sharing-tabs'>
-        <li className={classNames('sharing-tab', 'sharing-tab-link', { 'sharing-tab-selected': tabSelected === 'link' })}
-            style={{ marginLeft: 10 }} onClick={() => onSelectTab('link')} data-testid='sharing-tab-link'>
-          {translate("~SHARE_DIALOG.LINK_TAB")}
-        </li>
-        <li className={classNames('sharing-tab', 'sharing-tab-embed', { 'sharing-tab-selected': tabSelected === 'embed' })}
-            onClick={() => onSelectTab('embed')} data-testid='sharing-tab-embed'>
-          {translate("~SHARE_DIALOG.EMBED_TAB")}
-        </li>
-        {interactiveApi &&
-          <li className={classNames('sharing-tab', 'sharing-tab-api', { 'sharing-tab-selected': tabSelected === 'api' })}
-              onClick={() => onSelectTab('api')} data-testid='sharing-tab-api'>
-            Activity Player
-          </li>}
+      <ul className='sharing-tabs' role='tablist'>
+        {tabs.map((tab) => (
+          <li key={tab.id}
+            aria-selected={tabSelected === tab.id}
+            className={classNames('sharing-tab', `sharing-tab-${tab.id}`, { 'sharing-tab-selected': tabSelected === tab.id })}
+            data-testid={tab.testId}
+            role='tab'
+            tabIndex={tabSelected === tab.id ? 0 : -1}
+            onClick={() => onSelectTab(tab.id)}
+            onKeyDown={(e) => handleTabKeyDown(e, tab.id)}
+          >
+            {tab.label}
+          </li>
+        ))}
       </ul>
-      <div className="sharing-tab-contents">
+      <div className="sharing-tab-contents" role="tabpanel">
         {(() => {
           switch (tabSelected) {
             case 'link':

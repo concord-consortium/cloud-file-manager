@@ -11,6 +11,7 @@ interface TabInfo {
 
 interface ModalTabbedDialogViewProps {
   title?: string
+  titleClassName?: string
   tabs: TabInfo[]
   selectedTabIndex?: number
   close?: () => void
@@ -18,12 +19,13 @@ interface ModalTabbedDialogViewProps {
 
 const ModalTabbedDialogView: React.FC<ModalTabbedDialogViewProps> = ({
   title,
+  titleClassName,
   tabs,
   selectedTabIndex,
   close
 }) => {
   return (
-    <ModalDialogView title={title} close={close}>
+    <ModalDialogView title={title} titleClassName={titleClassName} close={close}>
       <TabbedPanelView tabs={tabs} selectedTabIndex={selectedTabIndex} />
     </ModalDialogView>
   )

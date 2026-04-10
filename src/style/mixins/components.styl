@@ -1,21 +1,25 @@
 modal-button($thickness=15px)
   line-height normal
-  padding $thickness
-  label-font(weight:bold, size:$thickness)
-  color #fff
-  background-color teal
-  border-radius(10px)
-  border 0
+  padding 5px 15px
+  label-font(weight:500, size:$thickness)
+  color dark-gray
+  background-color light-blue-2
+  border solid 1px dark-blue
+  border-radius(4px)
+  box-sizing border-box
+  display inline-block
+  height 30px
+
+  &.cancel, &.close
+    background #fff
   &:hover
-    background-color darken(teal, 30%)
+    background-color light-blue-3
+  &:active
+    background-color light-blue-1
   &:focus-visible
     outline 2px solid focus-blue
     outline-offset 2px
     box-shadow 0 0 0 2px white
-  &.default
-    background-color darken(teal, 20%)
-    &:hover
-      background-color darken(teal, 40%)
 
 .clickable
   cursor: pointer

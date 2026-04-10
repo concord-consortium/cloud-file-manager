@@ -25,6 +25,7 @@ interface IShareDialogProps {
   sharedDocumentUrl?: string
   settings?: IShareDialogPropsSettings
   enableLaraSharing?: boolean
+  titleClassName?: string
   onAlert: (message: string, title?: string) => void
   onToggleShare: (callback: (err: string | null, sharedContentId?: string) => void) => void
   onUpdateShare: () => void
@@ -239,13 +240,13 @@ export default class ShareDialogView extends React.Component<IShareDialogProps, 
   }
 
   render() {
-    const { isShared } = this.props
+    const { isShared, titleClassName } = this.props
     const { isLoadingShared } = this.state
     const shareUrl = this.getShareLink()
     const embedUrl = this.getEmbed()
     const sharing = isShared || (shareUrl != null)
     return (
-      <ModalDialogView title={translate('~DIALOG.SHARED')} close={this.props.close}>
+      <ModalDialogView title={translate('~DIALOG.SHARED')} titleClassName={titleClassName} close={this.props.close}>
         <div className='share-dialog' data-testid='share-dialog'>
           <div className='share-top-dialog'>
             {isLoadingShared
@@ -276,7 +277,7 @@ export default class ShareDialogView extends React.Component<IShareDialogProps, 
             />}
 
           <div className='buttons'>
-            <button onClick={this.props.close}>
+            <button className="close" onClick={this.props.close}>
               {translate('~SHARE_DIALOG.CLOSE')}
             </button>
           </div>

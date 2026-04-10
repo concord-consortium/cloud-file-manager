@@ -15,16 +15,31 @@
 .google-drive-auth
   .google-drive-concord-logo
     background url("../../img/google-drive-logo.png") no-repeat top left
+    background-size 100%
     width 351px
     height 113px
     padding 0
     margin 50px 35px 0 35px
 
   .google-drive-footer
-    text-align center
-    color #000
+    color dark-gray
+    display flex
+    justify-content center
+
     button
-      modal-button()
+      modal-button(14px)
+    .google-login-button
+      align-items center
+      background #fff
+      display flex
+      gap 10px
+      padding 5px 10px
+      .google-g-logo
+        background url(../../img/google-g-logo.svg) no-repeat center
+        background-size 24px 24px
+        display inline-block
+        width 24px
+        height 24px
 
   .google-drive-missing-scopes
     div
@@ -41,6 +56,8 @@
     text-align center
     font-size 14px
     color #000
+    &:hover
+      background light-blue-3
     &:focus-within
       border-color focus-blue
       outline 2px solid focus-blue
@@ -56,7 +73,7 @@
       bottom 0
       opacity 0
   .dropHover
-    background-color #FFFBCC
+    background-color light-blue-1
 
 .urlImport
   .urlDropArea
@@ -74,7 +91,7 @@
       outline-offset 2px
       box-shadow 0 0 0 2px white
   .dropHover
-    background-color #FFFBCC
+    background-color light-blue-4
   input
     width 100%
     padding 5px
@@ -98,6 +115,7 @@
 .googleFileDialogTab
   .google-drive-concord-logo
     background url("../../img/google-drive-logo.png") no-repeat top left
+    background-size 100%
     width 351px
     height 113px
     padding 0

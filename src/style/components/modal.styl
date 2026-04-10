@@ -34,25 +34,51 @@ tab-border-radius = 5px
       .modal-dialog-wrapper
         max-width dialog-width
         background-color #fff
-        border 1px solid #aaa
+        border-radius 4px;
 
         .modal-dialog-title
-          label-font()
-          color #fff
-          background-color #0b4e5d
+          align-items center
+          background-color light-blue-1
+          background-position 5px 5px
+          background-repeat no-repeat
+          background-size 24px 24px
+          border-radius 4px 4px 0 0
+          color dark-gray
+          display flex
+          label-font(weight: 500)
+          line-height 1
+          height 34px
           padding 10px
-          text-align center
+          text-align left
+
+          &.dialog-import
+            background-image url(../../img/file-import-icon.svg)
+            padding-left 34px
+          &.dialog-open
+            background-image url(../../img/file-open-icon.svg)
+            padding-left 34px
+          &.dialog-rename
+            background-image url(../../img/file-rename-icon.svg)
+            padding-left 34px
+          &.dialog-save
+            background-image url(../../img/file-save-icon.svg)
+            padding-left 34px
+          &.dialog-share
+            background-image url(../../img/file-shared-view-icon.svg)
+            padding-left 34px
 
           .modal-dialog-title-close
-            float right
-            cursor pointer
-            background none
+            background url(../../img/close-modal-icon.svg) no-repeat center
+            background-size 24px 24px
             border none
+            cursor pointer
+            height 24px
+            margin 0 -5px 0 auto
             padding 0
-            color #fff
-            font-size 14px
+            width 24px
 
         .modal-dialog-blocking-message
+          border-radius 0 0 4px 4px
           padding 20px
           min-width 400px
           text-align center
@@ -60,6 +86,9 @@ tab-border-radius = 5px
 
           button
             modal-button()
+        
+        .modal-dialog-workspace
+          border-radius 0 0 4px 4px
 
 .modal-dialog-alert
   blenderbox-modal-labels()

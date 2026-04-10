@@ -329,7 +329,7 @@ const GoogleFileDialogTabView = createReactClassFactory({
       )),
       this.renderUserInfo(),
       (div({ className: 'buttons' },
-        (button({ onClick: this.cancel }, tr("~FILE_DIALOG.CANCEL")))
+        (button({ onClick: this.cancel, className: 'cancel' }, tr("~FILE_DIALOG.CANCEL")))
       ))
     ))
   },
@@ -347,7 +347,7 @@ const GoogleFileDialogTabView = createReactClassFactory({
       )),
       this.renderUserInfo(),
       (div({ className: 'buttons' },
-        (button({ onClick: this.cancel }, (tr("~FILE_DIALOG.CANCEL"))))
+        (button({ onClick: this.cancel, className: 'cancel' }, (tr("~FILE_DIALOG.CANCEL"))))
       ))
     ))
   },
@@ -399,11 +399,15 @@ const GoogleDriveAuthorizationDialog = createReactClassFactory({
   render() {
     const messageMap: Record<ELoadState, React.ReactChild> = {
       [ELoadState.notLoaded]: tr("~GOOGLE_DRIVE.CONNECTING_MESSAGE"),
-      [ELoadState.loaded]: button({ onClick: this.authenticate }, (tr("~GOOGLE_DRIVE.LOGIN_BUTTON_LABEL"))),
+      [ELoadState.loaded]: button({ className: 'google-login-button', autoFocus: true, onClick: this.authenticate },
+        span({ className: 'google-g-logo', 'aria-hidden': true }),
+        tr("~GOOGLE_DRIVE.LOGIN_BUTTON_LABEL")),
       [ELoadState.errored]: tr("~GOOGLE_DRIVE.ERROR_CONNECTING_MESSAGE"),
       [ELoadState.missingScopes]: div({ className: 'google-drive-missing-scopes' },
         div({}, tr("~GOOGLE_DRIVE.MISSING_SCOPES_MESSAGE")),
-        div({}, button({ onClick: this.authenticate }, (tr("~GOOGLE_DRIVE.LOGIN_BUTTON_LABEL"))))
+        div({}, button({ className: 'google-login-button', onClick: this.authenticate },
+          span({ className: 'google-g-logo', 'aria-hidden': true }),
+          tr("~GOOGLE_DRIVE.LOGIN_BUTTON_LABEL")))
       ),
     }
     const contents = messageMap[this.state.apiLoadState as ELoadState] || "An unknown error occurred!"
