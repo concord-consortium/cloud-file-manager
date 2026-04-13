@@ -188,6 +188,8 @@ export const ShareDialogTabsView: React.FC<IShareDialogTabsProps> = ({
       <ul className='sharing-tabs' role='tablist'>
         {tabs.map((tab) => (
           <li key={tab.id}
+            id={`${tab.id}-tab`}
+            aria-controls={`${tab.id}-tabpanel`}
             aria-selected={tabSelected === tab.id}
             className={classNames('sharing-tab', `sharing-tab-${tab.id}`, { 'sharing-tab-selected': tabSelected === tab.id })}
             data-testid={tab.testId}
@@ -200,7 +202,8 @@ export const ShareDialogTabsView: React.FC<IShareDialogTabsProps> = ({
           </li>
         ))}
       </ul>
-      <div className="sharing-tab-contents" role="tabpanel">
+      <div id={`${tabSelected}-tabpanel`} className="sharing-tab-contents" role="tabpanel"
+           aria-labelledby={`${tabSelected}-tab`} tabIndex={0}>
         {(() => {
           switch (tabSelected) {
             case 'link':
