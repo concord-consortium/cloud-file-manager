@@ -203,7 +203,7 @@ export const ShareDialogTabsView: React.FC<IShareDialogTabsProps> = ({
         ))}
       </ul>
       <div id={`${tabSelected}-tabpanel`} className="sharing-tab-contents" role="tabpanel"
-           aria-labelledby={`${tabSelected}-tab`} tabIndex={0}>
+           aria-labelledby={`${tabSelected}-tab`}>
         {(() => {
           switch (tabSelected) {
             case 'link':
