@@ -105,7 +105,6 @@
     "build:production": "npm run clean && NODE_ENV=production webpack",
     "build:codap": "npm run clean && cross-env-shell NODE_ENV=production dest=../codap/apps/dg/resources/cloud-file-manager codap=1 noGlobals=1 noMap=1 'webpack && mv $dest/js/app.js $dest/js/app.js.ignore'",
     "build:codap:development": "npm run clean && cross-env-shell NODE_ENV=development dest=../codap/apps/dg/resources/cloud-file-manager codap=1 noGlobals=1 noMap=1 'webpack && mv $dest/js/app.js $dest/js/app.js.ignore'",
-    "prepare": "test -d dist || npm run build:all",
     "prepublishOnly": "npm run build:all",
     "publish:npm:latest": "npm publish --access public --tag latest",
     "publish:npm:latest:preview": "npm publish --access public --tag latest --dry-run",
