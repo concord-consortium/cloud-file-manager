@@ -18,7 +18,7 @@ export const ShareDialogStatusView: React.FC<IProps> = ({ isSharing, previewLink
         </strong>
       </div>
       <div className='share-buttons'>
-        <button onClick={isSharing ? onUpdateShare : onToggleShare} data-testid='share-button-element'>
+        <button autoFocus onClick={isSharing ? onUpdateShare : onToggleShare} data-testid='share-button-element'>
           {translate(isSharing ? "~SHARE_DIALOG.UPDATE_SHARING" : "~SHARE_DIALOG.ENABLE_SHARING")}
         </button>
         <div className={isSharing ? 'share-button-help-sharing' : 'share-button-help-not-sharing'}>

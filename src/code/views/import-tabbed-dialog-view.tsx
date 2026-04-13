@@ -66,6 +66,7 @@ const ImportTabbedDialog: React.FC<ImportTabbedDialogProps> = ({ dialog, close, 
   return (
     <ModalTabbedDialog
       title={tr("~DIALOG.IMPORT_DATA")}
+      titleClassName="dialog-import"
       close={close}
       tabs={tabs}
       selectedTabIndex={0}

@@ -67,10 +67,10 @@ const UrlTab: React.FC<UrlTabProps> = ({ dialog, close, client }) => {
       >
         {tr("~URL_TAB.DROP_URL_HERE")}
       </div>
-      <input ref={urlRef} placeholder="URL" />
+      <input type="text" ref={urlRef} placeholder="URL" />
       <div className="buttons">
+        <button className="cancel" onClick={handleCancel}>{tr("~FILE_DIALOG.CANCEL")}</button>
         <button onClick={handleImport}>{tr("~URL_TAB.IMPORT")}</button>
-        <button onClick={handleCancel}>{tr("~FILE_DIALOG.CANCEL")}</button>
       </div>
     </div>
   )
