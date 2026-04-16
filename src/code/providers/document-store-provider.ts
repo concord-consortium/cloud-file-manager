@@ -17,6 +17,11 @@ import ReactDOMFactories from 'react-dom-factories'
 import { createReactClassFactory } from '../create-react-factory'
 const {div, button, span} = ReactDOMFactories
 
+const withTestId = (props: Record<string, any>, testId: string) => ({
+  ...props,
+  'data-testid': testId
+} as any)
+
 import getQueryParam  from '../utils/get-query-param'
 import getHashParam  from '../utils/get-hash-param'
 import tr  from '../utils/translate'
@@ -31,6 +36,7 @@ import { CloudFileManagerClient } from '../client'
 import DocumentStoreUrl  from './document-store-url'
 import PatchableContent  from './patchable-content'
 import { reportError } from '../utils/report-error'
+import { providerTestIdName } from '../utils/testids'
 
 const DocumentStoreAuthorizationDialog = createReactClassFactory({
   displayName: 'DocumentStoreAuthorizationDialog',
@@ -50,13 +56,15 @@ const DocumentStoreAuthorizationDialog = createReactClassFactory({
   },
 
   render() {
-    return (div({className: 'document-store-auth'},
-      (div({className: 'document-store-concord-logo'}, '')),
+    return (div(withTestId({className: 'document-store-auth'}, 'cfm-document-store-auth-panel'),
+      (div(withTestId({className: 'document-store-concord-logo'}, 'cfm-document-store-auth-logo'), '')),
       (div({className: 'document-store-footer'},
         this.state.docStoreAvailable ?
-          (button({onClick: this.authenticate}, 'Login to Concord'))
+          (button(withTestId({
+            onClick: this.authenticate
+          }, 'cfm-document-store-auth-login-button'), 'Login to Concord'))
         :
-          'Trying to log into Concord...'
+          div(withTestId({}, 'cfm-document-store-auth-connecting'), 'Trying to log into Concord...')
       ))
     ))
   }
@@ -244,7 +252,8 @@ class DocumentStoreProvider extends ProviderInterface {
 
   renderUser() {
     if (this.user) {
-      return (span({}, (span({className: 'document-store-icon'})), this.user.name))
+      const providerName = providerTestIdName(DocumentStoreProvider.Name)
+      return (span(withTestId({}, `cfm-menu-bar-user-${providerName}`), (span({className: 'document-store-icon'})), this.user.name))
     } else {
       return null
     }
@@ -552,6 +561,7 @@ class DocumentStoreProvider extends ProviderInterface {
       yesTitle: tr('~CONCORD_CLOUD_DEPRECATION.CONFIRM_SAVE_ELSEWHERE'),
       noTitle: tr('~CONCORD_CLOUD_DEPRECATION.CONFIRM_DO_IT_LATER'),
       hideNoButton: deprecationPhase >= 3,
+      confirmKind: 'concord-cloud-deprecation',
       callback: () => {
         this.disableForNextSave = true
         return this.client.saveFileAsDialog(content)

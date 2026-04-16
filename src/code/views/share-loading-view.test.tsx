@@ -7,6 +7,6 @@ describe('ShareLoadingView', () => {
     render(
       <ShareLoadingView />
     )
-    expect(screen.getByTestId('share-loading-view')).toBeInTheDocument()
+    expect(screen.getByTestId('cfm-dialog-share-loading')).toBeInTheDocument()
   })
 })

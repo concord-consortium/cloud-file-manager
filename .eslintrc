@@ -101,7 +101,9 @@
     "react/display-name": "off",
     "react/react-in-jsx-scope": "off",
     "react/prop-types": "off", // TODO: FIX THIS
-    "react/no-find-dom-node": "off" // TODO: Fix this!!!
+    "react/no-find-dom-node": "off", // TODO: Fix this!!!
+    "cfm-require-testid": "error",
+    "cfm-require-confirmkind": "error"
   },
   "overrides": [
     { // rules specific to Jest tests

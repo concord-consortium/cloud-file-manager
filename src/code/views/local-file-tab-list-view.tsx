@@ -87,19 +87,34 @@ const LocalFileListTab: React.FC<LocalFileListTabProps> = ({ dialog, close, clie
   const dropClass = `dropArea${hover ? ' dropHover' : ''}`
 
   return (
-    <div className="dialogTab localFileLoad">
+    <div className="dialogTab localFileLoad" data-testid="cfm-local-file-load-panel">
       {/* 'drop' event handler installed as DOM event handler in useEffect() */}
       <div
         ref={dropZoneRef}
         className={dropClass}
+        data-testid="cfm-local-file-load-panel-drop-area"
         onDragEnter={handleDragEnter}
         onDragLeave={handleDragLeave}
       >
-        <label htmlFor="drop-file-input">{tr("~LOCAL_FILE_DIALOG.DROP_FILE_HERE")}</label>
-        <input ref={dropFileInputRef} id="drop-file-input" type="file" onChange={handleChange} />
+        <label htmlFor="drop-file-input" data-testid="cfm-local-file-load-panel-drop-label">
+          {tr("~LOCAL_FILE_DIALOG.DROP_FILE_HERE")}
+        </label>
+        <input
+          ref={dropFileInputRef}
+          id="drop-file-input"
+          type="file"
+          data-testid="cfm-local-file-load-panel-file-input"
+          onChange={handleChange}
+        />
       </div>
       <div className="buttons">
-        <button className="cancel" onClick={handleCancel}>{tr("~FILE_DIALOG.CANCEL")}</button>
+        <button
+          className="cancel"
+          data-testid="cfm-local-file-load-panel-cancel-button"
+          onClick={handleCancel}
+        >
+          {tr("~FILE_DIALOG.CANCEL")}
+        </button>
       </div>
     </div>
   )

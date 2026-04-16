@@ -3,6 +3,7 @@ import { CFMUIMenuOptions } from '../app-options'
 import tr, { getCurrentLanguage, getSpecialLangFontClassName } from '../utils/translate'
 import DropdownView from './dropdown-view'
 import { ProviderInterface } from '../providers/provider-interface'
+import { sanitizeMenuItemKey } from '../utils/testids'
 
 interface FileStatus {
   type: string
@@ -279,8 +280,10 @@ const MenuBar: React.FC<MenuBarProps> = ({
         const label = option.label || option.langCode.toUpperCase()
         if (option.flag) { className = `flag flag-${option.flag}` }
         return {
+          key: option.langCode,
           content: <span className="lang-option"><div className={className} />{label}</span>,
-          action: () => langChanged(option.langCode)
+          action: () => langChanged(option.langCode),
+          testId: `cfm-menuitem-language-${sanitizeMenuItemKey(option.langCode)}`
         }
       })
 
@@ -306,6 +309,9 @@ const MenuBar: React.FC<MenuBarProps> = ({
         items={menuItems}
         menuAnchor={menuAnchor}
         triggerProps={{ 'data-toolbar-item': true }}
+        menuName="language"
+        triggerTestId="cfm-menu-language-button"
+        menuListTestId="cfm-menu-language"
       />
     )
   }
@@ -326,6 +332,9 @@ const MenuBar: React.FC<MenuBarProps> = ({
           <span className="menu-label">{menuOptions.menuAnchorName}</span>
         </>}
         subMenuExpandIcon={menuBarOptions.subMenuExpandIcon}
+        menuName="file"
+        triggerTestId="cfm-menu-file"
+        menuListTestId="cfm-menu-file-list"
       />
     )
   }
@@ -335,6 +344,7 @@ const MenuBar: React.FC<MenuBarProps> = ({
     const langClass = getSpecialLangFontClassName(currentLang)
     const menuBarOptions = client.appOptions.ui.menuBar || {}
     const menuKey = `other-menu-${menuOptions.className || ''}-${menuOptions.menuAnchorName || ''}`
+    const menuName = sanitizeMenuItemKey(menuOptions.className || menuOptions.menuAnchorName || 'menu')
 
     return (
       <DropdownView
@@ -348,6 +358,8 @@ const MenuBar: React.FC<MenuBarProps> = ({
         </>}
         className={menuOptions.className}
         subMenuExpandIcon={menuBarOptions.subMenuExpandIcon}
+        customMenuItems={true}
+        triggerTestId={`cfm-menu-${menuName}`}
       />
     )
   }
@@ -362,6 +374,7 @@ const MenuBar: React.FC<MenuBarProps> = ({
     <div
       ref={menuBarRef}
       className={`menu-bar ${options.clientToolBarPosition === "left" ? 'toolbar-position-left' : ''} ${langClass}`}
+      data-testid="cfm-menu-bar"
       role="toolbar"
       aria-label={tr("~MENUBAR.TOOLBAR_LABEL")}
       onKeyDown={handleToolbarKeyDown}
@@ -373,6 +386,7 @@ const MenuBar: React.FC<MenuBarProps> = ({
           {editingFilename ? (
             <input
               ref={filenameRef}
+              data-testid="cfm-menu-bar-filename-input"
               aria-label={tr("~MENUBAR.RENAME_DOCUMENT")}
               value={editableFilename}
               onChange={filenameChanged}
@@ -385,6 +399,7 @@ const MenuBar: React.FC<MenuBarProps> = ({
               ref={filenameButtonRef}
               data-toolbar-item
               className="content-filename"
+              data-testid="cfm-menu-bar-filename"
               aria-label={tr("~MENUBAR.RENAME_FILENAME", { filename })}
               onClick={filenameClicked}
               onKeyDown={filenameKeyDown}
@@ -393,7 +408,12 @@ const MenuBar: React.FC<MenuBarProps> = ({
             </button>
           )}
           {fileStatus && (
-            <span className={`menu-bar-file-status ${fileStatus.type} ${langClass}`}>{fileStatus.message}</span>
+            <span
+              className={`menu-bar-file-status ${fileStatus.type} ${langClass}`}
+              data-testid="cfm-menu-bar-status"
+            >
+              {fileStatus.message}
+            </span>
           )}
         </div>
       </div>
@@ -401,6 +421,7 @@ const MenuBar: React.FC<MenuBarProps> = ({
         <button
           className={`app-logo-wrapper ${client.appOptions.appFocusRingIcon ? 'has-focus-ring-icon' : ''}`}
           data-toolbar-item
+          data-testid="cfm-menu-bar-app-button"
           aria-label={client.appOptions.appName ? tr("~MENUBAR.ABOUT_APP", { appName: client.appOptions.appName }) : tr("~MENUBAR.ABOUT")}
           onClick={infoClicked}
           onKeyDown={infoKeyDown}
@@ -411,7 +432,7 @@ const MenuBar: React.FC<MenuBarProps> = ({
           )}
         </button>
         {options.info && (
-          <span className="menu-bar-info">{options.info}</span>
+          <span className="menu-bar-info" data-testid="cfm-menu-bar-info">{options.info}</span>
         )}
       </div>
       <div className="menu-bar-right">

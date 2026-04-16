@@ -10,6 +10,7 @@ interface IProps {
   onSelect?: SelectInteractiveStateCallback
   onPreview: (showing: boolean) => void
   close?: () => void
+  role?: 'primary' | 'secondary'
 }
 
 interface IState {
@@ -44,25 +45,38 @@ class SelectInteractiveStateVersion extends React.Component<IProps, IState> {
 
   render() {
     const {preview} = this.state
-    const {version} = this.props
+    const {version, role} = this.props
     const updatedAt = (new Date(version.updatedAt)).toLocaleString()
     const previewClassName = `preview${preview ? ' preview-active' : ''}`
     const previewIframeClassName = preview ? 'preview-iframe-fullsize' : 'preview-iframe'
+    const roleSuffix = role ? `-${role}` : ''
 
     return (
-      <div className='version-info'>
-        <div className='dialog-button' onClick={this.handleSelect}>
+      <div className='version-info' data-testid={`cfm-dialog-select-state-row${roleSuffix}`}>
+        <div
+          className='dialog-button'
+          data-testid={`cfm-dialog-select-state-row${roleSuffix}-select-button`}
+          onClick={this.handleSelect}
+        >
           {tr('~DIALOG.SELECT_INTERACTIVE_STATE.USE_THIS_VERSION')}
         </div>
-        <div className={previewClassName} onClick={this.handleTogglePreview}>
+        <div
+          className={previewClassName}
+          data-testid={`cfm-dialog-select-state-row${roleSuffix}-preview`}
+          onClick={this.handleTogglePreview}
+        >
           <div className='iframe-wrapper'>
-            <iframe className={previewIframeClassName} src={version.externalReportUrl}></iframe>
+            <iframe
+              className={previewIframeClassName}
+              data-testid={`cfm-dialog-select-state-row${roleSuffix}-preview-iframe`}
+              src={version.externalReportUrl}
+            ></iframe>
           </div>
         </div>
         <div className='center preview-label' onClick={this.handleTogglePreview}>
           {tr('~DIALOG.SELECT_INTERACTIVE_STATE.CLICK_TO_PREVIEW')}
         </div>
-        <table className='version-desc'>
+        <table className='version-desc' data-testid={`cfm-dialog-select-state-row${roleSuffix}-version-desc`}>
           <tbody>
             <tr>
               <th>{tr('~DIALOG.SELECT_INTERACTIVE_STATE.UPDATED_AT')}</th>
@@ -124,16 +138,34 @@ export default class SelectInteractiveStateDialog extends React.Component<Select
 
     return (
       <ModalDialogView title={tr('~DIALOG.SELECT_INTERACTIVE_STATE.TITLE')}>
-        <div className='select-interactive-state-dialog'>
-          <div className={overlayClassname} onClick={this.handleHideOverlay}>
+        <div className='select-interactive-state-dialog' data-testid='cfm-dialog-select-state'>
+          <div
+            className={overlayClassname}
+            data-testid='cfm-dialog-select-state-preview-overlay'
+            onClick={this.handleHideOverlay}
+          >
             {tr('~DIALOG.SELECT_INTERACTIVE_STATE.PREVIEW_INFO')}
           </div>
           <div className='content'>
             <div id='question'>{question}</div>
             <div className='scroll-wrapper'>
               <div className='versions'>
-                <SelectInteractiveStateVersion version={state1} showingOverlay={showOverlay} onSelect={onSelect} onPreview={this.handleOnPreview} close={close} />
-                <SelectInteractiveStateVersion version={state2} showingOverlay={showOverlay} onSelect={onSelect} onPreview={this.handleOnPreview} close={close} />
+                <SelectInteractiveStateVersion
+                  version={state1}
+                  role='primary'
+                  showingOverlay={showOverlay}
+                  onSelect={onSelect}
+                  onPreview={this.handleOnPreview}
+                  close={close}
+                />
+                <SelectInteractiveStateVersion
+                  version={state2}
+                  role='secondary'
+                  showingOverlay={showOverlay}
+                  onSelect={onSelect}
+                  onPreview={this.handleOnPreview}
+                  close={close}
+                />
               </div>
             </div>
           </div>

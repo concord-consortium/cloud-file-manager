@@ -4,6 +4,7 @@ import { CFMLegacyGoogleDriveProviderOptions } from '../app-options'
 import { CloudFileManagerClient } from '../client'
 import { createReactClassFactory } from '../create-react-factory'
 import tr  from '../utils/translate'
+import { providerTestIdName } from '../utils/testids'
 import {
   AuthorizedOptions,
   cloudContentFactory, CloudMetadata, ECapabilities, IListOptions, ProviderCloseCallback, ProviderInterface,
@@ -31,6 +32,11 @@ type OnAuthorizationChangeCallback = (authorized: boolean) => void
 let setGoogleDriveAuthorizationDialogState: undefined | ((newState: any) => void) = undefined
 
 const {div, button, span, strong} = ReactDOMFactories
+
+const withTestId = (props: Record<string, any>, testId: string) => ({
+  ...props,
+  'data-testid': testId
+} as any)
 const GoogleDriveAuthorizationDialog = createReactClassFactory({
   displayName: 'GoogleDriveAuthorizationDialog',
 
@@ -72,17 +78,23 @@ const GoogleDriveAuthorizationDialog = createReactClassFactory({
 
   render() {
     const messageMap: Record<ELoadState, React.ReactChild> = {
-      [ELoadState.notLoaded]: tr("~GOOGLE_DRIVE.CONNECTING_MESSAGE"),
-      [ELoadState.loaded]: button({onClick: this.authenticate}, (tr("~GOOGLE_DRIVE.LOGIN_BUTTON_LABEL"))),
-      [ELoadState.errored]: tr("~GOOGLE_DRIVE.ERROR_CONNECTING_MESSAGE"),
-      [ELoadState.missingScopes]: div({className: 'google-drive-missing-scopes'},
+      [ELoadState.notLoaded]: div(withTestId({}, 'cfm-google-drive-auth-connecting'), tr("~GOOGLE_DRIVE.CONNECTING_MESSAGE")),
+      [ELoadState.loaded]: button(withTestId({
+        onClick: this.authenticate,
+        className: 'google-login-button'
+      }, 'cfm-google-drive-auth-login-button'), (tr("~GOOGLE_DRIVE.LOGIN_BUTTON_LABEL"))),
+      [ELoadState.errored]: div(withTestId({}, 'cfm-google-drive-auth-error'), tr("~GOOGLE_DRIVE.ERROR_CONNECTING_MESSAGE")),
+      [ELoadState.missingScopes]: div(withTestId({className: 'google-drive-missing-scopes'}, 'cfm-google-drive-auth-missing-scopes'),
         div({}, tr("~GOOGLE_DRIVE.MISSING_SCOPES_MESSAGE")),
-        div({}, button({onClick: this.authenticate}, (tr("~GOOGLE_DRIVE.LOGIN_BUTTON_LABEL"))))
+        div({}, button(withTestId({
+          onClick: this.authenticate,
+          className: 'google-login-button'
+        }, 'cfm-google-drive-auth-login-button'), (tr("~GOOGLE_DRIVE.LOGIN_BUTTON_LABEL"))))
       ),
     }
     const contents = messageMap[this.state.apiLoadState as ELoadState] || "An unknown error occurred!"
-    return (div({className: 'google-drive-auth'},
-      (div({className: 'google-drive-concord-logo'}, '')),
+    return (div(withTestId({className: 'google-drive-auth'}, 'cfm-google-drive-auth-panel'),
+      (div(withTestId({className: 'google-drive-concord-logo'}, 'cfm-google-drive-auth-logo'), '')),
       (div({className: 'google-drive-footer'},
         contents
       ))
@@ -184,9 +196,11 @@ class LegacyGoogleDriveProvider extends ProviderInterface {
           return this.client.confirmDialog({
             className: 'login-to-google-confirm-dialog',
             title: tr('~PROVIDER.GOOGLE_DRIVE'),
+            message: '',
             yesTitle: tr('~GOOGLE_DRIVE.LOGIN_BUTTON_LABEL'),
             hideNoButton: true,
             hideTitleText: true,
+            confirmKind: 'google-login',
             callback: () => {
               return this.doAuthorize(LegacyGoogleDriveProvider.SHOW_POPUP)
             }
@@ -243,7 +257,8 @@ class LegacyGoogleDriveProvider extends ProviderInterface {
 
   renderUser() {
     if (this.user) {
-      return (span({className: 'gdrive-user'}, (span({className: 'gdrive-icon'})), this.user.name))
+      const providerName = providerTestIdName(LegacyGoogleDriveProvider.Name)
+      return (span(withTestId({className: 'gdrive-user'}, `cfm-menu-bar-user-${providerName}`), (span({className: 'gdrive-icon'})), this.user.name))
     } else {
       return null
     }

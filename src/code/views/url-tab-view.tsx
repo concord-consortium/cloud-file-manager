@@ -58,7 +58,7 @@ const UrlTab: React.FC<UrlTabProps> = ({ dialog, close, client }) => {
   const dropClass = `urlDropArea${hover ? ' dropHover' : ''}`
 
   return (
-    <div className="dialogTab urlImport">
+    <div className="dialogTab urlImport" data-testid="cfm-dialog-import-tab-url-content">
       <div
         className={dropClass}
         onDragEnter={handleDragEnter}
@@ -67,10 +67,23 @@ const UrlTab: React.FC<UrlTabProps> = ({ dialog, close, client }) => {
       >
         {tr("~URL_TAB.DROP_URL_HERE")}
       </div>
-      <input type="text" ref={urlRef} placeholder="URL" />
+      <input
+        type="text"
+        ref={urlRef}
+        data-testid="cfm-dialog-import-tab-url-input"
+        placeholder="URL"
+      />
       <div className="buttons">
-        <button className="cancel" onClick={handleCancel}>{tr("~FILE_DIALOG.CANCEL")}</button>
-        <button onClick={handleImport}>{tr("~URL_TAB.IMPORT")}</button>
+        <button
+          className="cancel"
+          data-testid="cfm-dialog-import-tab-url-cancel-button"
+          onClick={handleCancel}
+        >
+          {tr("~FILE_DIALOG.CANCEL")}
+        </button>
+        <button data-testid="cfm-dialog-import-tab-url-import-button" onClick={handleImport}>
+          {tr("~URL_TAB.IMPORT")}
+        </button>
       </div>
     </div>
   )

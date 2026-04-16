@@ -42,6 +42,7 @@ const ImportTabbedDialog: React.FC<ImportTabbedDialogProps> = ({ dialog, close, 
   const tabs = [
     TabbedPanel.Tab({
       label: tr("~IMPORT.LOCAL_FILE"),
+      key: 'local-file',
       component: (
         <LocalFileTab
           client={client}
@@ -53,6 +54,7 @@ const ImportTabbedDialog: React.FC<ImportTabbedDialogProps> = ({ dialog, close, 
     }),
     TabbedPanel.Tab({
       label: tr("~IMPORT.URL"),
+      key: 'url',
       component: (
         <UrlTab
           client={client}
@@ -70,6 +72,8 @@ const ImportTabbedDialog: React.FC<ImportTabbedDialogProps> = ({ dialog, close, 
       close={close}
       tabs={tabs}
       selectedTabIndex={0}
+      dialogTestId="cfm-dialog-import"
+      dialogName="import"
     />
   )
 }

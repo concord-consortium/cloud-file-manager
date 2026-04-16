@@ -37,9 +37,10 @@ const RenameDialogView: React.FC<RenameDialogViewProps> = ({ filename: initialFi
 
   return (
     <ModalDialogView title={tr('~DIALOG.RENAME')} titleClassName="dialog-rename" close={close}>
-      <div className="rename-dialog">
+      <div className="rename-dialog" data-testid="cfm-dialog-rename">
         <input
           ref={inputRef}
+          data-testid="cfm-dialog-rename-filename-input"
           aria-label={tr("~FILE_DIALOG.FILENAME")}
           placeholder={tr("~FILE_DIALOG.FILENAME")}
           value={filename}
@@ -47,10 +48,17 @@ const RenameDialogView: React.FC<RenameDialogViewProps> = ({ filename: initialFi
           onKeyDown={handleKeyDown}
         />
         <div className="buttons">
-          <button className="cancel" onClick={close}>{tr('~RENAME_DIALOG.CANCEL')}</button>
+          <button
+            className="cancel"
+            data-testid="cfm-dialog-rename-cancel-button"
+            onClick={close}
+          >
+            {tr('~RENAME_DIALOG.CANCEL')}
+          </button>
           <button
             className={trimmedFilename.length === 0 ? 'disabled' : undefined}
             disabled={trimmedFilename.length === 0}
+            data-testid="cfm-dialog-rename-confirm-button"
             onClick={handleRename}
           >
             {tr('~RENAME_DIALOG.RENAME')}
