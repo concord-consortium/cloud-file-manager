@@ -310,8 +310,8 @@ const MenuBar: React.FC<MenuBarProps> = ({
         menuAnchor={menuAnchor}
         triggerProps={{ 'data-toolbar-item': true }}
         menuName="language"
-        triggerTestId="cfm-menu-language-button"
-        menuListTestId="cfm-menu-language"
+        triggerTestId="cfm-menu-language"
+        menuListTestId="cfm-menu-language-list"
       />
     )
   }

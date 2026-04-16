@@ -21,7 +21,6 @@ import getQueryParam  from '../utils/get-query-param'
 import getHashParam  from '../utils/get-hash-param'
 import tr  from '../utils/translate'
 import pako  from 'pako'
-import { withTestId } from '../utils/testids'
 
 import { CFMDocumentStoreProviderOptions } from '../app-options'
 import { ECapabilities, ProviderInterface, ProviderOpenCallback }  from './provider-interface'
@@ -32,7 +31,7 @@ import { CloudFileManagerClient } from '../client'
 import DocumentStoreUrl  from './document-store-url'
 import PatchableContent  from './patchable-content'
 import { reportError } from '../utils/report-error'
-import { providerTestIdName } from '../utils/testids'
+import { providerTestIdName, withTestId } from '../utils/testids'
 
 const DocumentStoreAuthorizationDialog = createReactClassFactory({
   displayName: 'DocumentStoreAuthorizationDialog',

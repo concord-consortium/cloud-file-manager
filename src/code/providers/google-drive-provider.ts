@@ -4,7 +4,7 @@ import { CFMGoogleDriveProviderOptions } from '../app-options'
 import { CloudFileManagerClient } from '../client'
 import { createReactClassFactory } from '../create-react-factory'
 import tr, { getDefaultLang } from '../utils/translate'
-import { providerTestIdName } from '../utils/testids'
+import { providerTestIdName, withTestId } from '../utils/testids'
 import {
   AuthorizedOptions,
   cloudContentFactory, CloudMetadata, ECapabilities, ICloudFileTypes, ProviderCloseCallback, ProviderInterface,
@@ -32,8 +32,6 @@ type OnAuthorizationChangeCallback = (authorized: boolean) => void
 let setGoogleDriveAuthorizationDialogState: undefined | ((newState: any) => void) = undefined
 
 const { div, button, span, strong, input } = ReactDOMFactories
-
-import { withTestId } from '../utils/testids'
 
 /**
  * Prevent React Aria's Modal from making the Google Picker inert.

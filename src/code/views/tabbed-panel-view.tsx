@@ -50,24 +50,22 @@ const TabbedPanelViewBase: React.FC<TabbedPanelViewProps> = ({
         className="workspace-tabs"
         data-testid={dialogName ? `cfm-dialog-${dialogName}-tabs` : undefined}
       >
-        {tabs.map((tab, index) => (
-          (() => {
-            const tabKey = tab.key ?? String(index)
-            const tabTestId = dialogName && tab.key
-              ? `cfm-dialog-${dialogName}-tab-${tabKey}`
-              : undefined
-            return (
-          <Tab
-            key={index}
-            id={tabKey}
-            data-testid={tabTestId}
-            className={({ isSelected }) => `workspace-tab ${isSelected ? 'tab-selected' : ''}`}
-          >
-            {tab.label}
-          </Tab>
-            )
-          })()
-        ))}
+        {tabs.map((tab, index) => {
+          const tabKey = tab.key ?? String(index)
+          const tabTestId = dialogName && tab.key
+            ? `cfm-dialog-${dialogName}-tab-${tabKey}`
+            : undefined
+          return (
+            <Tab
+              key={tabKey}
+              id={tabKey}
+              data-testid={tabTestId}
+              className={({ isSelected }) => `workspace-tab ${isSelected ? 'tab-selected' : ''}`}
+            >
+              {tab.label}
+            </Tab>
+          )
+        })}
       </TabList>
       {tabs.map((tab, index) => {
         const tabKey = tab.key ?? String(index)
@@ -76,7 +74,7 @@ const TabbedPanelViewBase: React.FC<TabbedPanelViewProps> = ({
           : undefined
         return (
           <TabPanel
-            key={index}
+            key={tabKey}
             id={tabKey}
             className="workspace-tab-component"
             data-testid={contentTestId}

@@ -7,7 +7,7 @@ import { sanitizeMenuItemKey } from '../utils/testids'
 interface ConfirmDialogViewProps {
   title?: string
   message: string
-  /** For CSS styling only. Use `confirmKind` for test selection — see specs/CFM-15-.../requirements.md §3. */
+  /** For CSS styling only. Use `confirmKind` for test selection — see specs/CFM-15-add-missing-data-test-id-values.md. */
   className?: string
   yesTitle?: string
   noTitle?: string
