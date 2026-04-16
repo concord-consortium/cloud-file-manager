@@ -62,6 +62,19 @@ export type CFMFileEventType = CFMFileChangedEventType | "closedFile" | "newedFi
 export type CloudFileManagerEventType = "connected" | "getContent" | "importedData" | "log" | "ready" |
               "rendered" | "requiresUserInteraction" | "stateChanged" | CFMFileEventType
 
+export interface ConfirmDialogParams {
+  title?: string
+  message: string
+  className?: string
+  yesTitle?: string
+  noTitle?: string
+  hideNoButton?: boolean
+  hideTitleText?: boolean
+  confirmKind?: string
+  callback?: () => void
+  rejectCallback?: () => void
+}
+
 class CloudFileManagerClientEvent {
   callback: ClientEventCallback
   data: any
@@ -407,7 +420,7 @@ class CloudFileManagerClient {
         this.save()
         return this.newFile(callback)
       } else {
-        return this.confirm(tr('~CONFIRM.NEW_FILE'), () => this.newFile(callback))
+        return this.confirm(tr('~CONFIRM.NEW_FILE'), () => this.newFile(callback), undefined, 'new-file')
       }
     } else {
       return this.newFile(callback)
@@ -444,7 +457,7 @@ class CloudFileManagerClient {
     if (!this.state.dirty) {
       return showDialog()
     } else {
-      return this.confirm(tr('~CONFIRM.OPEN_FILE'), showDialog)
+      return this.confirm(tr('~CONFIRM.OPEN_FILE'), showDialog, undefined, 'open-file')
     }
   }
 
@@ -460,7 +473,7 @@ class CloudFileManagerClient {
     if (!this.state.dirty) {
       return this.closeFile(callback)
     } else {
-      return this.confirm(tr('~CONFIRM.CLOSE_FILE'), () => this.closeFile(callback))
+      return this.confirm(tr('~CONFIRM.CLOSE_FILE'), () => this.closeFile(callback), undefined, 'close-file')
     }
   }
 
@@ -500,7 +513,7 @@ class CloudFileManagerClient {
     if (!this.state.dirty) {
       return openFile()
     } else {
-      return this.confirm(tr('~CONFIRM.OPEN_FILE'), openFile)
+      return this.confirm(tr('~CONFIRM.OPEN_FILE'), openFile, undefined, 'open-file')
     }
   }
 
@@ -569,7 +582,8 @@ class CloudFileManagerClient {
           })
         })
       },
-      rejectCallback
+      rejectCallback,
+      'authorize-open'
     )
   }
 
@@ -654,7 +668,8 @@ class CloudFileManagerClient {
         return this.saveFile(stringContent, this.state.metadata, callback)
       })
     },
-    rejectCallback)
+    rejectCallback,
+    'authorize-save')
   }
 
   save(callback: OpenSaveCallback = null) {
@@ -995,7 +1010,7 @@ class CloudFileManagerClient {
 
   revertToSharedDialog(callback: (err: string | null) => void = null) {
     if ((this.state.currentContent != null ? this.state.currentContent.get("sharedDocumentId") : undefined) && (this.state.shareProvider != null)) {
-      return this.confirm(tr("~CONFIRM.REVERT_TO_SHARED_VIEW"), () => this.revertToShared(callback))
+      return this.confirm(tr("~CONFIRM.REVERT_TO_SHARED_VIEW"), () => this.revertToShared(callback), undefined, 'revert-to-shared')
     }
   }
 
@@ -1102,7 +1117,7 @@ class CloudFileManagerClient {
 
   revertToLastOpenedDialog(callback: (err: string | null) => void = null) {
     if ((this.state.openedContent != null) && this.state.metadata) {
-      return this.confirm(tr('~CONFIRM.REVERT_TO_LAST_OPENED'), () => this.revertToLastOpened(callback))
+      return this.confirm(tr('~CONFIRM.REVERT_TO_LAST_OPENED'), () => this.revertToLastOpened(callback), undefined, 'revert-to-last-opened')
     } else {
       return (typeof callback === 'function' ? callback('No initial opened version was found for the currently active file') : undefined)
     }
@@ -1193,7 +1208,7 @@ class CloudFileManagerClient {
       const postSave = (err: string | null) => {
         if (err) {
           this.alert(err)
-          return this.confirm(tr('~CONFIRM.CHANGE_LANGUAGE'), () => callback(newLangCode))
+          return this.confirm(tr('~CONFIRM.CHANGE_LANGUAGE'), () => callback(newLangCode), undefined, 'change-language')
         } else {
           return callback(newLangCode)
         }
@@ -1241,11 +1256,11 @@ class CloudFileManagerClient {
     }
   }
 
-  confirm(message: any, callback: any, rejectCallback?: any) {
-    return this.confirmDialog({ message, callback, rejectCallback })
+  confirm(message: any, callback: any, rejectCallback?: any, confirmKind?: string) {
+    return this.confirmDialog({ message, callback, rejectCallback, confirmKind })
   }
 
-  confirmDialog(params: any) {
+  confirmDialog(params: ConfirmDialogParams) {
     this._event("requiresUserInteraction")
     return this._ui.confirmDialog(params)
   }

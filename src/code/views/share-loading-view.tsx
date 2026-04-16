@@ -4,7 +4,7 @@ import { Spinner } from './icons/spin'
 
 export const ShareLoadingView = (props: {}) => {
   return (
-    <div className='share-loading-view' data-testid='share-loading-view'>
+    <div className='share-loading-view' data-testid='cfm-dialog-share-loading'>
       <Spinner fill="gray" size={100}/>
       {translate("~SHARE_DIALOG.PLEASE_WAIT")}
     </div>

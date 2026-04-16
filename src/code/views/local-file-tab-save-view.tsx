@@ -184,6 +184,7 @@ const LocalFileSaveTab: React.FC<LocalFileSaveTabProps> = ({ dialog, close, clie
       href="#"
       ref={downloadRef as React.RefObject<HTMLAnchorElement>}
       className={confirmDisabled ? 'disabled' : undefined}
+      data-testid="cfm-local-file-save-panel-download-button"
       download={downloadFilename}
       onContextMenu={handleContextMenu}
     >
@@ -196,16 +197,18 @@ const LocalFileSaveTab: React.FC<LocalFileSaveTabProps> = ({ dialog, close, clie
     <button
       ref={downloadRef as React.RefObject<HTMLButtonElement>}
       className={confirmDisabled ? 'disabled' : undefined}
+      data-testid="cfm-local-file-save-panel-download-button"
     >
       {tr('~FILE_DIALOG.DOWNLOAD')}
     </button>
   )
 
   return (
-    <div className="dialogTab localFileSave">
+    <div className="dialogTab localFileSave" data-testid="cfm-local-file-save-panel">
       <input
         type="text"
         ref={filenameRef}
+        data-testid="cfm-local-file-save-panel-filename-input"
         aria-label={tr("~FILE_DIALOG.FILENAME")}
         value={filename}
         placeholder={tr("~FILE_DIALOG.FILENAME")}
@@ -217,6 +220,7 @@ const LocalFileSaveTab: React.FC<LocalFileSaveTabProps> = ({ dialog, close, clie
           <label className="shareCheckbox">
             <input
               type="checkbox"
+              data-testid="cfm-local-file-save-panel-include-share-checkbox"
               checked={includeShareInfo}
               onChange={handleIncludeShareInfoChange}
             />
@@ -225,7 +229,9 @@ const LocalFileSaveTab: React.FC<LocalFileSaveTabProps> = ({ dialog, close, clie
         )}
       </div>
       <div className="buttons">
-        <button className="cancel" onClick={handleCancel}>{tr("~FILE_DIALOG.CANCEL")}</button>
+        <button className="cancel" data-testid="cfm-local-file-save-panel-cancel-button" onClick={handleCancel}>
+          {tr("~FILE_DIALOG.CANCEL")}
+        </button>
         {supportsDownloadAttribute ? downloadAnchor : downloadButton}
       </div>
     </div>

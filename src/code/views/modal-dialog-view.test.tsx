@@ -8,22 +8,22 @@ describe('ModalDialogView', () => {
     render(
       <ModalDialogView />
     )
-    expect(screen.getByTestId('modal-dialog')).toBeInTheDocument()
+    expect(screen.getByTestId('cfm-dialog-title')).toBeInTheDocument()
 
     // the close icon is not present if close callback not specified
-    expect(screen.queryByTestId(/modal-dialog-close/)).toBeNull()
+    expect(screen.queryByTestId(/cfm-dialog-close-button/)).toBeNull()
 
     // escape key has no effect if close callback not specified
     await userEvent.type(document.body, '{esc}')
-    expect(screen.getByTestId('modal-dialog')).toBeInTheDocument()
+    expect(screen.getByTestId('cfm-dialog-title')).toBeInTheDocument()
 
     // enter key has no effect
     await userEvent.type(document.body, '{enter}')
-    expect(screen.getByTestId('modal-dialog')).toBeInTheDocument()
+    expect(screen.getByTestId('cfm-dialog-title')).toBeInTheDocument()
 
     // resize handler is triggered on resize
     fireEvent(window, new Event('resize'))
-    expect(screen.getByTestId('modal-dialog')).toBeInTheDocument()
+    expect(screen.getByTestId('cfm-dialog-title')).toBeInTheDocument()
   })
 
   it('should render user-specified title and content', () => {
@@ -40,7 +40,7 @@ describe('ModalDialogView', () => {
     render(
       <ModalDialogView zIndex={0} />
     )
-    expect(screen.getByTestId('modal-dialog')).toBeInTheDocument()
+    expect(screen.getByTestId('cfm-dialog-title')).toBeInTheDocument()
   })
 
   it('should call close when close icon clicked', async () => {
@@ -48,9 +48,9 @@ describe('ModalDialogView', () => {
     render(
       <ModalDialogView close={mockClose} />
     )
-    expect(screen.getByTestId('modal-dialog')).toBeInTheDocument()
+    expect(screen.getByTestId('cfm-dialog-title')).toBeInTheDocument()
 
-    await userEvent.click(screen.getByTestId('modal-dialog-close'))
+    await userEvent.click(screen.getByTestId('cfm-dialog-close-button'))
     expect(mockClose).toHaveBeenCalled()
   })
 
@@ -60,7 +60,7 @@ describe('ModalDialogView', () => {
       <ModalDialogView close={() => mockClose()} />
     )
 
-    const dialog = screen.getByTestId('modal-dialog')
+    const dialog = screen.getByTestId('cfm-dialog-title')
     expect(dialog).toBeInTheDocument()
 
     await userEvent.keyboard('{Escape}')

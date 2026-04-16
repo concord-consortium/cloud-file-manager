@@ -247,8 +247,8 @@ export default class ShareDialogView extends React.Component<IShareDialogProps, 
     const sharing = isShared || (shareUrl != null)
     return (
       <ModalDialogView title={translate('~DIALOG.SHARED')} titleClassName={titleClassName} close={this.props.close}>
-        <div className='share-dialog' data-testid='share-dialog'>
-          <div className='share-top-dialog'>
+        <div className='share-dialog' data-testid='cfm-dialog-share'>
+          <div className='share-top-dialog' data-testid='cfm-dialog-share-top'>
             {isLoadingShared
               ? <ShareLoadingView />
               : <ShareDialogStatusView isSharing={sharing} previewLink={shareUrl}
@@ -277,12 +277,16 @@ export default class ShareDialogView extends React.Component<IShareDialogProps, 
             />}
 
           <div className='buttons'>
-            <button className="close" onClick={this.props.close}>
+            <button
+              className="close"
+              data-testid="cfm-dialog-share-close-button"
+              onClick={this.props.close}
+            >
               {translate('~SHARE_DIALOG.CLOSE')}
             </button>
           </div>
           {SHOW_LONGEVITY_WARNING &&
-            <div className='longevity-warning'>
+            <div className='longevity-warning' data-testid='cfm-dialog-share-longevity-warning'>
               {translate('~SHARE_DIALOG.LONGEVITY_WARNING')}
             </div>}
         </div>

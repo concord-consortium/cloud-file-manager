@@ -13,7 +13,7 @@ describe('ModalTabbedDialogView', () => {
     render(
       <ModalTabbedDialogView title="Test Dialog" tabs={createTabs()} />
     )
-    expect(screen.getByTestId('modal-dialog-title')).toHaveTextContent('Test Dialog')
+    expect(screen.getByTestId('cfm-dialog-title')).toHaveTextContent('Test Dialog')
   })
 
   it('should render tab labels', () => {
@@ -61,7 +61,7 @@ describe('ModalTabbedDialogView', () => {
       <ModalTabbedDialogView title="Test" tabs={createTabs()} close={mockClose} />
     )
     await act(async () => {
-      await user.click(screen.getByTestId('modal-dialog-close'))
+      await user.click(screen.getByTestId('cfm-dialog-close-button'))
     })
     expect(mockClose).toHaveBeenCalledTimes(1)
   })

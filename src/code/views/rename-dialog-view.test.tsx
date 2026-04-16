@@ -8,7 +8,7 @@ describe('RenameDialogView', () => {
     render(
       <RenameDialogView />
     )
-    expect(screen.getByTestId('modal-dialog-title')).toHaveTextContent('Rename')
+    expect(screen.getByTestId('cfm-dialog-title')).toHaveTextContent('Rename')
   })
 
   it('should render with provided filename', () => {

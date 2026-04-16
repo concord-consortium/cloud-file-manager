@@ -126,7 +126,7 @@
     "test": "jest",
     "test:coverage": "jest --coverage",
     "test:watch": "jest --watch",
-    "lint": "eslint \"./src/code/**/*.{js,jsx,ts,tsx}\"",
-    "lint:fix": "eslint --fix \"./src/code/**/*.{js,jsx,ts,tsx}\""
+    "lint": "eslint --rulesdir eslint-rules \"./src/code/**/*.{js,jsx,ts,tsx}\"",
+    "lint:fix": "eslint --rulesdir eslint-rules --fix \"./src/code/**/*.{js,jsx,ts,tsx}\""
   }
 }

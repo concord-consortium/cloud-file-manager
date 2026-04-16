@@ -13,11 +13,12 @@ type SVGSocialIconMap = Record<string, SVGSocialIcon>
 interface ISocialIconProps {
   icon: string
   url: string
+  testId?: string
 }
-const SocialIcon = ({ icon, url }: ISocialIconProps) => {
+const SocialIcon = ({ icon, url, testId }: ISocialIconProps) => {
   const socialIcon = (socialIcons as SVGSocialIconMap)[icon]
   return (
-    <a className='social-icon' href={url} target='_blank' rel="noreferrer">
+    <a className='social-icon' href={url} target='_blank' rel="noreferrer" data-testid={testId}>
       <div className='social-container'>
         <svg className='social-svg' viewBox='0 0 64 64'>
           <g className='social-svg-background'>
@@ -40,7 +41,7 @@ interface ICopyAnchorLinkProps {
 }
 const CopyButton = ({ onClick }: ICopyAnchorLinkProps) => {
   return document.execCommand || (window as any).clipboardData
-          ? <button className='copy-button' onClick={onClick} data-testid='copy-button'>
+          ? <button className='copy-button' onClick={onClick} data-testid='cfm-dialog-share-copy-button'>
               {translate('~SHARE_DIALOG.COPY')}
             </button>
           : null
@@ -52,10 +53,14 @@ interface IEmbedTabProps {
 }
 export const EmbedTabContents: React.FC<IEmbedTabProps> = ({ url, onCopyClick }) => {
   return (
-    <div data-testid='embed-tab-contents'>
+    <div data-testid='cfm-dialog-share-embed-contents'>
       {translate("~SHARE_DIALOG.EMBED_MESSAGE")}
       <div className="share-url-container">
-        <textarea value={url || ""} readOnly={true} />
+        <textarea
+          value={url || ""}
+          readOnly={true}
+          data-testid="cfm-dialog-share-embed-textarea"
+        />
         <CopyButton onClick={onCopyClick} />
       </div>
     </div>
@@ -79,26 +84,30 @@ export const LaraApiTabContents: React.FC<ILaraApiTabProps> = ({
         onCopyClick, onChangeServerUrl, onChangeFullscreenScaling, onChangeVisibilityToggles
 }) => {
   return (
-    <div className={mode} data-testid='lara-api-tab-contents'>
+    <div className={mode} data-testid='cfm-dialog-share-api-contents'>
       {translate(mode === 'lara' ? '~SHARE_DIALOG.LARA_MESSAGE' : '~SHARE_DIALOG.INTERACTIVE_API_MESSAGE')}
       <div className="share-url-container">
-        <input value={linkUrl} readOnly={true} />
+        <input
+          value={linkUrl}
+          readOnly={true}
+          data-testid="cfm-dialog-share-api-link-input"
+        />
         <CopyButton onClick={onCopyClick}/>
       </div>
       <div className='lara-api-settings'>
         <div className='codap-server-url'>
           {serverUrlLabel}
           <div>
-            <input value={serverUrl || ""} data-testid='server-url-input' onChange={onChangeServerUrl} />
+            <input value={serverUrl || ""} data-testid='cfm-dialog-share-server-url-input' onChange={onChangeServerUrl} />
           </div>
         </div>
         <div className='fullscreen-scaling'>
-          <input type='checkbox' data-testid='fullscreen-scaling-checkbox'
+          <input type='checkbox' data-testid='cfm-dialog-share-fullscreen-checkbox'
             checked={fullscreenScaling} onChange={onChangeFullscreenScaling} />
           {translate("~SHARE_DIALOG.LARA_FULLSCREEN_BUTTON_AND_SCALING")}
         </div>
         <div className='visibility-toggles'>
-          <input type='checkbox' data-testid='visibility-toggles-checkbox'
+          <input type='checkbox' data-testid='cfm-dialog-share-visibility-checkbox'
             checked={visibilityToggles} onChange={onChangeVisibilityToggles} />
           {translate("~SHARE_DIALOG.LARA_DISPLAY_VISIBILITY_TOGGLES")}
         </div>
@@ -117,15 +126,19 @@ export const LinkTabContents: React.FC<ILinkTabProps> = ({ url, onCopyClick }) =
   const twitterUrl = `https://twitter.com/home?status=${encodedUrl}`
   // not working: googleUrl = `https://plus.google.com/share?url=${url}`
   return (
-    <div data-testid='link-tab-contents'>
+    <div data-testid='cfm-dialog-share-link-contents'>
       {translate("~SHARE_DIALOG.LINK_MESSAGE")}
       <div className="share-url-container">
-        <input value={url || ""} readOnly={true} />
+        <input
+          value={url || ""}
+          readOnly={true}
+          data-testid="cfm-dialog-share-link-url-input"
+        />
         <CopyButton onClick={onCopyClick} />
       </div>
-      <div className='social-icons'>
-        <SocialIcon icon='facebook' url={facebookUrl} />
-        <SocialIcon icon='twitter' url={twitterUrl} />
+      <div className='social-icons' data-testid='cfm-dialog-share-social'>
+        <SocialIcon icon='facebook' url={facebookUrl} testId='cfm-dialog-share-social-facebook' />
+        <SocialIcon icon='twitter' url={twitterUrl} testId='cfm-dialog-share-social-twitter' />
       </div>
     </div>
   )
@@ -154,11 +167,11 @@ export const ShareDialogTabsView: React.FC<IShareDialogTabsProps> = ({
               tabSelected, embedUrl, linkUrl, interactiveApi, onSelectTab, onCopyClick, ...others
 }) => {
   const tabs: { id: ShareDialogTab, label: string, testId: string }[] = [
-    { id: 'link', label: translate("~SHARE_DIALOG.LINK_TAB"), testId: 'sharing-tab-link' },
-    { id: 'embed', label: translate("~SHARE_DIALOG.EMBED_TAB"), testId: 'sharing-tab-embed' },
+    { id: 'link', label: translate("~SHARE_DIALOG.LINK_TAB"), testId: 'cfm-dialog-share-tab-link' },
+    { id: 'embed', label: translate("~SHARE_DIALOG.EMBED_TAB"), testId: 'cfm-dialog-share-tab-embed' },
   ]
   if (interactiveApi) {
-    tabs.push({ id: 'api', label: 'Activity Player', testId: 'sharing-tab-api' })
+    tabs.push({ id: 'api', label: 'Activity Player', testId: 'cfm-dialog-share-tab-api' })
   }
 
   const handleTabKeyDown = (e: React.KeyboardEvent, tab: ShareDialogTab) => {
@@ -184,7 +197,7 @@ export const ShareDialogTabsView: React.FC<IShareDialogTabsProps> = ({
   }
 
   return (
-    <div data-testid='share-dialog-tabs-view'>
+    <div data-testid='cfm-dialog-share-tabs-container'>
       <ul className='sharing-tabs' role='tablist'>
         {tabs.map((tab) => (
           <li key={tab.id}
