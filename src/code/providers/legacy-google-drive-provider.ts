@@ -4,7 +4,7 @@ import { CFMLegacyGoogleDriveProviderOptions } from '../app-options'
 import { CloudFileManagerClient } from '../client'
 import { createReactClassFactory } from '../create-react-factory'
 import tr  from '../utils/translate'
-import { providerTestIdName } from '../utils/testids'
+import { providerTestIdName, withTestId } from '../utils/testids'
 import {
   AuthorizedOptions,
   cloudContentFactory, CloudMetadata, ECapabilities, IListOptions, ProviderCloseCallback, ProviderInterface,
@@ -33,10 +33,6 @@ let setGoogleDriveAuthorizationDialogState: undefined | ((newState: any) => void
 
 const {div, button, span, strong} = ReactDOMFactories
 
-const withTestId = (props: Record<string, any>, testId: string) => ({
-  ...props,
-  'data-testid': testId
-} as any)
 const GoogleDriveAuthorizationDialog = createReactClassFactory({
   displayName: 'GoogleDriveAuthorizationDialog',
 

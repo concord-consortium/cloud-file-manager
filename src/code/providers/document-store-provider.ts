@@ -17,15 +17,11 @@ import ReactDOMFactories from 'react-dom-factories'
 import { createReactClassFactory } from '../create-react-factory'
 const {div, button, span} = ReactDOMFactories
 
-const withTestId = (props: Record<string, any>, testId: string) => ({
-  ...props,
-  'data-testid': testId
-} as any)
-
 import getQueryParam  from '../utils/get-query-param'
 import getHashParam  from '../utils/get-hash-param'
 import tr  from '../utils/translate'
 import pako  from 'pako'
+import { withTestId } from '../utils/testids'
 
 import { CFMDocumentStoreProviderOptions } from '../app-options'
 import { ECapabilities, ProviderInterface, ProviderOpenCallback }  from './provider-interface'

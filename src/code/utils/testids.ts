@@ -1,3 +1,8 @@
+export const withTestId = <T extends Record<string, any>>(props: T, testId: string): T => ({
+  ...props,
+  'data-testid': testId
+})
+
 export const sanitizeMenuItemKey = (key: string): string => {
   if (typeof key !== 'string') {
     if (process.env.NODE_ENV !== 'production') {

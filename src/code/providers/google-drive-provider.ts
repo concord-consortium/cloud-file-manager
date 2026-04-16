@@ -33,10 +33,7 @@ let setGoogleDriveAuthorizationDialogState: undefined | ((newState: any) => void
 
 const { div, button, span, strong, input } = ReactDOMFactories
 
-const withTestId = (props: Record<string, any>, testId: string) => ({
-  ...props,
-  'data-testid': testId
-} as any)
+import { withTestId } from '../utils/testids'
 
 /**
  * Prevent React Aria's Modal from making the Google Picker inert.
