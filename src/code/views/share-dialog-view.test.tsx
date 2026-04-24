@@ -16,11 +16,11 @@ describe('ShareDialogView', () => {
       <ShareDialogView currentBaseUrl='https://concord.org/baseUrl' isShared={false}
         onAlert={mockAlert} onToggleShare={mockToggleShare} onUpdateShare={mockUpdateShare} close={mockClose} />
     )
-    expect(screen.getByTestId('share-dialog')).toBeInTheDocument()
-    expect(screen.queryByTestId('toggle-share-button')).toBeNull()
-    expect(screen.queryByTestId('preview-button')).toBeNull()
+    expect(screen.getByTestId('cfm-dialog-share')).toBeInTheDocument()
+    expect(screen.queryByTestId('cfm-dialog-share-stop-button')).toBeNull()
+    expect(screen.queryByTestId('cfm-dialog-share-preview-button')).toBeNull()
 
-    await userEvent.click(screen.getByTestId('share-button-element'))
+    await userEvent.click(screen.getByTestId('cfm-dialog-share-enable-button'))
 
     expect(mockToggleShare).toHaveBeenCalled()
     expect(mockUpdateShare).not.toHaveBeenCalled()
@@ -43,15 +43,15 @@ describe('ShareDialogView', () => {
         sharedDocumentUrl='https://concord.org/sharedDocumentUrl'
         onAlert={mockAlert} onToggleShare={mockToggleShare} onUpdateShare={mockUpdateShare} close={mockClose} />
     )
-    expect(screen.getByTestId('share-dialog')).toBeInTheDocument()
+    expect(screen.getByTestId('cfm-dialog-share')).toBeInTheDocument()
 
-    await userEvent.click(screen.getByTestId('share-button-element'))
+    await userEvent.click(screen.getByTestId('cfm-dialog-share-update-button'))
 
     expect(mockToggleShare).not.toHaveBeenCalled()
     expect(mockUpdateShare).toHaveBeenCalled()
 
-    await userEvent.click(screen.getByTestId('copy-button'))
-    await userEvent.click(screen.getByTestId('sharing-tab-embed'))
+    await userEvent.click(screen.getByTestId('cfm-dialog-share-copy-button'))
+    await userEvent.click(screen.getByTestId('cfm-dialog-share-tab-embed'))
 
     rerender(
       <ShareDialogView currentBaseUrl='https://concord.org/baseUrl' isShared={true}
@@ -59,8 +59,8 @@ describe('ShareDialogView', () => {
         onAlert={mockAlert} onToggleShare={mockToggleShare} onUpdateShare={mockUpdateShare} close={mockClose} />
     )
 
-    await userEvent.click(screen.getByTestId('copy-button'))
-    await userEvent.click(screen.getByTestId('sharing-tab-link'))
+    await userEvent.click(screen.getByTestId('cfm-dialog-share-copy-button'))
+    await userEvent.click(screen.getByTestId('cfm-dialog-share-tab-link'))
 })
 
   it('should render legacy shared without LARA', () => {
@@ -74,7 +74,7 @@ describe('ShareDialogView', () => {
       <ShareDialogView currentBaseUrl='https://concord.org/baseUrl' isShared={true} sharedDocumentId='12345'
         onAlert={mockAlert} onToggleShare={mockToggleShare} onUpdateShare={mockUpdateShare} close={mockClose} />
     )
-    expect(screen.getByTestId('share-dialog')).toBeInTheDocument()
+    expect(screen.getByTestId('cfm-dialog-share')).toBeInTheDocument()
   })
 
   it('should render unshared with LARA', () => {
@@ -88,7 +88,7 @@ describe('ShareDialogView', () => {
       <ShareDialogView currentBaseUrl='https://concord.org/baseUrl' isShared={false} enableLaraSharing={true}
         onAlert={mockAlert} onToggleShare={mockToggleShare} onUpdateShare={mockUpdateShare} close={mockClose} />
     )
-    expect(screen.getByTestId('share-dialog')).toBeInTheDocument()
+    expect(screen.getByTestId('cfm-dialog-share')).toBeInTheDocument()
   })
 
   it('should render shared with interactive api sharing', async () => {
@@ -107,9 +107,9 @@ describe('ShareDialogView', () => {
       <ShareDialogView currentBaseUrl='https://concord.org/baseUrl' isShared={true} enableLaraSharing={true}
         onAlert={mockAlert} onToggleShare={mockToggleShare} onUpdateShare={mockUpdateShare} close={mockClose} />
     )
-    expect(screen.getByTestId('share-dialog')).toBeInTheDocument()
+    expect(screen.getByTestId('cfm-dialog-share')).toBeInTheDocument()
 
-    await userEvent.click(screen.getByTestId('sharing-tab-api'))
+    await userEvent.click(screen.getByTestId('cfm-dialog-share-tab-api'))
 
     rerender(
       <ShareDialogView currentBaseUrl='https://concord.org/baseUrl' isShared={true} enableLaraSharing={true}
@@ -117,11 +117,11 @@ describe('ShareDialogView', () => {
     )
 
     // copy interactive api share url
-    await userEvent.click(screen.getByTestId('copy-button'))
+    await userEvent.click(screen.getByTestId('cfm-dialog-share-copy-button'))
 
     // trigger change handlers
-    fireEvent.change(screen.getByTestId('server-url-input'), { target: { value: 'https://concord.org/newServerUrl' } })
-    await userEvent.click(screen.getByTestId('fullscreen-scaling-checkbox'))
-    await userEvent.click(screen.getByTestId('visibility-toggles-checkbox'))
+    fireEvent.change(screen.getByTestId('cfm-dialog-share-server-url-input'), { target: { value: 'https://concord.org/newServerUrl' } })
+    await userEvent.click(screen.getByTestId('cfm-dialog-share-fullscreen-checkbox'))
+    await userEvent.click(screen.getByTestId('cfm-dialog-share-visibility-checkbox'))
   })
 })

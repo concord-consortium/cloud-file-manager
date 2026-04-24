@@ -19,6 +19,7 @@ import { CFMMenuBarOptions, CFMMenuItem, CFMShareDialogSettings, CFMUIOptions } 
 import { CloudFileManagerClient, CloudFileManagerClientEvent } from "../client"
 import { CloudFileManagerUIEvent } from "../ui"
 import { SelectInteractiveStateDialogProps } from "./select-interactive-state-dialog-view"
+import { sanitizeMenuItemKey } from "../utils/testids"
 
 interface InnerAppProps {
   app?: string
@@ -153,12 +154,12 @@ class AppView extends React.Component<IAppViewProps, IAppViewState> {
         this.setState({ menuItems: client._ui.menu?.items || [] })
         break
       case 'appendMenuItem': {
-        const updatedMenuItems = [...this.state.menuItems, event.data]
+        const updatedMenuItems = [...this.state.menuItems, this.normalizeCustomMenuItem(event.data)]
         this.setState({ menuItems: updatedMenuItems })
         break
       }
       case 'prependMenuItem': {
-        const updatedMenuItems = [event.data, ...this.state.menuItems]
+        const updatedMenuItems = [this.normalizeCustomMenuItem(event.data), ...this.state.menuItems]
         this.setState({ menuItems: updatedMenuItems })
         break
       }
@@ -166,7 +167,7 @@ class AppView extends React.Component<IAppViewProps, IAppViewState> {
         const index = this._getMenuItemIndex(event.data.key)
         if (index !== -1) {
           const updatedMenuItems = [...this.state.menuItems]
-          updatedMenuItems[index] = event.data.item
+          updatedMenuItems[index] = this.normalizeCustomMenuItem(event.data.item)
           this.setState({ menuItems: updatedMenuItems })
         }
         break
@@ -175,7 +176,7 @@ class AppView extends React.Component<IAppViewProps, IAppViewState> {
         const index = this._getMenuItemIndex(event.data.key)
         if (index !== -1) {
           const updatedMenuItems = [...this.state.menuItems]
-          updatedMenuItems.splice(index, 0, event.data.item)
+          updatedMenuItems.splice(index, 0, this.normalizeCustomMenuItem(event.data.item))
           this.setState({ menuItems: updatedMenuItems })
         }
         break
@@ -184,7 +185,7 @@ class AppView extends React.Component<IAppViewProps, IAppViewState> {
         const index = this._getMenuItemIndex(event.data.key)
         if (index !== -1) {
           const updatedMenuItems = [...this.state.menuItems]
-          updatedMenuItems.splice(index + 1, 0, event.data.item)
+          updatedMenuItems.splice(index + 1, 0, this.normalizeCustomMenuItem(event.data.item))
           this.setState({ menuItems: updatedMenuItems })
         }
         break
@@ -246,6 +247,21 @@ class AppView extends React.Component<IAppViewProps, IAppViewState> {
         return index
       }
     }
+  }
+
+  normalizeCustomMenuItem = (item: CFMMenuItem): CFMMenuItem => {
+    if (typeof item === 'string') return item
+    const key = item.key || ''
+    const testId = item.testId
+    const nestedItems = item.items?.map((nested) => this.normalizeCustomMenuItem(nested))
+    if (testId) {
+      if (testId.startsWith('cfm-menuitem-custom-') || testId.startsWith('cfm-')) {
+        return nestedItems ? { ...item, items: nestedItems } : item
+      }
+      return { ...item, testId: `cfm-menuitem-custom-${testId}`, items: nestedItems }
+    }
+    const sanitizedKey = sanitizeMenuItemKey(key || item.name || 'item')
+    return { ...item, testId: `cfm-menuitem-custom-${sanitizedKey}`, items: nestedItems }
   }
 
   closeDialogs = () => {

@@ -23,10 +23,20 @@ const AlertDialogView: React.FC<AlertDialogViewProps> = ({ title, message, callb
 
   return (
     <ModalDialogView title={title || tr('~ALERT_DIALOG.TITLE')} close={handleClose} zIndex={500}>
-      <div className="alert-dialog">
-        <div className="alert-dialog-message" dangerouslySetInnerHTML={{ __html: message }} />
+      <div className="alert-dialog" data-testid="cfm-dialog-alert">
+        <div
+          className="alert-dialog-message"
+          data-testid="cfm-dialog-alert-message"
+          dangerouslySetInnerHTML={{ __html: message }}
+        />
         <div className="buttons">
-          <button ref={closeButtonRef} onClick={handleClose}>{tr('~ALERT_DIALOG.CLOSE')}</button>
+          <button
+            ref={closeButtonRef}
+            data-testid="cfm-dialog-alert-close-button"
+            onClick={handleClose}
+          >
+            {tr('~ALERT_DIALOG.CLOSE')}
+          </button>
         </div>
       </div>
     </ModalDialogView>

@@ -8,7 +8,7 @@
  * DS207: Consider shorter variations of null checks
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
  */
-import { CloudFileManagerClient } from './client'
+import { CloudFileManagerClient, ConfirmDialogParams } from './client'
 import { CFMMenu, CFMMenuBarOptions, CFMMenuItem, CFMUIMenuOptions, CFMUIOptions } from './app-options'
 import tr  from './utils/translate'
 import isString  from './utils/is-string'
@@ -86,6 +86,24 @@ class CloudFileManagerUIMenu {
       shareSubMenu: tr("~MENU.SHARE")
     }
 
+    const testIds: Record<string, string> = {
+      newFileDialog: 'cfm-menuitem-file-new',
+      openFileDialog: 'cfm-menuitem-file-open',
+      closeFileDialog: 'cfm-menuitem-file-close',
+      save: 'cfm-menuitem-file-save',
+      saveFileAsDialog: 'cfm-menuitem-file-save-as',
+      saveSecondaryFileAsDialog: 'cfm-menuitem-file-export-as',
+      createCopy: 'cfm-menuitem-file-create-copy',
+      downloadDialog: 'cfm-menuitem-file-download',
+      renameDialog: 'cfm-menuitem-file-rename',
+      revertSubMenu: 'cfm-menuitem-file-revert',
+      revertToLastOpenedDialog: 'cfm-menuitem-revert-to-last-opened',
+      revertToSharedDialog: 'cfm-menuitem-revert-to-shared',
+      shareSubMenu: 'cfm-menuitem-file-share',
+      shareGetLink: 'cfm-menuitem-share-get-link',
+      shareUpdate: 'cfm-menuitem-share-update'
+    }
+
     const subMenus: Record<string, CFMMenuItem[]> = {
       revertSubMenu: ['revertToLastOpenedDialog', 'revertToSharedDialog'],
       shareSubMenu: ['shareGetLink', 'shareUpdate']
@@ -104,6 +122,7 @@ class CloudFileManagerUIMenu {
         menuItem = {
           key: item,
           name: this.options.menuNames?.[item] || names[item] || `Unknown item: ${item}`,
+          testId: testIds[item],
           enabled: setEnabled(item),
           items: getItems(subMenus[item]),
           action: setAction(item)
@@ -113,6 +132,9 @@ class CloudFileManagerUIMenu {
         // clients can pass in custom {name:..., action:...} menu items where the action can be a client function name or otherwise it is assumed action is a function
         if (isString(item.action)) {
           menuItem.key = item.action
+          if (!menuItem.testId && testIds[item.action]) {
+            menuItem.testId = testIds[item.action]
+          }
           menuItem.enabled = setEnabled(item.action)
           menuItem.action = setAction(item.action)
         } else {
@@ -253,7 +275,7 @@ class CloudFileManagerUI {
     return this.listenerCallback(new CloudFileManagerUIEvent('hideAlertDialog'))
   }
 
-  confirmDialog(params: any) {
+  confirmDialog(params: ConfirmDialogParams) {
     return this.listenerCallback(new CloudFileManagerUIEvent('showConfirmDialog', params))
   }
 

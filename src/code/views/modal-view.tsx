@@ -38,6 +38,7 @@ const ModalView: React.FC<IProps> = ({ zIndex, close, ariaLabel, ariaLabelledBy,
       <Modal className="modal-content" style={modalStyle}>
         <Dialog
           className="modal-dialog-container"
+          data-testid="cfm-modal-container"
           aria-label={ariaLabelledBy ? undefined : (ariaLabel || "Dialog")}
           aria-labelledby={ariaLabelledBy}
         >

@@ -60,10 +60,11 @@ const DownloadDialogView: React.FC<DownloadDialogViewProps> = ({ filename: initi
 
   return (
     <ModalDialogView title={tr('~DIALOG.DOWNLOAD')} close={close}>
-      <div className="download-dialog">
+      <div className="download-dialog" data-testid="cfm-dialog-download">
         <input
           type="text"
           ref={filenameRef}
+          data-testid="cfm-dialog-download-filename-input"
           placeholder={tr('~FILE_DIALOG.FILENAME')}
           value={filename}
           onChange={handleFilenameChange}
@@ -73,6 +74,7 @@ const DownloadDialogView: React.FC<DownloadDialogViewProps> = ({ filename: initi
           <div className="download-share">
             <input
               type="checkbox"
+              data-testid="cfm-dialog-download-include-share-checkbox"
               checked={includeShareInfo}
               onChange={handleIncludeShareInfoChange}
             />
@@ -80,12 +82,19 @@ const DownloadDialogView: React.FC<DownloadDialogViewProps> = ({ filename: initi
           </div>
         )}
         <div className="buttons">
-          <button className="cancel" onClick={close}>{tr('~DOWNLOAD_DIALOG.CANCEL')}</button>
+          <button
+            className="cancel"
+            data-testid="cfm-dialog-download-cancel-button"
+            onClick={close}
+          >
+            {tr('~DOWNLOAD_DIALOG.CANCEL')}
+          </button>
           <a
             href="#"
             ref={downloadRef}
             className={downloadDisabled ? 'disabled' : ''}
             download={trimmedFilename}
+            data-testid="cfm-dialog-download-link"
             onClick={(e) => handleDownload(e, false)}
           >
             {tr('~DOWNLOAD_DIALOG.DOWNLOAD')}

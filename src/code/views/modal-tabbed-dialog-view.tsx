@@ -1,13 +1,6 @@
 import React from 'react'
 import ModalDialogView from './modal-dialog-view'
-import TabbedPanelView from './tabbed-panel-view'
-
-interface TabInfo {
-  label: string
-  component: React.ReactNode
-  capability?: string
-  onSelected?: (capability?: string) => void
-}
+import TabbedPanelView, { TabInfo } from './tabbed-panel-view'
 
 interface ModalTabbedDialogViewProps {
   title?: string
@@ -15,6 +8,8 @@ interface ModalTabbedDialogViewProps {
   tabs: TabInfo[]
   selectedTabIndex?: number
   close?: () => void
+  dialogTestId?: string
+  dialogName?: string
 }
 
 const ModalTabbedDialogView: React.FC<ModalTabbedDialogViewProps> = ({
@@ -22,11 +17,15 @@ const ModalTabbedDialogView: React.FC<ModalTabbedDialogViewProps> = ({
   titleClassName,
   tabs,
   selectedTabIndex,
-  close
+  close,
+  dialogTestId,
+  dialogName
 }) => {
   return (
     <ModalDialogView title={title} titleClassName={titleClassName} close={close}>
-      <TabbedPanelView tabs={tabs} selectedTabIndex={selectedTabIndex} />
+      <div data-testid={dialogTestId}>
+        <TabbedPanelView tabs={tabs} selectedTabIndex={selectedTabIndex} dialogName={dialogName} />
+      </div>
     </ModalDialogView>
   )
 }

@@ -15,13 +15,15 @@ const BlockingModalView: React.FC<BlockingModalViewProps> = ({ title, message, c
 
   return (
     <ModalView zIndex={500} close={close} ariaLabel={title || message || "Dialog"}>
-      <div className="modal-dialog" onDrop={handleDrop}>
-        <div className="modal-dialog-wrapper">
-          <div className="modal-dialog-title">
+      <div className="modal-dialog" data-testid="cfm-blocking-modal" onDrop={handleDrop}>
+        <div className="modal-dialog-wrapper" data-testid="cfm-blocking-modal-wrapper">
+          <div className="modal-dialog-title" data-testid="cfm-blocking-modal-title">
             {title || 'Untitled Dialog'}
           </div>
-          <div className="modal-dialog-workspace">
-            <div className="modal-dialog-blocking-message">{message}</div>
+          <div className="modal-dialog-workspace" data-testid="cfm-blocking-modal-workspace">
+            <div className="modal-dialog-blocking-message" data-testid="cfm-blocking-modal-message">
+              {message}
+            </div>
           </div>
         </div>
       </div>

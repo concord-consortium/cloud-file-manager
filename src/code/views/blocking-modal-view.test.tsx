@@ -97,10 +97,10 @@ describe('BlockingModalView', () => {
       <BlockingModalView title="Title" message="Message" />
     )
 
-    expect(document.querySelector('.modal-dialog')).toBeInTheDocument()
-    expect(document.querySelector('.modal-dialog-wrapper')).toBeInTheDocument()
-    expect(document.querySelector('.modal-dialog-title')).toBeInTheDocument()
-    expect(document.querySelector('.modal-dialog-workspace')).toBeInTheDocument()
-    expect(document.querySelector('.modal-dialog-blocking-message')).toBeInTheDocument()
+    expect(screen.getByTestId('cfm-blocking-modal')).toBeInTheDocument()
+    expect(screen.getByTestId('cfm-blocking-modal-wrapper')).toBeInTheDocument()
+    expect(screen.getByTestId('cfm-blocking-modal-title')).toBeInTheDocument()
+    expect(screen.getByTestId('cfm-blocking-modal-workspace')).toBeInTheDocument()
+    expect(screen.getByTestId('cfm-blocking-modal-message')).toBeInTheDocument()
   })
 })

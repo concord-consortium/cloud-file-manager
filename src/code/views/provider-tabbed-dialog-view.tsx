@@ -6,6 +6,7 @@ import ModalTabbedDialog from './modal-tabbed-dialog-view'
 import FileDialogTab from './file-dialog-tab-view'
 import SelectProviderDialogTab from './select-provider-dialog-tab-view'
 import { ProviderInterface, CloudMetadata, ECapabilities } from '../providers/provider-interface'
+import { providerTestIdName } from '../utils/testids'
 
 // Create factories for the tab components
 const FileDialogTabFactory = createReactFactory(FileDialogTab)
@@ -43,6 +44,15 @@ const actionTitleClassMap: Record<string, string> = {
   createCopy: 'dialog-save',
 }
 
+const actionDialogNameMap: Record<string, string> = {
+  openFile: 'open',
+  saveFile: 'save',
+  saveFileAs: 'save-as',
+  saveSecondaryFileAs: 'export',
+  createCopy: 'make-copy',
+  selectProvider: 'select-provider'
+}
+
 const ProviderTabbedDialog: React.FC<ProviderTabbedDialogProps> = ({ dialog, close, client }) => {
   const getDialogConfig = (): DialogConfig => {
     switch (dialog.action) {
@@ -72,11 +82,13 @@ const ProviderTabbedDialog: React.FC<ProviderTabbedDialogProps> = ({ dialog, clo
           provider
         })
         const onSelected = (provider as any).onProviderTabSelected?.bind(provider)
+        const tabKey = providerTestIdName(provider.name)
         tabs.push(TabbedPanel.Tab({
           label: tr(provider.displayName ?? ''),
           component,
           capability: capability ?? undefined,
-          onSelected
+          onSelected,
+          key: tabKey
         }))
         if (provider.name === client.state.metadata?.provider?.name) {
           selectedTabIndex = tabs.length - 1
@@ -85,6 +97,9 @@ const ProviderTabbedDialog: React.FC<ProviderTabbedDialogProps> = ({ dialog, clo
     }
   }
 
+  const dialogName = actionDialogNameMap[dialog.action]
+  const dialogTestId = dialogName ? `cfm-dialog-${dialogName}` : undefined
+
   return (
     <ModalTabbedDialog
       title={tr(dialog.title)}
@@ -92,6 +107,8 @@ const ProviderTabbedDialog: React.FC<ProviderTabbedDialogProps> = ({ dialog, clo
       close={close}
       tabs={tabs}
       selectedTabIndex={selectedTabIndex}
+      dialogTestId={dialogTestId}
+      dialogName={dialogName}
     />
   )
 }

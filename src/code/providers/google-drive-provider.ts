@@ -4,6 +4,7 @@ import { CFMGoogleDriveProviderOptions } from '../app-options'
 import { CloudFileManagerClient } from '../client'
 import { createReactClassFactory } from '../create-react-factory'
 import tr, { getDefaultLang } from '../utils/translate'
+import { providerTestIdName, withTestId } from '../utils/testids'
 import {
   AuthorizedOptions,
   cloudContentFactory, CloudMetadata, ECapabilities, ICloudFileTypes, ProviderCloseCallback, ProviderInterface,
@@ -266,7 +267,7 @@ const GoogleFileDialogTabView = createReactClassFactory({
         if (fileId) {
           // user picked a file so confirm if they want to overwrite it
           const prompt = tr("~FILE_DIALOG.OVERWRITE_CONFIRM", {filename: pickedName})
-          this.props.client.confirm(prompt, finishSave)
+          this.props.client.confirm(prompt, finishSave, undefined, 'google-drive-save-prompt')
         } else {
           finishSave()
         }
@@ -305,14 +306,14 @@ const GoogleFileDialogTabView = createReactClassFactory({
   },
 
   renderLogo() {
-    return (div({ className: 'google-drive-concord-logo' }, ''))
+    return (div(withTestId({ className: 'google-drive-concord-logo' }, 'cfm-google-drive-auth-logo'), ''))
   },
 
   renderUserInfo() {
     const { user } = this.props
     if (user) {
       return (
-        div({ className: "provider-message" },
+        div(withTestId({ className: "provider-message" }, 'cfm-google-drive-auth-user'),
           div({}, span({ style: { marginRight: 5 } }, tr("~GOOGLE_DRIVE.USERNAME_LABEL")), strong({}, user.name)),
           // HOTFIX: remove this until we can figure out why it is requesting more scopes
           // div({ className: "provider-message-action", onClick: this.props.logout }, tr("~GOOGLE_DRIVE.SELECT_DIFFERENT_ACCOUNT"))
@@ -322,10 +323,15 @@ const GoogleFileDialogTabView = createReactClassFactory({
   },
 
   renderOpen() {
-    return (div({ className: 'dialogTab googleFileDialogTab openDialog', ref: ((elt: any) => { return this.ref = elt }) },
+    return (div(withTestId({
+      className: 'dialogTab googleFileDialogTab openDialog',
+      ref: ((elt: any) => { return this.ref = elt })
+    }, 'cfm-google-drive-open-panel'),
       this.renderLogo(),
       (div({ className: 'main-buttons' },
-        (button({ onClick: () => this.showPicker("file") }, tr("~GOOGLE_DRIVE.REOPEN_DRIVE"))),
+        (button(withTestId({
+          onClick: () => this.showPicker("file")
+        }, 'cfm-google-drive-open-panel-reopen-button'), tr("~GOOGLE_DRIVE.REOPEN_DRIVE"))),
       )),
       this.renderUserInfo(),
       (div({ className: 'buttons' },
@@ -337,13 +343,35 @@ const GoogleFileDialogTabView = createReactClassFactory({
   renderSave() {
     const canSave = this.state.filename.trim().length > 0
     const saveClassName = canSave ? "" : "disabled"
-    return (div({ className: 'dialogTab googleFileDialogTab saveDialog', ref: ((elt: any) => { return this.ref = elt }) },
-      (input({ type: 'text', ref: ((elt: any) => { return this.filenameRef = elt }), value: this.state.filename, placeholder: (tr("~FILE_DIALOG.FILENAME")), onChange: this.filenameChanged, onKeyDown: this.watchForEnter })),
+    return (div(withTestId({
+      className: 'dialogTab googleFileDialogTab saveDialog',
+      ref: ((elt: any) => { return this.ref = elt })
+    }, 'cfm-google-drive-save-panel'),
+      (input(withTestId({
+        type: 'text',
+        ref: ((elt: any) => { return this.filenameRef = elt }),
+        value: this.state.filename,
+        placeholder: (tr("~FILE_DIALOG.FILENAME")),
+        onChange: this.filenameChanged,
+        onKeyDown: this.watchForEnter
+      }, 'cfm-google-drive-save-panel-filename-input'))),
       this.renderLogo(),
       (div({ className: 'main-buttons' },
-        (button({ onClick: this.save, className: saveClassName, disabled: !canSave }, tr("~GOOGLE_DRIVE.QUICK_SAVE"))),
-        (button({ onClick: () => this.showPicker("folder"), className: saveClassName, disabled: !canSave }, tr("~GOOGLE_DRIVE.PICK_FOLDER"))),
-        (button({ onClick: () => this.showPicker("file"), className: saveClassName, disabled: !canSave }, tr("~GOOGLE_DRIVE.PICK_FILE"))),
+        (button(withTestId({
+          onClick: this.save,
+          className: saveClassName,
+          disabled: !canSave
+        }, 'cfm-google-drive-save-panel-quick-save-button'), tr("~GOOGLE_DRIVE.QUICK_SAVE"))),
+        (button(withTestId({
+          onClick: () => this.showPicker("folder"),
+          className: saveClassName,
+          disabled: !canSave
+        }, 'cfm-google-drive-save-panel-pick-folder-button'), tr("~GOOGLE_DRIVE.PICK_FOLDER"))),
+        (button(withTestId({
+          onClick: () => this.showPicker("file"),
+          className: saveClassName,
+          disabled: !canSave
+        }, 'cfm-google-drive-save-panel-pick-file-button'), tr("~GOOGLE_DRIVE.PICK_FILE"))),
       )),
       this.renderUserInfo(),
       (div({ className: 'buttons' },
@@ -398,21 +426,28 @@ const GoogleDriveAuthorizationDialog = createReactClassFactory({
 
   render() {
     const messageMap: Record<ELoadState, React.ReactChild> = {
-      [ELoadState.notLoaded]: tr("~GOOGLE_DRIVE.CONNECTING_MESSAGE"),
-      [ELoadState.loaded]: button({ className: 'google-login-button', autoFocus: true, onClick: this.authenticate },
+      [ELoadState.notLoaded]: div(withTestId({}, 'cfm-google-drive-auth-connecting'), tr("~GOOGLE_DRIVE.CONNECTING_MESSAGE")),
+      [ELoadState.loaded]: button(withTestId({
+        className: 'google-login-button',
+        autoFocus: true,
+        onClick: this.authenticate
+      }, 'cfm-google-drive-auth-login-button'),
         span({ className: 'google-g-logo', 'aria-hidden': true }),
         tr("~GOOGLE_DRIVE.LOGIN_BUTTON_LABEL")),
-      [ELoadState.errored]: tr("~GOOGLE_DRIVE.ERROR_CONNECTING_MESSAGE"),
-      [ELoadState.missingScopes]: div({ className: 'google-drive-missing-scopes' },
+      [ELoadState.errored]: div(withTestId({}, 'cfm-google-drive-auth-error'), tr("~GOOGLE_DRIVE.ERROR_CONNECTING_MESSAGE")),
+      [ELoadState.missingScopes]: div(withTestId({ className: 'google-drive-missing-scopes' }, 'cfm-google-drive-auth-missing-scopes'),
         div({}, tr("~GOOGLE_DRIVE.MISSING_SCOPES_MESSAGE")),
-        div({}, button({ className: 'google-login-button', onClick: this.authenticate },
+        div({}, button(withTestId({
+          className: 'google-login-button',
+          onClick: this.authenticate
+        }, 'cfm-google-drive-auth-login-button'),
           span({ className: 'google-g-logo', 'aria-hidden': true }),
           tr("~GOOGLE_DRIVE.LOGIN_BUTTON_LABEL")))
       ),
     }
     const contents = messageMap[this.state.apiLoadState as ELoadState] || "An unknown error occurred!"
-    return (div({ className: 'google-drive-auth' },
-      (div({ className: 'google-drive-concord-logo' }, '')),
+    return (div(withTestId({ className: 'google-drive-auth' }, 'cfm-google-drive-auth-panel'),
+      (div(withTestId({ className: 'google-drive-concord-logo' }, 'cfm-google-drive-auth-logo'), '')),
       (div({ className: 'google-drive-footer' },
         contents
       ))
@@ -520,9 +555,11 @@ class GoogleDriveProvider extends ProviderInterface {
           return this.client.confirmDialog({
             className: 'login-to-google-confirm-dialog',
             title: tr('~PROVIDER.GOOGLE_DRIVE'),
+            message: '',
             yesTitle: tr('~GOOGLE_DRIVE.LOGIN_BUTTON_LABEL'),
             hideNoButton: true,
             hideTitleText: true,
+            confirmKind: 'google-login',
             callback: () => {
               return this.doAuthorize(GoogleDriveProvider.SHOW_POPUP)
             }
@@ -579,7 +616,8 @@ class GoogleDriveProvider extends ProviderInterface {
 
   renderUser() {
     if (this.user) {
-      return (span({ className: 'gdrive-user' }, (span({ className: 'gdrive-icon' })), this.user.name))
+      const providerName = providerTestIdName(GoogleDriveProvider.Name)
+      return (span(withTestId({ className: 'gdrive-user' }, `cfm-menu-bar-user-${providerName}`), (span({ className: 'gdrive-icon' })), this.user.name))
     } else {
       return null
     }

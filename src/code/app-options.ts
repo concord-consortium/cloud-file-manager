@@ -4,6 +4,7 @@ import { CloudContent } from "./providers/provider-interface"
 export interface CFMMenuItemObject {
   name?: string
   key?: string
+  testId?: string
   action?: string | (() => void)
   items?: CFMMenuItem[]
   enabled?: boolean | (() => boolean)

@@ -17,18 +17,18 @@ const ModalDialogView: React.FC<IProps> = ({ title, titleClassName, zIndex = 10,
   const titleClasses = classNames('modal-dialog-title', titleClassName)
   return (
     <ModalView zIndex={zIndex} close={close} ariaLabelledBy={titleId}>
-      <div className='modal-dialog' data-testid='modal-dialog'>
-        <div className='modal-dialog-wrapper'>
-          <div className={titleClasses} data-testid='modal-dialog-title'>
+      <div className='modal-dialog' data-testid='cfm-dialog-shell'>
+        <div className='modal-dialog-wrapper' data-testid='cfm-dialog-wrapper'>
+          <div className={titleClasses} data-testid='cfm-dialog-title'>
             <span id={titleId}>{title || 'Untitled Dialog'}</span>
             {close ? <button
                 className='modal-dialog-title-close'
-                data-testid='modal-dialog-close'
+                data-testid='cfm-dialog-close-button'
                 aria-label={tr("~ALERT_DIALOG.CLOSE")}
                 onClick={() => close?.()}
               /> : undefined}
           </div>
-          <div className='modal-dialog-workspace' data-testid='modal-dialog-workspace'>
+          <div className='modal-dialog-workspace' data-testid='cfm-dialog-workspace'>
             {children}
           </div>
         </div>

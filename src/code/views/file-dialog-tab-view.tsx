@@ -159,6 +159,7 @@ const FileList: React.FC<FileListProps> = ({
         <div
           key="parent"
           className="selectable"
+          data-testid="cfm-file-dialog-parent-folder"
           role="option"
           aria-selected={false}
           tabIndex={0}
@@ -189,9 +190,14 @@ const FileList: React.FC<FileListProps> = ({
   }
 
   return (
-    <div className="filelist" role="listbox" aria-label={tr("~FILE_DIALOG.FILENAME")}>
+    <div
+      className="filelist"
+      data-testid="cfm-file-dialog-file-list"
+      role="listbox"
+      aria-label={tr("~FILE_DIALOG.FILENAME")}
+    >
       {loading ? (
-        <div key="loading">{tr("~FILE_DIALOG.LOADING")}</div>
+        <div key="loading" data-testid="cfm-file-dialog-loading">{tr("~FILE_DIALOG.LOADING")}</div>
       ) : (
         overrideMessage || listContent
       )}
@@ -218,7 +224,7 @@ interface FileDialogTabProps {
       currentContent?: any
     }
     alert: (message: string, title?: string) => void
-    confirm: (message: string, callback: () => void) => void
+    confirm: (message: string, callback: () => void, rejectCallback?: () => void, confirmKind?: string) => void
   }
   provider: ProviderInterface
 }
@@ -405,7 +411,12 @@ const FileDialogTab: React.FC<FileDialogTabProps> = ({ dialog, close, client, pr
       if (isOpen()) {
         confirmed(metadata)
       } else if (existingMetadata) {
-        client.confirm(tr("~FILE_DIALOG.OVERWRITE_CONFIRM", { filename: existingMetadata.name }), () => confirmed(existingMetadata))
+        client.confirm(
+          tr("~FILE_DIALOG.OVERWRITE_CONFIRM", { filename: existingMetadata.name }),
+          () => confirmed(existingMetadata),
+          undefined,
+          'overwrite-file'
+        )
       } else {
         confirmed(metadata)
       }
@@ -440,7 +451,7 @@ const FileDialogTab: React.FC<FileDialogTabProps> = ({ dialog, close, client, pr
             }))
           }
         })
-      })
+      }, undefined, 'remove-file')
     }
   }
 
@@ -473,17 +484,18 @@ const FileDialogTab: React.FC<FileDialogTabProps> = ({ dialog, close, client, pr
     const listFiltered = list.length !== state.list.length
 
     const overrideMessage = filtering && listFiltered && list.length === 0
-      ? <div>No files found matching &ldquo;{search}&rdquo;</div>
+      ? <div data-testid="cfm-file-dialog-no-matches">No files found matching &ldquo;{search}&rdquo;</div>
       : null
 
     // when exporting only show folders as we can't filter based on mimetypes like text/csv or image/png to show only those files
     const listOptions: IListOptions | undefined = isExport() && dialog.data?.extension ? { extension: dialog.data.extension } : undefined
 
     return (
-      <div className="dialogTab">
+      <div className="dialogTab" data-testid="cfm-file-dialog-tab">
         <input
           type="text"
           value={search}
+          data-testid={isOpenAction ? 'cfm-file-dialog-filter-input' : 'cfm-file-dialog-filename-input'}
           aria-label={tr(isOpenAction ? "~FILE_DIALOG.FILTER" : "~FILE_DIALOG.FILENAME")}
           placeholder={tr(isOpenAction ? "~FILE_DIALOG.FILTER" : "~FILE_DIALOG.FILENAME")}
           autoFocus
@@ -496,6 +508,7 @@ const FileDialogTab: React.FC<FileDialogTabProps> = ({ dialog, close, client, pr
             className="dialogClearFilter"
             title={tr("~FILE_DIALOG.CLEAR_FILTER")}
             aria-label={tr("~FILE_DIALOG.CLEAR_FILTER")}
+            data-testid="cfm-file-dialog-clear-filter-button"
             onClick={clearListFilter}
           >×</button>
         )}
@@ -511,12 +524,15 @@ const FileDialogTab: React.FC<FileDialogTabProps> = ({ dialog, close, client, pr
           overrideMessage={overrideMessage}
           listOptions={listOptions}
         />
-        <div className="buttons">
-          <button className="cancel" onClick={cancel}>{tr("~FILE_DIALOG.CANCEL")}</button>
+        <div className="buttons" data-testid="cfm-file-dialog-actions">
+          <button className="cancel" data-testid="cfm-file-dialog-cancel-button" onClick={cancel}>
+            {tr("~FILE_DIALOG.CANCEL")}
+          </button>
           <button
             onClick={() => confirm()}
             disabled={disabled}
             className={disabled ? 'disabled' : undefined}
+            data-testid="cfm-file-dialog-confirm-button"
           >
             {isOpenAction ? tr("~FILE_DIALOG.OPEN") : tr("~FILE_DIALOG.SAVE")}
           </button>
@@ -525,6 +541,7 @@ const FileDialogTab: React.FC<FileDialogTabProps> = ({ dialog, close, client, pr
               onClick={remove}
               disabled={removeDisabled}
               className={removeDisabled ? 'disabled' : ''}
+              data-testid="cfm-file-dialog-remove-button"
             >
               {tr("~FILE_DIALOG.REMOVE")}
             </button>
@@ -544,7 +561,11 @@ const FileDialogTab: React.FC<FileDialogTabProps> = ({ dialog, close, client, pr
     }
     return renderWhenAuthorized()
   } else {
-    return provider.renderAuthorizationDialog()
+    return (
+      <div data-testid="cfm-file-dialog-auth-required">
+        {provider.renderAuthorizationDialog() as any}
+      </div>
+    )
   }
 }
 
