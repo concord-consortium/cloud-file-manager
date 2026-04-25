@@ -152,5 +152,14 @@
   "~GOOGLE_DRIVE.SELECT_A_FILE": "파일 선택",
   "~GOOGLE_DRIVE.SELECT_A_FOLDER": "폴더 선택",
   "~GOOGLE_DRIVE.STARRED": "별표 표시됨",
-  "~GOOGLE_DRIVE.SELECT_VALID_FILE": "앱에서 유효한 파일을 선택하세요"
+  "~GOOGLE_DRIVE.SELECT_VALID_FILE": "앱에서 유효한 파일을 선택하세요",
+  "~MENUBAR.APP_IFRAME_TITLE": "Application",
+  "~MENUBAR.TOOLBAR_LABEL": "Menu bar",
+  "~MENUBAR.ABOUT_APP": "About %{appName}",
+  "~MENUBAR.ABOUT": "About this application",
+  "~MENUBAR.RENAME_DOCUMENT": "Document name",
+  "~MENUBAR.RENAME_FILENAME": "Rename %{filename}",
+  "~FILE_DIALOG.CLEAR_FILTER": "Clear filter",
+  "~FILE_DIALOG.FILE_NOT_FOUND": "%{filename} not found",
+  "~GOOGLE_DRIVE.UNABLE_TO_LOAD": "Unable to load file"
 }
