@@ -5,17 +5,19 @@ OUTPUT_DIR=src/code/utils/lang
 # el: Greek
 # es: Spanish
 # fa: Farsi
+# fr: French
 # he: Hebrew
 # ja: Japanese
 # ko: Korean
 # nb: Norwegian Bokmal
+# nl: Dutch
 # nn: Norwegian Nynorsk
 # pl: Polish Polski
 # pt-BR: Brazilian Portuguese
 # tr: Turkish
 # zh-Hans: Simplified Chinese
 # zh-TW: Traditional Chinese (Taiwan)
-LANGUAGES=("de" "el" "es" "fa" "he" "ja" "ko" "nb" "nn" "pl" "pt-BR" "th" "tr" "zh-Hans" "zh-TW")
+LANGUAGES=("de" "el" "es" "fa" "fr" "he" "ja" "ko" "nb" "nl" "nn" "pl" "pt-BR" "th" "tr" "zh-Hans" "zh-TW")
 
 # argument processing from https://stackoverflow.com/a/14203146
 while [[ $# -gt 1 ]]
