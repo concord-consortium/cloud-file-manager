@@ -1202,22 +1202,31 @@ class CloudFileManagerClient {
     return (this._autoSaveInterval != null)
   }
 
-  changeLanguage(newLangCode: string, callback: (newLangCode?: string) => void) {
-    setCurrentLanguage(newLangCode)
-    if (callback) {
-      const postSave = (err: string | null) => {
+  changeLanguage(newLangCode: string, callback: ((newLangCode?: string) => void) | null = null) {
+    const finishLanguageChange = () => {
+      setCurrentLanguage(newLangCode)
+      callback?.(newLangCode)
+    }
+
+    if (this.appOptions.saveOnLanguageChange === false) {
+      return finishLanguageChange()
+    }
+
+    const metadata = this.state.metadata
+    if (metadata?.provider?.can(ECapabilities.save, metadata)) {
+      // OpenSaveCallback fires only on success; saveFileNoDialog handles save errors
+      // itself (alert + retry) and never invokes the callback on failure. The language
+      // change is therefore tied to save success — a save failure leaves the language
+      // unchanged, matching the user's likely intent (they'll retry the save).
+      return this.save(finishLanguageChange)
+    } else {
+      return this.saveTempFile((err: string | null) => {
         if (err) {
           this.alert(err)
-          return this.confirm(tr('~CONFIRM.CHANGE_LANGUAGE'), () => callback(newLangCode), undefined, 'change-language')
-        } else {
-          return callback(newLangCode)
+          return this.confirm(tr('~CONFIRM.CHANGE_LANGUAGE'), finishLanguageChange, undefined, 'change-language')
         }
-      }
-      if (this.state.metadata?.provider?.can(ECapabilities.save)) {
-        return this.save((err: string | null) => postSave(err))
-      } else {
-        return this.saveTempFile(postSave)
-      }
+        return finishLanguageChange()
+      })
     }
   }
 

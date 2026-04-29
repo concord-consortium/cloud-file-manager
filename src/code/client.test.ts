@@ -1,5 +1,6 @@
 import {CloudFileManagerClient, CloudFileManagerClientEvent} from "./client"
 import { CloudContent } from "./providers/provider-interface"
+import { getCurrentLanguage } from "./utils/translate"
 
 jest.mock('@concord-consortium/lara-interactive-api')
 const mockApi = require('@concord-consortium/lara-interactive-api')
@@ -158,6 +159,84 @@ describe("CloudFileManagerClient", () => {
       })
     })
 
+  })
+
+  describe("changeLanguage", () => {
+    let client: CloudFileManagerClient
+
+    beforeEach(() => {
+      client = new CloudFileManagerClient()
+      client.setAppOptions({ providers: ["testProvider"] })
+      client._setState({metadata: {
+        name: "foo.txt",
+        provider: client.providers.testProvider,
+        overwritable: true
+      } as any})
+      client.listen((event) => {
+        if (event.type === "getContent") {
+          event.callback?.("file-content")
+        }
+      })
+    })
+
+    test("skips save when saveOnLanguageChange is false", (done) => {
+      client.appOptions.saveOnLanguageChange = false
+      const saveSpy = jest.spyOn(client, "save")
+      const tempSaveSpy = jest.spyOn(client, "saveTempFile")
+      const confirmSpy = jest.spyOn(client, "confirm")
+
+      client.changeLanguage("fr", (lang) => {
+        expect(lang).toBe("fr")
+        expect(saveSpy).not.toHaveBeenCalled()
+        expect(tempSaveSpy).not.toHaveBeenCalled()
+        expect(confirmSpy).not.toHaveBeenCalled()
+        done()
+      })
+    })
+
+    test("saves and proceeds without confirm/alert dialogs on success (default)", (done) => {
+      const confirmSpy = jest.spyOn(client, "confirm")
+      const alertSpy = jest.spyOn(client, "alert")
+
+      client.changeLanguage("de", (lang) => {
+        expect(lang).toBe("de")
+        expect(confirmSpy).not.toHaveBeenCalled()
+        expect(alertSpy).not.toHaveBeenCalled()
+        done()
+      })
+    })
+
+    test("saves and proceeds without confirm/alert dialogs when saveOnLanguageChange is true", (done) => {
+      client.appOptions.saveOnLanguageChange = true
+      const saveSpy = jest.spyOn(client, "save")
+      const confirmSpy = jest.spyOn(client, "confirm")
+      const alertSpy = jest.spyOn(client, "alert")
+
+      client.changeLanguage("ja", (lang) => {
+        expect(lang).toBe("ja")
+        expect(saveSpy).toHaveBeenCalled()
+        expect(confirmSpy).not.toHaveBeenCalled()
+        expect(alertSpy).not.toHaveBeenCalled()
+        done()
+      })
+    })
+
+    test("does not change language when save fails", (done) => {
+      // force the test provider's save to report failure
+      client.providers.testProvider.save = (_c: any, _m: any, cb: any) => cb?.("save failed", 500)
+      jest.spyOn(client, "alert").mockImplementation()
+      const langBefore = getCurrentLanguage()
+      const callback = jest.fn()
+
+      client.changeLanguage("xx-fail", callback)
+
+      setImmediate(() => {
+        expect(callback).not.toHaveBeenCalled()
+        expect(getCurrentLanguage()).toBe(langBefore)
+        expect(getCurrentLanguage()).not.toBe("xx-fail")
+        done()
+      })
+    })
   })
 
   describe("getCurrentUrl", () => {
