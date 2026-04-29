@@ -1189,20 +1189,25 @@ class CloudFileManagerClient {
 
   changeLanguage(newLangCode: string, callback: (newLangCode?: string) => void) {
     setCurrentLanguage(newLangCode)
-    if (callback) {
-      const postSave = (err: string | null) => {
+    if (!callback) return
+
+    if (this.appOptions.saveOnLanguageChange === false) {
+      return callback(newLangCode)
+    }
+
+    if (this.state.metadata?.provider?.can(ECapabilities.save)) {
+      // OpenSaveCallback fires only on success; saveFileNoDialog handles save errors
+      // itself (alert + retry) and never invokes the callback on failure, so a save
+      // error abandons the language change rather than prompting the user.
+      return this.save(() => callback(newLangCode))
+    } else {
+      return this.saveTempFile((err: string | null) => {
         if (err) {
           this.alert(err)
           return this.confirm(tr('~CONFIRM.CHANGE_LANGUAGE'), () => callback(newLangCode))
-        } else {
-          return callback(newLangCode)
         }
-      }
-      if (this.state.metadata?.provider?.can(ECapabilities.save)) {
-        return this.save((err: string | null) => postSave(err))
-      } else {
-        return this.saveTempFile(postSave)
-      }
+        return callback(newLangCode)
+      })
     }
   }
 

@@ -160,6 +160,67 @@ describe("CloudFileManagerClient", () => {
 
   })
 
+  describe("changeLanguage", () => {
+    let client: CloudFileManagerClient
+
+    beforeEach(() => {
+      client = new CloudFileManagerClient()
+      client.setAppOptions({ providers: ["testProvider"] })
+      client._setState({metadata: {
+        name: "foo.txt",
+        provider: client.providers.testProvider,
+        overwritable: true
+      } as any})
+      client.listen((event) => {
+        if (event.type === "getContent") {
+          event.callback?.("file-content")
+        }
+      })
+    })
+
+    test("skips save when saveOnLanguageChange is false", (done) => {
+      client.appOptions.saveOnLanguageChange = false
+      const saveSpy = jest.spyOn(client, "save")
+      const tempSaveSpy = jest.spyOn(client, "saveTempFile")
+      const confirmSpy = jest.spyOn(client, "confirm")
+
+      client.changeLanguage("fr", (lang) => {
+        expect(lang).toBe("fr")
+        expect(saveSpy).not.toHaveBeenCalled()
+        expect(tempSaveSpy).not.toHaveBeenCalled()
+        expect(confirmSpy).not.toHaveBeenCalled()
+        done()
+      })
+    })
+
+    test("saves and proceeds without confirm/alert dialogs on success (default)", (done) => {
+      const confirmSpy = jest.spyOn(client, "confirm")
+      const alertSpy = jest.spyOn(client, "alert")
+
+      client.changeLanguage("de", (lang) => {
+        expect(lang).toBe("de")
+        expect(confirmSpy).not.toHaveBeenCalled()
+        expect(alertSpy).not.toHaveBeenCalled()
+        done()
+      })
+    })
+
+    test("saves and proceeds without confirm/alert dialogs when saveOnLanguageChange is true", (done) => {
+      client.appOptions.saveOnLanguageChange = true
+      const saveSpy = jest.spyOn(client, "save")
+      const confirmSpy = jest.spyOn(client, "confirm")
+      const alertSpy = jest.spyOn(client, "alert")
+
+      client.changeLanguage("ja", (lang) => {
+        expect(lang).toBe("ja")
+        expect(saveSpy).toHaveBeenCalled()
+        expect(confirmSpy).not.toHaveBeenCalled()
+        expect(alertSpy).not.toHaveBeenCalled()
+        done()
+      })
+    })
+  })
+
   describe("getCurrentUrl", () => {
     let location: Location
     let client: CloudFileManagerClient

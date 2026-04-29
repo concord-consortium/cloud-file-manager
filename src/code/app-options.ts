@@ -175,4 +175,7 @@ export interface CFMAppOptions {
   renderRoot?: (content: React.ReactNode, container: HTMLElement) => void
   // when usingIframe, specifies the `allow` property of the iframe (permissions policy)
   iframeAllow?: string
+  // if false, language changes do not trigger a save first
+  // default (undefined or true) preserves legacy behavior, appropriate for apps that reload on language change
+  saveOnLanguageChange?: boolean
 }
