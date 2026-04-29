@@ -1,5 +1,6 @@
 import {CloudFileManagerClient, CloudFileManagerClientEvent} from "./client"
 import { CloudContent } from "./providers/provider-interface"
+import { getCurrentLanguage } from "./utils/translate"
 
 jest.mock('@concord-consortium/lara-interactive-api')
 const mockApi = require('@concord-consortium/lara-interactive-api')
@@ -216,6 +217,23 @@ describe("CloudFileManagerClient", () => {
         expect(saveSpy).toHaveBeenCalled()
         expect(confirmSpy).not.toHaveBeenCalled()
         expect(alertSpy).not.toHaveBeenCalled()
+        done()
+      })
+    })
+
+    test("does not change language when save fails", (done) => {
+      // force the test provider's save to report failure
+      client.providers.testProvider.save = (_c: any, _m: any, cb: any) => cb?.("save failed", 500)
+      jest.spyOn(client, "alert").mockImplementation()
+      const langBefore = getCurrentLanguage()
+      const callback = jest.fn()
+
+      client.changeLanguage("xx-fail", callback)
+
+      setImmediate(() => {
+        expect(callback).not.toHaveBeenCalled()
+        expect(getCurrentLanguage()).toBe(langBefore)
+        expect(getCurrentLanguage()).not.toBe("xx-fail")
         done()
       })
     })
