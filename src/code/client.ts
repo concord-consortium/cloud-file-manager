@@ -1197,7 +1197,8 @@ class CloudFileManagerClient {
       return finishLanguageChange()
     }
 
-    if (this.state.metadata?.provider?.can(ECapabilities.save)) {
+    const metadata = this.state.metadata
+    if (metadata?.provider?.can(ECapabilities.save, metadata)) {
       // OpenSaveCallback fires only on success; saveFileNoDialog handles save errors
       // itself (alert + retry) and never invokes the callback on failure. The language
       // change is therefore tied to save success — a save failure leaves the language
