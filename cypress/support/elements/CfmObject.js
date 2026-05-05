@@ -201,7 +201,7 @@ class CfmObject{
         //&redirect_uri=storagerelay%3A%2F%2Fhttp%2Flocalhost%3A8080%3Fid%3Dauth382299&client_id=107140815081-p1so3nbhgvbeio1imeigd8sf1ve7l6tj.apps.googleusercontent.com
         //&ss_domain=http%3A%2F%2Flocalhost%3A8080&gsiwebsdk=shim&o2v=1&as=YqVf37GwUvUNK1LOLRAmYA&flowName=GeneralOAuthFlow
         //https://accounts.google.com/signin/oauth/identifier?response_type=permission%20id_token&scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fdrive%20https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fdrive.install%20https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fdrive.file%20https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.profile&openid.realm&redirect_uri=storagerelay%3A%2F%2Fhttp%2Fconcord-consortium.github.io%3Fid%3Dauth892717&client_id=107140815081-p1so3nbhgvbeio1imeigd8sf1ve7l6tj.apps.googleusercontent.com&ss_domain=http%3A%2F%2Fconcord-consortium.github.io&gsiwebsdk=shim&o2v=1&as=RsVkg4YHV_NwB2SkafuS3g&flowName=GeneralOAuthFlow
-        cy.get('.button').contains('Login to Google').click();
+        cy.get('.button').contains('Sign in with Google').click();
     }
 
     getModalDialogTitle(){

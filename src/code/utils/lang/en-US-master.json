@@ -143,7 +143,7 @@
 
   "~ALERT.NO_PROVIDER": "Could not open the specified document because an appropriate provider is not available.",
 
-  "~GOOGLE_DRIVE.LOGIN_BUTTON_LABEL": "Login to Google",
+  "~GOOGLE_DRIVE.LOGIN_BUTTON_LABEL": "Sign in with Google",
   "~GOOGLE_DRIVE.CONNECTING_MESSAGE": "Connecting to Google...",
   "~GOOGLE_DRIVE.ERROR_CONNECTING_MESSAGE": "Error connecting to Google!",
   "~GOOGLE_DRIVE.ERROR_MISSING_APIKEY": "Missing required apiKey in googleDrive provider options",
