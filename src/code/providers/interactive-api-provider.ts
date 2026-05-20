@@ -61,18 +61,18 @@ interface InteractiveApiProviderParams {
 // pass `interactiveApi=attachment` as url parameter to always save state as an attachment
 export const kAttachmentUrlParameter = "attachment"
 
-// Inline interactive state below this size is saved directly into the Firestore
-// answer document; above it, state is offloaded to an S3 attachment.
+// Interactive state at or above this size is offloaded to an S3 attachment;
+// smaller state is saved directly into the Firestore answer document.
 //
-// CFM-18: this was 480 KiB, justified as "can save it twice with room to spare in
-// the 1MB Firestore limit" (480 * 2 = 960 KB). That math was wrong. Activity Player
-// stores the interactive state twice in one answer doc (`answer` + `report_state`),
-// but it embeds each copy as an escaped JSON *string* inside a `report` wrapper
-// alongside `attachments` and other fields. Measured expansion is ~2.2 bytes of
-// Firestore document per char of interactive state, so a state near 480 KiB
-// produced a ~1.06 MB document that Firestore rejected.
-// 1,048,576 / 2.2 ≈ 476 KB is the hard ceiling; 400 KiB leaves margin for
-// variation in escaping density and wrapper overhead.
+// CFM-18: this was 480 KiB, justified as "can save it twice with room to spare
+// in the 1MB Firestore limit" (480 * 2 = 960 KiB). That math was wrong. Activity
+// Player stores the interactive state twice in one answer doc (`answer` +
+// `report_state`), but it embeds each copy as an escaped JSON *string* inside a
+// `report` wrapper alongside `attachments` and other fields. Measured expansion
+// is ~2.2 bytes of Firestore document per char of interactive state, so a state
+// near 480 KiB produced a ~1.06 MB document that Firestore rejected.
+// The 1 MiB (1,048,576 byte) limit / 2.2 ≈ 465 KiB is the hard ceiling;
+// 400 KiB leaves margin for escaping-density variation and wrapper overhead.
 export const kDynamicAttachmentSizeThreshold = 400 * 1024
 
 // in solidarity with legacy DocumentStore implementation and S3 sharing implementation
