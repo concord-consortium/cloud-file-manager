@@ -20,7 +20,11 @@ export const shouldSaveAsAttachment = (content: any) => {
     return true
   }
 
-  const aboveDynamicThreshold = JSON.stringify(content).length >= kDynamicAttachmentSizeThreshold
+  // Measure the UTF-8 byte length, not String.prototype.length: the latter counts
+  // UTF-16 code units and undercounts non-ASCII content, whereas Firestore's 1 MiB
+  // document limit — and kDynamicAttachmentSizeThreshold — are byte-based. (spec R6)
+  const serializedBytes = new TextEncoder().encode(JSON.stringify(content)).byteLength
+  const aboveDynamicThreshold = serializedBytes >= kDynamicAttachmentSizeThreshold
   if (aboveDynamicThreshold) {
     return true
   }
