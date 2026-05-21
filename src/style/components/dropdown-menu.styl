@@ -83,6 +83,13 @@
     &.separator
       background none
 
+// React Aria gives the menu list container programmatic focus when a menu
+// opens; it is never a meaningful keyboard focus target (keyboard users
+// navigate the menu items, which carry their own :focus-visible outline),
+// so suppress the browser's default focus outline on the container itself.
+.menu-list-container:focus
+  outline none
+
 .sub-menu
   position absolute;
   left 130px !important;
