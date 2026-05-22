@@ -152,5 +152,14 @@
   "~GOOGLE_DRIVE.SELECT_A_FILE": "Seleccionar un archivo",
   "~GOOGLE_DRIVE.SELECT_A_FOLDER": "Seleccionar una carpeta",
   "~GOOGLE_DRIVE.STARRED": "Destacado",
-  "~GOOGLE_DRIVE.SELECT_VALID_FILE": "Por favor, seleccione un archivo válido para esta aplicación"
+  "~GOOGLE_DRIVE.SELECT_VALID_FILE": "Por favor, seleccione un archivo válido para esta aplicación",
+  "~MENUBAR.APP_IFRAME_TITLE": "Application",
+  "~MENUBAR.TOOLBAR_LABEL": "Menu bar",
+  "~MENUBAR.ABOUT_APP": "About %{appName}",
+  "~MENUBAR.ABOUT": "About this application",
+  "~MENUBAR.RENAME_DOCUMENT": "Document name",
+  "~MENUBAR.RENAME_FILENAME": "Rename %{filename}",
+  "~FILE_DIALOG.CLEAR_FILTER": "Clear filter",
+  "~FILE_DIALOG.FILE_NOT_FOUND": "%{filename} not found",
+  "~GOOGLE_DRIVE.UNABLE_TO_LOAD": "Unable to load file"
 }
