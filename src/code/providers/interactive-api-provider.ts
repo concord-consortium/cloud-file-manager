@@ -20,7 +20,11 @@ export const shouldSaveAsAttachment = (content: any) => {
     return true
   }
 
-  const aboveDynamicThreshold = JSON.stringify(content).length >= kDynamicAttachmentSizeThreshold
+  // Measure the UTF-8 byte length, not String.prototype.length: the latter counts
+  // UTF-16 code units and undercounts non-ASCII content, whereas Firestore's 1 MiB
+  // document limit — and kDynamicAttachmentSizeThreshold — are byte-based. (spec R6)
+  const serializedBytes = new TextEncoder().encode(JSON.stringify(content)).byteLength
+  const aboveDynamicThreshold = serializedBytes >= kDynamicAttachmentSizeThreshold
   if (aboveDynamicThreshold) {
     return true
   }
@@ -60,8 +64,19 @@ interface InteractiveApiProviderParams {
 // pass `interactiveApi=attachment` as url parameter to always save state as an attachment
 export const kAttachmentUrlParameter = "attachment"
 
-// can save it twice with room to spare in 1MB Firestore limit
-export const kDynamicAttachmentSizeThreshold = 480 * 1024
+// Interactive state at or above this size is offloaded to an S3 attachment;
+// smaller state is saved directly into the Firestore answer document.
+//
+// CFM-18: this was 480 KiB, justified as "can save it twice with room to spare
+// in the 1MB Firestore limit" (480 * 2 = 960 KiB). That math was wrong. Activity
+// Player stores the interactive state twice in one answer doc (`answer` +
+// `report_state`), but it embeds each copy as an escaped JSON *string* inside a
+// `report` wrapper alongside `attachments` and other fields. Measured expansion
+// is ~2.2 bytes of Firestore document per char of interactive state, so a state
+// near 480 KiB produced a ~1.06 MB document that Firestore rejected.
+// The 1 MiB (1,048,576 byte) limit / 2.2 ≈ 465 KiB is the hard ceiling;
+// 400 KiB leaves margin for escaping-density variation and wrapper overhead.
+export const kDynamicAttachmentSizeThreshold = 400 * 1024
 
 // in solidarity with legacy DocumentStore implementation and S3 sharing implementation
 export const kAttachmentFilename = "file.json"

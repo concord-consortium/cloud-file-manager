@@ -13,3 +13,7 @@ g.createReactClassFactory = (classDef: any) => g.createReactFactory(g.createReac
 
 // providers use window.alert() (which isn't implemented in JSDom) to signal unimplemented methods
 window.alert = jest.fn(msg => console.error(msg))
+
+// TextEncoder is a standard browser global but isn't exposed by the jsdom test
+// environment; polyfill it from Node's util module so code under test can use it.
+g.TextEncoder = g.TextEncoder ?? require('util').TextEncoder

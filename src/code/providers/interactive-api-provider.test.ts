@@ -699,6 +699,13 @@ describe('InteractiveApiProvider', () => {
     expect(shouldSaveAsAttachment(contentAtThreshold)).toBe(true)
     expect(shouldSaveAsAttachment(contentAboveThreshold)).toBe(true)
 
+    // CFM-18 / spec R6: the size check measures UTF-8 bytes, not UTF-16 code units.
+    // A run of multi-byte characters can stay below the threshold by String length
+    // yet exceed it - and Firestore's byte-based 1 MiB limit - once UTF-8 encoded.
+    const multiByteContent = "€".repeat(kDynamicAttachmentSizeThreshold / 2)  // "€" is 1 code unit, 3 UTF-8 bytes
+    expect(JSON.stringify(multiByteContent).length).toBeLessThan(kDynamicAttachmentSizeThreshold)
+    expect(shouldSaveAsAttachment(multiByteContent)).toBe(true)
+
     // with an explicit kAttachmentUrlParameter value attachments are always used
     setQueryParams(`interactiveApi=${kAttachmentUrlParameter}`)
     expect(shouldSaveAsAttachment(contentBelowThreshold)).toBe(true)
