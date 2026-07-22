@@ -22,6 +22,10 @@ jobs:
     needs:
       - jest
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+      deployments: write
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -29,12 +33,14 @@ jobs:
           node-version: '20'
       - name: Install Dependencies
         run: npm ci
+      - uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: arn:aws:iam::612297603577:role/cloud-file-manager
+          aws-region: us-east-1
       - uses: concord-consortium/s3-deploy-action@v1
         with:
           bucket: models-resources
           prefix: ${{ github.event.repository.name }} # cloud-file-manager
-          awsAccessKeyId: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          awsSecretAccessKey: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           githubToken: ${{ secrets.GITHUB_TOKEN }}
           deployRunUrl: https://models-resources.concord.org/cloud-file-manager/__deployPath__/examples/
           # Parameters to GHActions have to be strings, so a regular yaml array cannot
