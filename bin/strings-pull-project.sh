@@ -14,10 +14,11 @@ OUTPUT_DIR=src/code/utils/lang
 # nn: Norwegian Nynorsk
 # pl: Polish Polski
 # pt-BR: Brazilian Portuguese
+# sl: Slovenian
 # tr: Turkish
 # zh-Hans: Simplified Chinese
 # zh-TW: Traditional Chinese (Taiwan)
-LANGUAGES=("de" "el" "es" "fa" "fr" "he" "ja" "ko" "nb" "nl" "nn" "pl" "pt-BR" "th" "tr" "zh-Hans" "zh-TW")
+LANGUAGES=("de" "el" "es" "fa" "fr" "he" "ja" "ko" "nb" "nl" "nn" "pl" "pt-BR" "sl" "th" "tr" "zh-Hans" "zh-TW")
 
 # argument processing from https://stackoverflow.com/a/14203146
 while [[ $# -gt 1 ]]
