@@ -22,6 +22,7 @@ import nl from './lang/nl.json'
 import nn from './lang/nn.json'
 import pl from "./lang/pl.json"
 import ptBR from './lang/pt-BR.json'
+import sl from './lang/sl.json'
 import th from './lang/th.json'
 import tr from './lang/tr.json'
 import zhHans from './lang/zh-Hans.json'
@@ -48,6 +49,7 @@ const languageFiles: LanguageFileEntry[] = [
   {key: 'nn',       contents: nn},     // Norwegian Nynorsk
   {key: 'pl',       contents: pl},     // Polish Polski
   {key: 'pt-BR',    contents: ptBR},   // Brazilian Portuguese
+  {key: 'sl',       contents: sl},     // Slovenian
   {key: 'th',       contents: th},     // Thai
   {key: 'tr',       contents: tr},     // Turkish
   {key: 'zh-Hans',  contents: zhHans}, // Simplified Chinese
