@@ -93,6 +93,11 @@ languageFiles.forEach(function(lang) {
   }
 })
 
+// CFM owns en-US, so it is the most complete locale and serves as the fallback
+// for an unknown language or an untranslated key. Keys in `translations` are
+// lower-cased, so this must be too.
+const kFallbackLanguage = 'en-us'
+
 const lang = (urlParams as any).lang || getPageLanguage() || getFirstBrowserLanguage()
 const baseLang = getBaseLanguage(lang || '')
 // CODAP/SproutCore lower cases language in documentElement
@@ -116,7 +121,12 @@ const translate = function(key: string, vars?: Record<string, string>, lang?: st
   if (vars == null) { vars = {} }
   if (lang == null) { lang = gCurrentLanguage }
   lang = lang.toLowerCase()
-  let translation = translations[lang] != null ? translations[lang][key] : undefined
+  // Fall back to English before falling back to the key, so that an unknown
+  // language or a key missing from an otherwise-present locale degrades to
+  // English rather than exposing a raw key such as
+  // `~MENUBAR.UNTITLED_DOCUMENT` in the UI. A key that exists in no locale
+  // still renders as itself.
+  let translation = translations[lang]?.[key] ?? translations[kFallbackLanguage]?.[key]
   if ((translation == null)) { translation = key }
   return translation.replace(varRegExp, function(match: string, key: string) {
     return Object.prototype.hasOwnProperty.call(vars, key)
