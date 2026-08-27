@@ -15,6 +15,7 @@ OUTPUT_DIR=src/code/utils/lang
 # pl: Polish Polski
 # pt-BR: Brazilian Portuguese
 # sl: Slovenian
+# th: Thai
 # tr: Turkish
 # zh-Hans: Simplified Chinese
 # zh-TW: Traditional Chinese (Taiwan)

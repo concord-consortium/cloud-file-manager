@@ -1,5 +1,7 @@
 import fs from "fs"
 import path from "path"
+import enUS from "./lang/en-US.json"
+import sl from "./lang/sl.json"
 import translate, { kBundledLanguageKeys } from "./translate"
 
 describe("bundled languages", () => {
@@ -24,7 +26,11 @@ describe("bundled languages", () => {
 
 describe("translate() language fallback", () => {
   it("uses the requested language when it is bundled", () => {
-    expect(translate("~MENU.NEW", {}, "sl")).toBe("Nov")
+    // compared against the imported JSON rather than a literal, so a future
+    // POEditor pull that reworks the Slovenian string doesn't fail a test
+    // about fallback behavior
+    expect(translate("~MENU.NEW", {}, "sl")).toBe(sl["~MENU.NEW"])
+    expect(translate("~MENU.NEW", {}, "sl")).not.toBe(enUS["~MENU.NEW"])
   })
 
   it("falls back to English when the requested language is not bundled", () => {
